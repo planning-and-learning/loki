@@ -114,7 +114,7 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
             for (auto parameter : data.parameters)
                 result->parameters.push_back(parameter);
             result->condition = nested.get_index();
-            const auto exists = this->self().wrap_condition(formalism::get_or_create(this->m_storage->repository, *result).first);
+            const auto exists = this->self().wrap_condition(formalism::insert(this->m_storage->repository, *result).first);
             this->self().append_disjunct(*condition_data, exists);
         }
         return this->self().to_dnf(this->self().make_disjunction(*condition_data));
@@ -123,7 +123,7 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
     for (auto parameter : data.parameters)
         result->parameters.push_back(parameter);
     result->condition = child.get_index();
-    const auto exists = this->self().wrap_condition(formalism::get_or_create(this->m_storage->repository, *result).first);
+    const auto exists = this->self().wrap_condition(formalism::insert(this->m_storage->repository, *result).first);
     return this->self().flatten_condition(exists);
 }
 
@@ -141,7 +141,7 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
             for (auto parameter : data.parameters)
                 result->parameters.push_back(parameter);
             result->condition = nested.get_index();
-            const auto forall = this->self().wrap_condition(formalism::get_or_create(this->m_storage->repository, *result).first);
+            const auto forall = this->self().wrap_condition(formalism::insert(this->m_storage->repository, *result).first);
             this->self().append_disjunct(*condition_data, forall);
         }
         return this->self().to_dnf(this->self().make_disjunction(*condition_data));
@@ -150,7 +150,7 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
     for (auto parameter : data.parameters)
         result->parameters.push_back(parameter);
     result->condition = child.get_index();
-    const auto forall = this->self().wrap_condition(formalism::get_or_create(this->m_storage->repository, *result).first);
+    const auto forall = this->self().wrap_condition(formalism::insert(this->m_storage->repository, *result).first);
     return this->self().flatten_condition(forall);
 }
 

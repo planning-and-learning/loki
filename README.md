@@ -131,6 +131,17 @@ With default options the parser completes `:action-costs` artifacts and the
 translator compiles typing and materializes equality; see
 [Parser and Translator Options](#parser-and-translator-options) to override.
 
+Programmatic construction inserts mutable data into a repository and returns
+`(view, inserted)`. Repeated insertion returns the existing view with `False`.
+The returned Python view keeps its repository alive after the tuple is unpacked.
+
+```python
+repository = pddl.RepositoryFactory().create()
+object_type, inserted = repository.insert(pddl.TypeData("object"))
+same_type, inserted_again = repository.insert(pddl.TypeData("object"))
+assert inserted and not inserted_again and object_type == same_type
+```
+
 ## C++ API
 
 The umbrella header exposes the semantic parser, translator, and reparseable
@@ -150,6 +161,12 @@ int main()
     return reparsed.get_domain().get_name() == "ready-domain" ? 0 : 1;
 }
 ```
+
+For programmatic C++ construction, `loki::formalism::insert(repository, data)`
+prepares the record and returns `std::pair<View, bool>`. Symbol views reuse Ygg's internal accessors and require a context whose
+repository supports their specific entity type. The canonical and phase-copy contexts expose
+`copy(domain_or_task, context)` with the same pair result; repeated copies reuse
+the context's memoized destination values and report `false`.
 
 ## Parser and Translator Options
 

@@ -92,7 +92,7 @@ void bind_task(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    repository.def("get_or_create", &get_or_create_data<formalism::Task>, "data"_a, nb::keep_alive<0, 1>());
+    bind_insert<formalism::Task>(repository);
 }
 
 }  // namespace loki::formalism

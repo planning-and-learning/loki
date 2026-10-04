@@ -146,8 +146,6 @@ struct TranslationStorage
 };
 
 std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::DomainView original_domain, const std::shared_ptr<TranslationStorage>& middle);
-formalism::DomainView canonical_copy(std::shared_ptr<TranslationStorage> storage, formalism::DomainView source);
-formalism::TaskView canonical_copy(std::shared_ptr<TranslationStorage> storage, formalism::TaskView source);
 void compose_storage_maps_from_previous(TranslationStorage& target, const TranslationStorage& previous);
 void inherit_domain_mappings(TranslationStorage& problem, const TranslationStorage& domain);
 void inherit_domain_identity_mappings(TranslationStorage& problem, const TranslationStorage& domain);

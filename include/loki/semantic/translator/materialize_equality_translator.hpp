@@ -162,16 +162,16 @@ formalism::LiteralView MaterializeEqualityTranslator<Derived>::equality_literal(
 {
     auto term_data = formalism::checkout<formalism::Term>(this->m_context.builder);
     term_data->variant = ygg::Data<formalism::Term>::Variant(object);
-    const auto term = formalism::get_or_create(this->m_storage->repository, *term_data).first.get_index();
+    const auto term = formalism::insert(this->m_storage->repository, *term_data).first.get_index();
     auto atom_data = formalism::checkout<formalism::Atom>(this->m_context.builder);
     atom_data->predicate = predicate.get_index();
     atom_data->terms.push_back(term);
     atom_data->terms.push_back(term);
-    const auto atom = formalism::get_or_create(this->m_storage->repository, *atom_data).first.get_index();
+    const auto atom = formalism::insert(this->m_storage->repository, *atom_data).first.get_index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->m_context.builder);
     literal_data->atom = atom;
     literal_data->m_polarity = true;
-    return formalism::get_or_create(this->m_storage->repository, *literal_data).first;
+    return formalism::insert(this->m_storage->repository, *literal_data).first;
 }
 
 template<typename Derived>
@@ -226,23 +226,23 @@ void MaterializeEqualityTranslator<Derived>::add_equality_predicate_to_domain(yg
 
     auto variable_data = formalism::checkout<formalism::Variable>(this->m_context.builder);
     variable_data->name = cista::offset::string("?lhs");
-    const auto left = formalism::get_or_create(this->m_storage->repository, *variable_data).first.get_index();
+    const auto left = formalism::insert(this->m_storage->repository, *variable_data).first.get_index();
     variable_data->clear();
     variable_data->name = cista::offset::string("?rhs");
-    const auto right = formalism::get_or_create(this->m_storage->repository, *variable_data).first.get_index();
+    const auto right = formalism::insert(this->m_storage->repository, *variable_data).first.get_index();
     auto parameter_data = formalism::checkout<formalism::Parameter>(this->m_context.builder);
     parameter_data->variable = left;
     if (object_type)
         parameter_data->types.push_back(*object_type);
     auto predicate_data = formalism::checkout<formalism::Predicate>(this->m_context.builder);
     predicate_data->name = cista::offset::string("=");
-    predicate_data->parameters.push_back(formalism::get_or_create(this->m_storage->repository, *parameter_data).first.get_index());
+    predicate_data->parameters.push_back(formalism::insert(this->m_storage->repository, *parameter_data).first.get_index());
     parameter_data->clear();
     parameter_data->variable = right;
     if (object_type)
         parameter_data->types.push_back(*object_type);
-    predicate_data->parameters.push_back(formalism::get_or_create(this->m_storage->repository, *parameter_data).first.get_index());
-    const auto predicate = formalism::get_or_create(this->m_storage->repository, *predicate_data).first.get_index();
+    predicate_data->parameters.push_back(formalism::insert(this->m_storage->repository, *parameter_data).first.get_index());
+    const auto predicate = formalism::insert(this->m_storage->repository, *predicate_data).first.get_index();
     data.predicates.push_back(predicate);
 }
 

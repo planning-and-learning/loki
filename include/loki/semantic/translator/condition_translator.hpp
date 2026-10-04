@@ -54,7 +54,7 @@ formalism::ConditionLiteralView ConditionTranslator<Derived>::copy(formalism::Co
     const auto literal = as_index(this->self().copy(source.get_literal()));
     auto data = formalism::checkout<formalism::ConditionLiteral>(this->m_context.builder);
     data->literal = literal;
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -63,7 +63,7 @@ formalism::ConditionAndView ConditionTranslator<Derived>::copy(formalism::Condit
     auto data = formalism::checkout<formalism::ConditionAnd>(this->m_context.builder);
     for (auto condition : source.get_conditions())
         data->conditions.push_back(as_index(this->self().copy(condition)));
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -72,7 +72,7 @@ formalism::ConditionOrView ConditionTranslator<Derived>::copy(formalism::Conditi
     auto data = formalism::checkout<formalism::ConditionOr>(this->m_context.builder);
     for (auto condition : source.get_conditions())
         data->conditions.push_back(as_index(this->self().copy(condition)));
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -81,7 +81,7 @@ formalism::ConditionNotView ConditionTranslator<Derived>::copy(formalism::Condit
     const auto condition = as_index(this->self().copy(source.get_condition()));
     auto data = formalism::checkout<formalism::ConditionNot>(this->m_context.builder);
     data->condition = condition;
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -92,7 +92,7 @@ formalism::ConditionImplyView ConditionTranslator<Derived>::copy(formalism::Cond
     auto data = formalism::checkout<formalism::ConditionImply>(this->m_context.builder);
     data->left = left;
     data->right = right;
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -113,7 +113,7 @@ formalism::ConditionExistsView ConditionTranslator<Derived>::copy(formalism::Con
         for (auto parameter : parameter_views)
             data->parameters.push_back(parameter.get_index());
     data->condition = typed_condition.get_index();
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -134,7 +134,7 @@ formalism::ConditionForallView ConditionTranslator<Derived>::copy(formalism::Con
         for (auto parameter : parameter_views)
             data->parameters.push_back(parameter.get_index());
     data->condition = typed_condition.get_index();
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -147,7 +147,7 @@ formalism::ConditionNumericConstraintView ConditionTranslator<Derived>::copy(for
     result->comparator = data.comparator;
     result->left = left;
     result->right = right;
-    return formalism::get_or_create(this->m_storage->repository, *result).first;
+    return formalism::insert(this->m_storage->repository, *result).first;
 }
 
 template<typename Derived>

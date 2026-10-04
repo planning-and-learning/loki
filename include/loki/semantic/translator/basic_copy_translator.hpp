@@ -163,7 +163,7 @@ void BasicCopyTranslator<Derived>::ensure_derived_predicates_requirement(formali
     {
         auto data = formalism::checkout<formalism::Requirement>(this->m_context.builder);
         data->kind = formalism::RequirementKind::DerivedPredicates;
-        out_requirements.push_back(formalism::get_or_create(this->m_storage->repository, *data).first.get_index());
+        out_requirements.push_back(formalism::insert(this->m_storage->repository, *data).first.get_index());
     }
 }
 
@@ -196,7 +196,7 @@ formalism::RequirementView BasicCopyTranslator<Derived>::copy(formalism::Require
         return *mapped;
     auto data = formalism::checkout<formalism::Requirement>(this->m_context.builder);
     data->kind = source.get_kind();
-    auto out = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto out = formalism::insert(this->m_storage->repository, *data).first;
     remember(this->m_storage->requirements, source, out);
     return out;
 }
@@ -210,7 +210,7 @@ formalism::TypeView BasicCopyTranslator<Derived>::copy(formalism::TypeView sourc
     data->name = source.get_name();
     for (auto base : source.get_bases())
         data->bases.push_back(as_index(this->self().copy(base)));
-    auto out = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto out = formalism::insert(this->m_storage->repository, *data).first;
     remember(this->m_storage->types, source, out);
     return out;
 }
@@ -227,7 +227,7 @@ formalism::ObjectView BasicCopyTranslator<Derived>::copy(formalism::ObjectView s
     data->name = source.get_name();
     if (!this->self().compiles_typing_now())
         this->self().copy_type_hierarchy(source.get_types(), data->types);
-    auto out = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto out = formalism::insert(this->m_storage->repository, *data).first;
     this->m_storage->object_type_views[out] = std::move(source_types);
     remember(this->m_storage->objects, source, out);
     return out;
@@ -244,7 +244,7 @@ formalism::VariableView BasicCopyTranslator<Derived>::copy(formalism::VariableVi
     }
     auto data = formalism::checkout<formalism::Variable>(this->m_context.builder);
     data->name = cista::offset::string(name);
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -255,7 +255,7 @@ formalism::ParameterView BasicCopyTranslator<Derived>::copy(formalism::Parameter
     data->variable = variable;
     for (auto type : source.get_types())
         data->types.push_back(as_index(this->self().copy(type)));
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -272,7 +272,7 @@ formalism::PredicateView BasicCopyTranslator<Derived>::copy(formalism::Predicate
     else
         for (auto parameter : source.get_parameters())
             data->parameters.push_back(as_index(this->self().copy(parameter)));
-    auto out = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto out = formalism::insert(this->m_storage->repository, *data).first;
     this->m_used_predicate_names.insert(std::string(source.get_name()));
     this->m_renaming_enabled = previous;
     remember(this->m_storage->predicates, source, out);
@@ -294,7 +294,7 @@ formalism::FunctionSkeletonView BasicCopyTranslator<Derived>::copy(formalism::Fu
         for (auto parameter : source.get_parameters())
             data->parameters.push_back(as_index(this->self().copy(parameter)));
     data->type = as_index(this->self().copy(source.get_type()));
-    auto out = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto out = formalism::insert(this->m_storage->repository, *data).first;
     this->m_renaming_enabled = previous;
     remember(this->m_storage->functions, source, out);
     return out;
@@ -308,7 +308,7 @@ formalism::TermView BasicCopyTranslator<Derived>::copy(formalism::TermView sourc
                             source.get_variant());
     auto data = formalism::checkout<formalism::Term>(this->m_context.builder);
     data->variant = std::move(value);
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -319,7 +319,7 @@ formalism::AtomView BasicCopyTranslator<Derived>::copy(formalism::AtomView sourc
     data->predicate = predicate;
     for (auto term : source.get_terms())
         data->terms.push_back(as_index(this->self().copy(term)));
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -329,7 +329,7 @@ formalism::LiteralView BasicCopyTranslator<Derived>::copy(formalism::LiteralView
     auto data = formalism::checkout<formalism::Literal>(this->m_context.builder);
     data->atom = atom;
     data->m_polarity = source.get_polarity();
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -339,7 +339,7 @@ formalism::FunctionExpressionNumberView BasicCopyTranslator<Derived>::copy(forma
         return *mapped;
     auto data = formalism::checkout<formalism::FunctionExpressionNumber>(this->m_context.builder);
     data->value = source.get_value();
-    auto out = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto out = formalism::insert(this->m_storage->repository, *data).first;
     remember(this->m_storage->numbers, source, out);
     return out;
 }
@@ -352,7 +352,7 @@ formalism::FunctionTermView BasicCopyTranslator<Derived>::copy(formalism::Functi
     data->function = function;
     for (auto term : source.get_terms())
         data->terms.push_back(as_index(this->self().copy(term)));
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -363,7 +363,7 @@ formalism::UnaryFunctionExpressionView BasicCopyTranslator<Derived>::copy(formal
     auto result = formalism::checkout<formalism::UnaryFunctionExpression>(this->m_context.builder);
     result->op = data.op;
     result->expression = expression;
-    return formalism::get_or_create(this->m_storage->repository, *result).first;
+    return formalism::insert(this->m_storage->repository, *result).first;
 }
 
 template<typename Derived>
@@ -376,7 +376,7 @@ formalism::BinaryFunctionExpressionView BasicCopyTranslator<Derived>::copy(forma
     result->op = data.op;
     result->left = left;
     result->right = right;
-    return formalism::get_or_create(this->m_storage->repository, *result).first;
+    return formalism::insert(this->m_storage->repository, *result).first;
 }
 
 template<typename Derived>
@@ -386,7 +386,7 @@ formalism::MultiFunctionExpressionView BasicCopyTranslator<Derived>::copy(formal
     data->op = source.get_operator();
     for (const auto expression : source.get_args())
         data->args.push_back(as_index(this->self().copy(expression)));
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -400,7 +400,7 @@ formalism::FunctionExpressionView BasicCopyTranslator<Derived>::copy(formalism::
                             source.get_variant());
     auto data = formalism::checkout<formalism::FunctionExpression>(this->m_context.builder);
     data->variant = std::move(value);
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_storage->repository, *data).first;
 }
 
 }  // namespace loki::semantic::detail

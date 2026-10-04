@@ -49,7 +49,9 @@ class RepositoryFactory;
 namespace loki::formalism
 {
 
-struct ObjectTag {};
+struct ObjectTag
+{
+};
 
 using ObjectBinding = ::ygg::formalism::Object<ObjectTag>;
 using Row = ::ygg::formalism::Row;
@@ -275,12 +277,6 @@ using MetricView = EntityView<Metric>;
 using InitialFunctionValueView = EntityView<InitialFunctionValue>;
 using DomainView = EntityView<Domain>;
 using TaskView = EntityView<Task>;
-
-template<typename T>
-inline const T& get_repository(const T& context) noexcept
-{
-    return context;
-}
 
 }
 

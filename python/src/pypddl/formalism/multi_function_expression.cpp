@@ -62,7 +62,7 @@ void bind_multi_function_expression(nb::module_& m, RepositoryBinding& repositor
         ygg::add_hash(cls);
     }
 
-    repository.def("get_or_create", &get_or_create_data<formalism::MultiFunctionExpression>, "data"_a, nb::keep_alive<0, 1>());
+    bind_insert<formalism::MultiFunctionExpression>(repository);
 }
 
 }  // namespace loki::formalism

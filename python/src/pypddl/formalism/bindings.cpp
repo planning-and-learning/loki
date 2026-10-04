@@ -81,53 +81,6 @@ void bind_formalism_enums(nb::module_& m)
 
 }  // namespace
 
-template<typename T>
-EntityView<T> get_or_create_data(Repository& repository, Data<T> data)
-{
-    return formalism::get_or_create(repository, data).first;
-}
-
-template EntityView<Requirement> get_or_create_data<Requirement>(Repository&, Data<Requirement>);
-template EntityView<Type> get_or_create_data<Type>(Repository&, Data<Type>);
-template EntityView<Object> get_or_create_data<Object>(Repository&, Data<Object>);
-template EntityView<Variable> get_or_create_data<Variable>(Repository&, Data<Variable>);
-template EntityView<Parameter> get_or_create_data<Parameter>(Repository&, Data<Parameter>);
-template EntityView<Predicate> get_or_create_data<Predicate>(Repository&, Data<Predicate>);
-template EntityView<FunctionSkeleton> get_or_create_data<FunctionSkeleton>(Repository&, Data<FunctionSkeleton>);
-template EntityView<Term> get_or_create_data<Term>(Repository&, Data<Term>);
-template EntityView<Atom> get_or_create_data<Atom>(Repository&, Data<Atom>);
-template EntityView<Literal> get_or_create_data<Literal>(Repository&, Data<Literal>);
-template EntityView<FunctionExpressionNumber> get_or_create_data<FunctionExpressionNumber>(Repository&, Data<FunctionExpressionNumber>);
-template EntityView<FunctionTerm> get_or_create_data<FunctionTerm>(Repository&, Data<FunctionTerm>);
-template EntityView<UnaryFunctionExpression> get_or_create_data<UnaryFunctionExpression>(Repository&, Data<UnaryFunctionExpression>);
-template EntityView<BinaryFunctionExpression> get_or_create_data<BinaryFunctionExpression>(Repository&, Data<BinaryFunctionExpression>);
-template EntityView<MultiFunctionExpression> get_or_create_data<MultiFunctionExpression>(Repository&, Data<MultiFunctionExpression>);
-template EntityView<FunctionExpression> get_or_create_data<FunctionExpression>(Repository&, Data<FunctionExpression>);
-template EntityView<ConditionLiteral> get_or_create_data<ConditionLiteral>(Repository&, Data<ConditionLiteral>);
-template EntityView<ConditionAnd> get_or_create_data<ConditionAnd>(Repository&, Data<ConditionAnd>);
-template EntityView<ConditionOr> get_or_create_data<ConditionOr>(Repository&, Data<ConditionOr>);
-template EntityView<ConditionNot> get_or_create_data<ConditionNot>(Repository&, Data<ConditionNot>);
-template EntityView<ConditionImply> get_or_create_data<ConditionImply>(Repository&, Data<ConditionImply>);
-template EntityView<ConditionExists> get_or_create_data<ConditionExists>(Repository&, Data<ConditionExists>);
-template EntityView<ConditionForall> get_or_create_data<ConditionForall>(Repository&, Data<ConditionForall>);
-template EntityView<ConditionNumericConstraint> get_or_create_data<ConditionNumericConstraint>(Repository&, Data<ConditionNumericConstraint>);
-template EntityView<Condition> get_or_create_data<Condition>(Repository&, Data<Condition>);
-template EntityView<EffectLiteral> get_or_create_data<EffectLiteral>(Repository&, Data<EffectLiteral>);
-template EntityView<EffectAnd> get_or_create_data<EffectAnd>(Repository&, Data<EffectAnd>);
-template EntityView<EffectNumeric> get_or_create_data<EffectNumeric>(Repository&, Data<EffectNumeric>);
-template EntityView<EffectForall> get_or_create_data<EffectForall>(Repository&, Data<EffectForall>);
-template EntityView<EffectWhen> get_or_create_data<EffectWhen>(Repository&, Data<EffectWhen>);
-template EntityView<EffectOneOf> get_or_create_data<EffectOneOf>(Repository&, Data<EffectOneOf>);
-template EntityView<EffectProbabilisticAlternative> get_or_create_data<EffectProbabilisticAlternative>(Repository&, Data<EffectProbabilisticAlternative>);
-template EntityView<EffectProbabilistic> get_or_create_data<EffectProbabilistic>(Repository&, Data<EffectProbabilistic>);
-template EntityView<Effect> get_or_create_data<Effect>(Repository&, Data<Effect>);
-template EntityView<Action> get_or_create_data<Action>(Repository&, Data<Action>);
-template EntityView<Axiom> get_or_create_data<Axiom>(Repository&, Data<Axiom>);
-template EntityView<Metric> get_or_create_data<Metric>(Repository&, Data<Metric>);
-template EntityView<InitialFunctionValue> get_or_create_data<InitialFunctionValue>(Repository&, Data<InitialFunctionValue>);
-template EntityView<Domain> get_or_create_data<Domain>(Repository&, Data<Domain>);
-template EntityView<Task> get_or_create_data<Task>(Repository&, Data<Task>);
-
 void bind_formalism(nb::module_& m)
 {
     bind_formalism_enums(m);

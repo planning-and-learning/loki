@@ -23,6 +23,7 @@
 #include "loki/ast/ast.hpp"
 #include "loki/semantic/errors.hpp"
 #include "loki/semantic/options.hpp"
+#include "loki/semantic/translator/canonical_copy_translator.hpp"
 #include "loki/semantic/translator/common.hpp"
 #include "mappings.hpp"
 #include "parser_runtime.hpp"
@@ -162,7 +163,8 @@ formalism::TaskView Parser::Impl::parse_task_ast(const ast::Task& task)
 void Parser::Impl::canonicalize_domain(formalism::DomainView domain)
 {
     auto canonical = std::make_shared<detail::TranslationStorage>(0);
-    auto copied = detail::canonical_copy(canonical, domain);
+    auto context = detail::CanonicalCopyTranslator(canonical);
+    auto copied = detail::copy(domain, context).first;
     m_domain_context.storage = std::move(canonical);
     m_task_storages.clear();
     m_domain_context.domain = copied;
@@ -173,7 +175,8 @@ formalism::TaskView Parser::Impl::canonicalize_task(formalism::TaskView task, co
 {
     auto canonical = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, &domain_storage->repository);
     detail::inherit_domain_identity_mappings(*canonical, *domain_storage);
-    auto copied = detail::canonical_copy(canonical, task);
+    auto context = detail::CanonicalCopyTranslator(canonical);
+    auto copied = detail::copy(task, context).first;
     m_task_storages.push_back(canonical);
     return copied;
 }

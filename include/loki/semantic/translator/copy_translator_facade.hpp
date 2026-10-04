@@ -41,9 +41,9 @@ public:
 
     std::string next_generated_predicate_name(std::string_view prefix);
 
-    formalism::DomainView copy_domain(formalism::DomainView domain);
+    std::pair<formalism::DomainView, bool> copy(formalism::DomainView domain);
 
-    formalism::TaskView copy_task(formalism::TaskView task);
+    std::pair<formalism::TaskView, bool> copy(formalism::TaskView task);
 };
 
 template<typename Derived>
@@ -82,8 +82,10 @@ std::string CopyTranslatorFacade<Derived>::next_generated_predicate_name(std::st
 }
 
 template<typename Derived>
-formalism::DomainView CopyTranslatorFacade<Derived>::copy_domain(formalism::DomainView domain)
+std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(formalism::DomainView domain)
 {
+    if (auto mapped = find_mapped(this->m_storage->domains, domain))
+        return { *mapped, false };
     auto data = formalism::checkout<formalism::Domain>(this->m_context.builder);
     data->name = domain.get_data().name;
     this->self().template copy_list<formalism::Requirement>(domain.get_requirements(), data->requirements);
@@ -94,7 +96,7 @@ formalism::DomainView CopyTranslatorFacade<Derived>::copy_domain(formalism::Doma
     this->self().template copy_list<formalism::Action>(domain.get_actions(), data->actions);
     this->self().template copy_list<formalism::Axiom>(domain.get_axioms(), data->axioms);
 
-    auto copied_domain = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto [copied_domain, copied_inserted] = formalism::insert(this->m_storage->repository, *data);
     this->m_storage->translated_domain = copied_domain;
     data->index = {};
 
@@ -123,15 +125,17 @@ formalism::DomainView CopyTranslatorFacade<Derived>::copy_domain(formalism::Doma
             break;
     }
 
-    auto view = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto [view, inserted] = formalism::insert(this->m_storage->repository, *data);
     this->m_storage->translated_domain = view;
     remember(this->m_storage->domains, domain, view);
-    return view;
+    return { view, inserted || (copied_inserted && view == copied_domain) };
 }
 
 template<typename Derived>
-formalism::TaskView CopyTranslatorFacade<Derived>::copy_task(formalism::TaskView task)
+std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formalism::TaskView task)
 {
+    if (auto mapped = find_mapped(this->m_storage->tasks, task))
+        return { *mapped, false };
     auto data = formalism::checkout<formalism::Task>(this->m_context.builder);
     data->name = task.get_data().name;
     data->domain = this->m_storage->translated_domain->get_index();
@@ -170,7 +174,7 @@ formalism::TaskView CopyTranslatorFacade<Derived>::copy_task(formalism::TaskView
     this->self().template copy_list<formalism::Predicate>(task.get_predicates(), data->predicates);
     this->self().template copy_list<formalism::Axiom>(task.get_axioms(), data->axioms);
 
-    auto copied_task = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto [copied_task, copied_inserted] = formalism::insert(this->m_storage->repository, *data);
     data->index = {};
 
     switch (this->m_phase)
@@ -212,9 +216,9 @@ formalism::TaskView CopyTranslatorFacade<Derived>::copy_task(formalism::TaskView
             break;
     }
 
-    auto view = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto [view, inserted] = formalism::insert(this->m_storage->repository, *data);
     remember(this->m_storage->tasks, task, view);
-    return view;
+    return { view, inserted || (copied_inserted && view == copied_task) };
 }
 
 }  // namespace loki::semantic::detail

@@ -15,45 +15,36 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_ACTION_VIEW_HPP_
 #define LOKI_FORMALISM_ACTION_VIEW_HPP_
 
 #include "loki/formalism/action_data.hpp"
 
-#include <tuple>
 #include <yggdrasil/containers/optional.hpp>
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
+#include <yggdrasil/formalism/detail/view.hpp>
 
 namespace ygg
 {
 
-template<typename C>
-class View<ygg::Index<::loki::formalism::Action>, C>
+template<ygg::formalism::SymbolContextFor<::loki::formalism::Action> C>
+class View<ygg::Index<::loki::formalism::Action>, C> : public ygg::formalism::detail::View<ygg::Index<::loki::formalism::Action>, C>
 {
-private:
-    const C* m_context;
-    ygg::Index<::loki::formalism::Action> m_handle;
-
 public:
-    View(ygg::Index<::loki::formalism::Action> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(ygg::Index<::loki::formalism::Action> handle, const C& context) noexcept :
+        ygg::formalism::detail::View<ygg::Index<::loki::formalism::Action>, C>(handle, context)
+    {
+    }
 
-    const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
-    const auto& get_context() const noexcept { return *m_context; }
-    const auto& get_handle() const noexcept { return m_handle; }
-    auto get_index() const noexcept { return m_handle; }
-
-    const auto& get_name() const noexcept { return get_data().name; }
-    const auto& get_original_name() const noexcept { return get_data().original_name; }
-    auto get_parameters() const noexcept { return ygg::make_view(get_data().parameters, *m_context); }
-    auto get_arity() const noexcept { return get_data().parameters.size(); }
-    auto get_original_arity() const noexcept { return get_data().original_arity; }
-    auto get_precondition() const noexcept { return ygg::make_view(get_data().precondition, *m_context); }
-    auto get_effect() const noexcept { return ygg::make_view(get_data().effect, *m_context); }
-
-    auto identifying_members() const noexcept { return std::tie(m_handle, m_context->get_index()); }
+    const auto& get_name() const noexcept { return this->get_data().name; }
+    const auto& get_original_name() const noexcept { return this->get_data().original_name; }
+    auto get_parameters() const noexcept { return ygg::make_view(this->get_data().parameters, this->get_context()); }
+    auto get_arity() const noexcept { return this->get_data().parameters.size(); }
+    auto get_original_arity() const noexcept { return this->get_data().original_arity; }
+    auto get_precondition() const noexcept { return ygg::make_view(this->get_data().precondition, this->get_context()); }
+    auto get_effect() const noexcept { return ygg::make_view(this->get_data().effect, this->get_context()); }
 };
 
 }

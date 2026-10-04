@@ -54,7 +54,7 @@ void bind_binary_function_expression(nb::module_& m, RepositoryBinding& reposito
         ygg::add_hash(cls);
     }
 
-    repository.def("get_or_create", &get_or_create_data<formalism::BinaryFunctionExpression>, "data"_a, nb::keep_alive<0, 1>());
+    bind_insert<formalism::BinaryFunctionExpression>(repository);
 }
 
 }  // namespace loki::formalism

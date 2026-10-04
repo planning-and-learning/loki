@@ -22,9 +22,11 @@
 #include <loki/formalism/repository.hpp>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/optional.h>
+#include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 #include <yggdrasil/python/bindings.hpp>
+#include <yggdrasil/python/owner.hpp>
 #include <yggdrasil/python/type_casters.hpp>
 
 namespace loki::formalism
@@ -36,7 +38,19 @@ template<typename T>
 using Data = ygg::Data<T>;
 
 template<typename T>
-EntityView<T> get_or_create_data(Repository& repository, Data<T> data);
+void bind_insert(RepositoryBinding& repository)
+{
+    namespace nb = nanobind;
+    const auto retain_owner = ygg::python::make_owner_retainer();
+    repository.def(
+        "insert",
+        [retain_owner](nb::typed<nb::handle, Repository> owner, Data<T> data) -> nb::typed<nb::tuple, EntityView<T>, bool>
+        {
+            return nb::borrow<nb::typed<nb::tuple, EntityView<T>, bool>>(
+                ygg::python::cast_with_owner(formalism::insert(nb::cast<Repository&>(owner), data), owner, retain_owner));
+        },
+        nb::arg("data"));
+}
 
 template<typename V>
 auto bind_data(nanobind::module_& m, const char* name)

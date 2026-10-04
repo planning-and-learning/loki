@@ -129,7 +129,7 @@ DomainTranslationResult translate(formalism::DomainView domain, const Translator
 
         auto phase_storage = std::make_shared<detail::TranslationStorage>(phase_index++);
         auto semantic_copier = detail::CopyTranslator(phase_storage, options.compile_typing, step.phase);
-        current_domain = semantic_copier.copy_domain(current_domain);
+        current_domain = detail::copy(current_domain, semantic_copier).first;
         if (current_storage)
             detail::compose_storage_maps_from_previous(*phase_storage, *current_storage);
         current_storage = std::move(phase_storage);
@@ -163,7 +163,7 @@ ProblemTranslationResult translate(formalism::TaskView task, const DomainTransla
             detail::inherit_domain_mappings(*phase_storage, *result.m_storage);
 
         auto semantic_copier = detail::CopyTranslator(phase_storage, options.compile_typing, step.phase);
-        current_task = semantic_copier.copy_task(current_task);
+        current_task = detail::copy(current_task, semantic_copier).first;
         if (current_storage)
             detail::compose_storage_maps_from_previous(*phase_storage, *current_storage);
         current_storage = std::move(phase_storage);
