@@ -1,14 +1,14 @@
-find_package(GTest "1.11.0" REQUIRED COMPONENTS GTest Main PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
+find_package(GTest "1.11.0" REQUIRED COMPONENTS GTest PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
 find_library(Boost_JSON_LIBRARY boost_json PATHS ${CMAKE_PREFIX_PATH} PATH_SUFFIXES lib NO_DEFAULT_PATH REQUIRED)
 
 function(add_gtest test_name)
-    add_executable(${test_name} ${ARGN})
+    add_executable(${test_name} ${ARGN} main.cpp)
     target_compile_definitions(${test_name} PRIVATE ROOT_DIR="${CMAKE_SOURCE_DIR}")
     target_link_libraries(
         ${test_name}
         PRIVATE
             loki::parsers
-            GTest::gtest_main
+            GTest::gtest
             ${Boost_JSON_LIBRARY}
     )
 
@@ -21,6 +21,7 @@ function(add_gtest test_name)
     endif()
 
     add_test(NAME ${test_name} COMMAND ${test_name})
+    set_tests_properties(${test_name} PROPERTIES FAIL_REGULAR_EXPRESSION "does NOT link in any test case;Running 0 tests")
 endfunction()
 
 add_gtest(parser_counts_suite "parser/parser_counts_suite.cpp")
