@@ -381,6 +381,41 @@ TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
     EXPECT_EQ(previous.types.at(original_type), middle_type);
 }
 
+TEST(LokiSemanticTranslator, TranslationStorageRetainsParent)
+{
+    auto parent = std::make_shared<semantic::detail::TranslationStorage>(1);
+    const auto lifetime = std::weak_ptr<const semantic::detail::TranslationStorage>(parent);
+    auto builder = formalism::Builder {};
+    const auto object = intern<formalism::Object>(parent->repository, builder, [](auto& data) { data.name = "inherited"; });
+    auto child = std::make_shared<semantic::detail::TranslationStorage>(2, parent);
+
+    parent.reset();
+    ASSERT_FALSE(lifetime.expired());
+    EXPECT_EQ(std::string(ygg::make_view(object.get_index(), child->repository).get_name()), "inherited");
+
+    child.reset();
+    EXPECT_TRUE(lifetime.expired());
+}
+
+TEST(LokiSemanticTranslator, ProblemTranslationRetainsDomainStorage)
+{
+    semantic::Parser parser(fixture_path("task-object-types"));
+    const auto task = parser.parse_task(fixture_path("task-object-types", "task.pddl"));
+    const auto translated_result = [&]
+    {
+        const auto domain_translation = semantic::translate(parser.get_domain());
+        return semantic::translate(task, domain_translation);
+    }();
+    const auto translated = translated_result.get_translated_task();
+    const auto domain = translated.get_domain();
+
+    EXPECT_EQ(std::string(domain.get_name()), "task-object-types");
+    ASSERT_EQ(domain.get_actions().size(), 1);
+    EXPECT_EQ(std::string(domain.get_actions().front().get_name()), "mark-ready");
+    EXPECT_TRUE(has_initial_unary_literal(translated.get_initial_literals(), "bread-portion", "bread1"));
+    EXPECT_TRUE(has_initial_unary_literal(translated.get_initial_literals(), "content-portion", "content1"));
+}
+
 TEST(LokiSemanticTranslator, PreservesTaskObjectTypesAfterDomainCanonicalization)
 {
     semantic::Parser parser(fixture_path("task-object-types"));

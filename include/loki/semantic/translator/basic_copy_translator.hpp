@@ -90,10 +90,10 @@ void BasicCopyTranslator<Derived>::increment_quantifications(formalism::EntityLi
     for (auto parameter : parameters)
     {
         const auto variable = parameter.get_variable();
-        if (auto it = this->m_num_quantifications.find(variable); it != this->m_num_quantifications.end())
+        if (auto it = this->m_context.num_quantifications.find(variable); it != this->m_context.num_quantifications.end())
             ++it->second;
         else
-            this->m_num_quantifications.emplace(variable, 0);
+            this->m_context.num_quantifications.emplace(variable, 0);
     }
 }
 
@@ -120,27 +120,27 @@ void BasicCopyTranslator<Derived>::enter_scope(const std::vector<formalism::Para
     auto variables = std::vector<formalism::VariableView> {};
     for (auto parameter : parameters)
         variables.push_back(parameter.get_variable());
-    this->m_active_parameters.push_back(parameters);
-    this->m_active_parameter_variables.push_back(std::move(variables));
+    this->m_context.active_parameters.push_back(parameters);
+    this->m_context.active_parameter_variables.push_back(std::move(variables));
 }
 
 template<typename Derived>
 void BasicCopyTranslator<Derived>::leave_scope()
 {
-    this->m_active_parameters.pop_back();
-    this->m_active_parameter_variables.pop_back();
+    this->m_context.active_parameters.pop_back();
+    this->m_context.active_parameter_variables.pop_back();
 }
 
 template<typename Derived>
 void BasicCopyTranslator<Derived>::append_generated_domain_objects(ygg::Data<formalism::Domain>& data,
                                                                    formalism::EntityListView<formalism::Requirement> requirements)
 {
-    if (this->m_generated_predicates.empty() && this->m_generated_axioms.empty())
+    if (this->m_context.generated_predicates.empty() && this->m_context.generated_axioms.empty())
         return;
 
-    for (auto predicate : this->m_generated_predicates)
+    for (auto predicate : this->m_context.generated_predicates)
         data.predicates.push_back(predicate.get_index());
-    for (auto axiom : this->m_generated_axioms)
+    for (auto axiom : this->m_context.generated_axioms)
         data.axioms.push_back(axiom.get_index());
 
     this->self().ensure_derived_predicates_requirement(requirements, data.requirements);
@@ -163,7 +163,7 @@ void BasicCopyTranslator<Derived>::ensure_derived_predicates_requirement(formali
     {
         auto data = formalism::checkout<formalism::Requirement>(this->m_context.builder);
         data->kind = formalism::RequirementKind::DerivedPredicates;
-        out_requirements.push_back(formalism::insert(this->m_storage->repository, *data).first.get_index());
+        out_requirements.push_back(formalism::insert(this->m_context.storage->repository, *data).first.get_index());
     }
 }
 
@@ -183,7 +183,7 @@ void BasicCopyTranslator<Derived>::strip_typing_requirement(formalism::EntityLis
                                                             ygg::IndexList<formalism::Requirement>& result)
 {
     result.clear();
-    if (this->m_compile_typing)
+    if (this->m_context.compile_typing)
         this->self().strip_requirement(requirements, formalism::RequirementKind::Typing, result);
     else
         this->self().template copy_list<formalism::Requirement>(requirements, result);
@@ -192,33 +192,33 @@ void BasicCopyTranslator<Derived>::strip_typing_requirement(formalism::EntityLis
 template<typename Derived>
 formalism::RequirementView BasicCopyTranslator<Derived>::copy(formalism::RequirementView source)
 {
-    if (auto mapped = find_mapped(this->m_storage->requirements, source))
+    if (auto mapped = find_mapped(this->m_context.storage->requirements, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Requirement>(this->m_context.builder);
     data->kind = source.get_kind();
-    auto out = formalism::insert(this->m_storage->repository, *data).first;
-    remember(this->m_storage->requirements, source, out);
+    auto out = formalism::insert(this->m_context.storage->repository, *data).first;
+    remember(this->m_context.storage->requirements, source, out);
     return out;
 }
 
 template<typename Derived>
 formalism::TypeView BasicCopyTranslator<Derived>::copy(formalism::TypeView source)
 {
-    if (auto mapped = find_mapped(this->m_storage->types, source))
+    if (auto mapped = find_mapped(this->m_context.storage->types, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Type>(this->m_context.builder);
     data->name = source.get_name();
     for (auto base : source.get_bases())
         data->bases.push_back(as_index(this->self().copy(base)));
-    auto out = formalism::insert(this->m_storage->repository, *data).first;
-    remember(this->m_storage->types, source, out);
+    auto out = formalism::insert(this->m_context.storage->repository, *data).first;
+    remember(this->m_context.storage->types, source, out);
     return out;
 }
 
 template<typename Derived>
 formalism::ObjectView BasicCopyTranslator<Derived>::copy(formalism::ObjectView source)
 {
-    if (auto mapped = find_mapped(this->m_storage->objects, source))
+    if (auto mapped = find_mapped(this->m_context.storage->objects, source))
         return *mapped;
     auto source_types = std::vector<formalism::TypeView> {};
     for (auto type : source.get_types())
@@ -227,9 +227,9 @@ formalism::ObjectView BasicCopyTranslator<Derived>::copy(formalism::ObjectView s
     data->name = source.get_name();
     if (!this->self().compiles_typing_now())
         this->self().copy_type_hierarchy(source.get_types(), data->types);
-    auto out = formalism::insert(this->m_storage->repository, *data).first;
-    this->m_storage->object_type_views[out] = std::move(source_types);
-    remember(this->m_storage->objects, source, out);
+    auto out = formalism::insert(this->m_context.storage->repository, *data).first;
+    this->m_context.storage->object_type_views[out] = std::move(source_types);
+    remember(this->m_context.storage->objects, source, out);
     return out;
 }
 
@@ -237,14 +237,14 @@ template<typename Derived>
 formalism::VariableView BasicCopyTranslator<Derived>::copy(formalism::VariableView source)
 {
     auto name = std::string(source.get_name());
-    if (this->m_phase == TranslationPhase::RenameQuantifiedVariables && this->m_renaming_enabled)
+    if (this->m_context.phase == TranslationPhase::RenameQuantifiedVariables && this->m_context.renaming_enabled)
     {
-        if (auto it = this->m_num_quantifications.find(source); it != this->m_num_quantifications.end())
+        if (auto it = this->m_context.num_quantifications.find(source); it != this->m_context.num_quantifications.end())
             name += "_" + std::to_string(it->second);
     }
     auto data = formalism::checkout<formalism::Variable>(this->m_context.builder);
     data->name = cista::offset::string(name);
-    return formalism::insert(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -255,16 +255,16 @@ formalism::ParameterView BasicCopyTranslator<Derived>::copy(formalism::Parameter
     data->variable = variable;
     for (auto type : source.get_types())
         data->types.push_back(as_index(this->self().copy(type)));
-    return formalism::insert(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
 formalism::PredicateView BasicCopyTranslator<Derived>::copy(formalism::PredicateView source)
 {
-    if (auto mapped = find_mapped(this->m_storage->predicates, source))
+    if (auto mapped = find_mapped(this->m_context.storage->predicates, source))
         return *mapped;
-    const auto previous = this->m_renaming_enabled;
-    this->m_renaming_enabled = false;
+    const auto previous = this->m_context.renaming_enabled;
+    this->m_context.renaming_enabled = false;
     auto data = formalism::checkout<formalism::Predicate>(this->m_context.builder);
     data->name = source.get_name();
     if (this->self().compiles_typing_now())
@@ -272,20 +272,20 @@ formalism::PredicateView BasicCopyTranslator<Derived>::copy(formalism::Predicate
     else
         for (auto parameter : source.get_parameters())
             data->parameters.push_back(as_index(this->self().copy(parameter)));
-    auto out = formalism::insert(this->m_storage->repository, *data).first;
-    this->m_used_predicate_names.insert(std::string(source.get_name()));
-    this->m_renaming_enabled = previous;
-    remember(this->m_storage->predicates, source, out);
+    auto out = formalism::insert(this->m_context.storage->repository, *data).first;
+    this->m_context.used_predicate_names.insert(std::string(source.get_name()));
+    this->m_context.renaming_enabled = previous;
+    remember(this->m_context.storage->predicates, source, out);
     return out;
 }
 
 template<typename Derived>
 formalism::FunctionSkeletonView BasicCopyTranslator<Derived>::copy(formalism::FunctionSkeletonView source)
 {
-    if (auto mapped = find_mapped(this->m_storage->functions, source))
+    if (auto mapped = find_mapped(this->m_context.storage->functions, source))
         return *mapped;
-    const auto previous = this->m_renaming_enabled;
-    this->m_renaming_enabled = false;
+    const auto previous = this->m_context.renaming_enabled;
+    this->m_context.renaming_enabled = false;
     auto data = formalism::checkout<formalism::FunctionSkeleton>(this->m_context.builder);
     data->name = source.get_name();
     if (this->self().compiles_typing_now())
@@ -294,9 +294,9 @@ formalism::FunctionSkeletonView BasicCopyTranslator<Derived>::copy(formalism::Fu
         for (auto parameter : source.get_parameters())
             data->parameters.push_back(as_index(this->self().copy(parameter)));
     data->type = as_index(this->self().copy(source.get_type()));
-    auto out = formalism::insert(this->m_storage->repository, *data).first;
-    this->m_renaming_enabled = previous;
-    remember(this->m_storage->functions, source, out);
+    auto out = formalism::insert(this->m_context.storage->repository, *data).first;
+    this->m_context.renaming_enabled = previous;
+    remember(this->m_context.storage->functions, source, out);
     return out;
 }
 
@@ -308,7 +308,7 @@ formalism::TermView BasicCopyTranslator<Derived>::copy(formalism::TermView sourc
                             source.get_variant());
     auto data = formalism::checkout<formalism::Term>(this->m_context.builder);
     data->variant = std::move(value);
-    return formalism::insert(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -319,7 +319,7 @@ formalism::AtomView BasicCopyTranslator<Derived>::copy(formalism::AtomView sourc
     data->predicate = predicate;
     for (auto term : source.get_terms())
         data->terms.push_back(as_index(this->self().copy(term)));
-    return formalism::insert(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -329,18 +329,18 @@ formalism::LiteralView BasicCopyTranslator<Derived>::copy(formalism::LiteralView
     auto data = formalism::checkout<formalism::Literal>(this->m_context.builder);
     data->atom = atom;
     data->m_polarity = source.get_polarity();
-    return formalism::insert(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
 formalism::FunctionExpressionNumberView BasicCopyTranslator<Derived>::copy(formalism::FunctionExpressionNumberView source)
 {
-    if (auto mapped = find_mapped(this->m_storage->numbers, source))
+    if (auto mapped = find_mapped(this->m_context.storage->numbers, source))
         return *mapped;
     auto data = formalism::checkout<formalism::FunctionExpressionNumber>(this->m_context.builder);
     data->value = source.get_value();
-    auto out = formalism::insert(this->m_storage->repository, *data).first;
-    remember(this->m_storage->numbers, source, out);
+    auto out = formalism::insert(this->m_context.storage->repository, *data).first;
+    remember(this->m_context.storage->numbers, source, out);
     return out;
 }
 
@@ -352,7 +352,7 @@ formalism::FunctionTermView BasicCopyTranslator<Derived>::copy(formalism::Functi
     data->function = function;
     for (auto term : source.get_terms())
         data->terms.push_back(as_index(this->self().copy(term)));
-    return formalism::insert(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -363,7 +363,7 @@ formalism::UnaryFunctionExpressionView BasicCopyTranslator<Derived>::copy(formal
     auto result = formalism::checkout<formalism::UnaryFunctionExpression>(this->m_context.builder);
     result->op = data.op;
     result->expression = expression;
-    return formalism::insert(this->m_storage->repository, *result).first;
+    return formalism::insert(this->m_context.storage->repository, *result).first;
 }
 
 template<typename Derived>
@@ -376,7 +376,7 @@ formalism::BinaryFunctionExpressionView BasicCopyTranslator<Derived>::copy(forma
     result->op = data.op;
     result->left = left;
     result->right = right;
-    return formalism::insert(this->m_storage->repository, *result).first;
+    return formalism::insert(this->m_context.storage->repository, *result).first;
 }
 
 template<typename Derived>
@@ -386,13 +386,13 @@ formalism::MultiFunctionExpressionView BasicCopyTranslator<Derived>::copy(formal
     data->op = source.get_operator();
     for (const auto expression : source.get_args())
         data->args.push_back(as_index(this->self().copy(expression)));
-    return formalism::insert(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
 formalism::FunctionExpressionView BasicCopyTranslator<Derived>::copy(formalism::FunctionExpressionView source)
 {
-    if (this->m_phase == TranslationPhase::NormalizeArithmeticExpressions)
+    if (this->m_context.phase == TranslationPhase::NormalizeArithmeticExpressions)
         return this->self().normalize_arithmetic_expression(source);
 
     auto value = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::FunctionExpression>::Variant
@@ -400,7 +400,7 @@ formalism::FunctionExpressionView BasicCopyTranslator<Derived>::copy(formalism::
                             source.get_variant());
     auto data = formalism::checkout<formalism::FunctionExpression>(this->m_context.builder);
     data->variant = std::move(value);
-    return formalism::insert(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 }  // namespace loki::semantic::detail

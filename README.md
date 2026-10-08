@@ -210,15 +210,6 @@ default): `--strict`, `--add-action-costs`, `--compile-typing`,
 `--compile-conditional-effects`, `--materialize-equality`, and
 `--normalize-arithmetic-expressions`.
 
-Migration note: semantic/formalism `MultiFunctionExpression` operands are now
-named `args`; use `Data(op, args)` and `get_args()` (likewise in Python).
-Arithmetic normalization folds empty and unary nodes to their identity or sole
-argument, so compiled output keeps `MultiFunctionExpression` for two or more
-arguments only. The native `EffectNumeric` target is now a `FunctionTerm`;
-construct it with `Data(op, function_term, expression)` and access its arguments
-through `get_function().get_terms()`. The native serialized layout changed, so
-recreate repositories serialized by older Loki versions.
-
 ## CMake Integration
 
 This section covers `pypddl`-specific paths and targets; the general pattern for

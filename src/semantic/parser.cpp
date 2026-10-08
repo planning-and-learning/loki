@@ -147,7 +147,7 @@ formalism::DomainView Parser::Impl::parse_domain_ast(const ast::Domain& domain)
 formalism::TaskView Parser::Impl::parse_task_ast(const ast::Task& task)
 {
     const auto domain_storage = m_domain_context.storage;
-    auto parse_storage = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, &domain_storage->repository);
+    auto parse_storage = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, domain_storage);
     detail::inherit_domain_identity_mappings(*parse_storage, *domain_storage);
 
     auto task_domain_context = m_domain_context;
@@ -173,7 +173,7 @@ void Parser::Impl::canonicalize_domain(formalism::DomainView domain)
 
 formalism::TaskView Parser::Impl::canonicalize_task(formalism::TaskView task, const std::shared_ptr<detail::TranslationStorage>& domain_storage)
 {
-    auto canonical = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, &domain_storage->repository);
+    auto canonical = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, domain_storage);
     detail::inherit_domain_identity_mappings(*canonical, *domain_storage);
     auto context = detail::CanonicalCopyTranslator(canonical);
     auto copied = detail::copy(task, context).first;

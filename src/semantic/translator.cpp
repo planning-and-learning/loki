@@ -156,7 +156,7 @@ ProblemTranslationResult translate(formalism::TaskView task, const DomainTransla
         if (step.phase == TranslationPhase::NormalizeArithmeticExpressions && !options.normalize_arithmetic_expressions)
             continue;
 
-        auto phase_storage = std::make_shared<detail::TranslationStorage>(phase_index++, &result.m_storage->repository);
+        auto phase_storage = std::make_shared<detail::TranslationStorage>(phase_index++, result.m_storage);
         if (current_storage)
             detail::inherit_domain_identity_mappings(*phase_storage, *result.m_storage);
         else
@@ -169,7 +169,7 @@ ProblemTranslationResult translate(formalism::TaskView task, const DomainTransla
         current_storage = std::move(phase_storage);
     }
 
-    const auto canonical = detail::canonicalize_problem_storage(current_task, current_storage, *result.m_storage);
+    const auto canonical = detail::canonicalize_problem_storage(current_task, current_storage, result.m_storage);
     auto translated_task = canonical->tasks.at(task);
     return ProblemTranslationResult(task, canonical, translated_task);
 }

@@ -221,12 +221,14 @@ void inherit_domain_identity_mappings(TranslationStorage& problem, const Transla
 }
 
 std::shared_ptr<TranslationStorage>
-canonicalize_problem_storage(formalism::TaskView middle_task, const std::shared_ptr<TranslationStorage>& middle, const TranslationStorage& domain)
+canonicalize_problem_storage(formalism::TaskView middle_task,
+                             const std::shared_ptr<TranslationStorage>& middle,
+                             std::shared_ptr<const TranslationStorage> domain)
 {
-    auto canonical = std::make_shared<TranslationStorage>(middle->repository.get_index(), &domain.repository);
-    inherit_domain_identity_mappings(*canonical, domain);
-    if (middle->translated_domain->get_index() == domain.translated_domain->get_index())
-        remember(canonical->domains, *middle->translated_domain, *domain.translated_domain);
+    auto canonical = std::make_shared<TranslationStorage>(middle->repository.get_index(), domain);
+    inherit_domain_identity_mappings(*canonical, *domain);
+    if (middle->translated_domain->get_index() == domain->translated_domain->get_index())
+        remember(canonical->domains, *middle->translated_domain, *domain->translated_domain);
     auto context = CanonicalCopyTranslator(canonical);
     copy(middle_task, context);
     compose_storage_maps_from_previous(*canonical, *middle);
