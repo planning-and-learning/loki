@@ -6,6 +6,11 @@ on:
       - test-pypi
   pull_request:
 
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: '2'
+  LOKI_JOBS: '2'
+  YGGDRASIL_JOBS: '2'
+
 jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
@@ -33,7 +38,6 @@ jobs:
           uv pip install --system --no-cache -r pyproject.toml --extra test
         env:
           PIP_NO_CACHE_DIR: 1
-          YGGDRASIL_JOBS: 2
 
       - name: Install CMake on Linux
         if: runner.os == 'Linux'

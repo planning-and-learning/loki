@@ -8,6 +8,11 @@ on:
     branches:
       - main
 
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: '2'
+  LOKI_JOBS: '2'
+  YGGDRASIL_JOBS: '2'
+
 permissions:
   contents: read
   packages: write

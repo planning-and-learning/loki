@@ -5,6 +5,11 @@ on:
     tags:
       - "v*"
 
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: '2'
+  LOKI_JOBS: '2'
+  YGGDRASIL_JOBS: '2'
+
 jobs:
   build_sdist:
     runs-on: ubuntu-latest
@@ -62,7 +67,7 @@ jobs:
           CIBW_SKIP: "*-musllinux_*"
           CIBW_ARCHS: "${{ matrix.architecture }}"
           CIBW_BUILD_VERBOSITY: "1"
-          CIBW_ENVIRONMENT: "LOKI_JOBS=2 PIP_NO_CACHE_DIR=1"
+          CIBW_ENVIRONMENT: "CMAKE_BUILD_PARALLEL_LEVEL=2 LOKI_JOBS=2 YGGDRASIL_JOBS=2 PIP_NO_CACHE_DIR=1"
 
       - name: Upload Linux wheels artifact
         uses: actions/upload-artifact@v5
@@ -98,7 +103,7 @@ jobs:
           CIBW_BUILD: "${{ matrix.python-version }}-*"
           CIBW_ARCHS: arm64
           CIBW_BUILD_VERBOSITY: "1"
-          CIBW_ENVIRONMENT: "LOKI_JOBS=2 PIP_NO_CACHE_DIR=1"
+          CIBW_ENVIRONMENT: "CMAKE_BUILD_PARALLEL_LEVEL=2 LOKI_JOBS=2 YGGDRASIL_JOBS=2 PIP_NO_CACHE_DIR=1"
 
       - name: Upload macOS wheels artifact
         uses: actions/upload-artifact@v5

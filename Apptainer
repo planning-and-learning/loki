@@ -25,6 +25,8 @@ Stage: build
     # Set working directory
     cd /opt/loki
 
+    export CMAKE_BUILD_PARALLEL_LEVEL=2 LOKI_JOBS=2 YGGDRASIL_JOBS=2
+
     # Install project dependencies declared in pyproject.toml
     python3 -m pip install --break-system-packages --no-cache-dir uv
     uv pip install --python /usr/bin/python3 --break-system-packages --no-cache -r pyproject.toml
@@ -35,7 +37,7 @@ Stage: build
         -DLOKI_BUILD_TESTS=OFF \
         -DLOKI_BUILD_PROFILING=OFF \
         -DLOKI_BUILD_EXECUTABLES=ON
-    cmake --build build -j$(nproc)
+    cmake --build build -j2
 
     # Install Loki to a staging directory
     cmake --install build --prefix=/opt/loki/install

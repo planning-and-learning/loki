@@ -54,7 +54,7 @@ def test_downstream_python_binding_links_installed_loki(tmp_path: Path) -> None:
         ],
         check=True,
     )
-    subprocess.run([cmake, "--build", str(build_dir), "-j4"], check=True)
+    subprocess.run([cmake, "--build", str(build_dir), "-j2"], check=True)
 
     env = os.environ.copy()
     env["PYTHONPATH"] = str(project_dir / "src") + os.pathsep + env.get("PYTHONPATH", "")
