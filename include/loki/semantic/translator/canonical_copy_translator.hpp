@@ -21,6 +21,7 @@
 #include "loki/formalism/repository.hpp"
 
 #include <memory>
+#include <utility>
 
 namespace loki::semantic::detail
 {
@@ -32,8 +33,8 @@ class CanonicalCopyTranslator
 public:
     explicit CanonicalCopyTranslator(std::shared_ptr<TranslationStorage> storage);
 
-    formalism::DomainView copy_domain(formalism::DomainView domain);
-    formalism::TaskView copy_task(formalism::TaskView task);
+    std::pair<formalism::DomainView, bool> copy(formalism::DomainView domain);
+    std::pair<formalism::TaskView, bool> copy(formalism::TaskView task);
 
 private:
     formalism::Builder m_builder;
@@ -81,6 +82,9 @@ private:
     formalism::MetricView copy(formalism::MetricView source);
     formalism::InitialFunctionValueView copy(formalism::InitialFunctionValueView source);
 };
+
+inline auto copy(formalism::DomainView source, CanonicalCopyTranslator& context) { return context.copy(source); }
+inline auto copy(formalism::TaskView source, CanonicalCopyTranslator& context) { return context.copy(source); }
 
 template<typename T>
 void CanonicalCopyTranslator::copy_list(formalism::EntityListView<T> source, ygg::IndexList<T>& target)

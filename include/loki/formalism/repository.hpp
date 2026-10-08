@@ -24,6 +24,7 @@
 #include "loki/formalism/indices.hpp"
 
 #include <yggdrasil/formalism/builder.hpp>
+#include <yggdrasil/formalism/interning.hpp>
 #include <yggdrasil/formalism/relation_repository.hpp>
 #include <yggdrasil/formalism/repository.hpp>
 #include <yggdrasil/formalism/repository_factory.hpp>
@@ -34,19 +35,13 @@ namespace loki::formalism
 
 using Builder = ygg::ApplyTypeListT<ygg::formalism::BuilderStorage, SymbolRepositoryTypes>;
 
-template<typename T>
-[[nodiscard]] auto checkout(Builder& builder)
-{
-    auto data = builder.template get_builder<T>();
-    data->clear();
-    return data;
-}
+using ygg::formalism::checkout;
+using ygg::formalism::insert;
 
 template<typename T>
-[[nodiscard]] auto get_or_create(Repository& repository, ygg::Data<T>& data)
+void prepare_for_insert(Repository& repository, ygg::Data<T>& data)
 {
     canonicalize(repository, data);
-    return repository.get_or_create(data);
 }
 
 }

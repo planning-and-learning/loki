@@ -16,6 +16,7 @@
  */
 
 #include "loki/formalism/repository.hpp"
+#include "loki/semantic/translator/canonical_copy_translator.hpp"
 #include "loki/semantic/translator/common.hpp"
 
 #include <utility>
@@ -46,7 +47,7 @@ formalism::TypeView copy_type_view_for_metadata(TranslationStorage& target, form
     for (auto base : source.get_bases())
         data->bases.push_back(copy_type_view_for_metadata(target, builder, base).get_index());
 
-    auto out = formalism::get_or_create(target.repository, *data).first;
+    auto out = formalism::insert(target.repository, *data).first;
     remember(target.types, source, out);
     return out;
 }
@@ -80,7 +81,8 @@ std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::Domai
 {
     auto canonical = std::make_shared<TranslationStorage>(middle->repository.get_index());
     const auto middle_domain = middle->domains.at(original_domain);
-    const auto canonical_domain = canonical_copy(canonical, middle_domain);
+    auto context = CanonicalCopyTranslator(canonical);
+    const auto canonical_domain = copy(middle_domain, context).first;
 
     const auto middle_objects = canonical->objects;
     const auto middle_types = canonical->types;
@@ -219,13 +221,16 @@ void inherit_domain_identity_mappings(TranslationStorage& problem, const Transla
 }
 
 std::shared_ptr<TranslationStorage>
-canonicalize_problem_storage(formalism::TaskView middle_task, const std::shared_ptr<TranslationStorage>& middle, const TranslationStorage& domain)
+canonicalize_problem_storage(formalism::TaskView middle_task,
+                             const std::shared_ptr<TranslationStorage>& middle,
+                             std::shared_ptr<const TranslationStorage> domain)
 {
-    auto canonical = std::make_shared<TranslationStorage>(middle->repository.get_index(), &domain.repository);
-    inherit_domain_identity_mappings(*canonical, domain);
-    if (middle->translated_domain->get_index() == domain.translated_domain->get_index())
-        remember(canonical->domains, *middle->translated_domain, *domain.translated_domain);
-    canonical_copy(canonical, middle_task);
+    auto canonical = std::make_shared<TranslationStorage>(middle->repository.get_index(), domain);
+    inherit_domain_identity_mappings(*canonical, *domain);
+    if (middle->translated_domain->get_index() == domain->translated_domain->get_index())
+        remember(canonical->domains, *middle->translated_domain, *domain->translated_domain);
+    auto context = CanonicalCopyTranslator(canonical);
+    copy(middle_task, context);
     compose_storage_maps_from_previous(*canonical, *middle);
     return canonical;
 }

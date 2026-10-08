@@ -15,40 +15,31 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_CONDITION_IMPLY_VIEW_HPP_
 #define LOKI_FORMALISM_CONDITION_IMPLY_VIEW_HPP_
 
 #include "loki/formalism/condition_imply_data.hpp"
 
-#include <tuple>
 #include <yggdrasil/containers/optional.hpp>
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
+#include <yggdrasil/formalism/detail/view.hpp>
 
 namespace ygg
 {
 
-template<typename C>
-class View<ygg::Index<::loki::formalism::ConditionImply>, C>
+template<ygg::formalism::SymbolContextFor<::loki::formalism::ConditionImply> C>
+class View<ygg::Index<::loki::formalism::ConditionImply>, C> : public ygg::formalism::detail::View<ygg::Index<::loki::formalism::ConditionImply>, C>
 {
-private:
-    const C* m_context;
-    ygg::Index<::loki::formalism::ConditionImply> m_handle;
-
 public:
-    View(ygg::Index<::loki::formalism::ConditionImply> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(ygg::Index<::loki::formalism::ConditionImply> handle, const C& context) noexcept :
+        ygg::formalism::detail::View<ygg::Index<::loki::formalism::ConditionImply>, C>(handle, context)
+    {
+    }
 
-    const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
-    const auto& get_context() const noexcept { return *m_context; }
-    const auto& get_handle() const noexcept { return m_handle; }
-    auto get_index() const noexcept { return m_handle; }
-
-    auto get_left() const noexcept { return ygg::make_view(get_data().left, *m_context); }
-    auto get_right() const noexcept { return ygg::make_view(get_data().right, *m_context); }
-
-    auto identifying_members() const noexcept { return std::tie(m_handle, m_context->get_index()); }
+    auto get_left() const noexcept { return ygg::make_view(this->get_data().left, this->get_context()); }
+    auto get_right() const noexcept { return ygg::make_view(this->get_data().right, this->get_context()); }
 };
 
 }

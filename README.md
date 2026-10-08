@@ -30,7 +30,7 @@ Loki depends on a fraction of [Boost's](https://www.boost.org) header-only libra
 
 Loki consumes native dependencies from Python packages:
 
-- `pyyggdrasil >= 0.2, < 0.3` for shared third-party native dependencies.
+- `pyyggdrasil >= 0.3.0, < 0.4` for shared third-party native dependencies.
 - `pypddl-datasets >= 0.0.9, < 0.1` for the PDDL benchmark data used by the C++ test suite and the example executables (resolved from its cache at CMake configure time).
 
 The shared workspace layout, layered install order, and the common
@@ -52,7 +52,7 @@ Install Loki's native dependency providers into the active Python environment,
 then configure CMake with their native prefixes:
 
 ```console
-python -m pip install 'pyyggdrasil>=0.2.1,<0.3' 'pypddl-datasets>=0.0.9,<0.1'
+python -m pip install 'pyyggdrasil>=0.3.0,<0.4' 'pypddl-datasets>=0.0.9,<0.1'
 
 cmake -S . -B build
 ```
@@ -131,6 +131,17 @@ With default options the parser completes `:action-costs` artifacts and the
 translator compiles typing and materializes equality; see
 [Parser and Translator Options](#parser-and-translator-options) to override.
 
+Programmatic construction inserts mutable data into a repository and returns
+`(view, inserted)`. Repeated insertion returns the existing view with `False`.
+The returned Python view keeps its repository alive after the tuple is unpacked.
+
+```python
+repository = pddl.RepositoryFactory().create()
+object_type, inserted = repository.insert(pddl.TypeData("object"))
+same_type, inserted_again = repository.insert(pddl.TypeData("object"))
+assert inserted and not inserted_again and object_type == same_type
+```
+
 ## C++ API
 
 The umbrella header exposes the semantic parser, translator, and reparseable
@@ -150,6 +161,12 @@ int main()
     return reparsed.get_domain().get_name() == "ready-domain" ? 0 : 1;
 }
 ```
+
+For programmatic C++ construction, `loki::formalism::insert(repository, data)`
+prepares the record and returns `std::pair<View, bool>`. Symbol views reuse Ygg's internal accessors and require a context whose
+repository supports their specific entity type. The canonical and phase-copy contexts expose
+`copy(domain_or_task, context)` with the same pair result; repeated copies reuse
+the context's memoized destination values and report `false`.
 
 ## Parser and Translator Options
 
@@ -193,15 +210,6 @@ default): `--strict`, `--add-action-costs`, `--compile-typing`,
 `--compile-conditional-effects`, `--materialize-equality`, and
 `--normalize-arithmetic-expressions`.
 
-Migration note: semantic/formalism `MultiFunctionExpression` operands are now
-named `args`; use `Data(op, args)` and `get_args()` (likewise in Python).
-Arithmetic normalization folds empty and unary nodes to their identity or sole
-argument, so compiled output keeps `MultiFunctionExpression` for two or more
-arguments only. The native `EffectNumeric` target is now a `FunctionTerm`;
-construct it with `Data(op, function_term, expression)` and access its arguments
-through `get_function().get_terms()`. The native serialized layout changed, so
-recreate repositories serialized by older Loki versions.
-
 ## CMake Integration
 
 This section covers `pypddl`-specific paths and targets; the general pattern for
@@ -210,7 +218,7 @@ consuming the native prefixes from CMake is in the
 
 The Python package `pypddl` installs Loki's native headers, shared library, and
 CMake package config under `pypddl.native_prefix()`. It depends on
-`pyyggdrasil>=0.2.1,<0.3` for third-party native dependencies:
+`pyyggdrasil>=0.3.0,<0.4` for third-party native dependencies:
 
 ```python
 import pypddl

@@ -44,7 +44,7 @@ formalism::PredicateView AstBuilder::predicate(const ast::Identifier& identifier
         m_diagnostics.throw_at(identifier, UndefinedPredicateError(name));
     auto data = formalism::checkout<formalism::Predicate>(m_builder);
     data->name = to_cista(name);
-    auto view = formalism::get_or_create(repo(), *data).first;
+    auto view = formalism::insert(repo(), *data).first;
     m_domain_context.predicates.emplace(name, view);
     return view;
 }
@@ -65,23 +65,23 @@ formalism::PredicateView AstBuilder::equality_predicate(const ast::Identifier& i
 
     auto variable_data = formalism::checkout<formalism::Variable>(m_builder);
     variable_data->name = cista::offset::string("?lhs");
-    const auto left = formalism::get_or_create(repo(), *variable_data).first.get_index();
+    const auto left = formalism::insert(repo(), *variable_data).first.get_index();
     variable_data->clear();
     variable_data->name = cista::offset::string("?rhs");
-    const auto right = formalism::get_or_create(repo(), *variable_data).first.get_index();
+    const auto right = formalism::insert(repo(), *variable_data).first.get_index();
     auto parameter_data = formalism::checkout<formalism::Parameter>(m_builder);
     parameter_data->variable = left;
     parameter_data->types.push_back(m_domain_context.object_type.get_index());
-    const auto left_parameter = formalism::get_or_create(repo(), *parameter_data).first;
+    const auto left_parameter = formalism::insert(repo(), *parameter_data).first;
     parameter_data->clear();
     parameter_data->variable = right;
     parameter_data->types.push_back(m_domain_context.object_type.get_index());
-    const auto right_parameter = formalism::get_or_create(repo(), *parameter_data).first;
+    const auto right_parameter = formalism::insert(repo(), *parameter_data).first;
     auto predicate_data = formalism::checkout<formalism::Predicate>(m_builder);
     predicate_data->name = cista::offset::string("=");
     predicate_data->parameters.push_back(left_parameter.get_index());
     predicate_data->parameters.push_back(right_parameter.get_index());
-    auto view = formalism::get_or_create(repo(), *predicate_data).first;
+    auto view = formalism::insert(repo(), *predicate_data).first;
     m_domain_context.predicates.emplace(name, view);
     return view;
 }
@@ -100,7 +100,7 @@ formalism::FunctionSkeletonView AstBuilder::function(const ast::Identifier& iden
     auto data = formalism::checkout<formalism::FunctionSkeleton>(m_builder);
     data->name = to_cista(name);
     data->type = m_domain_context.number_type.get_index();
-    auto view = formalism::get_or_create(repo(), *data).first;
+    auto view = formalism::insert(repo(), *data).first;
     m_domain_context.functions.emplace(name, view);
     return view;
 }
@@ -125,7 +125,7 @@ std::vector<formalism::RequirementView> AstBuilder::parse_requirements(const std
             m_parse_context.active_requirements.insert(capability);
         data->clear();
         data->kind = kind;
-        result.push_back(formalism::get_or_create(repo(), *data).first);
+        result.push_back(formalism::insert(repo(), *data).first);
     }
     return result;
 }
@@ -250,7 +250,7 @@ std::vector<formalism::ObjectView> AstBuilder::parse_objects(const std::vector<a
             auto data = formalism::checkout<formalism::Object>(m_builder);
             data->name = to_cista(name);
             append_indices(types, data->types);
-            auto view = formalism::get_or_create(repo(), *data).first;
+            auto view = formalism::insert(repo(), *data).first;
             table.emplace(name, view);
             result.push_back(view);
         }
@@ -268,7 +268,7 @@ std::vector<formalism::ParameterView> AstBuilder::parse_parameters(const std::ve
                 m_diagnostics.throw_at(identifier, DuplicateVariableError(name));
             auto variable_data = formalism::checkout<formalism::Variable>(m_builder);
             variable_data->name = to_cista(name);
-            auto variable = formalism::get_or_create(repo(), *variable_data).first;
+            auto variable = formalism::insert(repo(), *variable_data).first;
             if (!m_parse_context.variable_scopes.empty())
                 m_parse_context.variable_scopes.back().emplace(name, variable);
             checks().require_typing_if_needed(group.type, identifier);
@@ -278,7 +278,7 @@ std::vector<formalism::ParameterView> AstBuilder::parse_parameters(const std::ve
             append_indices(types, parameter_data->types);
             if (auto [it, inserted] = m_parse_context.variable_types.emplace(variable, types); !inserted)
                 it->second = std::move(types);
-            result.push_back(formalism::get_or_create(repo(), *parameter_data).first);
+            result.push_back(formalism::insert(repo(), *parameter_data).first);
         }
     return result;
 }
@@ -295,7 +295,7 @@ std::vector<formalism::PredicateView> AstBuilder::parse_predicates(const std::ve
         auto data = formalism::checkout<formalism::Predicate>(m_builder);
         data->name = to_cista(name);
         append_indices(parameters, data->parameters);
-        auto view = formalism::get_or_create(repo(), *data).first;
+        auto view = formalism::insert(repo(), *data).first;
         m_domain_context.predicates.emplace(name, view);
         result.push_back(view);
     }
@@ -321,7 +321,7 @@ std::vector<formalism::FunctionSkeletonView> AstBuilder::parse_functions(const s
         data->name = to_cista(name);
         append_indices(parameters, data->parameters);
         data->type = type;
-        auto view = formalism::get_or_create(repo(), *data).first;
+        auto view = formalism::insert(repo(), *data).first;
         m_domain_context.functions.emplace(name, view);
         result.push_back(view);
     }

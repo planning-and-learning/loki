@@ -23,6 +23,7 @@
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
 #include <loki/semantic/translator.hpp>
+#include <loki/semantic/translator/canonical_copy_translator.hpp>
 #include <loki/semantic/translator/copy_translator.hpp>
 #include <memory>
 #include <string>
@@ -30,6 +31,58 @@
 
 namespace loki::tests
 {
+namespace
+{
+template<typename V>
+concept CanonicalCopyRoot = requires(V source, semantic::detail::CanonicalCopyTranslator& context) { semantic::detail::copy(source, context); };
+static_assert(CanonicalCopyRoot<formalism::DomainView>);
+static_assert(CanonicalCopyRoot<formalism::TaskView>);
+static_assert(!CanonicalCopyRoot<formalism::TypeView>);
+}
+
+TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
+{
+    auto source = formalism::Repository(101);
+    auto type_data = ygg::Data<formalism::Type>(cista::offset::string("type"));
+    const auto type = formalism::insert(source, type_data).first;
+    auto domain_data = ygg::Data<formalism::Domain>();
+    domain_data.name = "domain";
+    domain_data.types.push_back(type.get_index());
+    const auto domain = formalism::insert(source, domain_data).first;
+    auto task_data = ygg::Data<formalism::Task>();
+    task_data.name = "task";
+    task_data.domain = domain.get_index();
+    const auto task = formalism::insert(source, task_data).first;
+
+    auto destination = std::make_shared<semantic::detail::TranslationStorage>(102);
+    auto occupied_data = ygg::Data<formalism::Type>(cista::offset::string("occupied"));
+    formalism::insert(destination->repository, occupied_data);
+    auto context = semantic::detail::CanonicalCopyTranslator(destination);
+    const auto [copied_domain, domain_inserted] = semantic::detail::copy(domain, context);
+    EXPECT_TRUE(domain_inserted);
+    EXPECT_EQ(&copied_domain.get_context(), &destination->repository);
+    ASSERT_EQ(copied_domain.get_types().size(), 1);
+    EXPECT_NE(copied_domain.get_types()[0].get_index(), type.get_index());
+    EXPECT_EQ(std::string_view(copied_domain.get_types()[0].get_name()), "type");
+    const auto [copied_task, task_inserted] = semantic::detail::copy(task, context);
+    EXPECT_TRUE(task_inserted);
+    EXPECT_EQ(copied_task.get_domain(), copied_domain);
+    EXPECT_EQ(semantic::detail::copy(domain, context), std::make_pair(copied_domain, false));
+    EXPECT_EQ(semantic::detail::copy(task, context), std::make_pair(copied_task, false));
+    EXPECT_EQ(semantic::detail::copy(copied_domain, context), std::make_pair(copied_domain, false));
+    EXPECT_EQ(semantic::detail::copy(copied_task, context), std::make_pair(copied_task, false));
+
+    auto phase_storage = std::make_shared<semantic::detail::TranslationStorage>(103);
+    auto phase = semantic::detail::CopyTranslator(phase_storage, false);
+    const auto [phase_domain, phase_inserted] = semantic::detail::copy(domain, phase);
+    EXPECT_TRUE(phase_inserted);
+    EXPECT_EQ(semantic::detail::copy(domain, phase), std::make_pair(phase_domain, false));
+
+    source.clear();
+    EXPECT_EQ(std::string_view(copied_task.get_name()), "task");
+    EXPECT_EQ(std::string_view(copied_task.get_domain().get_types()[0].get_name()), "type");
+}
+
 TEST(LokiTests, GeneratedUniversalPredicateKeepsNumericFreeVariables)
 {
     auto parser = semantic::Parser(fixture_path("numeric-universal"));
@@ -108,7 +161,7 @@ TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
     auto parser = semantic::Parser(fixture_path("dnf-forall"));
     auto storage = std::make_shared<semantic::detail::TranslationStorage>(1);
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::ToDisjunctiveNormalForm);
-    const auto domain = translator.copy_domain(parser.get_domain());
+    const auto domain = semantic::detail::copy(parser.get_domain(), translator).first;
 
     ASSERT_FALSE(domain.get_actions().empty());
     const auto action = domain.get_actions().front();
@@ -205,7 +258,7 @@ TEST(LokiTests, RenameQuantifiedVariablesSeparatesNestedBinders)
     auto parser = semantic::Parser(fixture_path("variable-renaming"));
     auto storage = std::make_shared<semantic::detail::TranslationStorage>(1);
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::RenameQuantifiedVariables);
-    const auto domain = translator.copy_domain(parser.get_domain());
+    const auto domain = semantic::detail::copy(parser.get_domain(), translator).first;
     const auto variable_name = [](formalism::ParameterView parameter) { return std::string(parameter.get_variable().get_name()); };
 
     ASSERT_FALSE(domain.get_actions().empty());

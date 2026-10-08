@@ -23,6 +23,7 @@
 #include "loki/ast/ast.hpp"
 #include "loki/semantic/errors.hpp"
 #include "loki/semantic/options.hpp"
+#include "loki/semantic/translator/canonical_copy_translator.hpp"
 #include "loki/semantic/translator/common.hpp"
 #include "mappings.hpp"
 #include "parser_runtime.hpp"
@@ -146,7 +147,7 @@ formalism::DomainView Parser::Impl::parse_domain_ast(const ast::Domain& domain)
 formalism::TaskView Parser::Impl::parse_task_ast(const ast::Task& task)
 {
     const auto domain_storage = m_domain_context.storage;
-    auto parse_storage = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, &domain_storage->repository);
+    auto parse_storage = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, domain_storage);
     detail::inherit_domain_identity_mappings(*parse_storage, *domain_storage);
 
     auto task_domain_context = m_domain_context;
@@ -162,7 +163,8 @@ formalism::TaskView Parser::Impl::parse_task_ast(const ast::Task& task)
 void Parser::Impl::canonicalize_domain(formalism::DomainView domain)
 {
     auto canonical = std::make_shared<detail::TranslationStorage>(0);
-    auto copied = detail::canonical_copy(canonical, domain);
+    auto context = detail::CanonicalCopyTranslator(canonical);
+    auto copied = detail::copy(domain, context).first;
     m_domain_context.storage = std::move(canonical);
     m_task_storages.clear();
     m_domain_context.domain = copied;
@@ -171,9 +173,10 @@ void Parser::Impl::canonicalize_domain(formalism::DomainView domain)
 
 formalism::TaskView Parser::Impl::canonicalize_task(formalism::TaskView task, const std::shared_ptr<detail::TranslationStorage>& domain_storage)
 {
-    auto canonical = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, &domain_storage->repository);
+    auto canonical = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, domain_storage);
     detail::inherit_domain_identity_mappings(*canonical, *domain_storage);
-    auto copied = detail::canonical_copy(canonical, task);
+    auto context = detail::CanonicalCopyTranslator(canonical);
+    auto copied = detail::copy(task, context).first;
     m_task_storages.push_back(canonical);
     return copied;
 }

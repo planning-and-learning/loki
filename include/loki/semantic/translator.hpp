@@ -19,6 +19,7 @@
 #define LOKI_SEMANTIC_TRANSLATOR_HPP_
 
 #include "loki/formalism/domain_view.hpp"
+#include "loki/formalism/repository.hpp"
 #include "loki/formalism/task_view.hpp"
 #include "loki/semantic/options.hpp"
 

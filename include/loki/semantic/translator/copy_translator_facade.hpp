@@ -41,9 +41,9 @@ public:
 
     std::string next_generated_predicate_name(std::string_view prefix);
 
-    formalism::DomainView copy_domain(formalism::DomainView domain);
+    std::pair<formalism::DomainView, bool> copy(formalism::DomainView domain);
 
-    formalism::TaskView copy_task(formalism::TaskView task);
+    std::pair<formalism::TaskView, bool> copy(formalism::TaskView task);
 };
 
 template<typename Derived>
@@ -57,10 +57,10 @@ void CopyTranslatorFacade<Derived>::push_unique(ygg::IndexList<T>& list, ygg::Un
 template<typename Derived>
 ygg::UnorderedSet<std::string> CopyTranslatorFacade<Derived>::used_predicate_names() const
 {
-    auto names = this->m_used_predicate_names;
-    if (this->m_storage->translated_domain)
+    auto names = this->m_context.used_predicate_names;
+    if (this->m_context.storage->translated_domain)
     {
-        for (auto predicate : this->m_storage->translated_domain->get_predicates())
+        for (auto predicate : this->m_context.storage->translated_domain->get_predicates())
             names.insert(std::string(predicate.get_name()));
     }
     return names;
@@ -72,18 +72,20 @@ std::string CopyTranslatorFacade<Derived>::next_generated_predicate_name(std::st
     auto used = this->self().used_predicate_names();
     while (true)
     {
-        auto name = std::string(prefix) + std::to_string(this->m_num_generated_axioms++);
+        auto name = std::string(prefix) + std::to_string(this->m_context.num_generated_axioms++);
         if (used.insert(name).second)
         {
-            this->m_used_predicate_names.insert(name);
+            this->m_context.used_predicate_names.insert(name);
             return name;
         }
     }
 }
 
 template<typename Derived>
-formalism::DomainView CopyTranslatorFacade<Derived>::copy_domain(formalism::DomainView domain)
+std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(formalism::DomainView domain)
 {
+    if (auto mapped = find_mapped(this->m_context.storage->domains, domain))
+        return { *mapped, false };
     auto data = formalism::checkout<formalism::Domain>(this->m_context.builder);
     data->name = domain.get_data().name;
     this->self().template copy_list<formalism::Requirement>(domain.get_requirements(), data->requirements);
@@ -94,11 +96,11 @@ formalism::DomainView CopyTranslatorFacade<Derived>::copy_domain(formalism::Doma
     this->self().template copy_list<formalism::Action>(domain.get_actions(), data->actions);
     this->self().template copy_list<formalism::Axiom>(domain.get_axioms(), data->axioms);
 
-    auto copied_domain = formalism::get_or_create(this->m_storage->repository, *data).first;
-    this->m_storage->translated_domain = copied_domain;
+    auto [copied_domain, copied_inserted] = formalism::insert(this->m_context.storage->repository, *data);
+    this->m_context.storage->translated_domain = copied_domain;
     data->index = {};
 
-    switch (this->m_phase)
+    switch (this->m_context.phase)
     {
         case TranslationPhase::RemoveUniversalQuantifiers:
             this->self().append_generated_domain_objects(*data, copied_domain.get_requirements());
@@ -123,18 +125,20 @@ formalism::DomainView CopyTranslatorFacade<Derived>::copy_domain(formalism::Doma
             break;
     }
 
-    auto view = formalism::get_or_create(this->m_storage->repository, *data).first;
-    this->m_storage->translated_domain = view;
-    remember(this->m_storage->domains, domain, view);
-    return view;
+    auto [view, inserted] = formalism::insert(this->m_context.storage->repository, *data);
+    this->m_context.storage->translated_domain = view;
+    remember(this->m_context.storage->domains, domain, view);
+    return { view, inserted || (copied_inserted && view == copied_domain) };
 }
 
 template<typename Derived>
-formalism::TaskView CopyTranslatorFacade<Derived>::copy_task(formalism::TaskView task)
+std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formalism::TaskView task)
 {
+    if (auto mapped = find_mapped(this->m_context.storage->tasks, task))
+        return { *mapped, false };
     auto data = formalism::checkout<formalism::Task>(this->m_context.builder);
     data->name = task.get_data().name;
-    data->domain = this->m_storage->translated_domain->get_index();
+    data->domain = this->m_context.storage->translated_domain->get_index();
     this->self().template copy_list<formalism::Requirement>(task.get_requirements(), data->requirements);
     this->self().template copy_list<formalism::Object>(task.get_objects(), data->objects);
     this->self().template copy_list<formalism::Literal>(task.get_initial_literals(), data->initial_literals);
@@ -142,16 +146,16 @@ formalism::TaskView CopyTranslatorFacade<Derived>::copy_task(formalism::TaskView
 
     if (const auto goal = task.get_goal())
     {
-        if (this->m_phase == TranslationPhase::RenameQuantifiedVariables)
+        if (this->m_context.phase == TranslationPhase::RenameQuantifiedVariables)
         {
-            this->m_num_quantifications.clear();
+            this->m_context.num_quantifications.clear();
             this->self().enter_variable_scope();
             const auto renamed_goal = this->self().rename_variables(goal.value());
             this->self().leave_variable_scope();
-            const auto previous = this->m_renaming_enabled;
-            this->m_renaming_enabled = false;
+            const auto previous = this->m_context.renaming_enabled;
+            this->m_context.renaming_enabled = false;
             data->goal = as_index(this->self().copy(renamed_goal));
-            this->m_renaming_enabled = previous;
+            this->m_context.renaming_enabled = previous;
         }
         else
         {
@@ -170,28 +174,28 @@ formalism::TaskView CopyTranslatorFacade<Derived>::copy_task(formalism::TaskView
     this->self().template copy_list<formalism::Predicate>(task.get_predicates(), data->predicates);
     this->self().template copy_list<formalism::Axiom>(task.get_axioms(), data->axioms);
 
-    auto copied_task = formalism::get_or_create(this->m_storage->repository, *data).first;
+    auto [copied_task, copied_inserted] = formalism::insert(this->m_context.storage->repository, *data);
     data->index = {};
 
-    switch (this->m_phase)
+    switch (this->m_context.phase)
     {
         case TranslationPhase::RemoveUniversalQuantifiers:
         case TranslationPhase::SimplifyGoal:
         {
-            if (this->m_phase == TranslationPhase::SimplifyGoal && data->goal)
+            if (this->m_context.phase == TranslationPhase::SimplifyGoal && data->goal)
                 data->goal = as_index(this->self().simplify_goal_condition(copied_task.get_goal().value()));
 
             auto existing_predicates = ygg::UnorderedSet<formalism::PredicateView> {};
             for (auto predicate : copied_task.get_predicates())
                 existing_predicates.insert(predicate);
-            for (auto predicate : this->m_generated_predicates)
+            for (auto predicate : this->m_context.generated_predicates)
                 if (existing_predicates.insert(predicate).second)
                     data->predicates.push_back(predicate.get_index());
 
             auto existing_axioms = ygg::UnorderedSet<formalism::AxiomView> {};
             for (auto axiom : copied_task.get_axioms())
                 existing_axioms.insert(axiom);
-            for (auto axiom : this->m_generated_axioms)
+            for (auto axiom : this->m_context.generated_axioms)
                 if (existing_axioms.insert(axiom).second)
                     data->axioms.push_back(axiom.get_index());
 
@@ -212,9 +216,9 @@ formalism::TaskView CopyTranslatorFacade<Derived>::copy_task(formalism::TaskView
             break;
     }
 
-    auto view = formalism::get_or_create(this->m_storage->repository, *data).first;
-    remember(this->m_storage->tasks, task, view);
-    return view;
+    auto [view, inserted] = formalism::insert(this->m_context.storage->repository, *data);
+    remember(this->m_context.storage->tasks, task, view);
+    return { view, inserted || (copied_inserted && view == copied_task) };
 }
 
 }  // namespace loki::semantic::detail

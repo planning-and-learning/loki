@@ -93,7 +93,7 @@ formalism::TermView ConditionAnalysisTranslator<Derived>::term_from_variable(for
 {
     auto data = formalism::checkout<formalism::Term>(this->m_context.builder);
     data->variant = ygg::Data<formalism::Term>::Variant(variable.get_index());
-    return formalism::get_or_create(this->m_storage->repository, *data).first;
+    return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
@@ -274,10 +274,10 @@ ConditionAnalysisTranslator<Derived>::free_parameters_in_scope(formalism::Condit
     this->self().collect_free_variables(condition, bound, free);
 
     auto result = std::vector<std::pair<formalism::ParameterView, formalism::VariableView>> {};
-    for (size_t scope_index = 0; scope_index < this->m_active_parameters.size(); ++scope_index)
+    for (size_t scope_index = 0; scope_index < this->m_context.active_parameters.size(); ++scope_index)
     {
-        const auto& parameters = this->m_active_parameters[scope_index];
-        const auto& variables = this->m_active_parameter_variables[scope_index];
+        const auto& parameters = this->m_context.active_parameters[scope_index];
+        const auto& variables = this->m_context.active_parameter_variables[scope_index];
         for (size_t i = 0; i < parameters.size(); ++i)
         {
             if (free.contains(variables[i]))

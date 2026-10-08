@@ -30,7 +30,7 @@ formalism::RequirementView CanonicalCopyTranslator::copy(formalism::RequirementV
         return *mapped;
     auto data = formalism::checkout<formalism::Requirement>(m_builder);
     data->kind = source.get_kind();
-    auto out = formalism::get_or_create(m_storage->repository, *data).first;
+    auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->requirements, source, out);
     return out;
 }
@@ -42,7 +42,7 @@ formalism::TypeView CanonicalCopyTranslator::copy(formalism::TypeView source)
     auto data = formalism::checkout<formalism::Type>(m_builder);
     data->name = source.get_name();
     copy_list(source.get_bases(), data->bases);
-    auto out = formalism::get_or_create(m_storage->repository, *data).first;
+    auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->types, source, out);
     return out;
 }
@@ -54,7 +54,7 @@ formalism::ObjectView CanonicalCopyTranslator::copy(formalism::ObjectView source
     auto data = formalism::checkout<formalism::Object>(m_builder);
     data->name = source.get_name();
     copy_list(source.get_types(), data->types);
-    auto out = formalism::get_or_create(m_storage->repository, *data).first;
+    auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->objects, source, out);
     return out;
 }
@@ -65,7 +65,7 @@ formalism::VariableView CanonicalCopyTranslator::copy(formalism::VariableView so
         return *mapped;
     auto data = formalism::checkout<formalism::Variable>(m_builder);
     data->name = source.get_name();
-    auto out = formalism::get_or_create(m_storage->repository, *data).first;
+    auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->variables, source, out);
     return out;
 }
@@ -77,7 +77,7 @@ formalism::ParameterView CanonicalCopyTranslator::copy(formalism::ParameterView 
     auto data = formalism::checkout<formalism::Parameter>(m_builder);
     data->variable = as_index(copy(source.get_variable()));
     copy_list(source.get_types(), data->types);
-    auto out = formalism::get_or_create(m_storage->repository, *data).first;
+    auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->parameters, source, out);
     return out;
 }
@@ -89,7 +89,7 @@ formalism::PredicateView CanonicalCopyTranslator::copy(formalism::PredicateView 
     auto data = formalism::checkout<formalism::Predicate>(m_builder);
     data->name = source.get_name();
     copy_list(source.get_parameters(), data->parameters);
-    auto out = formalism::get_or_create(m_storage->repository, *data).first;
+    auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->predicates, source, out);
     return out;
 }
@@ -102,7 +102,7 @@ formalism::FunctionSkeletonView CanonicalCopyTranslator::copy(formalism::Functio
     data->name = source.get_name();
     copy_list(source.get_parameters(), data->parameters);
     data->type = as_index(copy(source.get_type()));
-    auto out = formalism::get_or_create(m_storage->repository, *data).first;
+    auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->functions, source, out);
     return out;
 }
@@ -113,7 +113,7 @@ formalism::TermView CanonicalCopyTranslator::copy(formalism::TermView source)
         return *mapped;
     auto data = formalism::checkout<formalism::Term>(m_builder);
     data->variant = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Term>::Variant { return as_index(copy(arg)); }, source.get_variant());
-    auto out = formalism::get_or_create(m_storage->repository, *data).first;
+    auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->terms, source, out);
     return out;
 }
@@ -125,7 +125,7 @@ formalism::AtomView CanonicalCopyTranslator::copy(formalism::AtomView source)
     auto data = formalism::checkout<formalism::Atom>(m_builder);
     data->predicate = as_index(copy(source.get_predicate()));
     copy_list(source.get_terms(), data->terms);
-    auto out = formalism::get_or_create(m_storage->repository, *data).first;
+    auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->atoms, source, out);
     return out;
 }
@@ -137,7 +137,7 @@ formalism::LiteralView CanonicalCopyTranslator::copy(formalism::LiteralView sour
     auto data = formalism::checkout<formalism::Literal>(m_builder);
     data->atom = as_index(copy(source.get_atom()));
     data->m_polarity = source.get_polarity();
-    auto out = formalism::get_or_create(m_storage->repository, *data).first;
+    auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->literals, source, out);
     return out;
 }

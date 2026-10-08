@@ -80,10 +80,10 @@ formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_conditi
     auto literal_data = formalism::checkout<formalism::Literal>(this->m_context.builder);
     literal_data->atom = atom;
     literal_data->m_polarity = !literal.get_polarity();
-    const auto negated_literal = formalism::get_or_create(this->m_storage->repository, *literal_data).first;
+    const auto negated_literal = formalism::insert(this->m_context.storage->repository, *literal_data).first;
     auto condition_data = formalism::checkout<formalism::ConditionLiteral>(this->m_context.builder);
     condition_data->literal = negated_literal.get_index();
-    return this->self().wrap_condition(formalism::get_or_create(this->m_storage->repository, *condition_data).first);
+    return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *condition_data).first);
 }
 
 template<typename Derived>
@@ -131,7 +131,7 @@ formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_conditi
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.get_index());
     data->condition = condition;
-    return this->self().flatten_condition(this->self().wrap_condition(formalism::get_or_create(this->m_storage->repository, *data).first));
+    return this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *data).first));
 }
 
 template<typename Derived>
@@ -146,7 +146,7 @@ formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_conditi
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.get_index());
     data->condition = condition;
-    return this->self().flatten_condition(this->self().wrap_condition(formalism::get_or_create(this->m_storage->repository, *data).first));
+    return this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *data).first));
 }
 
 template<typename Derived>
@@ -160,7 +160,7 @@ formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_conditi
     result->comparator = comparator;
     result->left = left;
     result->right = right;
-    return this->self().wrap_condition(formalism::get_or_create(this->m_storage->repository, *result).first);
+    return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *result).first);
 }
 
 template<typename Derived>

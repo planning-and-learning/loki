@@ -35,7 +35,7 @@ formalism::TypeView make_base_type(formalism::Repository& repository, std::strin
     auto builder = formalism::Builder {};
     auto data = formalism::checkout<formalism::Type>(builder);
     data->name = cista::offset::string(name);
-    return formalism::get_or_create(repository, *data).first;
+    return formalism::insert(repository, *data).first;
 }
 
 }
@@ -69,7 +69,7 @@ formalism::TypeView intern_type(DomainContext& domain_context,
     data->bases.reserve(bases.size());
     for (const auto base : bases)
         data->bases.push_back(base.get_index());
-    auto view = formalism::get_or_create(repository, *data).first;
+    auto view = formalism::insert(repository, *data).first;
     if (auto [it, inserted] = domain_context.types.emplace(k, view); !inserted)
         it->second = view;
     return view;

@@ -97,6 +97,8 @@ using ViewMap = ygg::UnorderedMap<formalism::EntityView<T>, formalism::EntityVie
 
 struct TranslationStorage
 {
+    // Keep the inherited repository layer alive until this repository is destroyed.
+    std::shared_ptr<const TranslationStorage> parent;
     formalism::Repository repository;
     std::optional<formalism::DomainView> translated_domain;
 
@@ -142,17 +144,21 @@ struct TranslationStorage
     ViewMap<formalism::Task> tasks;
     ygg::UnorderedMap<formalism::ObjectView, std::vector<formalism::TypeView>> object_type_views;
 
-    explicit TranslationStorage(size_t index = 1, const formalism::Repository* parent = nullptr) : repository(index, parent) {}
+    explicit TranslationStorage(size_t index = 1, std::shared_ptr<const TranslationStorage> parent_ = {}) :
+        parent(std::move(parent_)),
+        repository(index, parent ? &parent->repository : nullptr)
+    {
+    }
 };
 
 std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::DomainView original_domain, const std::shared_ptr<TranslationStorage>& middle);
-formalism::DomainView canonical_copy(std::shared_ptr<TranslationStorage> storage, formalism::DomainView source);
-formalism::TaskView canonical_copy(std::shared_ptr<TranslationStorage> storage, formalism::TaskView source);
 void compose_storage_maps_from_previous(TranslationStorage& target, const TranslationStorage& previous);
 void inherit_domain_mappings(TranslationStorage& problem, const TranslationStorage& domain);
 void inherit_domain_identity_mappings(TranslationStorage& problem, const TranslationStorage& domain);
 std::shared_ptr<TranslationStorage>
-canonicalize_problem_storage(formalism::TaskView middle_task, const std::shared_ptr<TranslationStorage>& middle, const TranslationStorage& domain);
+canonicalize_problem_storage(formalism::TaskView middle_task,
+                             const std::shared_ptr<TranslationStorage>& middle,
+                             std::shared_ptr<const TranslationStorage> domain);
 
 template<typename T>
 ygg::Index<T> as_index(ygg::Index<T> index) noexcept

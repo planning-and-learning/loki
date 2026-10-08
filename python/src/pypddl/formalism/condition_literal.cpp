@@ -44,7 +44,7 @@ void bind_condition_literal(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    repository.def("get_or_create", &get_or_create_data<formalism::ConditionLiteral>, "data"_a, nb::keep_alive<0, 1>());
+    bind_insert<formalism::ConditionLiteral>(repository);
 }
 
 }  // namespace loki::formalism

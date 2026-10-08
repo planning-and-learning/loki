@@ -125,7 +125,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 effect = effect_data->effects.front();
             else if (!effect_data->effects.empty())
             {
-                effect = this->self().wrap_effect(formalism::get_or_create(this->m_storage->repository, *effect_data).first).get_index();
+                effect = this->self().wrap_effect(formalism::insert(this->m_context.storage->repository, *effect_data).first).get_index();
             }
 
             auto name = std::string(data.name) + "_" + std::to_string(action.get_index().get_value());
@@ -141,7 +141,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
             action_data->original_arity = data.original_arity;
             action_data->precondition = precondition;
             action_data->effect = effect;
-            this->self().push_unique(result, seen, formalism::get_or_create(this->m_storage->repository, *action_data).first);
+            this->self().push_unique(result, seen, formalism::insert(this->m_context.storage->repository, *action_data).first);
         }
     }
 }

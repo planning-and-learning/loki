@@ -43,7 +43,7 @@ void bind_function_expression_number(nb::module_& m, RepositoryBinding& reposito
         ygg::add_hash(cls);
     }
 
-    repository.def("get_or_create", &get_or_create_data<formalism::FunctionExpressionNumber>, "data"_a, nb::keep_alive<0, 1>());
+    bind_insert<formalism::FunctionExpressionNumber>(repository);
 }
 
 }  // namespace loki::formalism

@@ -15,40 +15,31 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_TYPE_VIEW_HPP_
 #define LOKI_FORMALISM_TYPE_VIEW_HPP_
 
 #include "loki/formalism/type_data.hpp"
 
-#include <tuple>
 #include <yggdrasil/containers/optional.hpp>
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
+#include <yggdrasil/formalism/detail/view.hpp>
 
 namespace ygg
 {
 
-template<typename C>
-class View<ygg::Index<::loki::formalism::Type>, C>
+template<ygg::formalism::SymbolContextFor<::loki::formalism::Type> C>
+class View<ygg::Index<::loki::formalism::Type>, C> : public ygg::formalism::detail::View<ygg::Index<::loki::formalism::Type>, C>
 {
-private:
-    const C* m_context;
-    ygg::Index<::loki::formalism::Type> m_handle;
-
 public:
-    View(ygg::Index<::loki::formalism::Type> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(ygg::Index<::loki::formalism::Type> handle, const C& context) noexcept :
+        ygg::formalism::detail::View<ygg::Index<::loki::formalism::Type>, C>(handle, context)
+    {
+    }
 
-    const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
-    const auto& get_context() const noexcept { return *m_context; }
-    const auto& get_handle() const noexcept { return m_handle; }
-    auto get_index() const noexcept { return m_handle; }
-
-    const auto& get_name() const noexcept { return get_data().name; }
-    auto get_bases() const noexcept { return ygg::make_view(get_data().bases, *m_context); }
-
-    auto identifying_members() const noexcept { return std::tie(m_handle, m_context->get_index()); }
+    const auto& get_name() const noexcept { return this->get_data().name; }
+    auto get_bases() const noexcept { return ygg::make_view(this->get_data().bases, this->get_context()); }
 };
 
 }

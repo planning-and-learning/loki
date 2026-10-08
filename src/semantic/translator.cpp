@@ -129,7 +129,7 @@ DomainTranslationResult translate(formalism::DomainView domain, const Translator
 
         auto phase_storage = std::make_shared<detail::TranslationStorage>(phase_index++);
         auto semantic_copier = detail::CopyTranslator(phase_storage, options.compile_typing, step.phase);
-        current_domain = semantic_copier.copy_domain(current_domain);
+        current_domain = detail::copy(current_domain, semantic_copier).first;
         if (current_storage)
             detail::compose_storage_maps_from_previous(*phase_storage, *current_storage);
         current_storage = std::move(phase_storage);
@@ -156,20 +156,20 @@ ProblemTranslationResult translate(formalism::TaskView task, const DomainTransla
         if (step.phase == TranslationPhase::NormalizeArithmeticExpressions && !options.normalize_arithmetic_expressions)
             continue;
 
-        auto phase_storage = std::make_shared<detail::TranslationStorage>(phase_index++, &result.m_storage->repository);
+        auto phase_storage = std::make_shared<detail::TranslationStorage>(phase_index++, result.m_storage);
         if (current_storage)
             detail::inherit_domain_identity_mappings(*phase_storage, *result.m_storage);
         else
             detail::inherit_domain_mappings(*phase_storage, *result.m_storage);
 
         auto semantic_copier = detail::CopyTranslator(phase_storage, options.compile_typing, step.phase);
-        current_task = semantic_copier.copy_task(current_task);
+        current_task = detail::copy(current_task, semantic_copier).first;
         if (current_storage)
             detail::compose_storage_maps_from_previous(*phase_storage, *current_storage);
         current_storage = std::move(phase_storage);
     }
 
-    const auto canonical = detail::canonicalize_problem_storage(current_task, current_storage, *result.m_storage);
+    const auto canonical = detail::canonicalize_problem_storage(current_task, current_storage, result.m_storage);
     auto translated_task = canonical->tasks.at(task);
     return ProblemTranslationResult(task, canonical, translated_task);
 }

@@ -38,9 +38,9 @@ TEST(LokiTests, VariableViewIdentityUsesRepositoryIndex)
     auto second_data = Data(cista::offset::string("?x"));
     auto equivalent_data = Data(cista::offset::string("?x"));
 
-    const auto [first, first_created] = first_repository.get_or_create(first_data);
-    const auto [second, second_created] = second_repository.get_or_create(second_data);
-    const auto [equivalent, equivalent_created] = equivalent_repository.get_or_create(equivalent_data);
+    const auto [first, first_created] = first_repository.insert(first_data);
+    const auto [second, second_created] = second_repository.insert(second_data);
+    const auto [equivalent, equivalent_created] = equivalent_repository.insert(equivalent_data);
 
     ASSERT_TRUE(first_created);
     ASSERT_TRUE(second_created);

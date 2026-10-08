@@ -90,8 +90,7 @@ public:
     {
     }
 
-    using CopyTranslatorFacade<CopyTranslator>::copy_domain;
-    using CopyTranslatorFacade<CopyTranslator>::copy_task;
+    using CopyTranslatorFacade<CopyTranslator>::copy;
     using CopyTranslatorFacade<CopyTranslator>::used_predicate_names;
     using CopyTranslatorFacade<CopyTranslator>::next_generated_predicate_name;
 
@@ -180,6 +179,9 @@ public:
     using RenameQuantifiedVariablesTranslator<CopyTranslator>::rename_action_variables;
     using RenameQuantifiedVariablesTranslator<CopyTranslator>::rename_axiom_variables;
 };
+
+inline auto copy(formalism::DomainView source, CopyTranslator& context) { return context.copy(source); }
+inline auto copy(formalism::TaskView source, CopyTranslator& context) { return context.copy(source); }
 
 }  // namespace loki::semantic::detail
 
