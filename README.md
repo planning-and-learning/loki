@@ -30,7 +30,7 @@ Loki depends on a fraction of [Boost's](https://www.boost.org) header-only libra
 
 Loki consumes native dependencies from Python packages:
 
-- `pyyggdrasil >= 0.3.0, < 0.4` for shared third-party native dependencies.
+- `pyyggdrasil >= 0.3.1, < 0.4` for shared third-party native dependencies.
 - `pypddl-datasets >= 0.0.9, < 0.1` for the PDDL benchmark data used by the C++ test suite and the example executables (resolved from its cache at CMake configure time).
 
 The shared workspace layout, layered install order, and the common
@@ -52,7 +52,7 @@ Install Loki's native dependency providers into the active Python environment,
 then configure CMake with their native prefixes:
 
 ```console
-python -m pip install 'pyyggdrasil>=0.3.0,<0.4' 'pypddl-datasets>=0.0.9,<0.1'
+python -m pip install 'pyyggdrasil>=0.3.1,<0.4' 'pypddl-datasets>=0.0.9,<0.1'
 
 cmake -S . -B build
 ```
@@ -218,7 +218,7 @@ consuming the native prefixes from CMake is in the
 
 The Python package `pypddl` installs Loki's native headers, shared library, and
 CMake package config under `pypddl.native_prefix()`. It depends on
-`pyyggdrasil>=0.3.0,<0.4` for third-party native dependencies:
+`pyyggdrasil>=0.3.1,<0.4` for third-party native dependencies:
 
 ```python
 import pypddl
