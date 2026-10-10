@@ -1,5 +1,4 @@
 #include "loki/formalism/atom_data.hpp"
-#include "loki/formalism/atom_index.hpp"
 #include "loki/formalism/atom_view.hpp"
 #include "loki/formalism/repository.hpp"
 

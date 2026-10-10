@@ -1,5 +1,4 @@
 #include "loki/formalism/object_data.hpp"
-#include "loki/formalism/object_index.hpp"
 #include "loki/formalism/object_view.hpp"
 #include "loki/formalism/repository.hpp"
 

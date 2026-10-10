@@ -18,8 +18,7 @@
 #ifndef LOKI_FORMALISM_CONDITION_AND_DATA_HPP_
 #define LOKI_FORMALISM_CONDITION_AND_DATA_HPP_
 
-#include "loki/formalism/condition_and_index.hpp"
-#include "loki/formalism/condition_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -34,15 +33,15 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::ConditionAnd>
+struct Data<::loki::formalism::Condition<::loki::formalism::AndTag>>
 {
-    ygg::Index<::loki::formalism::ConditionAnd> index;
-    ygg::IndexList<::loki::formalism::Condition> conditions;
+    ygg::Index<::loki::formalism::Condition<::loki::formalism::AndTag>> index;
+    ygg::IndexList<::loki::formalism::Condition<>> conditions;
 
     Data() = default;
-    Data(ygg::IndexList<::loki::formalism::Condition> conditions_) : index(), conditions(std::move(conditions_)) {}
+    Data(ygg::IndexList<::loki::formalism::Condition<>> conditions_) : index(), conditions(std::move(conditions_)) {}
     template<typename C>
-    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Condition>, C>>& conditions_) : index(), conditions()
+    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C>>& conditions_) : index(), conditions()
     {
         set(conditions_, conditions);
     }

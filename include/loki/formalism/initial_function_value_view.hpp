@@ -24,19 +24,16 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
 template<ygg::formalism::SymbolContextFor<::loki::formalism::InitialFunctionValue> C>
-class View<ygg::Index<::loki::formalism::InitialFunctionValue>, C> : public ygg::formalism::detail::View<ygg::Index<::loki::formalism::InitialFunctionValue>, C>
+class View<ygg::Index<::loki::formalism::InitialFunctionValue>, C> : public ygg::IndexViewBase<::loki::formalism::InitialFunctionValue, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::InitialFunctionValue> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::InitialFunctionValue>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::InitialFunctionValue, C>::IndexViewBase;
 
     auto get_function() const noexcept { return ygg::make_view(this->get_data().function, this->get_context()); }
     auto get_value() const noexcept { return ygg::make_view(this->get_data().value, this->get_context()); }

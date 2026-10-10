@@ -1,5 +1,4 @@
 #include "loki/formalism/domain_data.hpp"
-#include "loki/formalism/domain_index.hpp"
 #include "loki/formalism/domain_view.hpp"
 #include "loki/formalism/repository.hpp"
 

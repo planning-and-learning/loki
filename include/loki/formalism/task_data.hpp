@@ -18,16 +18,7 @@
 #ifndef LOKI_FORMALISM_TASK_DATA_HPP_
 #define LOKI_FORMALISM_TASK_DATA_HPP_
 
-#include "loki/formalism/axiom_index.hpp"
-#include "loki/formalism/condition_index.hpp"
-#include "loki/formalism/domain_index.hpp"
-#include "loki/formalism/initial_function_value_index.hpp"
-#include "loki/formalism/literal_index.hpp"
-#include "loki/formalism/metric_index.hpp"
-#include "loki/formalism/object_index.hpp"
-#include "loki/formalism/predicate_index.hpp"
-#include "loki/formalism/requirement_index.hpp"
-#include "loki/formalism/task_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <cista/containers/optional.h>
 #include <cista/containers/string.h>
@@ -53,7 +44,7 @@ struct Data<::loki::formalism::Task>
     ygg::IndexList<::loki::formalism::Object> objects;
     ygg::IndexList<::loki::formalism::Literal> initial_literals;
     ygg::IndexList<::loki::formalism::InitialFunctionValue> initial_function_values;
-    ::cista::optional<ygg::Index<::loki::formalism::Condition>> goal;
+    ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> goal;
     ::cista::optional<ygg::Index<::loki::formalism::Metric>> metric;
     ygg::IndexList<::loki::formalism::Predicate> predicates;
     ygg::IndexList<::loki::formalism::Axiom> axioms;
@@ -65,7 +56,7 @@ struct Data<::loki::formalism::Task>
          ygg::IndexList<::loki::formalism::Object> objects_,
          ygg::IndexList<::loki::formalism::Literal> initial_literals_,
          ygg::IndexList<::loki::formalism::InitialFunctionValue> initial_function_values_,
-         ::cista::optional<ygg::Index<::loki::formalism::Condition>> goal_,
+         ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> goal_,
          ::cista::optional<ygg::Index<::loki::formalism::Metric>> metric_,
          ygg::IndexList<::loki::formalism::Predicate> predicates_,
          ygg::IndexList<::loki::formalism::Axiom> axioms_) :
@@ -89,7 +80,7 @@ struct Data<::loki::formalism::Task>
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::Object>, C>>& objects_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::Literal>, C>>& initial_literals_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::InitialFunctionValue>, C>>& initial_function_values_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Condition>, C>>& goal_,
+         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C>>& goal_,
          const std::optional<::ygg::View<ygg::Index<::loki::formalism::Metric>, C>>& metric_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::Predicate>, C>>& predicates_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::Axiom>, C>>& axioms_) :

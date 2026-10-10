@@ -1,5 +1,4 @@
 #include "loki/formalism/predicate_data.hpp"
-#include "loki/formalism/predicate_index.hpp"
 #include "loki/formalism/predicate_view.hpp"
 #include "loki/formalism/repository.hpp"
 

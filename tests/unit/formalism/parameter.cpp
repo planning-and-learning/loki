@@ -1,5 +1,4 @@
 #include "loki/formalism/parameter_data.hpp"
-#include "loki/formalism/parameter_index.hpp"
 #include "loki/formalism/parameter_view.hpp"
 #include "loki/formalism/repository.hpp"
 

@@ -27,15 +27,15 @@ namespace loki::formalism
 
 void bind_function_expression_number(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::FunctionExpressionNumber>>(m, "FunctionExpressionNumberIndex");
+    ygg::bind_index<ygg::Index<formalism::FunctionExpression<formalism::NumberTag>>>(m, "FunctionExpressionNumberIndex");
 
     {
-        using V = Data<formalism::FunctionExpressionNumber>;
+        using V = Data<formalism::FunctionExpression<formalism::NumberTag>>;
         bind_data<V>(m, "FunctionExpressionNumberData").def(nb::init<double>(), "value"_a).def_rw("value", &V::value);
     }
 
     {
-        using V = formalism::FunctionExpressionNumberView;
+        using V = formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>;
         auto cls = nb::class_<V>(m, "FunctionExpressionNumber");
         cls.def("get_index", &V::get_index).def("get_value", &V::get_value);
         ygg::add_print(cls);
@@ -43,7 +43,7 @@ void bind_function_expression_number(nb::module_& m, RepositoryBinding& reposito
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::FunctionExpressionNumber>(repository);
+    bind_insert<formalism::FunctionExpression<formalism::NumberTag>>(repository);
 }
 
 }  // namespace loki::formalism

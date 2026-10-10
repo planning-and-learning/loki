@@ -18,8 +18,7 @@
 #ifndef LOKI_FORMALISM_EFFECT_PROBABILISTIC_ALTERNATIVE_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_PROBABILISTIC_ALTERNATIVE_DATA_HPP_
 
-#include "loki/formalism/effect_index.hpp"
-#include "loki/formalism/effect_probabilistic_alternative_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -38,12 +37,12 @@ struct Data<::loki::formalism::EffectProbabilisticAlternative>
 {
     ygg::Index<::loki::formalism::EffectProbabilisticAlternative> index;
     double probability = 0.0;
-    ygg::Index<::loki::formalism::Effect> effect;
+    ygg::Index<::loki::formalism::Effect<>> effect;
 
     Data() = default;
-    Data(double probability_, ygg::Index<::loki::formalism::Effect> effect_) : index(), probability(probability_), effect(effect_) {}
+    Data(double probability_, ygg::Index<::loki::formalism::Effect<>> effect_) : index(), probability(probability_), effect(effect_) {}
     template<typename C>
-    Data(double probability_, ::ygg::View<ygg::Index<::loki::formalism::Effect>, C> effect_) : index(), probability(probability_), effect()
+    Data(double probability_, ::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C> effect_) : index(), probability(probability_), effect()
     {
         set(effect_, effect);
     }

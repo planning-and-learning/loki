@@ -1,5 +1,4 @@
 #include "loki/formalism/metric_data.hpp"
-#include "loki/formalism/metric_index.hpp"
 #include "loki/formalism/metric_view.hpp"
 #include "loki/formalism/repository.hpp"
 

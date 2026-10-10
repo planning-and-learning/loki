@@ -29,74 +29,74 @@ class ConditionTranslator : public CopyTranslatorComponent<Derived, ConditionTra
 public:
     explicit ConditionTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, ConditionTranslator<Derived>>(context) {}
 
-    formalism::ConditionLiteralView copy(formalism::ConditionLiteralView source);
+    formalism::EntityView<formalism::Condition<formalism::LiteralTag>> copy(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source);
 
-    formalism::ConditionAndView copy(formalism::ConditionAndView source);
+    formalism::EntityView<formalism::Condition<formalism::AndTag>> copy(formalism::EntityView<formalism::Condition<formalism::AndTag>> source);
 
-    formalism::ConditionOrView copy(formalism::ConditionOrView source);
+    formalism::EntityView<formalism::Condition<formalism::OrTag>> copy(formalism::EntityView<formalism::Condition<formalism::OrTag>> source);
 
-    formalism::ConditionNotView copy(formalism::ConditionNotView source);
+    formalism::EntityView<formalism::Condition<formalism::NotTag>> copy(formalism::EntityView<formalism::Condition<formalism::NotTag>> source);
 
-    formalism::ConditionImplyView copy(formalism::ConditionImplyView source);
+    formalism::EntityView<formalism::Condition<formalism::ImplyTag>> copy(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source);
 
-    formalism::ConditionExistsView copy(formalism::ConditionExistsView source);
+    formalism::EntityView<formalism::Condition<formalism::ExistsTag>> copy(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source);
 
-    formalism::ConditionForallView copy(formalism::ConditionForallView source);
+    formalism::EntityView<formalism::Condition<formalism::ForallTag>> copy(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source);
 
-    formalism::ConditionNumericConstraintView copy(formalism::ConditionNumericConstraintView source);
+    formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source);
 
     formalism::ConditionView copy(formalism::ConditionView source);
 };
 
 template<typename Derived>
-formalism::ConditionLiteralView ConditionTranslator<Derived>::copy(formalism::ConditionLiteralView source)
+formalism::EntityView<formalism::Condition<formalism::LiteralTag>> ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source)
 {
     const auto literal = as_index(this->self().copy(source.get_literal()));
-    auto data = formalism::checkout<formalism::ConditionLiteral>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->m_context.builder);
     data->literal = literal;
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionAndView ConditionTranslator<Derived>::copy(formalism::ConditionAndView source)
+formalism::EntityView<formalism::Condition<formalism::AndTag>> ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::AndTag>> source)
 {
-    auto data = formalism::checkout<formalism::ConditionAnd>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
     for (auto condition : source.get_conditions())
         data->conditions.push_back(as_index(this->self().copy(condition)));
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionOrView ConditionTranslator<Derived>::copy(formalism::ConditionOrView source)
+formalism::EntityView<formalism::Condition<formalism::OrTag>> ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::OrTag>> source)
 {
-    auto data = formalism::checkout<formalism::ConditionOr>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->m_context.builder);
     for (auto condition : source.get_conditions())
         data->conditions.push_back(as_index(this->self().copy(condition)));
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionNotView ConditionTranslator<Derived>::copy(formalism::ConditionNotView source)
+formalism::EntityView<formalism::Condition<formalism::NotTag>> ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
 {
     const auto condition = as_index(this->self().copy(source.get_condition()));
-    auto data = formalism::checkout<formalism::ConditionNot>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(this->m_context.builder);
     data->condition = condition;
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionImplyView ConditionTranslator<Derived>::copy(formalism::ConditionImplyView source)
+formalism::EntityView<formalism::Condition<formalism::ImplyTag>> ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
 {
     const auto left = as_index(this->self().copy(source.get_left()));
     const auto right = as_index(this->self().copy(source.get_right()));
-    auto data = formalism::checkout<formalism::ConditionImply>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(this->m_context.builder);
     data->left = left;
     data->right = right;
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionExistsView ConditionTranslator<Derived>::copy(formalism::ConditionExistsView source)
+formalism::EntityView<formalism::Condition<formalism::ExistsTag>> ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
 {
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
@@ -106,7 +106,7 @@ formalism::ConditionExistsView ConditionTranslator<Derived>::copy(formalism::Con
     auto typed_condition = condition;
     if (this->m_context.phase == TranslationPhase::CompileTyping)
         this->self().prepend_type_conditions(typed_condition, source.get_parameters());
-    auto data = formalism::checkout<formalism::ConditionExists>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
     if (this->self().compiles_typing_now())
         this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
     else
@@ -117,7 +117,7 @@ formalism::ConditionExistsView ConditionTranslator<Derived>::copy(formalism::Con
 }
 
 template<typename Derived>
-formalism::ConditionForallView ConditionTranslator<Derived>::copy(formalism::ConditionForallView source)
+formalism::EntityView<formalism::Condition<formalism::ForallTag>> ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
 {
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
@@ -127,7 +127,7 @@ formalism::ConditionForallView ConditionTranslator<Derived>::copy(formalism::Con
     auto typed_condition = condition;
     if (this->m_context.phase == TranslationPhase::CompileTyping)
         this->self().prepend_type_conditions(typed_condition, source.get_parameters());
-    auto data = formalism::checkout<formalism::ConditionForall>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->m_context.builder);
     if (this->self().compiles_typing_now())
         this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
     else
@@ -138,12 +138,12 @@ formalism::ConditionForallView ConditionTranslator<Derived>::copy(formalism::Con
 }
 
 template<typename Derived>
-formalism::ConditionNumericConstraintView ConditionTranslator<Derived>::copy(formalism::ConditionNumericConstraintView source)
+formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source)
 {
     const auto& data = source.get_data();
     const auto left = as_index(this->self().copy(source.get_left()));
     const auto right = as_index(this->self().copy(source.get_right()));
-    auto result = formalism::checkout<formalism::ConditionNumericConstraint>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::Condition<formalism::NumericConstraintTag>>(this->m_context.builder);
     result->comparator = data.comparator;
     result->left = left;
     result->right = right;

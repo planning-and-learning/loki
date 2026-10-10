@@ -64,9 +64,9 @@ formalism::ConditionView AstBuilder::parse_condition(const ast::Condition& condi
     return boost::apply_visitor([&](const auto& node) { return parse_condition_node(node); }, condition);
 }
 
-formalism::ConditionView AstBuilder::wrap_condition(ygg::Data<formalism::Condition>::Variant value)
+formalism::ConditionView AstBuilder::wrap_condition(ygg::Data<formalism::Condition<>>::Variant value)
 {
-    auto data = formalism::checkout<formalism::Condition>(m_builder);
+    auto data = formalism::checkout<formalism::Condition<>>(m_builder);
     data->variant = std::move(value);
     return formalism::insert(repo(), *data).first;
 }
@@ -74,14 +74,14 @@ formalism::ConditionView AstBuilder::wrap_condition(ygg::Data<formalism::Conditi
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionLiteral& node)
 {
     const auto literal = parse_literal(node.literal);
-    auto data = formalism::checkout<formalism::ConditionLiteral>(m_builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(m_builder);
     data->literal = literal.get_index();
     return wrap_condition(formalism::insert(repo(), *data).first.get_index());
 }
 
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionAnd& node)
 {
-    auto data = formalism::checkout<formalism::ConditionAnd>(m_builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(m_builder);
     for (const auto& child : node.conditions)
         data->conditions.push_back(parse_condition(child.get()).get_index());
     return wrap_condition(formalism::insert(repo(), *data).first.get_index());
@@ -90,7 +90,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionAn
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionOr& node)
 {
     checks().require_requirement(formalism::RequirementKind::DisjunctivePreconditions, node);
-    auto data = formalism::checkout<formalism::ConditionOr>(m_builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(m_builder);
     for (const auto& child : node.conditions)
         data->conditions.push_back(parse_condition(child.get()).get_index());
     return wrap_condition(formalism::insert(repo(), *data).first.get_index());
@@ -100,7 +100,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionNo
 {
     checks().require_requirement(formalism::RequirementKind::NegativePreconditions, node);
     const auto condition = parse_condition(node.condition.get());
-    auto data = formalism::checkout<formalism::ConditionNot>(m_builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(m_builder);
     data->condition = condition.get_index();
     return wrap_condition(formalism::insert(repo(), *data).first.get_index());
 }
@@ -110,7 +110,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionIm
     checks().require_requirement(formalism::RequirementKind::DisjunctivePreconditions, node);
     const auto left = parse_condition(node.left.get());
     const auto right = parse_condition(node.right.get());
-    auto data = formalism::checkout<formalism::ConditionImply>(m_builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(m_builder);
     data->left = left.get_index();
     data->right = right.get_index();
     return wrap_condition(formalism::insert(repo(), *data).first.get_index());
@@ -122,7 +122,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionEx
     auto scope = VariableScope(m_parse_context);
     auto parameters = parse_parameters(node.parameters);
     auto child = parse_condition(node.condition.get());
-    auto data = formalism::checkout<formalism::ConditionExists>(m_builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(m_builder);
     append_indices(parameters, data->parameters);
     data->condition = child.get_index();
     return wrap_condition(formalism::insert(repo(), *data).first.get_index());
@@ -134,7 +134,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionFo
     auto scope = VariableScope(m_parse_context);
     auto parameters = parse_parameters(node.parameters);
     auto child = parse_condition(node.condition.get());
-    auto data = formalism::checkout<formalism::ConditionForall>(m_builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(m_builder);
     append_indices(parameters, data->parameters);
     data->condition = child.get_index();
     return wrap_condition(formalism::insert(repo(), *data).first.get_index());
@@ -145,7 +145,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionNu
     checks().require_requirement(formalism::RequirementKind::NumericFluents, node);
     const auto left = parse_function_expression(node.left.get());
     const auto right = parse_function_expression(node.right.get());
-    auto data = formalism::checkout<formalism::ConditionNumericConstraint>(m_builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::NumericConstraintTag>>(m_builder);
     data->comparator = comparator(node, m_diagnostics);
     data->left = left.get_index();
     data->right = right.get_index();
@@ -174,16 +174,16 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression(const as
     return boost::apply_visitor([&](const auto& node) { return parse_function_expression_node(node); }, expression);
 }
 
-formalism::FunctionExpressionView AstBuilder::wrap_function_expression(ygg::Data<formalism::FunctionExpression>::Variant value)
+formalism::FunctionExpressionView AstBuilder::wrap_function_expression(ygg::Data<formalism::FunctionExpression<>>::Variant value)
 {
-    auto data = formalism::checkout<formalism::FunctionExpression>(m_builder);
+    auto data = formalism::checkout<formalism::FunctionExpression<>>(m_builder);
     data->variant = std::move(value);
     return formalism::insert(repo(), *data).first;
 }
 
 formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(const ast::FunctionExpressionNumber& node)
 {
-    auto data = formalism::checkout<formalism::FunctionExpressionNumber>(m_builder);
+    auto data = formalism::checkout<formalism::FunctionExpression<formalism::NumberTag>>(m_builder);
     data->value = node.value;
     return wrap_function_expression(formalism::insert(repo(), *data).first.get_index());
 }
@@ -196,7 +196,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
 formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(const ast::FunctionExpressionUnary& node)
 {
     const auto expression = parse_function_expression(node.expression.get());
-    auto data = formalism::checkout<formalism::UnaryFunctionExpression>(m_builder);
+    auto data = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(m_builder);
     data->op = formalism::UnaryArithmeticOperator::Sub;
     data->expression = expression.get_index();
     return wrap_function_expression(formalism::insert(repo(), *data).first.get_index());
@@ -206,7 +206,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
 {
     const auto left = parse_function_expression(node.left.get());
     const auto right = parse_function_expression(node.right.get());
-    auto data = formalism::checkout<formalism::BinaryFunctionExpression>(m_builder);
+    auto data = formalism::checkout<formalism::FunctionExpression<formalism::BinaryTag>>(m_builder);
     data->op = binary_operator(node.op);
     data->left = left.get_index();
     data->right = right.get_index();
@@ -219,14 +219,14 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
     if (node.expressions.empty())
     {
         const auto unit = op == formalism::MultiArithmeticOperator::Add ? 0.0 : 1.0;
-        auto data = formalism::checkout<formalism::FunctionExpressionNumber>(m_builder);
+        auto data = formalism::checkout<formalism::FunctionExpression<formalism::NumberTag>>(m_builder);
         data->value = unit;
         return wrap_function_expression(formalism::insert(repo(), *data).first.get_index());
     }
     if (node.expressions.size() == 1)
         return parse_function_expression(node.expressions.front().get());
 
-    auto data = formalism::checkout<formalism::MultiFunctionExpression>(m_builder);
+    auto data = formalism::checkout<formalism::FunctionExpression<formalism::MultiTag>>(m_builder);
     data->op = op;
     data->args.reserve(node.expressions.size());
     for (const auto& expression : node.expressions)

@@ -37,24 +37,24 @@ void bind_action(nb::module_& m, RepositoryBinding& repository)
         bind_data<V>(m, "ActionData")
             .def(nb::init<std::string,
                           ygg::IndexList<formalism::Parameter>,
-                          cista::optional<ygg::Index<formalism::Condition>>,
-                          cista::optional<ygg::Index<formalism::Effect>>>(),
+                          cista::optional<ygg::Index<formalism::Condition<>>>,
+                          cista::optional<ygg::Index<formalism::Effect<>>>>(),
                  "name"_a,
                  "parameters"_a = ygg::IndexList<formalism::Parameter> {},
-                 "precondition"_a.none() = cista::optional<ygg::Index<formalism::Condition>> {},
-                 "effect"_a.none() = cista::optional<ygg::Index<formalism::Effect>> {})
+                 "precondition"_a.none() = cista::optional<ygg::Index<formalism::Condition<>>> {},
+                 "effect"_a.none() = cista::optional<ygg::Index<formalism::Effect<>>> {})
             .def(nb::init<std::string,
                           std::string,
                           ygg::IndexList<formalism::Parameter>,
                           ygg::uint_t,
-                          cista::optional<ygg::Index<formalism::Condition>>,
-                          cista::optional<ygg::Index<formalism::Effect>>>(),
+                          cista::optional<ygg::Index<formalism::Condition<>>>,
+                          cista::optional<ygg::Index<formalism::Effect<>>>>(),
                  "name"_a,
                  "original_name"_a,
                  "parameters"_a,
                  "original_arity"_a,
-                 "precondition"_a.none() = cista::optional<ygg::Index<formalism::Condition>> {},
-                 "effect"_a.none() = cista::optional<ygg::Index<formalism::Effect>> {})
+                 "precondition"_a.none() = cista::optional<ygg::Index<formalism::Condition<>>> {},
+                 "effect"_a.none() = cista::optional<ygg::Index<formalism::Effect<>>> {})
             .def(nb::init<const std::string&,
                           const std::vector<formalism::ParameterView>&,
                           const std::optional<formalism::ConditionView>&,

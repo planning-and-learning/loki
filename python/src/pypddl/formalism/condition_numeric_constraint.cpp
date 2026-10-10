@@ -28,12 +28,12 @@ namespace loki::formalism
 
 void bind_condition_numeric_constraint(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::ConditionNumericConstraint>>(m, "ConditionNumericConstraintIndex");
+    ygg::bind_index<ygg::Index<formalism::Condition<formalism::NumericConstraintTag>>>(m, "ConditionNumericConstraintIndex");
 
     {
-        using V = Data<formalism::ConditionNumericConstraint>;
+        using V = Data<formalism::Condition<formalism::NumericConstraintTag>>;
         bind_data<V>(m, "ConditionNumericConstraintData")
-            .def(nb::init<formalism::BinaryComparator, ygg::Index<formalism::FunctionExpression>, ygg::Index<formalism::FunctionExpression>>(),
+            .def(nb::init<formalism::BinaryComparator, ygg::Index<formalism::FunctionExpression<>>, ygg::Index<formalism::FunctionExpression<>>>(),
                  "comparator"_a,
                  "left"_a,
                  "right"_a)
@@ -47,7 +47,7 @@ void bind_condition_numeric_constraint(nb::module_& m, RepositoryBinding& reposi
     }
 
     {
-        using V = formalism::ConditionNumericConstraintView;
+        using V = formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>;
         auto cls = nb::class_<V>(m, "ConditionNumericConstraint");
         cls.def("get_index", &V::get_index)
             .def("get_comparator", &V::get_comparator)
@@ -58,7 +58,7 @@ void bind_condition_numeric_constraint(nb::module_& m, RepositoryBinding& reposi
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::ConditionNumericConstraint>(repository);
+    bind_insert<formalism::Condition<formalism::NumericConstraintTag>>(repository);
 }
 
 }  // namespace loki::formalism

@@ -18,9 +18,7 @@
 #ifndef LOKI_FORMALISM_PARAMETER_DATA_HPP_
 #define LOKI_FORMALISM_PARAMETER_DATA_HPP_
 
-#include "loki/formalism/parameter_index.hpp"
-#include "loki/formalism/type_index.hpp"
-#include "loki/formalism/variable_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>

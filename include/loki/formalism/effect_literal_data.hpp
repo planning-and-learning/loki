@@ -18,8 +18,7 @@
 #ifndef LOKI_FORMALISM_EFFECT_LITERAL_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_LITERAL_DATA_HPP_
 
-#include "loki/formalism/effect_literal_index.hpp"
-#include "loki/formalism/literal_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -34,9 +33,9 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::EffectLiteral>
+struct Data<::loki::formalism::Effect<::loki::formalism::LiteralTag>>
 {
-    ygg::Index<::loki::formalism::EffectLiteral> index;
+    ygg::Index<::loki::formalism::Effect<::loki::formalism::LiteralTag>> index;
     ygg::Index<::loki::formalism::Literal> literal;
 
     Data() = default;

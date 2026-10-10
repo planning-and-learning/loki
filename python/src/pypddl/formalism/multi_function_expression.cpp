@@ -28,12 +28,12 @@ namespace loki::formalism
 
 void bind_multi_function_expression(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::MultiFunctionExpression>>(m, "MultiFunctionExpressionIndex");
+    ygg::bind_index<ygg::Index<formalism::FunctionExpression<formalism::MultiTag>>>(m, "MultiFunctionExpressionIndex");
 
     {
-        using V = Data<formalism::MultiFunctionExpression>;
+        using V = Data<formalism::FunctionExpression<formalism::MultiTag>>;
         bind_data<V>(m, "MultiFunctionExpressionData")
-            .def(nb::init<formalism::MultiArithmeticOperator, ygg::IndexList<formalism::FunctionExpression>>(), "operator"_a, "args"_a)
+            .def(nb::init<formalism::MultiArithmeticOperator, ygg::IndexList<formalism::FunctionExpression<>>>(), "operator"_a, "args"_a)
             .def(nb::init<formalism::MultiArithmeticOperator, const std::vector<formalism::FunctionExpressionView>&>(),
                  "operator"_a,
                  "args"_a = std::vector<formalism::FunctionExpressionView> {})
@@ -42,7 +42,7 @@ void bind_multi_function_expression(nb::module_& m, RepositoryBinding& repositor
     }
 
     {
-        using V = formalism::MultiFunctionExpressionView;
+        using V = formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>;
         const auto attach_owner = nb::cpp_function([](nb::object child, nb::object) { return child; }, nb::keep_alive<0, 2>());
         auto cls = nb::class_<V>(m, "MultiFunctionExpression");
         cls.def("get_index", &V::get_index)
@@ -63,7 +63,7 @@ void bind_multi_function_expression(nb::module_& m, RepositoryBinding& repositor
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::MultiFunctionExpression>(repository);
+    bind_insert<formalism::FunctionExpression<formalism::MultiTag>>(repository);
 }
 
 }  // namespace loki::formalism

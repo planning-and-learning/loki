@@ -18,9 +18,7 @@
 #ifndef LOKI_FORMALISM_EFFECT_FORALL_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_FORALL_DATA_HPP_
 
-#include "loki/formalism/effect_forall_index.hpp"
-#include "loki/formalism/effect_index.hpp"
-#include "loki/formalism/parameter_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -35,14 +33,14 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::EffectForall>
+struct Data<::loki::formalism::Effect<::loki::formalism::ForallTag>>
 {
-    ygg::Index<::loki::formalism::EffectForall> index;
+    ygg::Index<::loki::formalism::Effect<::loki::formalism::ForallTag>> index;
     ygg::IndexList<::loki::formalism::Parameter> parameters;
-    ygg::Index<::loki::formalism::Effect> effect;
+    ygg::Index<::loki::formalism::Effect<>> effect;
 
     Data() = default;
-    Data(ygg::IndexList<::loki::formalism::Parameter> parameters_, ygg::Index<::loki::formalism::Effect> effect_) :
+    Data(ygg::IndexList<::loki::formalism::Parameter> parameters_, ygg::Index<::loki::formalism::Effect<>> effect_) :
         index(),
         parameters(std::move(parameters_)),
         effect(effect_)
@@ -50,7 +48,7 @@ struct Data<::loki::formalism::EffectForall>
     }
     template<typename C>
     Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
-         ::ygg::View<ygg::Index<::loki::formalism::Effect>, C> effect_) :
+         ::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C> effect_) :
         index(),
         parameters(),
         effect()

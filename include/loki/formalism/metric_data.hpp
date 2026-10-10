@@ -19,9 +19,7 @@
 #define LOKI_FORMALISM_METRIC_DATA_HPP_
 
 #include "loki/formalism/enums.hpp"
-#include "loki/formalism/function_expression_index.hpp"
-#include "loki/formalism/metric_index.hpp"
-
+#include "loki/formalism/declarations.hpp"
 #include <tuple>
 #include <utility>
 #include <yggdrasil/core/types.hpp>
@@ -35,17 +33,17 @@ struct Data<::loki::formalism::Metric>
 {
     ygg::Index<::loki::formalism::Metric> index;
     ::loki::formalism::OptimizationDirection optimization_direction = ::loki::formalism::OptimizationDirection::Minimize;
-    ygg::Index<::loki::formalism::FunctionExpression> expression;
+    ygg::Index<::loki::formalism::FunctionExpression<>> expression;
 
     Data() = default;
-    Data(::loki::formalism::OptimizationDirection optimization_direction_, ygg::Index<::loki::formalism::FunctionExpression> expression_) :
+    Data(::loki::formalism::OptimizationDirection optimization_direction_, ygg::Index<::loki::formalism::FunctionExpression<>> expression_) :
         index(),
         optimization_direction(optimization_direction_),
         expression(expression_)
     {
     }
     template<typename C>
-    Data(::loki::formalism::OptimizationDirection optimization_direction_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> expression_) :
+    Data(::loki::formalism::OptimizationDirection optimization_direction_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> expression_) :
         index(),
         optimization_direction(optimization_direction_),
         expression()

@@ -20,6 +20,7 @@
 #include <loki/formalism/object_view.hpp>
 #include <loki/formalism/term_view.hpp>
 #include <loki/formalism/variable_view.hpp>
+#include <yggdrasil/python/type_casters/variant.hpp>
 
 namespace nb = nanobind;
 using namespace nb::literals;

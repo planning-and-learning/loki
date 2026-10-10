@@ -18,9 +18,7 @@
 #ifndef LOKI_FORMALISM_ATOM_DATA_HPP_
 #define LOKI_FORMALISM_ATOM_DATA_HPP_
 
-#include "loki/formalism/atom_index.hpp"
-#include "loki/formalism/predicate_index.hpp"
-#include "loki/formalism/term_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>

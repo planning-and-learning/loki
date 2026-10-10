@@ -18,10 +18,7 @@
 #ifndef LOKI_FORMALISM_AXIOM_DATA_HPP_
 #define LOKI_FORMALISM_AXIOM_DATA_HPP_
 
-#include "loki/formalism/axiom_index.hpp"
-#include "loki/formalism/condition_index.hpp"
-#include "loki/formalism/literal_index.hpp"
-#include "loki/formalism/parameter_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -42,12 +39,12 @@ struct Data<::loki::formalism::Axiom>
     ygg::IndexList<::loki::formalism::Parameter> parameters;
     ygg::uint_t original_arity;
     ygg::Index<::loki::formalism::Literal> head;
-    ygg::Index<::loki::formalism::Condition> condition;
+    ygg::Index<::loki::formalism::Condition<>> condition;
 
     Data() = default;
     Data(ygg::IndexList<::loki::formalism::Parameter> parameters_,
          ygg::Index<::loki::formalism::Literal> head_,
-         ygg::Index<::loki::formalism::Condition> condition_) :
+         ygg::Index<::loki::formalism::Condition<>> condition_) :
         index(),
         parameters(std::move(parameters_)),
         original_arity(parameters.size()),
@@ -58,7 +55,7 @@ struct Data<::loki::formalism::Axiom>
     Data(ygg::IndexList<::loki::formalism::Parameter> parameters_,
          ygg::uint_t original_arity_,
          ygg::Index<::loki::formalism::Literal> head_,
-         ygg::Index<::loki::formalism::Condition> condition_) :
+         ygg::Index<::loki::formalism::Condition<>> condition_) :
         index(),
         parameters(std::move(parameters_)),
         original_arity(original_arity_),
@@ -69,7 +66,7 @@ struct Data<::loki::formalism::Axiom>
     template<typename C>
     Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
          ::ygg::View<ygg::Index<::loki::formalism::Literal>, C> head_,
-         ::ygg::View<ygg::Index<::loki::formalism::Condition>, C> condition_) :
+         ::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> condition_) :
         index(),
         parameters(),
         original_arity(parameters_.size()),
@@ -84,7 +81,7 @@ struct Data<::loki::formalism::Axiom>
     Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
          ygg::uint_t original_arity_,
          ::ygg::View<ygg::Index<::loki::formalism::Literal>, C> head_,
-         ::ygg::View<ygg::Index<::loki::formalism::Condition>, C> condition_) :
+         ::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> condition_) :
         index(),
         parameters(),
         original_arity(original_arity_),

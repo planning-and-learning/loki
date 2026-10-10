@@ -74,7 +74,7 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
     }
     if (this->m_context.phase == TranslationPhase::CompileTyping)
         this->self().prepend_type_conditions(precondition, source.get_parameters());
-    auto effect = cista::optional<ygg::Index<formalism::Effect>> {};
+    auto effect = cista::optional<ygg::Index<formalism::Effect<>>> {};
     if (const auto effect_view = source.get_effect())
         effect = as_index(this->self().copy(effect_view.value()));
     auto result = formalism::checkout<formalism::Action>(this->m_context.builder);

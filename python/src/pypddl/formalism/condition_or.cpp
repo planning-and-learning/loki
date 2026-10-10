@@ -28,18 +28,18 @@ namespace loki::formalism
 
 void bind_condition_or(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::ConditionOr>>(m, "ConditionOrIndex");
+    ygg::bind_index<ygg::Index<formalism::Condition<formalism::OrTag>>>(m, "ConditionOrIndex");
 
     {
-        using V = Data<formalism::ConditionOr>;
+        using V = Data<formalism::Condition<formalism::OrTag>>;
         bind_data<V>(m, "ConditionOrData")
-            .def(nb::init<ygg::IndexList<formalism::Condition>>(), "conditions"_a)
+            .def(nb::init<ygg::IndexList<formalism::Condition<>>>(), "conditions"_a)
             .def(nb::init<const std::vector<formalism::ConditionView>&>(), "conditions"_a)
             .def_rw("conditions", &V::conditions);
     }
 
     {
-        using V = formalism::ConditionOrView;
+        using V = formalism::EntityView<formalism::Condition<formalism::OrTag>>;
         auto cls = nb::class_<V>(m, "ConditionOr");
         cls.def("get_index", &V::get_index).def("get_conditions", &V::get_conditions);
         ygg::add_print(cls);
@@ -47,7 +47,7 @@ void bind_condition_or(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::ConditionOr>(repository);
+    bind_insert<formalism::Condition<formalism::OrTag>>(repository);
 }
 
 }  // namespace loki::formalism

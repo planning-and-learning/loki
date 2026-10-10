@@ -18,9 +18,7 @@
 #ifndef LOKI_FORMALISM_EFFECT_WHEN_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_WHEN_DATA_HPP_
 
-#include "loki/formalism/condition_index.hpp"
-#include "loki/formalism/effect_index.hpp"
-#include "loki/formalism/effect_when_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -35,18 +33,18 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::EffectWhen>
+struct Data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
 {
-    ygg::Index<::loki::formalism::EffectWhen> index;
-    ygg::Index<::loki::formalism::Condition> condition;
-    ygg::Index<::loki::formalism::Effect> effect;
+    ygg::Index<::loki::formalism::Effect<::loki::formalism::WhenTag>> index;
+    ygg::Index<::loki::formalism::Condition<>> condition;
+    ygg::Index<::loki::formalism::Effect<>> effect;
 
     Data() = default;
-    Data(ygg::Index<::loki::formalism::Condition> condition_, ygg::Index<::loki::formalism::Effect> effect_) : index(), condition(condition_), effect(effect_)
+    Data(ygg::Index<::loki::formalism::Condition<>> condition_, ygg::Index<::loki::formalism::Effect<>> effect_) : index(), condition(condition_), effect(effect_)
     {
     }
     template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::Condition>, C> condition_, ::ygg::View<ygg::Index<::loki::formalism::Effect>, C> effect_) :
+    Data(::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> condition_, ::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C> effect_) :
         index(),
         condition(),
         effect()

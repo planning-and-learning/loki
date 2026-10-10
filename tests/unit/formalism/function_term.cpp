@@ -1,5 +1,4 @@
 #include "loki/formalism/function_term_data.hpp"
-#include "loki/formalism/function_term_index.hpp"
 #include "loki/formalism/function_term_view.hpp"
 #include "loki/formalism/repository.hpp"
 

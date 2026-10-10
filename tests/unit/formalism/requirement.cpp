@@ -1,6 +1,5 @@
 #include "loki/formalism/repository.hpp"
 #include "loki/formalism/requirement_data.hpp"
-#include "loki/formalism/requirement_index.hpp"
 #include "loki/formalism/requirement_view.hpp"
 
 #include <concepts>

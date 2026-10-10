@@ -22,7 +22,6 @@
 #include "loki/formalism/datas.hpp"
 #include "loki/formalism/declarations.hpp"
 #include "loki/formalism/formatter.hpp"
-#include "loki/formalism/indices.hpp"
 #include "loki/formalism/repository.hpp"
 #include "loki/formalism/views.hpp"
 

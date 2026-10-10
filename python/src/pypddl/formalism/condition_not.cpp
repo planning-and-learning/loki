@@ -28,18 +28,18 @@ namespace loki::formalism
 
 void bind_condition_not(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::ConditionNot>>(m, "ConditionNotIndex");
+    ygg::bind_index<ygg::Index<formalism::Condition<formalism::NotTag>>>(m, "ConditionNotIndex");
 
     {
-        using V = Data<formalism::ConditionNot>;
+        using V = Data<formalism::Condition<formalism::NotTag>>;
         bind_data<V>(m, "ConditionNotData")
-            .def(nb::init<ygg::Index<formalism::Condition>>(), "condition"_a)
+            .def(nb::init<ygg::Index<formalism::Condition<>>>(), "condition"_a)
             .def(nb::init<formalism::ConditionView>(), "condition"_a)
             .def_rw("condition", &V::condition);
     }
 
     {
-        using V = formalism::ConditionNotView;
+        using V = formalism::EntityView<formalism::Condition<formalism::NotTag>>;
         auto cls = nb::class_<V>(m, "ConditionNot");
         cls.def("get_index", &V::get_index).def("get_condition", &V::get_condition, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
@@ -47,7 +47,7 @@ void bind_condition_not(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::ConditionNot>(repository);
+    bind_insert<formalism::Condition<formalism::NotTag>>(repository);
 }
 
 }  // namespace loki::formalism

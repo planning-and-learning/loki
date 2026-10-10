@@ -1,5 +1,4 @@
 #include "loki/formalism/multi_function_expression_data.hpp"
-#include "loki/formalism/multi_function_expression_index.hpp"
 #include "loki/formalism/multi_function_expression_view.hpp"
 #include "loki/formalism/repository.hpp"
 
@@ -8,16 +7,16 @@
 #include <utility>
 
 namespace f = loki::formalism;
-using Index = ygg::Index<f::MultiFunctionExpression>;
-using Data = ygg::Data<f::MultiFunctionExpression>;
+using Index = ygg::Index<f::FunctionExpression<f::MultiTag>>;
+using Data = ygg::Data<f::FunctionExpression<f::MultiTag>>;
 using View = ygg::View<Index, f::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
 static_assert(std::totally_ordered<Data>);
 static_assert(std::totally_ordered<View>);
-static_assert(std::same_as<View, f::MultiFunctionExpressionView>);
-static_assert(std::constructible_from<Data, f::MultiArithmeticOperator, ygg::IndexList<f::FunctionExpression>>);
+static_assert(std::same_as<View, f::EntityView<f::FunctionExpression<f::MultiTag>>>);
+static_assert(std::constructible_from<Data, f::MultiArithmeticOperator, ygg::IndexList<f::FunctionExpression<>>>);
 static_assert(requires(Data& data) {
     data.index;
     data.op;
@@ -41,7 +40,7 @@ f::EntityView<T> intern(f::Repository& repository, f::Builder& builder, Initiali
     return f::insert(repository, *data).first;
 }
 
-TEST(LokiTests, MultiFunctionExpressionAllowsAnyArity)
+TEST(LokiTests, FunctionExpressionMultiAllowsAnyArity)
 {
     auto repository = f::Repository(0);
     auto data = Data {};
@@ -50,19 +49,19 @@ TEST(LokiTests, MultiFunctionExpressionAllowsAnyArity)
     EXPECT_TRUE(expression.get_args().empty());
 }
 
-TEST(LokiTests, MultiFunctionExpressionBreaksEqualRenderTiesByIndex)
+TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
 {
     auto repository = f::Repository(0);
     auto builder = f::Builder {};
     const auto wrap = [&](auto node) {
-        return intern<f::FunctionExpression>(repository,
+        return intern<f::FunctionExpression<>>(repository,
                                              builder,
-                                             [&](auto& data) { data.variant = ygg::Data<f::FunctionExpression>::Variant(node.get_index()); });
+                                             [&](auto& data) { data.variant = ygg::Data<f::FunctionExpression<>>::Variant(node.get_index()); });
     };
-    const auto make_number = [&](double value) { return intern<f::FunctionExpressionNumber>(repository, builder, [&](auto& data) { data.value = value; }); };
+    const auto make_number = [&](double value) { return intern<f::FunctionExpression<f::NumberTag>>(repository, builder, [&](auto& data) { data.value = value; }); };
     const auto one = wrap(make_number(1.0));
     const auto two = wrap(make_number(2.0));
-    const auto binary = wrap(intern<f::BinaryFunctionExpression>(repository,
+    const auto binary = wrap(intern<f::FunctionExpression<f::BinaryTag>>(repository,
                                                                  builder,
                                                                  [&](auto& data)
                                                                  {
@@ -70,7 +69,7 @@ TEST(LokiTests, MultiFunctionExpressionBreaksEqualRenderTiesByIndex)
                                                                      data.left = one.get_index();
                                                                      data.right = two.get_index();
                                                                  }));
-    const auto multi = wrap(intern<f::MultiFunctionExpression>(repository,
+    const auto multi = wrap(intern<f::FunctionExpression<f::MultiTag>>(repository,
                                                                builder,
                                                                [&](auto& data)
                                                                {
@@ -82,7 +81,7 @@ TEST(LokiTests, MultiFunctionExpressionBreaksEqualRenderTiesByIndex)
 
     const auto make_product = [&](auto left, auto right)
     {
-        return intern<f::MultiFunctionExpression>(repository,
+        return intern<f::FunctionExpression<f::MultiTag>>(repository,
                                                   builder,
                                                   [&](auto& data)
                                                   {

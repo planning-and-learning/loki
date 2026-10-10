@@ -28,19 +28,19 @@ namespace loki::formalism
 
 void bind_condition_imply(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::ConditionImply>>(m, "ConditionImplyIndex");
+    ygg::bind_index<ygg::Index<formalism::Condition<formalism::ImplyTag>>>(m, "ConditionImplyIndex");
 
     {
-        using V = Data<formalism::ConditionImply>;
+        using V = Data<formalism::Condition<formalism::ImplyTag>>;
         bind_data<V>(m, "ConditionImplyData")
-            .def(nb::init<ygg::Index<formalism::Condition>, ygg::Index<formalism::Condition>>(), "left"_a, "right"_a)
+            .def(nb::init<ygg::Index<formalism::Condition<>>, ygg::Index<formalism::Condition<>>>(), "left"_a, "right"_a)
             .def(nb::init<formalism::ConditionView, formalism::ConditionView>(), "left"_a, "right"_a)
             .def_rw("left", &V::left)
             .def_rw("right", &V::right);
     }
 
     {
-        using V = formalism::ConditionImplyView;
+        using V = formalism::EntityView<formalism::Condition<formalism::ImplyTag>>;
         auto cls = nb::class_<V>(m, "ConditionImply");
         cls.def("get_index", &V::get_index).def("get_left", &V::get_left, nb::keep_alive<0, 1>()).def("get_right", &V::get_right, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
@@ -48,7 +48,7 @@ void bind_condition_imply(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::ConditionImply>(repository);
+    bind_insert<formalism::Condition<formalism::ImplyTag>>(repository);
 }
 
 }  // namespace loki::formalism

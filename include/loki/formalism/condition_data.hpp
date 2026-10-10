@@ -18,15 +18,8 @@
 #ifndef LOKI_FORMALISM_CONDITION_DATA_HPP_
 #define LOKI_FORMALISM_CONDITION_DATA_HPP_
 
-#include "loki/formalism/condition_and_index.hpp"
-#include "loki/formalism/condition_exists_index.hpp"
-#include "loki/formalism/condition_forall_index.hpp"
-#include "loki/formalism/condition_imply_index.hpp"
-#include "loki/formalism/condition_index.hpp"
-#include "loki/formalism/condition_literal_index.hpp"
-#include "loki/formalism/condition_not_index.hpp"
-#include "loki/formalism/condition_numeric_constraint_index.hpp"
-#include "loki/formalism/condition_or_index.hpp"
+#include <yggdrasil/containers/variant.hpp>
+#include "loki/formalism/declarations.hpp"
 
 #include <cista/containers/variant.h>
 #include <optional>
@@ -42,33 +35,19 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::Condition>
+struct Data<::loki::formalism::Condition<>>
 {
-    using Variant = ::cista::offset::variant<ygg::Index<::loki::formalism::ConditionLiteral>,
-                                             ygg::Index<::loki::formalism::ConditionAnd>,
-                                             ygg::Index<::loki::formalism::ConditionOr>,
-                                             ygg::Index<::loki::formalism::ConditionNot>,
-                                             ygg::Index<::loki::formalism::ConditionImply>,
-                                             ygg::Index<::loki::formalism::ConditionExists>,
-                                             ygg::Index<::loki::formalism::ConditionForall>,
-                                             ygg::Index<::loki::formalism::ConditionNumericConstraint>>;
+    using Variant = ygg::IndexVariant<ygg::MapTypeListT<::loki::formalism::Condition, ::loki::formalism::ConditionTags>>;
     template<typename C>
-    using ViewVariant = std::variant<::ygg::View<ygg::Index<::loki::formalism::ConditionLiteral>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::ConditionAnd>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::ConditionOr>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::ConditionNot>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::ConditionImply>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::ConditionExists>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::ConditionForall>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::ConditionNumericConstraint>, C>>;
+    using ViewVariant = ::ygg::ViewVariant<Variant, C>;
 
-    ygg::Index<::loki::formalism::Condition> index;
+    ygg::Index<::loki::formalism::Condition<>> index;
     Variant variant;
 
     Data() = default;
     explicit Data(Variant variant_) : index(), variant(std::move(variant_)) {}
     template<typename C>
-    explicit Data(ViewVariant<C> variant_) : index(), variant(std::visit([](const auto& view) -> Variant { return Variant(view.get_index()); }, variant_))
+    explicit Data(const ViewVariant<C>& variant_) : index(), variant(std::visit([](const auto& view) -> Variant { return Variant(view.get_index()); }, variant_))
     {
     }
 

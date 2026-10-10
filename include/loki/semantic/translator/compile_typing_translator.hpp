@@ -36,7 +36,7 @@ public:
     formalism::PredicateView type_predicate(formalism::TypeView type);
     formalism::LiteralView type_literal(formalism::TypeView type, ygg::Index<formalism::Term> term);
     formalism::ConditionView type_condition(formalism::TypeView type, formalism::VariableView variable);
-    void type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters, ygg::Data<formalism::ConditionAnd>& data);
+    void type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters, ygg::Data<formalism::Condition<formalism::AndTag>>& data);
     void prepend_type_conditions(std::optional<formalism::ConditionView>& condition, formalism::EntityListView<formalism::Parameter> parameters);
     void prepend_type_conditions(formalism::ConditionView& condition, formalism::EntityListView<formalism::Parameter> parameters);
     void compile_typing_to_domain(ygg::Data<formalism::Domain>& data, formalism::DomainView domain);
@@ -137,14 +137,14 @@ formalism::ConditionView CompileTypingTranslator<Derived>::type_condition(formal
     term_data->variant = ygg::Data<formalism::Term>::Variant(copied_variable);
     const auto term = formalism::insert(this->m_context.storage->repository, *term_data).first.get_index();
     const auto literal = as_index(this->self().type_literal(type, term));
-    auto condition_data = formalism::checkout<formalism::ConditionLiteral>(this->m_context.builder);
+    auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->m_context.builder);
     condition_data->literal = literal;
     return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *condition_data).first);
 }
 
 template<typename Derived>
 void CompileTypingTranslator<Derived>::type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters,
-                                                                      ygg::Data<formalism::ConditionAnd>& data)
+                                                                      ygg::Data<formalism::Condition<formalism::AndTag>>& data)
 {
     auto add_conditions = [&](auto&& self, formalism::TypeView type, formalism::VariableView variable) -> void
     {
@@ -161,7 +161,7 @@ template<typename Derived>
 void CompileTypingTranslator<Derived>::prepend_type_conditions(std::optional<formalism::ConditionView>& condition,
                                                                formalism::EntityListView<formalism::Parameter> parameters)
 {
-    auto data = formalism::checkout<formalism::ConditionAnd>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
     this->self().type_conditions_for_parameters(parameters, *data);
     if (data->conditions.empty())
         return;

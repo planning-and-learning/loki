@@ -29,12 +29,12 @@ namespace loki::formalism
 
 void bind_effect_numeric(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::EffectNumeric>>(m, "EffectNumericIndex");
+    ygg::bind_index<ygg::Index<formalism::Effect<formalism::NumericTag>>>(m, "EffectNumericIndex");
 
     {
-        using V = Data<formalism::EffectNumeric>;
+        using V = Data<formalism::Effect<formalism::NumericTag>>;
         bind_data<V>(m, "EffectNumericData")
-            .def(nb::init<formalism::NumericEffectOperator, ygg::Index<formalism::FunctionTerm>, ygg::Index<formalism::FunctionExpression>>(),
+            .def(nb::init<formalism::NumericEffectOperator, ygg::Index<formalism::FunctionTerm>, ygg::Index<formalism::FunctionExpression<>>>(),
                  "operator"_a,
                  "function"_a,
                  "expression"_a)
@@ -48,7 +48,7 @@ void bind_effect_numeric(nb::module_& m, RepositoryBinding& repository)
     }
 
     {
-        using V = formalism::EffectNumericView;
+        using V = formalism::EntityView<formalism::Effect<formalism::NumericTag>>;
         auto cls = nb::class_<V>(m, "EffectNumeric");
         cls.def("get_index", &V::get_index)
             .def("get_operator", &V::get_operator)
@@ -59,7 +59,7 @@ void bind_effect_numeric(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::EffectNumeric>(repository);
+    bind_insert<formalism::Effect<formalism::NumericTag>>(repository);
 }
 
 }  // namespace loki::formalism

@@ -18,12 +18,8 @@
 #ifndef LOKI_FORMALISM_FUNCTION_EXPRESSION_DATA_HPP_
 #define LOKI_FORMALISM_FUNCTION_EXPRESSION_DATA_HPP_
 
-#include "loki/formalism/binary_function_expression_index.hpp"
-#include "loki/formalism/function_expression_index.hpp"
-#include "loki/formalism/function_expression_number_index.hpp"
-#include "loki/formalism/function_term_index.hpp"
-#include "loki/formalism/multi_function_expression_index.hpp"
-#include "loki/formalism/unary_function_expression_index.hpp"
+#include <yggdrasil/containers/variant.hpp>
+#include "loki/formalism/declarations.hpp"
 
 #include <cista/containers/variant.h>
 #include <optional>
@@ -39,27 +35,19 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::FunctionExpression>
+struct Data<::loki::formalism::FunctionExpression<>>
 {
-    using Variant = ::cista::offset::variant<ygg::Index<::loki::formalism::FunctionExpressionNumber>,
-                                             ygg::Index<::loki::formalism::FunctionTerm>,
-                                             ygg::Index<::loki::formalism::UnaryFunctionExpression>,
-                                             ygg::Index<::loki::formalism::BinaryFunctionExpression>,
-                                             ygg::Index<::loki::formalism::MultiFunctionExpression>>;
+    using Variant = ygg::IndexVariant<::loki::formalism::FunctionExpressionTypes>;
     template<typename C>
-    using ViewVariant = std::variant<::ygg::View<ygg::Index<::loki::formalism::FunctionExpressionNumber>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::FunctionTerm>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::UnaryFunctionExpression>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::BinaryFunctionExpression>, C>,
-                                     ::ygg::View<ygg::Index<::loki::formalism::MultiFunctionExpression>, C>>;
+    using ViewVariant = ::ygg::ViewVariant<Variant, C>;
 
-    ygg::Index<::loki::formalism::FunctionExpression> index;
+    ygg::Index<::loki::formalism::FunctionExpression<>> index;
     Variant variant;
 
     Data() = default;
     explicit Data(Variant variant_) : index(), variant(std::move(variant_)) {}
     template<typename C>
-    explicit Data(ViewVariant<C> variant_) : index(), variant(std::visit([](const auto& view) -> Variant { return Variant(view.get_index()); }, variant_))
+    explicit Data(const ViewVariant<C>& variant_) : index(), variant(std::visit([](const auto& view) -> Variant { return Variant(view.get_index()); }, variant_))
     {
     }
 

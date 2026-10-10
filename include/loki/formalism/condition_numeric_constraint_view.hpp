@@ -24,20 +24,17 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::ConditionNumericConstraint> C>
-class View<ygg::Index<::loki::formalism::ConditionNumericConstraint>, C> :
-    public ygg::formalism::detail::View<ygg::Index<::loki::formalism::ConditionNumericConstraint>, C>
+template<ygg::formalism::SymbolContextFor<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag>> C>
+class View<ygg::Index<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag>>, C> :
+    public ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag>, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::ConditionNumericConstraint> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::ConditionNumericConstraint>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag>, C>::IndexViewBase;
 
     auto get_comparator() const noexcept { return this->get_data().comparator; }
     auto get_left() const noexcept { return ygg::make_view(this->get_data().left, this->get_context()); }

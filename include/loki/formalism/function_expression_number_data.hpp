@@ -18,7 +18,7 @@
 #ifndef LOKI_FORMALISM_FUNCTION_EXPRESSION_NUMBER_DATA_HPP_
 #define LOKI_FORMALISM_FUNCTION_EXPRESSION_NUMBER_DATA_HPP_
 
-#include "loki/formalism/function_expression_number_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -33,9 +33,9 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::FunctionExpressionNumber>
+struct Data<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>
 {
-    ygg::Index<::loki::formalism::FunctionExpressionNumber> index;
+    ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>> index;
     double value = 0.0;
 
     Data() = default;

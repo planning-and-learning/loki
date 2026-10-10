@@ -46,7 +46,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
 {
     struct ConditionalEffect
     {
-        formalism::EffectWhenView when;
+        formalism::EntityView<formalism::Effect<formalism::WhenTag>> when;
         formalism::ConditionView condition;
         formalism::EffectView effect;
     };
@@ -57,13 +57,13 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
     for (auto action : actions)
     {
         const auto& data = action.get_data();
-        auto unconditional = ygg::IndexList<formalism::Effect> {};
+        auto unconditional = ygg::IndexList<formalism::Effect<>> {};
         auto conditional = std::vector<ConditionalEffect> {};
 
         if (const auto effect_view = action.get_effect())
         {
             auto effects = std::vector<formalism::EffectView> { effect_view.value() };
-            if (const auto effect_and = this->self().template as_effect<formalism::EffectAnd>(effect_view.value()))
+            if (const auto effect_and = this->self().template as_effect<formalism::Effect<formalism::AndTag>>(effect_view.value()))
             {
                 effects.clear();
                 for (auto effect : effect_and->get_effects())
@@ -72,7 +72,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
 
             for (auto effect : effects)
             {
-                if (const auto effect_when = this->self().template as_effect<formalism::EffectWhen>(effect))
+                if (const auto effect_when = this->self().template as_effect<formalism::Effect<formalism::WhenTag>>(effect))
                     conditional.push_back({ *effect_when, effect_when->get_condition(), effect_when->get_effect() });
                 else
                     unconditional.push_back(effect.get_index());
@@ -89,8 +89,8 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
             throw SemanticError("Too many conditional effects to compile.");
 
         const auto num_variants = size_t { 1 } << conditional.size();
-        auto condition_data = formalism::checkout<formalism::ConditionAnd>(this->m_context.builder);
-        auto effect_data = formalism::checkout<formalism::EffectAnd>(this->m_context.builder);
+        auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
+        auto effect_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->m_context.builder);
         for (auto mask = size_t { 0 }; mask < num_variants; ++mask)
         {
             condition_data->clear();
@@ -114,13 +114,13 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 }
             }
 
-            auto precondition = cista::optional<ygg::Index<formalism::Condition>> {};
+            auto precondition = cista::optional<ygg::Index<formalism::Condition<>>> {};
             if (condition_data->conditions.size() == 1)
                 precondition = condition_data->conditions.front();
             else if (!condition_data->conditions.empty())
                 precondition = as_index(this->self().make_conjunction(*condition_data));
 
-            auto effect = cista::optional<ygg::Index<formalism::Effect>> {};
+            auto effect = cista::optional<ygg::Index<formalism::Effect<>>> {};
             if (effect_data->effects.size() == 1)
                 effect = effect_data->effects.front();
             else if (!effect_data->effects.empty())

@@ -18,8 +18,7 @@
 #ifndef LOKI_FORMALISM_LITERAL_DATA_HPP_
 #define LOKI_FORMALISM_LITERAL_DATA_HPP_
 
-#include "loki/formalism/atom_index.hpp"
-#include "loki/formalism/literal_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>

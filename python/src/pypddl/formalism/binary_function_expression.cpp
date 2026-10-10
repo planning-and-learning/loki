@@ -28,12 +28,12 @@ namespace loki::formalism
 
 void bind_binary_function_expression(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::BinaryFunctionExpression>>(m, "BinaryFunctionExpressionIndex");
+    ygg::bind_index<ygg::Index<formalism::FunctionExpression<formalism::BinaryTag>>>(m, "BinaryFunctionExpressionIndex");
 
     {
-        using V = Data<formalism::BinaryFunctionExpression>;
+        using V = Data<formalism::FunctionExpression<formalism::BinaryTag>>;
         bind_data<V>(m, "BinaryFunctionExpressionData")
-            .def(nb::init<formalism::BinaryArithmeticOperator, ygg::Index<formalism::FunctionExpression>, ygg::Index<formalism::FunctionExpression>>(),
+            .def(nb::init<formalism::BinaryArithmeticOperator, ygg::Index<formalism::FunctionExpression<>>, ygg::Index<formalism::FunctionExpression<>>>(),
                  "operator"_a,
                  "left"_a,
                  "right"_a)
@@ -47,7 +47,7 @@ void bind_binary_function_expression(nb::module_& m, RepositoryBinding& reposito
     }
 
     {
-        using V = formalism::BinaryFunctionExpressionView;
+        using V = formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>;
         auto cls = nb::class_<V>(m, "BinaryFunctionExpression");
         cls.def("get_index", &V::get_index)
             .def("get_operator", &V::get_operator)
@@ -58,7 +58,7 @@ void bind_binary_function_expression(nb::module_& m, RepositoryBinding& reposito
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::BinaryFunctionExpression>(repository);
+    bind_insert<formalism::FunctionExpression<formalism::BinaryTag>>(repository);
 }
 
 }  // namespace loki::formalism

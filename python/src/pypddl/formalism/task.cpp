@@ -47,7 +47,7 @@ void bind_task(nb::module_& m, RepositoryBinding& repository)
                           ygg::IndexList<formalism::Object>,
                           ygg::IndexList<formalism::Literal>,
                           ygg::IndexList<formalism::InitialFunctionValue>,
-                          cista::optional<ygg::Index<formalism::Condition>>,
+                          cista::optional<ygg::Index<formalism::Condition<>>>,
                           cista::optional<ygg::Index<formalism::Metric>>,
                           ygg::IndexList<formalism::Predicate>,
                           ygg::IndexList<formalism::Axiom>>(),
@@ -57,7 +57,7 @@ void bind_task(nb::module_& m, RepositoryBinding& repository)
                  "objects"_a = ygg::IndexList<formalism::Object> {},
                  "initial_literals"_a = ygg::IndexList<formalism::Literal> {},
                  "initial_function_values"_a = ygg::IndexList<formalism::InitialFunctionValue> {},
-                 "goal"_a.none() = cista::optional<ygg::Index<formalism::Condition>> {},
+                 "goal"_a.none() = cista::optional<ygg::Index<formalism::Condition<>>> {},
                  "metric"_a.none() = cista::optional<ygg::Index<formalism::Metric>> {},
                  "predicates"_a = ygg::IndexList<formalism::Predicate> {},
                  "axioms"_a = ygg::IndexList<formalism::Axiom> {})

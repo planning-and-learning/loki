@@ -19,10 +19,6 @@
 #define LOKI_FORMALISM_EFFECT_NUMERIC_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
-#include "loki/formalism/effect_numeric_index.hpp"
-#include "loki/formalism/function_expression_index.hpp"
-#include "loki/formalism/function_term_index.hpp"
-
 #include <optional>
 #include <string>
 #include <tuple>
@@ -36,17 +32,17 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::EffectNumeric>
+struct Data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
 {
-    ygg::Index<::loki::formalism::EffectNumeric> index;
+    ygg::Index<::loki::formalism::Effect<::loki::formalism::NumericTag>> index;
     ::loki::formalism::NumericEffectOperator op {};
     ygg::Index<::loki::formalism::FunctionTerm> function;
-    ygg::Index<::loki::formalism::FunctionExpression> expression;
+    ygg::Index<::loki::formalism::FunctionExpression<>> expression;
 
     Data() = default;
     Data(::loki::formalism::NumericEffectOperator op_,
          ygg::Index<::loki::formalism::FunctionTerm> function_,
-         ygg::Index<::loki::formalism::FunctionExpression> expression_) :
+         ygg::Index<::loki::formalism::FunctionExpression<>> expression_) :
         index(),
         op(op_),
         function(function_),
@@ -56,7 +52,7 @@ struct Data<::loki::formalism::EffectNumeric>
     template<typename C>
     Data(::loki::formalism::NumericEffectOperator op_,
          ::ygg::View<ygg::Index<::loki::formalism::FunctionTerm>, C> function_,
-         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> expression_) :
+         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> expression_) :
         index(),
         op(op_),
         function(),

@@ -18,9 +18,7 @@
 #ifndef LOKI_FORMALISM_CONDITION_FORALL_DATA_HPP_
 #define LOKI_FORMALISM_CONDITION_FORALL_DATA_HPP_
 
-#include "loki/formalism/condition_forall_index.hpp"
-#include "loki/formalism/condition_index.hpp"
-#include "loki/formalism/parameter_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -35,14 +33,14 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::ConditionForall>
+struct Data<::loki::formalism::Condition<::loki::formalism::ForallTag>>
 {
-    ygg::Index<::loki::formalism::ConditionForall> index;
+    ygg::Index<::loki::formalism::Condition<::loki::formalism::ForallTag>> index;
     ygg::IndexList<::loki::formalism::Parameter> parameters;
-    ygg::Index<::loki::formalism::Condition> condition;
+    ygg::Index<::loki::formalism::Condition<>> condition;
 
     Data() = default;
-    Data(ygg::IndexList<::loki::formalism::Parameter> parameters_, ygg::Index<::loki::formalism::Condition> condition_) :
+    Data(ygg::IndexList<::loki::formalism::Parameter> parameters_, ygg::Index<::loki::formalism::Condition<>> condition_) :
         index(),
         parameters(std::move(parameters_)),
         condition(condition_)
@@ -50,7 +48,7 @@ struct Data<::loki::formalism::ConditionForall>
     }
     template<typename C>
     Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
-         ::ygg::View<ygg::Index<::loki::formalism::Condition>, C> condition_) :
+         ::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> condition_) :
         index(),
         parameters(),
         condition()

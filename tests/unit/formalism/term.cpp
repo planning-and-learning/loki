@@ -1,6 +1,5 @@
 #include "loki/formalism/repository.hpp"
 #include "loki/formalism/term_data.hpp"
-#include "loki/formalism/term_index.hpp"
 #include "loki/formalism/term_view.hpp"
 
 #include <concepts>

@@ -1,13 +1,12 @@
 #include "loki/formalism/function_expression_data.hpp"
-#include "loki/formalism/function_expression_index.hpp"
 #include "loki/formalism/function_expression_view.hpp"
 #include "loki/formalism/repository.hpp"
 
 #include <concepts>
 
 namespace f = loki::formalism;
-using Index = ygg::Index<f::FunctionExpression>;
-using Data = ygg::Data<f::FunctionExpression>;
+using Index = ygg::Index<f::FunctionExpression<>>;
+using Data = ygg::Data<f::FunctionExpression<>>;
 using View = ygg::View<Index, f::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);

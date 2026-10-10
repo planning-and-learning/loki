@@ -29,19 +29,19 @@ namespace loki::formalism
 
 void bind_effect_forall(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::EffectForall>>(m, "EffectForallIndex");
+    ygg::bind_index<ygg::Index<formalism::Effect<formalism::ForallTag>>>(m, "EffectForallIndex");
 
     {
-        using V = Data<formalism::EffectForall>;
+        using V = Data<formalism::Effect<formalism::ForallTag>>;
         bind_data<V>(m, "EffectForallData")
-            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Effect>>(), "parameters"_a, "effect"_a)
+            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Effect<>>>(), "parameters"_a, "effect"_a)
             .def(nb::init<const std::vector<formalism::ParameterView>&, formalism::EffectView>(), "parameters"_a, "effect"_a)
             .def_rw("parameters", &V::parameters)
             .def_rw("effect", &V::effect);
     }
 
     {
-        using V = formalism::EffectForallView;
+        using V = formalism::EntityView<formalism::Effect<formalism::ForallTag>>;
         auto cls = nb::class_<V>(m, "EffectForall");
         cls.def("get_index", &V::get_index).def("get_parameters", &V::get_parameters).def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
@@ -49,7 +49,7 @@ void bind_effect_forall(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::EffectForall>(repository);
+    bind_insert<formalism::Effect<formalism::ForallTag>>(repository);
 }
 
 }  // namespace loki::formalism

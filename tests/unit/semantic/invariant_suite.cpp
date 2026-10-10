@@ -40,22 +40,22 @@ void collect_effect_binder_names(formalism::EffectView effect, ygg::UnorderedSet
         [&](const auto& node)
         {
             using Node = std::decay_t<decltype(node)>;
-            if constexpr (std::is_same_v<Node, formalism::EffectForallView>)
+            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
             {
                 for (auto parameter : node.get_parameters())
                     names.insert(std::string(parameter.get_variable().get_name()));
                 collect_effect_binder_names(node.get_effect(), names);
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectAndView> || std::is_same_v<Node, formalism::EffectOneOfView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 for (auto child : node.get_effects())
                     collect_effect_binder_names(child, names);
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectWhenView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
             {
                 collect_effect_binder_names(node.get_effect(), names);
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectProbabilisticView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
             {
                 for (auto alternative : node.get_alternatives())
                     collect_effect_binder_names(alternative.get_effect(), names);
@@ -71,7 +71,7 @@ void expect_flat_condition(formalism::ConditionView condition, const std::string
     EXPECT_FALSE(contains_not_or_imply(condition)) << what;
     EXPECT_FALSE(contains_forall(condition)) << what;
     EXPECT_FALSE(contains_exists(condition)) << what;
-    EXPECT_EQ(count_condition_nodes<formalism::ConditionOr>(condition), 0) << what;
+    EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::OrTag>>(condition), 0) << what;
 }
 
 template<typename Children>
@@ -90,7 +90,7 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
         [&](const auto& node)
         {
             using Node = std::decay_t<decltype(node)>;
-            if constexpr (std::is_same_v<Node, formalism::EffectAndView>)
+            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>)
             {
                 EXPECT_TRUE(top_level) << what << ": nested effect conjunction";
                 expect_distinct_children(node.get_effects(), what);
@@ -101,7 +101,7 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
                         [&](const auto& grandchild)
                         {
                             using Grandchild = std::decay_t<decltype(grandchild)>;
-                            if constexpr (std::is_same_v<Grandchild, formalism::EffectNumericView>)
+                            if constexpr (std::is_same_v<Grandchild, formalism::EntityView<formalism::Effect<formalism::NumericTag>>>)
                             {
                                 auto key = std::string(grandchild.get_function().get_function().get_name());
                                 for (auto term : grandchild.get_function().get_terms())
@@ -113,23 +113,23 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
                     expect_effect_normal_form(child, false, what);
                 }
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectWhenView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
             {
-                EXPECT_EQ(count_condition_nodes<formalism::ConditionOr>(node.get_condition()), 0) << what << ": disjunctive when-condition";
-                EXPECT_EQ(count_effect_nodes<formalism::EffectWhen>(node.get_effect()), 0) << what << ": nested when";
-                EXPECT_FALSE(node.get_effect().get_variant().template is<ygg::Index<formalism::EffectAnd>>()) << what << ": conjunctive when-body";
+                EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::OrTag>>(node.get_condition()), 0) << what << ": disjunctive when-condition";
+                EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(node.get_effect()), 0) << what << ": nested when";
+                EXPECT_FALSE(node.get_effect().get_variant().template is<ygg::Index<formalism::Effect<formalism::AndTag>>>()) << what << ": conjunctive when-body";
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectForallView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
             {
-                EXPECT_FALSE(node.get_effect().get_variant().template is<ygg::Index<formalism::EffectAnd>>()) << what << ": undistributed universal effect";
+                EXPECT_FALSE(node.get_effect().get_variant().template is<ygg::Index<formalism::Effect<formalism::AndTag>>>()) << what << ": undistributed universal effect";
                 expect_effect_normal_form(node.get_effect(), false, what);
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectOneOfView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 for (auto child : node.get_effects())
                     expect_effect_normal_form(child, false, what);
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectProbabilisticView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
             {
                 for (auto alternative : node.get_alternatives())
                     expect_effect_normal_form(alternative.get_effect(), false, what);

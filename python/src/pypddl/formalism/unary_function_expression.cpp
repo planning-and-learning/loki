@@ -28,19 +28,19 @@ namespace loki::formalism
 
 void bind_unary_function_expression(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::UnaryFunctionExpression>>(m, "UnaryFunctionExpressionIndex");
+    ygg::bind_index<ygg::Index<formalism::FunctionExpression<formalism::UnaryTag>>>(m, "UnaryFunctionExpressionIndex");
 
     {
-        using V = Data<formalism::UnaryFunctionExpression>;
+        using V = Data<formalism::FunctionExpression<formalism::UnaryTag>>;
         bind_data<V>(m, "UnaryFunctionExpressionData")
-            .def(nb::init<formalism::UnaryArithmeticOperator, ygg::Index<formalism::FunctionExpression>>(), "operator"_a, "expression"_a)
+            .def(nb::init<formalism::UnaryArithmeticOperator, ygg::Index<formalism::FunctionExpression<>>>(), "operator"_a, "expression"_a)
             .def(nb::init<formalism::UnaryArithmeticOperator, formalism::FunctionExpressionView>(), "operator"_a, "expression"_a)
             .def_rw("operator", &V::op)
             .def_rw("expression", &V::expression);
     }
 
     {
-        using V = formalism::UnaryFunctionExpressionView;
+        using V = formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>>;
         auto cls = nb::class_<V>(m, "UnaryFunctionExpression");
         cls.def("get_index", &V::get_index).def("get_operator", &V::get_operator).def("get_expression", &V::get_expression, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
@@ -48,7 +48,7 @@ void bind_unary_function_expression(nb::module_& m, RepositoryBinding& repositor
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::UnaryFunctionExpression>(repository);
+    bind_insert<formalism::FunctionExpression<formalism::UnaryTag>>(repository);
 }
 
 }  // namespace loki::formalism

@@ -151,7 +151,7 @@ TEST(LokiPublicFacade, ViewConvenienceMethodsCoverNumericEffectsAndMetrics)
         [&](const auto effect_node)
         {
             using EffectHandle = std::decay_t<decltype(effect_node.get_index())>;
-            if constexpr (std::is_same_v<EffectHandle, ygg::Index<loki::formalism::EffectAnd>>)
+            if constexpr (std::is_same_v<EffectHandle, ygg::Index<loki::formalism::Effect<loki::formalism::AndTag>>>)
             {
                 ASSERT_EQ(effect_node.get_effects().size(), 2);
                 for (auto child : effect_node.get_effects())
@@ -160,7 +160,7 @@ TEST(LokiPublicFacade, ViewConvenienceMethodsCoverNumericEffectsAndMetrics)
                         [&](const auto nested_effect_node)
                         {
                             using NestedEffectHandle = std::decay_t<decltype(nested_effect_node.get_index())>;
-                            if constexpr (std::is_same_v<NestedEffectHandle, ygg::Index<loki::formalism::EffectNumeric>>)
+                            if constexpr (std::is_same_v<NestedEffectHandle, ygg::Index<loki::formalism::Effect<loki::formalism::NumericTag>>>)
                             {
                                 saw_numeric_effect = true;
                                 EXPECT_EQ(nested_effect_node.get_operator(), loki::formalism::NumericEffectOperator::Increase);
@@ -171,7 +171,7 @@ TEST(LokiPublicFacade, ViewConvenienceMethodsCoverNumericEffectsAndMetrics)
                                     [](const auto expression_node)
                                     {
                                         using ExpressionHandle = std::decay_t<decltype(expression_node.get_index())>;
-                                        if constexpr (std::is_same_v<ExpressionHandle, ygg::Index<loki::formalism::FunctionExpressionNumber>>)
+                                        if constexpr (std::is_same_v<ExpressionHandle, ygg::Index<loki::formalism::FunctionExpression<loki::formalism::NumberTag>>>)
                                         {
                                             EXPECT_EQ(expression_node.get_value(), 1);
                                         }
@@ -244,14 +244,14 @@ TEST(LokiPublicFacade, FormatsAlternativeEffectsAsReparseablePddl)
         [](const auto effect_node)
         {
             using EffectHandle = std::decay_t<decltype(effect_node.get_index())>;
-            EXPECT_TRUE((std::is_same_v<EffectHandle, ygg::Index<loki::formalism::EffectOneOf>>) );
+            EXPECT_TRUE((std::is_same_v<EffectHandle, ygg::Index<loki::formalism::Effect<loki::formalism::OneOfTag>>>) );
         },
         reparsed_domain.get_actions()[0].get_effect().value().get_variant());
     ygg::visit(
         [](const auto effect_node)
         {
             using EffectHandle = std::decay_t<decltype(effect_node.get_index())>;
-            EXPECT_TRUE((std::is_same_v<EffectHandle, ygg::Index<loki::formalism::EffectProbabilistic>>) );
+            EXPECT_TRUE((std::is_same_v<EffectHandle, ygg::Index<loki::formalism::Effect<loki::formalism::ProbabilisticTag>>>) );
         },
         reparsed_domain.get_actions()[1].get_effect().value().get_variant());
 }

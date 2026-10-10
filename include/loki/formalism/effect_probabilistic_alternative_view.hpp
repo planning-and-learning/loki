@@ -24,20 +24,17 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
 template<ygg::formalism::SymbolContextFor<::loki::formalism::EffectProbabilisticAlternative> C>
 class View<ygg::Index<::loki::formalism::EffectProbabilisticAlternative>, C> :
-    public ygg::formalism::detail::View<ygg::Index<::loki::formalism::EffectProbabilisticAlternative>, C>
+    public ygg::IndexViewBase<::loki::formalism::EffectProbabilisticAlternative, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::EffectProbabilisticAlternative> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::EffectProbabilisticAlternative>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::EffectProbabilisticAlternative, C>::IndexViewBase;
 
     auto get_probability() const noexcept { return this->get_data().probability; }
     auto get_effect() const noexcept { return ygg::make_view(this->get_data().effect, this->get_context()); }

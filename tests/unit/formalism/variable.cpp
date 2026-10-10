@@ -1,6 +1,5 @@
 #include "loki/formalism/repository.hpp"
 #include "loki/formalism/variable_data.hpp"
-#include "loki/formalism/variable_index.hpp"
 #include "loki/formalism/variable_view.hpp"
 
 #include <concepts>

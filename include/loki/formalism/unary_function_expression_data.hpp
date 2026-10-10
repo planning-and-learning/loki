@@ -19,9 +19,6 @@
 #define LOKI_FORMALISM_UNARY_FUNCTION_EXPRESSION_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
-#include "loki/formalism/function_expression_index.hpp"
-#include "loki/formalism/unary_function_expression_index.hpp"
-
 #include <optional>
 #include <string>
 #include <tuple>
@@ -35,21 +32,21 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::UnaryFunctionExpression>
+struct Data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
 {
-    ygg::Index<::loki::formalism::UnaryFunctionExpression> index;
+    ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>> index;
     ::loki::formalism::UnaryArithmeticOperator op {};
-    ygg::Index<::loki::formalism::FunctionExpression> expression;
+    ygg::Index<::loki::formalism::FunctionExpression<>> expression;
 
     Data() = default;
-    Data(::loki::formalism::UnaryArithmeticOperator op_, ygg::Index<::loki::formalism::FunctionExpression> expression_) :
+    Data(::loki::formalism::UnaryArithmeticOperator op_, ygg::Index<::loki::formalism::FunctionExpression<>> expression_) :
         index(),
         op(op_),
         expression(expression_)
     {
     }
     template<typename C>
-    Data(::loki::formalism::UnaryArithmeticOperator op_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> expression_) :
+    Data(::loki::formalism::UnaryArithmeticOperator op_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> expression_) :
         index(),
         op(op_),
         expression()

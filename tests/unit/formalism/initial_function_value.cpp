@@ -1,5 +1,4 @@
 #include "loki/formalism/initial_function_value_data.hpp"
-#include "loki/formalism/initial_function_value_index.hpp"
 #include "loki/formalism/initial_function_value_view.hpp"
 #include "loki/formalism/repository.hpp"
 

@@ -18,9 +18,8 @@
 #ifndef LOKI_FORMALISM_TERM_DATA_HPP_
 #define LOKI_FORMALISM_TERM_DATA_HPP_
 
-#include "loki/formalism/object_index.hpp"
-#include "loki/formalism/term_index.hpp"
-#include "loki/formalism/variable_index.hpp"
+#include <yggdrasil/containers/variant.hpp>
+#include "loki/formalism/declarations.hpp"
 
 #include <cista/containers/variant.h>
 #include <optional>
@@ -40,7 +39,7 @@ struct Data<::loki::formalism::Term>
 {
     using Variant = ::cista::offset::variant<ygg::Index<::loki::formalism::Variable>, ygg::Index<::loki::formalism::Object>>;
     template<typename C>
-    using ViewVariant = std::variant<::ygg::View<ygg::Index<::loki::formalism::Variable>, C>, ::ygg::View<ygg::Index<::loki::formalism::Object>, C>>;
+    using ViewVariant = ::ygg::ViewVariant<Variant, C>;
 
     ygg::Index<::loki::formalism::Term> index;
     Variant variant;
@@ -48,7 +47,7 @@ struct Data<::loki::formalism::Term>
     Data() = default;
     explicit Data(Variant variant_) : index(), variant(std::move(variant_)) {}
     template<typename C>
-    explicit Data(ViewVariant<C> variant_) : index(), variant(std::visit([](const auto& view) -> Variant { return Variant(view.get_index()); }, variant_))
+    explicit Data(const ViewVariant<C>& variant_) : index(), variant(std::visit([](const auto& view) -> Variant { return Variant(view.get_index()); }, variant_))
     {
     }
 

@@ -119,10 +119,10 @@ TEST(LokiTests, CompileConditionalEffectsSplitsActions)
         EXPECT_TRUE(std::string_view(action.get_name()).starts_with("a_"));
         EXPECT_EQ(std::string_view(action.get_original_name()), "a");
         ASSERT_TRUE(action.get_precondition().has_value());
-        EXPECT_EQ(count_condition_nodes<formalism::ConditionLiteral>(action.get_precondition().value()), std::size_t { 3 });
+        EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::LiteralTag>>(action.get_precondition().value()), std::size_t { 3 });
         if (const auto effect = action.get_effect())
         {
-            EXPECT_EQ(count_effect_nodes<formalism::EffectWhen>(effect.value()), std::size_t { 0 });
+            EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(effect.value()), std::size_t { 0 });
         }
     }
 }
@@ -148,12 +148,12 @@ TEST(LokiTests, ExistentialConditionalEffectBecomesUniversalEffect)
     ASSERT_FALSE(domain.get_actions().empty());
     const auto action = domain.get_actions().front();
     ASSERT_TRUE(action.get_effect().has_value());
-    EXPECT_EQ(count_effect_nodes<formalism::EffectForall>(action.get_effect().value()), std::size_t { 1 });
-    EXPECT_EQ(count_effect_nodes<formalism::EffectWhen>(action.get_effect().value()), std::size_t { 1 });
+    EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::ForallTag>>(action.get_effect().value()), std::size_t { 1 });
+    EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(action.get_effect().value()), std::size_t { 1 });
 
-    const auto effect_forall = action.get_effect().value().get_variant().get<ygg::Index<formalism::EffectForall>>();
-    const auto effect_when = effect_forall.get_effect().get_variant().get<ygg::Index<formalism::EffectWhen>>();
-    EXPECT_EQ(count_condition_nodes<formalism::ConditionExists>(effect_when.get_condition()), std::size_t { 0 });
+    const auto effect_forall = action.get_effect().value().get_variant().get<ygg::Index<formalism::Effect<formalism::ForallTag>>>();
+    const auto effect_when = effect_forall.get_effect().get_variant().get<ygg::Index<formalism::Effect<formalism::WhenTag>>>();
+    EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::ExistsTag>>(effect_when.get_condition()), std::size_t { 0 });
 }
 
 TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
@@ -167,7 +167,7 @@ TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
     const auto action = domain.get_actions().front();
     ASSERT_TRUE(action.get_precondition().has_value());
 
-    const auto condition_or = action.get_precondition().value().get_variant().get<ygg::Index<formalism::ConditionOr>>();
+    const auto condition_or = action.get_precondition().value().get_variant().get<ygg::Index<formalism::Condition<formalism::OrTag>>>();
     ASSERT_EQ(condition_or.get_conditions().size(), std::size_t { 2 });
     for (auto condition : condition_or.get_conditions())
     {
@@ -175,7 +175,7 @@ TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
             [](const auto& node)
             {
                 using Node = std::decay_t<decltype(node)>;
-                EXPECT_TRUE((std::is_same_v<Node, formalism::ConditionForallView>) );
+                EXPECT_TRUE((std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>) );
             },
             condition.get_variant());
     }
@@ -190,8 +190,8 @@ TEST(LokiTests, UntypedUniversalEffectKeepsEmptyGuardWhen)
     ASSERT_FALSE(domain.get_actions().empty());
     const auto action = domain.get_actions().front();
     ASSERT_TRUE(action.get_effect().has_value());
-    EXPECT_EQ(count_effect_nodes<formalism::EffectForall>(action.get_effect().value()), std::size_t { 1 });
-    EXPECT_EQ(count_effect_nodes<formalism::EffectWhen>(action.get_effect().value()), std::size_t { 1 });
+    EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::ForallTag>>(action.get_effect().value()), std::size_t { 1 });
+    EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(action.get_effect().value()), std::size_t { 1 });
 }
 
 TEST(LokiTests, KeepTypingPreservesPersistentParameters)
@@ -223,7 +223,7 @@ TEST(LokiTests, KeepTypingPreservesPersistentParameters)
         for (auto parameter : action.get_parameters())
             EXPECT_FALSE(parameter.get_types().empty());
         ASSERT_TRUE(action.get_precondition().has_value());
-        EXPECT_GT(count_condition_nodes<formalism::ConditionLiteral>(action.get_precondition().value()), std::size_t { 1 });
+        EXPECT_GT(count_condition_nodes<formalism::Condition<formalism::LiteralTag>>(action.get_precondition().value()), std::size_t { 1 });
     }
 }
 
@@ -267,11 +267,11 @@ TEST(LokiTests, RenameQuantifiedVariablesSeparatesNestedBinders)
     EXPECT_EQ(variable_name(action.get_parameters().front()), "?x");
 
     ASSERT_TRUE(action.get_precondition().has_value());
-    const auto exists = action.get_precondition().value().get_variant().get<ygg::Index<formalism::ConditionExists>>();
+    const auto exists = action.get_precondition().value().get_variant().get<ygg::Index<formalism::Condition<formalism::ExistsTag>>>();
     ASSERT_EQ(exists.get_parameters().size(), std::size_t { 1 });
     EXPECT_EQ(variable_name(exists.get_parameters().front()), "?x_0");
 
-    const auto conjunction = exists.get_condition().get_variant().get<ygg::Index<formalism::ConditionAnd>>();
+    const auto conjunction = exists.get_condition().get_variant().get<ygg::Index<formalism::Condition<formalism::AndTag>>>();
     auto checked_forall = false;
     for (auto child : conjunction.get_conditions())
     {
@@ -279,7 +279,7 @@ TEST(LokiTests, RenameQuantifiedVariablesSeparatesNestedBinders)
             [&](const auto& node)
             {
                 using Node = std::decay_t<decltype(node)>;
-                if constexpr (std::is_same_v<Node, formalism::ConditionForallView>)
+                if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
                 {
                     checked_forall = true;
                     ASSERT_EQ(node.get_parameters().size(), std::size_t { 1 });
@@ -291,7 +291,7 @@ TEST(LokiTests, RenameQuantifiedVariablesSeparatesNestedBinders)
     EXPECT_TRUE(checked_forall);
 
     ASSERT_TRUE(action.get_effect().has_value());
-    const auto effect_forall = action.get_effect().value().get_variant().get<ygg::Index<formalism::EffectForall>>();
+    const auto effect_forall = action.get_effect().value().get_variant().get<ygg::Index<formalism::Effect<formalism::ForallTag>>>();
     ASSERT_EQ(effect_forall.get_parameters().size(), std::size_t { 1 });
     EXPECT_EQ(variable_name(effect_forall.get_parameters().front()), "?x_2");
 }

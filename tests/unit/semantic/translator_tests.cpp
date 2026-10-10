@@ -44,17 +44,17 @@ namespace
 
 std::optional<std::string> conjunct_variable(formalism::ConditionView condition, std::string_view predicate_name, std::size_t term_index)
 {
-    if (!condition.get_variant().is<ygg::Index<formalism::ConditionAnd>>())
+    if (!condition.get_variant().is<ygg::Index<formalism::Condition<formalism::AndTag>>>())
         return std::nullopt;
 
-    for (auto child : condition.get_variant().get<ygg::Index<formalism::ConditionAnd>>().get_conditions())
+    for (auto child : condition.get_variant().get<ygg::Index<formalism::Condition<formalism::AndTag>>>().get_conditions())
     {
         auto result = std::optional<std::string> {};
         ygg::visit(
             [&](const auto& node)
             {
                 using Node = std::decay_t<decltype(node)>;
-                if constexpr (std::is_same_v<Node, formalism::ConditionLiteralView>)
+                if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::LiteralTag>>>)
                 {
                     const auto atom = node.get_literal().get_atom();
                     if (atom.get_predicate().get_name() == predicate_name && atom.get_terms().size() > term_index)
@@ -79,14 +79,14 @@ formalism::EntityView<T> intern(formalism::Repository& repository, formalism::Bu
 template<typename T>
 formalism::FunctionExpressionView wrap_expression(formalism::Repository& repository, formalism::Builder& builder, T node)
 {
-    return intern<formalism::FunctionExpression>(repository,
+    return intern<formalism::FunctionExpression<>>(repository,
                                                  builder,
-                                                 [&](auto& data) { data.variant = ygg::Data<formalism::FunctionExpression>::Variant(node.get_index()); });
+                                                 [&](auto& data) { data.variant = ygg::Data<formalism::FunctionExpression<>>::Variant(node.get_index()); });
 }
 
 formalism::FunctionExpressionView number_expression(formalism::Repository& repository, formalism::Builder& builder, double value)
 {
-    return wrap_expression(repository, builder, intern<formalism::FunctionExpressionNumber>(repository, builder, [&](auto& data) { data.value = value; }));
+    return wrap_expression(repository, builder, intern<formalism::FunctionExpression<formalism::NumberTag>>(repository, builder, [&](auto& data) { data.value = value; }));
 }
 
 formalism::FunctionExpressionView binary_expression(formalism::Repository& repository,
@@ -97,7 +97,7 @@ formalism::FunctionExpressionView binary_expression(formalism::Repository& repos
 {
     return wrap_expression(repository,
                            builder,
-                           intern<formalism::BinaryFunctionExpression>(repository,
+                           intern<formalism::FunctionExpression<formalism::BinaryTag>>(repository,
                                                                        builder,
                                                                        [&](auto& data)
                                                                        {
@@ -114,7 +114,7 @@ formalism::FunctionExpressionView multi_expression(formalism::Repository& reposi
 {
     return wrap_expression(repository,
                            builder,
-                           intern<formalism::MultiFunctionExpression>(repository,
+                           intern<formalism::FunctionExpression<formalism::MultiTag>>(repository,
                                                                       builder,
                                                                       [&](auto& data)
                                                                       {
@@ -130,17 +130,17 @@ bool contains_binary_add_or_multiply(formalism::FunctionExpressionView expressio
         [](const auto& node) -> bool
         {
             using Node = std::decay_t<decltype(node)>;
-            if constexpr (std::is_same_v<Node, formalism::UnaryFunctionExpressionView>)
+            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>>>)
             {
                 return contains_binary_add_or_multiply(node.get_expression());
             }
-            else if constexpr (std::is_same_v<Node, formalism::BinaryFunctionExpressionView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>>)
             {
                 if (node.get_operator() == formalism::BinaryArithmeticOperator::Add || node.get_operator() == formalism::BinaryArithmeticOperator::Mul)
                     return true;
                 return contains_binary_add_or_multiply(node.get_left()) || contains_binary_add_or_multiply(node.get_right());
             }
-            else if constexpr (std::is_same_v<Node, formalism::MultiFunctionExpressionView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>)
             {
                 for (const auto child : node.get_args())
                     if (contains_binary_add_or_multiply(child))
@@ -595,10 +595,10 @@ TEST(LokiSemanticTranslator, FlattensDeepArithmeticBeforeMaterializing)
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::NormalizeArithmeticExpressions);
     const auto normalized = translator.copy(source);
 
-    ASSERT_TRUE(normalized.get_variant().is<ygg::Index<formalism::MultiFunctionExpression>>());
-    const auto multi = normalized.get_variant().get<ygg::Index<formalism::MultiFunctionExpression>>();
+    ASSERT_TRUE(normalized.get_variant().is<ygg::Index<formalism::FunctionExpression<formalism::MultiTag>>>());
+    const auto multi = normalized.get_variant().get<ygg::Index<formalism::FunctionExpression<formalism::MultiTag>>>();
     EXPECT_EQ(multi.get_args().size(), operand_count);
-    EXPECT_EQ(storage->repository.size<formalism::MultiFunctionExpression>(), 1);
+    EXPECT_EQ(storage->repository.size<formalism::FunctionExpression<formalism::MultiTag>>(), 1);
 }
 
 TEST(LokiSemanticTranslator, AppliesArithmeticNormalizationAfterEffectNormalFormWhenEnabled)
@@ -676,15 +676,15 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
     const auto q_literal = make_literal(q_atom);
     const auto make_condition = [&](auto literal)
     {
-        const auto condition_literal = intern<formalism::ConditionLiteral>(repository, builder, [&](auto& data) { data.literal = literal; }).get_index();
-        return intern<formalism::Condition>(repository, builder, [&](auto& data) { data.variant = ygg::Data<formalism::Condition>::Variant(condition_literal); });
+        const auto condition_literal = intern<formalism::Condition<formalism::LiteralTag>>(repository, builder, [&](auto& data) { data.literal = literal; }).get_index();
+        return intern<formalism::Condition<>>(repository, builder, [&](auto& data) { data.variant = ygg::Data<formalism::Condition<>>::Variant(condition_literal); });
     };
     const auto p_condition_view = make_condition(p_literal);
     const auto q_condition_view = make_condition(q_literal);
     const auto p_condition = p_condition_view.get_index();
     const auto q_condition = q_condition_view.get_index();
 
-    const auto first = intern<formalism::ConditionAnd>(repository,
+    const auto first = intern<formalism::Condition<formalism::AndTag>>(repository,
                                                        builder,
                                                        [&](auto& data)
                                                        {
@@ -692,7 +692,7 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
                                                            data.conditions.push_back(p_condition);
                                                        });
 
-    const auto second = intern<formalism::ConditionAnd>(repository,
+    const auto second = intern<formalism::Condition<formalism::AndTag>>(repository,
                                                         builder,
                                                         [&](auto& data)
                                                         {

@@ -1,5 +1,4 @@
 #include "loki/formalism/effect_probabilistic_alternative_data.hpp"
-#include "loki/formalism/effect_probabilistic_alternative_index.hpp"
 #include "loki/formalism/effect_probabilistic_alternative_view.hpp"
 #include "loki/formalism/repository.hpp"
 

@@ -1,13 +1,12 @@
 #include "loki/formalism/effect_data.hpp"
-#include "loki/formalism/effect_index.hpp"
 #include "loki/formalism/effect_view.hpp"
 #include "loki/formalism/repository.hpp"
 
 #include <concepts>
 
 namespace f = loki::formalism;
-using Index = ygg::Index<f::Effect>;
-using Data = ygg::Data<f::Effect>;
+using Index = ygg::Index<f::Effect<>>;
+using Data = ygg::Data<f::Effect<>>;
 using View = ygg::View<Index, f::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);

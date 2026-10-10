@@ -28,10 +28,10 @@ namespace loki::formalism
 
 void bind_effect_literal(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::EffectLiteral>>(m, "EffectLiteralIndex");
+    ygg::bind_index<ygg::Index<formalism::Effect<formalism::LiteralTag>>>(m, "EffectLiteralIndex");
 
     {
-        using V = Data<formalism::EffectLiteral>;
+        using V = Data<formalism::Effect<formalism::LiteralTag>>;
         bind_data<V>(m, "EffectLiteralData")
             .def(nb::init<ygg::Index<formalism::Literal>>(), "literal"_a)
             .def(nb::init<formalism::LiteralView>(), "literal"_a)
@@ -39,7 +39,7 @@ void bind_effect_literal(nb::module_& m, RepositoryBinding& repository)
     }
 
     {
-        using V = formalism::EffectLiteralView;
+        using V = formalism::EntityView<formalism::Effect<formalism::LiteralTag>>;
         auto cls = nb::class_<V>(m, "EffectLiteral");
         cls.def("get_index", &V::get_index).def("get_literal", &V::get_literal, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
@@ -47,7 +47,7 @@ void bind_effect_literal(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::EffectLiteral>(repository);
+    bind_insert<formalism::Effect<formalism::LiteralTag>>(repository);
 }
 
 }  // namespace loki::formalism

@@ -1,5 +1,4 @@
 #include "loki/formalism/function_skeleton_data.hpp"
-#include "loki/formalism/function_skeleton_index.hpp"
 #include "loki/formalism/function_skeleton_view.hpp"
 #include "loki/formalism/repository.hpp"
 

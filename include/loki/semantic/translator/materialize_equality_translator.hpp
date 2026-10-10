@@ -65,24 +65,24 @@ bool MaterializeEqualityTranslator<Derived>::condition_uses_equality(formalism::
         [&](const auto& node) -> bool
         {
             using Node = std::decay_t<decltype(node)>;
-            if constexpr (std::is_same_v<Node, formalism::ConditionLiteralView>)
+            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::LiteralTag>>>)
                 return this->self().literal_uses_equality(node.get_literal());
-            else if constexpr (std::is_same_v<Node, formalism::ConditionAndView> || std::is_same_v<Node, formalism::ConditionOrView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
             {
                 for (auto child : node.get_conditions())
                     if (this->self().condition_uses_equality(child))
                         return true;
                 return false;
             }
-            else if constexpr (std::is_same_v<Node, formalism::ConditionNotView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::NotTag>>>)
             {
                 return this->self().condition_uses_equality(node.get_condition());
             }
-            else if constexpr (std::is_same_v<Node, formalism::ConditionImplyView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ImplyTag>>>)
             {
                 return this->self().condition_uses_equality(node.get_left()) || this->self().condition_uses_equality(node.get_right());
             }
-            else if constexpr (std::is_same_v<Node, formalism::ConditionExistsView> || std::is_same_v<Node, formalism::ConditionForallView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
             {
                 return this->self().condition_uses_equality(node.get_condition());
             }
@@ -101,24 +101,24 @@ bool MaterializeEqualityTranslator<Derived>::effect_uses_equality(formalism::Eff
         [&](const auto& node) -> bool
         {
             using Node = std::decay_t<decltype(node)>;
-            if constexpr (std::is_same_v<Node, formalism::EffectLiteralView>)
+            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::LiteralTag>>>)
                 return this->self().literal_uses_equality(node.get_literal());
-            else if constexpr (std::is_same_v<Node, formalism::EffectAndView> || std::is_same_v<Node, formalism::EffectOneOfView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 for (auto child : node.get_effects())
                     if (this->self().effect_uses_equality(child))
                         return true;
                 return false;
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectForallView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
             {
                 return this->self().effect_uses_equality(node.get_effect());
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectWhenView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
             {
                 return this->self().condition_uses_equality(node.get_condition()) || this->self().effect_uses_equality(node.get_effect());
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectProbabilisticView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
             {
                 for (auto alternative : node.get_alternatives())
                     if (this->self().effect_uses_equality(alternative.get_effect()))

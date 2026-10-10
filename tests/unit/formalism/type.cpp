@@ -1,6 +1,5 @@
 #include "loki/formalism/repository.hpp"
 #include "loki/formalism/type_data.hpp"
-#include "loki/formalism/type_index.hpp"
 #include "loki/formalism/type_view.hpp"
 
 #include <concepts>

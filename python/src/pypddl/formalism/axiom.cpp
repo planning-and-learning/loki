@@ -35,11 +35,11 @@ void bind_axiom(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::Axiom>;
         bind_data<V>(m, "AxiomData")
-            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Literal>, ygg::Index<formalism::Condition>>(),
+            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Literal>, ygg::Index<formalism::Condition<>>>(),
                  "parameters"_a,
                  "head"_a,
                  "condition"_a)
-            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::uint_t, ygg::Index<formalism::Literal>, ygg::Index<formalism::Condition>>(),
+            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::uint_t, ygg::Index<formalism::Literal>, ygg::Index<formalism::Condition<>>>(),
                  "parameters"_a,
                  "original_arity"_a,
                  "head"_a,

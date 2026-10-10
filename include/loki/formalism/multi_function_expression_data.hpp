@@ -19,9 +19,6 @@
 #define LOKI_FORMALISM_MULTI_FUNCTION_EXPRESSION_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
-#include "loki/formalism/function_expression_index.hpp"
-#include "loki/formalism/multi_function_expression_index.hpp"
-
 #include <optional>
 #include <string>
 #include <tuple>
@@ -35,18 +32,18 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::MultiFunctionExpression>
+struct Data<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>
 {
-    ygg::Index<::loki::formalism::MultiFunctionExpression> index;
+    ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>> index;
     ::loki::formalism::MultiArithmeticOperator op {};
-    ygg::IndexList<::loki::formalism::FunctionExpression> args;
+    ygg::IndexList<::loki::formalism::FunctionExpression<>> args;
 
     Data() = default;
-    Data(::loki::formalism::MultiArithmeticOperator op_, ygg::IndexList<::loki::formalism::FunctionExpression> args_) : index(), op(op_), args(std::move(args_))
+    Data(::loki::formalism::MultiArithmeticOperator op_, ygg::IndexList<::loki::formalism::FunctionExpression<>> args_) : index(), op(op_), args(std::move(args_))
     {
     }
     template<typename C>
-    Data(::loki::formalism::MultiArithmeticOperator op_, const std::vector<::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C>>& args_) :
+    Data(::loki::formalism::MultiArithmeticOperator op_, const std::vector<::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C>>& args_) :
         index(),
         op(op_),
         args()

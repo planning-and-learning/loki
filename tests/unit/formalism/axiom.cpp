@@ -1,5 +1,4 @@
 #include "loki/formalism/axiom_data.hpp"
-#include "loki/formalism/axiom_index.hpp"
 #include "loki/formalism/axiom_view.hpp"
 #include "loki/formalism/repository.hpp"
 

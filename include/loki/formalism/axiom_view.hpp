@@ -24,19 +24,16 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
 template<ygg::formalism::SymbolContextFor<::loki::formalism::Axiom> C>
-class View<ygg::Index<::loki::formalism::Axiom>, C> : public ygg::formalism::detail::View<ygg::Index<::loki::formalism::Axiom>, C>
+class View<ygg::Index<::loki::formalism::Axiom>, C> : public ygg::IndexViewBase<::loki::formalism::Axiom, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::Axiom> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::Axiom>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::Axiom, C>::IndexViewBase;
 
     auto get_parameters() const noexcept { return ygg::make_view(this->get_data().parameters, this->get_context()); }
     auto get_arity() const noexcept { return this->get_data().parameters.size(); }

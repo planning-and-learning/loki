@@ -22,7 +22,6 @@
 #include <fstream>
 #include <iostream>
 #include <loki/formalism/formatter.hpp>
-#include <loki/formalism/indices.hpp>
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
 #include <loki/semantic/translator.hpp>

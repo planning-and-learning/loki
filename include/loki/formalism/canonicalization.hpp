@@ -39,14 +39,14 @@ inline void canonicalize(Repository&, ygg::Data<T>&) noexcept
 inline void canonicalize(Repository& repository, ygg::Data<Type>& data) { ygg::canonicalize(repository, data.bases); }
 inline void canonicalize(Repository& repository, ygg::Data<Object>& data) { ygg::canonicalize(repository, data.types); }
 inline void canonicalize(Repository& repository, ygg::Data<Parameter>& data) { ygg::canonicalize(repository, data.types); }
-inline void canonicalize(Repository& repository, ygg::Data<MultiFunctionExpression>& data) { ygg::canonicalize<false>(repository, data.args); }
-inline void canonicalize(Repository& repository, ygg::Data<ConditionAnd>& data) { ygg::canonicalize(repository, data.conditions); }
-inline void canonicalize(Repository& repository, ygg::Data<ConditionOr>& data) { ygg::canonicalize(repository, data.conditions); }
-inline void canonicalize(Repository& repository, ygg::Data<ConditionExists>& data) { ygg::canonicalize(repository, data.parameters); }
-inline void canonicalize(Repository& repository, ygg::Data<ConditionForall>& data) { ygg::canonicalize(repository, data.parameters); }
-inline void canonicalize(Repository& repository, ygg::Data<EffectAnd>& data) { ygg::canonicalize(repository, data.effects); }
-inline void canonicalize(Repository& repository, ygg::Data<EffectOneOf>& data) { ygg::canonicalize(repository, data.effects); }
-inline void canonicalize(Repository& repository, ygg::Data<EffectProbabilistic>& data) { ygg::canonicalize(repository, data.alternatives); }
+inline void canonicalize(Repository& repository, ygg::Data<FunctionExpression<MultiTag>>& data) { ygg::canonicalize<false>(repository, data.args); }
+inline void canonicalize(Repository& repository, ygg::Data<Condition<AndTag>>& data) { ygg::canonicalize(repository, data.conditions); }
+inline void canonicalize(Repository& repository, ygg::Data<Condition<OrTag>>& data) { ygg::canonicalize(repository, data.conditions); }
+inline void canonicalize(Repository& repository, ygg::Data<Condition<ExistsTag>>& data) { ygg::canonicalize(repository, data.parameters); }
+inline void canonicalize(Repository& repository, ygg::Data<Condition<ForallTag>>& data) { ygg::canonicalize(repository, data.parameters); }
+inline void canonicalize(Repository& repository, ygg::Data<Effect<AndTag>>& data) { ygg::canonicalize(repository, data.effects); }
+inline void canonicalize(Repository& repository, ygg::Data<Effect<OneOfTag>>& data) { ygg::canonicalize(repository, data.effects); }
+inline void canonicalize(Repository& repository, ygg::Data<Effect<ProbabilisticTag>>& data) { ygg::canonicalize(repository, data.alternatives); }
 
 inline void canonicalize(Repository& repository, ygg::Data<Domain>& data)
 {
@@ -81,17 +81,17 @@ inline bool is_canonical(const Repository&, const ygg::Data<T>&) noexcept
 inline bool is_canonical(const Repository& repository, const ygg::Data<Type>& data) { return ygg::is_canonical(repository, data.bases); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<Object>& data) { return ygg::is_canonical(repository, data.types); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<Parameter>& data) { return ygg::is_canonical(repository, data.types); }
-inline bool is_canonical(const Repository& repository, const ygg::Data<MultiFunctionExpression>& data)
+inline bool is_canonical(const Repository& repository, const ygg::Data<FunctionExpression<MultiTag>>& data)
 {
     return ygg::is_canonical<false>(repository, data.args);
 }
-inline bool is_canonical(const Repository& repository, const ygg::Data<ConditionAnd>& data) { return ygg::is_canonical(repository, data.conditions); }
-inline bool is_canonical(const Repository& repository, const ygg::Data<ConditionOr>& data) { return ygg::is_canonical(repository, data.conditions); }
-inline bool is_canonical(const Repository& repository, const ygg::Data<ConditionExists>& data) { return ygg::is_canonical(repository, data.parameters); }
-inline bool is_canonical(const Repository& repository, const ygg::Data<ConditionForall>& data) { return ygg::is_canonical(repository, data.parameters); }
-inline bool is_canonical(const Repository& repository, const ygg::Data<EffectAnd>& data) { return ygg::is_canonical(repository, data.effects); }
-inline bool is_canonical(const Repository& repository, const ygg::Data<EffectOneOf>& data) { return ygg::is_canonical(repository, data.effects); }
-inline bool is_canonical(const Repository& repository, const ygg::Data<EffectProbabilistic>& data) { return ygg::is_canonical(repository, data.alternatives); }
+inline bool is_canonical(const Repository& repository, const ygg::Data<Condition<AndTag>>& data) { return ygg::is_canonical(repository, data.conditions); }
+inline bool is_canonical(const Repository& repository, const ygg::Data<Condition<OrTag>>& data) { return ygg::is_canonical(repository, data.conditions); }
+inline bool is_canonical(const Repository& repository, const ygg::Data<Condition<ExistsTag>>& data) { return ygg::is_canonical(repository, data.parameters); }
+inline bool is_canonical(const Repository& repository, const ygg::Data<Condition<ForallTag>>& data) { return ygg::is_canonical(repository, data.parameters); }
+inline bool is_canonical(const Repository& repository, const ygg::Data<Effect<AndTag>>& data) { return ygg::is_canonical(repository, data.effects); }
+inline bool is_canonical(const Repository& repository, const ygg::Data<Effect<OneOfTag>>& data) { return ygg::is_canonical(repository, data.effects); }
+inline bool is_canonical(const Repository& repository, const ygg::Data<Effect<ProbabilisticTag>>& data) { return ygg::is_canonical(repository, data.alternatives); }
 
 inline bool is_canonical(const Repository& repository, const ygg::Data<Domain>& data)
 {

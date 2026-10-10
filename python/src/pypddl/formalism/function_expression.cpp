@@ -23,6 +23,7 @@
 #include <loki/formalism/function_term_view.hpp>
 #include <loki/formalism/multi_function_expression_view.hpp>
 #include <loki/formalism/unary_function_expression_view.hpp>
+#include <yggdrasil/python/type_casters/variant.hpp>
 
 namespace nb = nanobind;
 using namespace nb::literals;
@@ -32,10 +33,10 @@ namespace loki::formalism
 
 void bind_function_expression(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::FunctionExpression>>(m, "FunctionExpressionIndex");
+    ygg::bind_index<ygg::Index<formalism::FunctionExpression<>>>(m, "FunctionExpressionIndex");
 
     {
-        using V = Data<formalism::FunctionExpression>;
+        using V = Data<formalism::FunctionExpression<>>;
         bind_data<V>(m, "FunctionExpressionData")
             .def(nb::init<V::Variant>(), "variant"_a)
             .def(nb::init<typename V::template ViewVariant<formalism::Repository>>(), "variant"_a)
@@ -51,7 +52,7 @@ void bind_function_expression(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::FunctionExpression>(repository);
+    bind_insert<formalism::FunctionExpression<>>(repository);
 }
 
 }  // namespace loki::formalism

@@ -24,19 +24,16 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::ConditionImply> C>
-class View<ygg::Index<::loki::formalism::ConditionImply>, C> : public ygg::formalism::detail::View<ygg::Index<::loki::formalism::ConditionImply>, C>
+template<ygg::formalism::SymbolContextFor<::loki::formalism::Condition<::loki::formalism::ImplyTag>> C>
+class View<ygg::Index<::loki::formalism::Condition<::loki::formalism::ImplyTag>>, C> : public ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ImplyTag>, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::ConditionImply> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::ConditionImply>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ImplyTag>, C>::IndexViewBase;
 
     auto get_left() const noexcept { return ygg::make_view(this->get_data().left, this->get_context()); }
     auto get_right() const noexcept { return ygg::make_view(this->get_data().right, this->get_context()); }

@@ -24,20 +24,17 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::FunctionExpressionNumber> C>
-class View<ygg::Index<::loki::formalism::FunctionExpressionNumber>, C> :
-    public ygg::formalism::detail::View<ygg::Index<::loki::formalism::FunctionExpressionNumber>, C>
+template<ygg::formalism::SymbolContextFor<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>> C>
+class View<ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>, C> :
+    public ygg::IndexViewBase<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::FunctionExpressionNumber> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::FunctionExpressionNumber>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>, C>::IndexViewBase;
 
     auto get_value() const noexcept { return this->get_data().value; }
 };

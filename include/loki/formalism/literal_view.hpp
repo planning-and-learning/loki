@@ -24,19 +24,16 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
 template<ygg::formalism::SymbolContextFor<::loki::formalism::Literal> C>
-class View<ygg::Index<::loki::formalism::Literal>, C> : public ygg::formalism::detail::View<ygg::Index<::loki::formalism::Literal>, C>
+class View<ygg::Index<::loki::formalism::Literal>, C> : public ygg::IndexViewBase<::loki::formalism::Literal, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::Literal> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::Literal>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::Literal, C>::IndexViewBase;
 
     bool get_polarity() const noexcept { return this->get_data().m_polarity; }
     auto get_atom() const noexcept { return ygg::make_view(this->get_data().atom, this->get_context()); }

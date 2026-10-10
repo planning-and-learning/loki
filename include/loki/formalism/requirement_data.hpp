@@ -18,7 +18,7 @@
 #ifndef LOKI_FORMALISM_REQUIREMENT_DATA_HPP_
 #define LOKI_FORMALISM_REQUIREMENT_DATA_HPP_
 
-#include "loki/formalism/requirement_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>

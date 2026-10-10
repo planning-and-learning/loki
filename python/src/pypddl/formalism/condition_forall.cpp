@@ -29,19 +29,19 @@ namespace loki::formalism
 
 void bind_condition_forall(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::ConditionForall>>(m, "ConditionForallIndex");
+    ygg::bind_index<ygg::Index<formalism::Condition<formalism::ForallTag>>>(m, "ConditionForallIndex");
 
     {
-        using V = Data<formalism::ConditionForall>;
+        using V = Data<formalism::Condition<formalism::ForallTag>>;
         bind_data<V>(m, "ConditionForallData")
-            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Condition>>(), "parameters"_a, "condition"_a)
+            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Condition<>>>(), "parameters"_a, "condition"_a)
             .def(nb::init<const std::vector<formalism::ParameterView>&, formalism::ConditionView>(), "parameters"_a, "condition"_a)
             .def_rw("parameters", &V::parameters)
             .def_rw("condition", &V::condition);
     }
 
     {
-        using V = formalism::ConditionForallView;
+        using V = formalism::EntityView<formalism::Condition<formalism::ForallTag>>;
         auto cls = nb::class_<V>(m, "ConditionForall");
         cls.def("get_index", &V::get_index).def("get_parameters", &V::get_parameters).def("get_condition", &V::get_condition, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
@@ -49,7 +49,7 @@ void bind_condition_forall(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::ConditionForall>(repository);
+    bind_insert<formalism::Condition<formalism::ForallTag>>(repository);
 }
 
 }  // namespace loki::formalism

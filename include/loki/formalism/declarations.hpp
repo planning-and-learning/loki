@@ -89,78 +89,93 @@ struct Atom
 struct Literal
 {
 };
-struct FunctionExpressionNumber
-{
-};
 struct FunctionTerm
-{
-};
-struct UnaryFunctionExpression
-{
-};
-struct BinaryFunctionExpression
-{
-};
-struct MultiFunctionExpression
-{
-};
-struct FunctionExpression
-{
-};
-struct ConditionLiteral
-{
-};
-struct ConditionAnd
-{
-};
-struct ConditionOr
-{
-};
-struct ConditionNot
-{
-};
-struct ConditionImply
-{
-};
-struct ConditionExists
-{
-};
-struct ConditionForall
-{
-};
-struct ConditionNumericConstraint
-{
-};
-struct Condition
-{
-};
-struct EffectLiteral
-{
-};
-struct EffectAnd
-{
-};
-struct EffectNumeric
-{
-};
-struct EffectForall
-{
-};
-struct EffectWhen
-{
-};
-struct EffectOneOf
 {
 };
 struct EffectProbabilisticAlternative
 {
 };
-struct EffectProbabilistic
+
+// Shared tags
+struct LiteralTag
 {
 };
+struct AndTag
+{
+};
+struct ForallTag
+{
+};
+
+// Condition-only tags
+struct OrTag
+{
+};
+struct NotTag
+{
+};
+struct ImplyTag
+{
+};
+struct ExistsTag
+{
+};
+struct NumericConstraintTag
+{
+};
+
+// Effect-only tags
+struct NumericTag
+{
+};
+struct WhenTag
+{
+};
+struct OneOfTag
+{
+};
+struct ProbabilisticTag
+{
+};
+
+// FunctionExpression tags
+struct NumberTag
+{
+};
+struct UnaryTag
+{
+};
+struct BinaryTag
+{
+};
+struct MultiTag
+{
+};
+
+using FunctionExpressionTags = ygg::TypeList<NumberTag, UnaryTag, BinaryTag, MultiTag>;
+using ConditionTags = ygg::TypeList<LiteralTag, AndTag, OrTag, NotTag, ImplyTag, ExistsTag, ForallTag, NumericConstraintTag>;
+using EffectTags = ygg::TypeList<LiteralTag, AndTag, NumericTag, ForallTag, WhenTag, OneOfTag, ProbabilisticTag>;
+
+/// Tag void is the type-erased record holding one of the family's concrete records.
+template<typename Tag = void>
+    requires(std::is_void_v<Tag> || ygg::InTypeList<Tag, FunctionExpressionTags>)
+struct FunctionExpression
+{
+};
+template<typename Tag = void>
+    requires(std::is_void_v<Tag> || ygg::InTypeList<Tag, ConditionTags>)
+struct Condition
+{
+};
+template<typename Tag = void>
+    requires(std::is_void_v<Tag> || ygg::InTypeList<Tag, EffectTags>)
 struct Effect
 {
 };
+
+using FunctionExpressionTypes =
+    ygg::ConcatTypeListsT<ygg::TypeList<FunctionExpression<NumberTag>, FunctionTerm>, ygg::MapTypeListT<FunctionExpression, ygg::TypeList<UnaryTag, BinaryTag, MultiTag>>>;
+
 struct Action
 {
 };
@@ -180,46 +195,35 @@ struct Task
 {
 };
 
-using SymbolRepositoryTypes = ygg::TypeList<Requirement,
-                                            Type,
-                                            Object,
-                                            Variable,
-                                            Parameter,
-                                            Predicate,
-                                            FunctionSkeleton,
-                                            Term,
-                                            Atom,
-                                            Literal,
-                                            FunctionExpressionNumber,
-                                            FunctionTerm,
-                                            UnaryFunctionExpression,
-                                            BinaryFunctionExpression,
-                                            MultiFunctionExpression,
-                                            FunctionExpression,
-                                            ConditionLiteral,
-                                            ConditionAnd,
-                                            ConditionOr,
-                                            ConditionNot,
-                                            ConditionImply,
-                                            ConditionExists,
-                                            ConditionForall,
-                                            ConditionNumericConstraint,
-                                            Condition,
-                                            EffectLiteral,
-                                            EffectAnd,
-                                            EffectNumeric,
-                                            EffectForall,
-                                            EffectWhen,
-                                            EffectOneOf,
-                                            EffectProbabilisticAlternative,
-                                            EffectProbabilistic,
-                                            Effect,
-                                            Action,
-                                            Axiom,
-                                            Metric,
-                                            InitialFunctionValue,
-                                            Domain,
-                                            Task>;
+using SymbolRepositoryTypes = ygg::ConcatTypeListsT<ygg::TypeList<Requirement,
+                                                                   Type,
+                                                                   Object,
+                                                                   Variable,
+                                                                   Parameter,
+                                                                   Predicate,
+                                                                   FunctionSkeleton,
+                                                                   Term,
+                                                                   Atom,
+                                                                   Literal>,
+                                                    FunctionExpressionTypes,
+                                                    ygg::TypeList<FunctionExpression<>>,
+                                                    ygg::MapTypeListT<Condition, ConditionTags>,
+                                                    ygg::TypeList<Condition<>,
+                                                                  Effect<LiteralTag>,
+                                                                  Effect<AndTag>,
+                                                                  Effect<NumericTag>,
+                                                                  Effect<ForallTag>,
+                                                                  Effect<WhenTag>,
+                                                                  Effect<OneOfTag>,
+                                                                  EffectProbabilisticAlternative,
+                                                                  Effect<ProbabilisticTag>,
+                                                                  Effect<>,
+                                                                  Action,
+                                                                  Axiom,
+                                                                  Metric,
+                                                                  InitialFunctionValue,
+                                                                  Domain,
+                                                                  Task>>;
 using RelationRepositoryTypes = ygg::TypeList<Atom>;
 
 using SymbolRepository = ygg::ApplyTypeListT<::ygg::formalism::SymbolRepository, SymbolRepositoryTypes>;
@@ -247,30 +251,11 @@ using FunctionSkeletonView = EntityView<FunctionSkeleton>;
 using TermView = EntityView<Term>;
 using AtomView = EntityView<Atom>;
 using LiteralView = EntityView<Literal>;
-using FunctionExpressionNumberView = EntityView<FunctionExpressionNumber>;
 using FunctionTermView = EntityView<FunctionTerm>;
-using UnaryFunctionExpressionView = EntityView<UnaryFunctionExpression>;
-using BinaryFunctionExpressionView = EntityView<BinaryFunctionExpression>;
-using MultiFunctionExpressionView = EntityView<MultiFunctionExpression>;
-using FunctionExpressionView = EntityView<FunctionExpression>;
-using ConditionLiteralView = EntityView<ConditionLiteral>;
-using ConditionAndView = EntityView<ConditionAnd>;
-using ConditionOrView = EntityView<ConditionOr>;
-using ConditionNotView = EntityView<ConditionNot>;
-using ConditionImplyView = EntityView<ConditionImply>;
-using ConditionExistsView = EntityView<ConditionExists>;
-using ConditionForallView = EntityView<ConditionForall>;
-using ConditionNumericConstraintView = EntityView<ConditionNumericConstraint>;
-using ConditionView = EntityView<Condition>;
-using EffectLiteralView = EntityView<EffectLiteral>;
-using EffectAndView = EntityView<EffectAnd>;
-using EffectNumericView = EntityView<EffectNumeric>;
-using EffectForallView = EntityView<EffectForall>;
-using EffectWhenView = EntityView<EffectWhen>;
-using EffectOneOfView = EntityView<EffectOneOf>;
+using FunctionExpressionView = EntityView<FunctionExpression<>>;
+using ConditionView = EntityView<Condition<>>;
 using EffectProbabilisticAlternativeView = EntityView<EffectProbabilisticAlternative>;
-using EffectProbabilisticView = EntityView<EffectProbabilistic>;
-using EffectView = EntityView<Effect>;
+using EffectView = EntityView<Effect<>>;
 using ActionView = EntityView<Action>;
 using AxiomView = EntityView<Axiom>;
 using MetricView = EntityView<Metric>;

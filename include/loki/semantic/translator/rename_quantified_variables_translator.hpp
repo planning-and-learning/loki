@@ -40,29 +40,29 @@ public:
     formalism::AtomView rename_variables(formalism::AtomView source);
     formalism::LiteralView rename_variables(formalism::LiteralView source);
     formalism::FunctionTermView rename_variables(formalism::FunctionTermView source);
-    formalism::UnaryFunctionExpressionView rename_variables(formalism::UnaryFunctionExpressionView source);
-    formalism::BinaryFunctionExpressionView rename_variables(formalism::BinaryFunctionExpressionView source);
-    formalism::MultiFunctionExpressionView rename_variables(formalism::MultiFunctionExpressionView source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> rename_variables(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> rename_variables(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> rename_variables(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source);
     formalism::FunctionExpressionView rename_variables(formalism::FunctionExpressionView source);
 
-    formalism::ConditionLiteralView rename_variables(formalism::ConditionLiteralView source);
-    formalism::ConditionAndView rename_variables(formalism::ConditionAndView source);
-    formalism::ConditionOrView rename_variables(formalism::ConditionOrView source);
-    formalism::ConditionNotView rename_variables(formalism::ConditionNotView source);
-    formalism::ConditionImplyView rename_variables(formalism::ConditionImplyView source);
-    formalism::ConditionExistsView rename_variables(formalism::ConditionExistsView source);
-    formalism::ConditionForallView rename_variables(formalism::ConditionForallView source);
-    formalism::ConditionNumericConstraintView rename_variables(formalism::ConditionNumericConstraintView source);
+    formalism::EntityView<formalism::Condition<formalism::LiteralTag>> rename_variables(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source);
+    formalism::EntityView<formalism::Condition<formalism::AndTag>> rename_variables(formalism::EntityView<formalism::Condition<formalism::AndTag>> source);
+    formalism::EntityView<formalism::Condition<formalism::OrTag>> rename_variables(formalism::EntityView<formalism::Condition<formalism::OrTag>> source);
+    formalism::EntityView<formalism::Condition<formalism::NotTag>> rename_variables(formalism::EntityView<formalism::Condition<formalism::NotTag>> source);
+    formalism::EntityView<formalism::Condition<formalism::ImplyTag>> rename_variables(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source);
+    formalism::EntityView<formalism::Condition<formalism::ExistsTag>> rename_variables(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source);
+    formalism::EntityView<formalism::Condition<formalism::ForallTag>> rename_variables(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source);
+    formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> rename_variables(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source);
     formalism::ConditionView rename_variables(formalism::ConditionView source);
 
-    formalism::EffectLiteralView rename_variables(formalism::EffectLiteralView source);
-    formalism::EffectAndView rename_variables(formalism::EffectAndView source);
-    formalism::EffectNumericView rename_variables(formalism::EffectNumericView source);
-    formalism::EffectForallView rename_variables(formalism::EffectForallView source);
-    formalism::EffectWhenView rename_variables(formalism::EffectWhenView source);
-    formalism::EffectOneOfView rename_variables(formalism::EffectOneOfView source);
+    formalism::EntityView<formalism::Effect<formalism::LiteralTag>> rename_variables(formalism::EntityView<formalism::Effect<formalism::LiteralTag>> source);
+    formalism::EntityView<formalism::Effect<formalism::AndTag>> rename_variables(formalism::EntityView<formalism::Effect<formalism::AndTag>> source);
+    formalism::EntityView<formalism::Effect<formalism::NumericTag>> rename_variables(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source);
+    formalism::EntityView<formalism::Effect<formalism::ForallTag>> rename_variables(formalism::EntityView<formalism::Effect<formalism::ForallTag>> source);
+    formalism::EntityView<formalism::Effect<formalism::WhenTag>> rename_variables(formalism::EntityView<formalism::Effect<formalism::WhenTag>> source);
+    formalism::EntityView<formalism::Effect<formalism::OneOfTag>> rename_variables(formalism::EntityView<formalism::Effect<formalism::OneOfTag>> source);
     formalism::EffectProbabilisticAlternativeView rename_variables(formalism::EffectProbabilisticAlternativeView source);
-    formalism::EffectProbabilisticView rename_variables(formalism::EffectProbabilisticView source);
+    formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> rename_variables(formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> source);
     formalism::EffectView rename_variables(formalism::EffectView source);
 
     formalism::ActionView rename_action_variables(formalism::ActionView source);
@@ -196,23 +196,23 @@ formalism::FunctionTermView RenameQuantifiedVariablesTranslator<Derived>::rename
 }
 
 template<typename Derived>
-formalism::UnaryFunctionExpressionView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::UnaryFunctionExpressionView source)
+formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source)
 {
     const auto& data = source.get_data();
     const auto expression = as_index(this->self().rename_variables(source.get_expression()));
-    auto result = formalism::checkout<formalism::UnaryFunctionExpression>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(this->m_context.builder);
     result->op = data.op;
     result->expression = expression;
     return formalism::insert(this->m_context.storage->repository, *result).first;
 }
 
 template<typename Derived>
-formalism::BinaryFunctionExpressionView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::BinaryFunctionExpressionView source)
+formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source)
 {
     const auto& data = source.get_data();
     const auto left = as_index(this->self().rename_variables(source.get_left()));
     const auto right = as_index(this->self().rename_variables(source.get_right()));
-    auto result = formalism::checkout<formalism::BinaryFunctionExpression>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::FunctionExpression<formalism::BinaryTag>>(this->m_context.builder);
     result->op = data.op;
     result->left = left;
     result->right = right;
@@ -220,10 +220,10 @@ formalism::BinaryFunctionExpressionView RenameQuantifiedVariablesTranslator<Deri
 }
 
 template<typename Derived>
-formalism::MultiFunctionExpressionView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::MultiFunctionExpressionView source)
+formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source)
 {
     const auto& data = source.get_data();
-    auto result = formalism::checkout<formalism::MultiFunctionExpression>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::FunctionExpression<formalism::MultiTag>>(this->m_context.builder);
     for (auto expression : source.get_args())
         result->args.push_back(as_index(this->self().rename_variables(expression)));
     result->op = data.op;
@@ -234,74 +234,74 @@ template<typename Derived>
 formalism::FunctionExpressionView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::FunctionExpressionView source)
 {
     auto value = ygg::visit(
-        [&](const auto& arg) -> ygg::Data<formalism::FunctionExpression>::Variant
+        [&](const auto& arg) -> ygg::Data<formalism::FunctionExpression<>>::Variant
         {
             using Arg = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<Arg, formalism::FunctionExpressionNumberView>)
+            if constexpr (std::is_same_v<Arg, formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>>)
                 return as_index(this->self().copy(arg));
             else
                 return as_index(this->self().rename_variables(arg));
         },
         source.get_variant());
-    auto data = formalism::checkout<formalism::FunctionExpression>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::FunctionExpression<>>(this->m_context.builder);
     data->variant = std::move(value);
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionLiteralView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::ConditionLiteralView source)
+formalism::EntityView<formalism::Condition<formalism::LiteralTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source)
 {
     const auto literal = as_index(this->self().rename_variables(source.get_literal()));
-    auto data = formalism::checkout<formalism::ConditionLiteral>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->m_context.builder);
     data->literal = literal;
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionAndView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::ConditionAndView source)
+formalism::EntityView<formalism::Condition<formalism::AndTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Condition<formalism::AndTag>> source)
 {
-    auto data = formalism::checkout<formalism::ConditionAnd>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
     for (auto condition : source.get_conditions())
         data->conditions.push_back(as_index(this->self().rename_variables(condition)));
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionOrView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::ConditionOrView source)
+formalism::EntityView<formalism::Condition<formalism::OrTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Condition<formalism::OrTag>> source)
 {
-    auto data = formalism::checkout<formalism::ConditionOr>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->m_context.builder);
     for (auto condition : source.get_conditions())
         data->conditions.push_back(as_index(this->self().rename_variables(condition)));
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionNotView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::ConditionNotView source)
+formalism::EntityView<formalism::Condition<formalism::NotTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
 {
     const auto condition = as_index(this->self().rename_variables(source.get_condition()));
-    auto data = formalism::checkout<formalism::ConditionNot>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(this->m_context.builder);
     data->condition = condition;
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionImplyView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::ConditionImplyView source)
+formalism::EntityView<formalism::Condition<formalism::ImplyTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
 {
     // Sequence the recursions: both sides can assign collision-rename suffixes, and argument
     // evaluation order is unspecified.
     const auto left = as_index(this->self().rename_variables(source.get_left()));
     const auto right = as_index(this->self().rename_variables(source.get_right()));
-    auto data = formalism::checkout<formalism::ConditionImply>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(this->m_context.builder);
     data->left = left;
     data->right = right;
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::ConditionExistsView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::ConditionExistsView source)
+formalism::EntityView<formalism::Condition<formalism::ExistsTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
 {
     this->self().enter_variable_scope();
-    auto data = formalism::checkout<formalism::ConditionExists>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
     this->self().rename_parameters(source.get_parameters(), data->parameters);
     auto condition = as_index(this->self().rename_variables(source.get_condition()));
     this->self().leave_variable_scope();
@@ -310,10 +310,10 @@ formalism::ConditionExistsView RenameQuantifiedVariablesTranslator<Derived>::ren
 }
 
 template<typename Derived>
-formalism::ConditionForallView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::ConditionForallView source)
+formalism::EntityView<formalism::Condition<formalism::ForallTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
 {
     this->self().enter_variable_scope();
-    auto data = formalism::checkout<formalism::ConditionForall>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->m_context.builder);
     this->self().rename_parameters(source.get_parameters(), data->parameters);
     auto condition = as_index(this->self().rename_variables(source.get_condition()));
     this->self().leave_variable_scope();
@@ -322,12 +322,12 @@ formalism::ConditionForallView RenameQuantifiedVariablesTranslator<Derived>::ren
 }
 
 template<typename Derived>
-formalism::ConditionNumericConstraintView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::ConditionNumericConstraintView source)
+formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source)
 {
     const auto& data = source.get_data();
     const auto left = as_index(this->self().rename_variables(source.get_left()));
     const auto right = as_index(this->self().rename_variables(source.get_right()));
-    auto result = formalism::checkout<formalism::ConditionNumericConstraint>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::Condition<formalism::NumericConstraintTag>>(this->m_context.builder);
     result->comparator = data.comparator;
     result->left = left;
     result->right = right;
@@ -337,38 +337,38 @@ formalism::ConditionNumericConstraintView RenameQuantifiedVariablesTranslator<De
 template<typename Derived>
 formalism::ConditionView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::ConditionView source)
 {
-    auto value = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Condition>::Variant { return as_index(this->self().rename_variables(arg)); },
+    auto value = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Condition<>>::Variant { return as_index(this->self().rename_variables(arg)); },
                             source.get_variant());
-    auto data = formalism::checkout<formalism::Condition>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<>>(this->m_context.builder);
     data->variant = std::move(value);
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::EffectLiteralView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EffectLiteralView source)
+formalism::EntityView<formalism::Effect<formalism::LiteralTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Effect<formalism::LiteralTag>> source)
 {
     const auto literal = as_index(this->self().rename_variables(source.get_literal()));
-    auto data = formalism::checkout<formalism::EffectLiteral>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::LiteralTag>>(this->m_context.builder);
     data->literal = literal;
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::EffectAndView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EffectAndView source)
+formalism::EntityView<formalism::Effect<formalism::AndTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Effect<formalism::AndTag>> source)
 {
-    auto data = formalism::checkout<formalism::EffectAnd>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->m_context.builder);
     for (auto effect : source.get_effects())
         data->effects.push_back(as_index(this->self().rename_variables(effect)));
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::EffectNumericView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EffectNumericView source)
+formalism::EntityView<formalism::Effect<formalism::NumericTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source)
 {
     const auto& data = source.get_data();
     const auto function = as_index(this->self().rename_variables(source.get_function()));
     const auto expression = as_index(this->self().rename_variables(source.get_expression()));
-    auto result = formalism::checkout<formalism::EffectNumeric>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::Effect<formalism::NumericTag>>(this->m_context.builder);
     result->op = data.op;
     result->function = function;
     result->expression = expression;
@@ -376,10 +376,10 @@ formalism::EffectNumericView RenameQuantifiedVariablesTranslator<Derived>::renam
 }
 
 template<typename Derived>
-formalism::EffectForallView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EffectForallView source)
+formalism::EntityView<formalism::Effect<formalism::ForallTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Effect<formalism::ForallTag>> source)
 {
     this->self().enter_variable_scope();
-    auto data = formalism::checkout<formalism::EffectForall>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->m_context.builder);
     this->self().rename_parameters(source.get_parameters(), data->parameters);
     auto effect = as_index(this->self().rename_variables(source.get_effect()));
     this->self().leave_variable_scope();
@@ -388,20 +388,20 @@ formalism::EffectForallView RenameQuantifiedVariablesTranslator<Derived>::rename
 }
 
 template<typename Derived>
-formalism::EffectWhenView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EffectWhenView source)
+formalism::EntityView<formalism::Effect<formalism::WhenTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Effect<formalism::WhenTag>> source)
 {
     const auto condition = as_index(this->self().rename_variables(source.get_condition()));
     const auto effect = as_index(this->self().rename_variables(source.get_effect()));
-    auto data = formalism::checkout<formalism::EffectWhen>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->m_context.builder);
     data->condition = condition;
     data->effect = effect;
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
 
 template<typename Derived>
-formalism::EffectOneOfView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EffectOneOfView source)
+formalism::EntityView<formalism::Effect<formalism::OneOfTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Effect<formalism::OneOfTag>> source)
 {
-    auto data = formalism::checkout<formalism::EffectOneOf>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(this->m_context.builder);
     for (auto effect : source.get_effects())
         data->effects.push_back(as_index(this->self().rename_variables(effect)));
     return formalism::insert(this->m_context.storage->repository, *data).first;
@@ -420,9 +420,9 @@ RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::Effect
 }
 
 template<typename Derived>
-formalism::EffectProbabilisticView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EffectProbabilisticView source)
+formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> source)
 {
-    auto data = formalism::checkout<formalism::EffectProbabilistic>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(this->m_context.builder);
     for (auto alternative : source.get_alternatives())
         data->alternatives.push_back(as_index(this->self().rename_variables(alternative)));
     return formalism::insert(this->m_context.storage->repository, *data).first;
@@ -432,8 +432,8 @@ template<typename Derived>
 formalism::EffectView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EffectView source)
 {
     auto value =
-        ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Effect>::Variant { return as_index(this->self().rename_variables(arg)); }, source.get_variant());
-    auto data = formalism::checkout<formalism::Effect>(this->m_context.builder);
+        ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Effect<>>::Variant { return as_index(this->self().rename_variables(arg)); }, source.get_variant());
+    auto data = formalism::checkout<formalism::Effect<>>(this->m_context.builder);
     data->variant = std::move(value);
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }
@@ -447,10 +447,10 @@ formalism::ActionView RenameQuantifiedVariablesTranslator<Derived>::rename_actio
     this->self().enter_variable_scope();
     auto result = formalism::checkout<formalism::Action>(this->m_context.builder);
     this->self().rename_parameters(source.get_parameters(), result->parameters);
-    auto precondition = cista::optional<ygg::Index<formalism::Condition>> {};
+    auto precondition = cista::optional<ygg::Index<formalism::Condition<>>> {};
     if (const auto condition = source.get_precondition())
         precondition = as_index(this->self().rename_variables(condition.value()));
-    auto effect = cista::optional<ygg::Index<formalism::Effect>> {};
+    auto effect = cista::optional<ygg::Index<formalism::Effect<>>> {};
     if (const auto effect_view = source.get_effect())
         effect = as_index(this->self().rename_variables(effect_view.value()));
     this->self().leave_variable_scope();

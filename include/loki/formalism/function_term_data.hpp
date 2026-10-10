@@ -18,9 +18,7 @@
 #ifndef LOKI_FORMALISM_FUNCTION_TERM_DATA_HPP_
 #define LOKI_FORMALISM_FUNCTION_TERM_DATA_HPP_
 
-#include "loki/formalism/function_skeleton_index.hpp"
-#include "loki/formalism/function_term_index.hpp"
-#include "loki/formalism/term_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>

@@ -24,19 +24,16 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::ConditionForall> C>
-class View<ygg::Index<::loki::formalism::ConditionForall>, C> : public ygg::formalism::detail::View<ygg::Index<::loki::formalism::ConditionForall>, C>
+template<ygg::formalism::SymbolContextFor<::loki::formalism::Condition<::loki::formalism::ForallTag>> C>
+class View<ygg::Index<::loki::formalism::Condition<::loki::formalism::ForallTag>>, C> : public ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ForallTag>, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::ConditionForall> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::ConditionForall>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ForallTag>, C>::IndexViewBase;
 
     auto get_parameters() const noexcept { return ygg::make_view(this->get_data().parameters, this->get_context()); }
     auto get_condition() const noexcept { return ygg::make_view(this->get_data().condition, this->get_context()); }

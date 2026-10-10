@@ -24,20 +24,17 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::BinaryFunctionExpression> C>
-class View<ygg::Index<::loki::formalism::BinaryFunctionExpression>, C> :
-    public ygg::formalism::detail::View<ygg::Index<::loki::formalism::BinaryFunctionExpression>, C>
+template<ygg::formalism::SymbolContextFor<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>> C>
+class View<ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>, C> :
+    public ygg::IndexViewBase<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::BinaryFunctionExpression> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::BinaryFunctionExpression>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>, C>::IndexViewBase;
 
     auto get_operator() const noexcept { return this->get_data().op; }
     auto get_left() const noexcept { return ygg::make_view(this->get_data().left, this->get_context()); }

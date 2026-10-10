@@ -29,19 +29,19 @@ namespace loki::formalism
 
 void bind_effect_when(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::EffectWhen>>(m, "EffectWhenIndex");
+    ygg::bind_index<ygg::Index<formalism::Effect<formalism::WhenTag>>>(m, "EffectWhenIndex");
 
     {
-        using V = Data<formalism::EffectWhen>;
+        using V = Data<formalism::Effect<formalism::WhenTag>>;
         bind_data<V>(m, "EffectWhenData")
-            .def(nb::init<ygg::Index<formalism::Condition>, ygg::Index<formalism::Effect>>(), "condition"_a, "effect"_a)
+            .def(nb::init<ygg::Index<formalism::Condition<>>, ygg::Index<formalism::Effect<>>>(), "condition"_a, "effect"_a)
             .def(nb::init<formalism::ConditionView, formalism::EffectView>(), "condition"_a, "effect"_a)
             .def_rw("condition", &V::condition)
             .def_rw("effect", &V::effect);
     }
 
     {
-        using V = formalism::EffectWhenView;
+        using V = formalism::EntityView<formalism::Effect<formalism::WhenTag>>;
         auto cls = nb::class_<V>(m, "EffectWhen");
         cls.def("get_index", &V::get_index)
             .def("get_condition", &V::get_condition, nb::keep_alive<0, 1>())
@@ -51,7 +51,7 @@ void bind_effect_when(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::EffectWhen>(repository);
+    bind_insert<formalism::Effect<formalism::WhenTag>>(repository);
 }
 
 }  // namespace loki::formalism

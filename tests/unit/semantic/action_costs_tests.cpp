@@ -56,8 +56,8 @@ TEST(LokiSemanticActionCosts, AddsActionCostsDefaultsInPermissiveMode)
         [](const auto expression)
         {
             using Expression = std::decay_t<decltype(expression)>;
-            EXPECT_TRUE((std::is_same_v<Expression, formalism::FunctionExpressionNumberView>) );
-            if constexpr (std::is_same_v<Expression, formalism::FunctionExpressionNumberView>)
+            EXPECT_TRUE((std::is_same_v<Expression, formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>>) );
+            if constexpr (std::is_same_v<Expression, formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>>)
             {
                 EXPECT_EQ(expression.get_value(), 0.0);
             }

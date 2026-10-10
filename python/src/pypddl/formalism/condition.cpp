@@ -26,6 +26,7 @@
 #include <loki/formalism/condition_numeric_constraint_view.hpp>
 #include <loki/formalism/condition_or_view.hpp>
 #include <loki/formalism/condition_view.hpp>
+#include <yggdrasil/python/type_casters/variant.hpp>
 
 namespace nb = nanobind;
 using namespace nb::literals;
@@ -35,10 +36,10 @@ namespace loki::formalism
 
 void bind_condition(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::Condition>>(m, "ConditionIndex");
+    ygg::bind_index<ygg::Index<formalism::Condition<>>>(m, "ConditionIndex");
 
     {
-        using V = Data<formalism::Condition>;
+        using V = Data<formalism::Condition<>>;
         bind_data<V>(m, "ConditionData")
             .def(nb::init<V::Variant>(), "variant"_a)
             .def(nb::init<typename V::template ViewVariant<formalism::Repository>>(), "variant"_a)
@@ -54,7 +55,7 @@ void bind_condition(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::Condition>(repository);
+    bind_insert<formalism::Condition<>>(repository);
 }
 
 }  // namespace loki::formalism

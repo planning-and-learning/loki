@@ -102,18 +102,18 @@ std::string to_string(LiteralView value)
     return fmt::format("(not {})", to_string(value.get_atom()));
 }
 
-std::string to_string(FunctionExpressionNumberView value) { return fmt::format("{}", value.get_value()); }
+std::string to_string(EntityView<FunctionExpression<NumberTag>> value) { return fmt::format("{}", value.get_value()); }
 
 std::string to_string(FunctionTermView value) { return fmt::format("({}{})", value.get_function().get_name(), detail::spaced(value.get_terms())); }
 
-std::string to_string(UnaryFunctionExpressionView value) { return fmt::format("(- {})", to_string(value.get_expression())); }
+std::string to_string(EntityView<FunctionExpression<UnaryTag>> value) { return fmt::format("(- {})", to_string(value.get_expression())); }
 
-std::string to_string(BinaryFunctionExpressionView value)
+std::string to_string(EntityView<FunctionExpression<BinaryTag>> value)
 {
     return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().op), to_string(value.get_left()), to_string(value.get_right()));
 }
 
-std::string to_string(MultiFunctionExpressionView value)
+std::string to_string(EntityView<FunctionExpression<MultiTag>> value)
 {
     return fmt::format("({}{})", loki::formalism::to_string(value.get_operator()), detail::spaced(value.get_args()));
 }
@@ -125,15 +125,15 @@ std::string to_string(FunctionExpressionView value)
     return result;
 }
 
-std::string to_string(ConditionLiteralView value) { return to_string(value.get_literal()); }
+std::string to_string(EntityView<Condition<LiteralTag>> value) { return to_string(value.get_literal()); }
 
-std::string to_string(ConditionAndView value) { return fmt::format("(and{})", detail::spaced(value.get_conditions())); }
+std::string to_string(EntityView<Condition<AndTag>> value) { return fmt::format("(and{})", detail::spaced(value.get_conditions())); }
 
-std::string to_string(ConditionOrView value) { return fmt::format("(or{})", detail::spaced(value.get_conditions())); }
+std::string to_string(EntityView<Condition<OrTag>> value) { return fmt::format("(or{})", detail::spaced(value.get_conditions())); }
 
-std::string to_string(ConditionNotView value) { return fmt::format("(not {})", to_string(value.get_condition())); }
+std::string to_string(EntityView<Condition<NotTag>> value) { return fmt::format("(not {})", to_string(value.get_condition())); }
 
-std::string to_string(ConditionImplyView value) { return fmt::format("(imply {} {})", to_string(value.get_left()), to_string(value.get_right())); }
+std::string to_string(EntityView<Condition<ImplyTag>> value) { return fmt::format("(imply {} {})", to_string(value.get_left()), to_string(value.get_right())); }
 
 namespace detail
 {
@@ -150,17 +150,17 @@ inline std::vector<std::string> to_strings(const Range& range)
 
 }  // namespace detail
 
-std::string to_string(ConditionExistsView value)
+std::string to_string(EntityView<Condition<ExistsTag>> value)
 {
     return fmt::format("(exists ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_condition()));
 }
 
-std::string to_string(ConditionForallView value)
+std::string to_string(EntityView<Condition<ForallTag>> value)
 {
     return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_condition()));
 }
 
-std::string to_string(ConditionNumericConstraintView value)
+std::string to_string(EntityView<Condition<NumericConstraintTag>> value)
 {
     return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().comparator), to_string(value.get_left()), to_string(value.get_right()));
 }
@@ -172,27 +172,27 @@ std::string to_string(ConditionView value)
     return result;
 }
 
-std::string to_string(EffectLiteralView value) { return to_string(value.get_literal()); }
+std::string to_string(EntityView<Effect<LiteralTag>> value) { return to_string(value.get_literal()); }
 
-std::string to_string(EffectAndView value) { return fmt::format("(and{})", detail::spaced(value.get_effects())); }
+std::string to_string(EntityView<Effect<AndTag>> value) { return fmt::format("(and{})", detail::spaced(value.get_effects())); }
 
-std::string to_string(EffectNumericView value)
+std::string to_string(EntityView<Effect<NumericTag>> value)
 {
     return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().op), to_string(value.get_function()), to_string(value.get_expression()));
 }
 
-std::string to_string(EffectForallView value)
+std::string to_string(EntityView<Effect<ForallTag>> value)
 {
     return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_effect()));
 }
 
-std::string to_string(EffectWhenView value) { return fmt::format("(when {} {})", to_string(value.get_condition()), to_string(value.get_effect())); }
+std::string to_string(EntityView<Effect<WhenTag>> value) { return fmt::format("(when {} {})", to_string(value.get_condition()), to_string(value.get_effect())); }
 
-std::string to_string(EffectOneOfView value) { return fmt::format("(oneof{})", detail::spaced(value.get_effects())); }
+std::string to_string(EntityView<Effect<OneOfTag>> value) { return fmt::format("(oneof{})", detail::spaced(value.get_effects())); }
 
 std::string to_string(EffectProbabilisticAlternativeView value) { return fmt::format("{} {}", value.get_data().probability, to_string(value.get_effect())); }
 
-std::string to_string(EffectProbabilisticView value) { return fmt::format("(probabilistic{})", detail::spaced(value.get_alternatives())); }
+std::string to_string(EntityView<Effect<ProbabilisticTag>> value) { return fmt::format("(probabilistic{})", detail::spaced(value.get_alternatives())); }
 
 std::string to_string(EffectView value)
 {

@@ -81,33 +81,33 @@ std::pair<formalism::TaskView, bool> CanonicalCopyTranslator::copy(formalism::Ta
     return { view, inserted };
 }
 
-formalism::EffectLiteralView CanonicalCopyTranslator::copy(formalism::EffectLiteralView source)
+formalism::EntityView<formalism::Effect<formalism::LiteralTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::LiteralTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_literals, source))
         return *mapped;
-    auto data = formalism::checkout<formalism::EffectLiteral>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::LiteralTag>>(m_builder);
     data->literal = as_index(copy(source.get_literal()));
     auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->effect_literals, source, out);
     return out;
 }
 
-formalism::EffectAndView CanonicalCopyTranslator::copy(formalism::EffectAndView source)
+formalism::EntityView<formalism::Effect<formalism::AndTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::AndTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_ands, source))
         return *mapped;
-    auto data = formalism::checkout<formalism::EffectAnd>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(m_builder);
     copy_list(source.get_effects(), data->effects);
     auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->effect_ands, source, out);
     return out;
 }
 
-formalism::EffectNumericView CanonicalCopyTranslator::copy(formalism::EffectNumericView source)
+formalism::EntityView<formalism::Effect<formalism::NumericTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_numerics, source))
         return *mapped;
-    auto data = formalism::checkout<formalism::EffectNumeric>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::NumericTag>>(m_builder);
     data->op = source.get_data().op;
     data->function = as_index(copy(source.get_function()));
     data->expression = as_index(copy(source.get_expression()));
@@ -116,11 +116,11 @@ formalism::EffectNumericView CanonicalCopyTranslator::copy(formalism::EffectNume
     return out;
 }
 
-formalism::EffectForallView CanonicalCopyTranslator::copy(formalism::EffectForallView source)
+formalism::EntityView<formalism::Effect<formalism::ForallTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::ForallTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_foralls, source))
         return *mapped;
-    auto data = formalism::checkout<formalism::EffectForall>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(m_builder);
     copy_list(source.get_parameters(), data->parameters);
     data->effect = as_index(copy(source.get_effect()));
     auto out = formalism::insert(m_storage->repository, *data).first;
@@ -128,11 +128,11 @@ formalism::EffectForallView CanonicalCopyTranslator::copy(formalism::EffectForal
     return out;
 }
 
-formalism::EffectWhenView CanonicalCopyTranslator::copy(formalism::EffectWhenView source)
+formalism::EntityView<formalism::Effect<formalism::WhenTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::WhenTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_whens, source))
         return *mapped;
-    auto data = formalism::checkout<formalism::EffectWhen>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(m_builder);
     data->condition = as_index(copy(source.get_condition()));
     data->effect = as_index(copy(source.get_effect()));
     auto out = formalism::insert(m_storage->repository, *data).first;
@@ -140,11 +140,11 @@ formalism::EffectWhenView CanonicalCopyTranslator::copy(formalism::EffectWhenVie
     return out;
 }
 
-formalism::EffectOneOfView CanonicalCopyTranslator::copy(formalism::EffectOneOfView source)
+formalism::EntityView<formalism::Effect<formalism::OneOfTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::OneOfTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_one_ofs, source))
         return *mapped;
-    auto data = formalism::checkout<formalism::EffectOneOf>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(m_builder);
     copy_list(source.get_effects(), data->effects);
     auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->effect_one_ofs, source, out);
@@ -163,11 +163,11 @@ formalism::EffectProbabilisticAlternativeView CanonicalCopyTranslator::copy(form
     return out;
 }
 
-formalism::EffectProbabilisticView CanonicalCopyTranslator::copy(formalism::EffectProbabilisticView source)
+formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_probabilistics, source))
         return *mapped;
-    auto data = formalism::checkout<formalism::EffectProbabilistic>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(m_builder);
     copy_list(source.get_alternatives(), data->alternatives);
     auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->effect_probabilistics, source, out);
@@ -178,8 +178,8 @@ formalism::EffectView CanonicalCopyTranslator::copy(formalism::EffectView source
 {
     if (auto mapped = find_mapped(m_storage->effects, source))
         return *mapped;
-    auto data = formalism::checkout<formalism::Effect>(m_builder);
-    data->variant = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Effect>::Variant { return as_index(copy(arg)); }, source.get_variant());
+    auto data = formalism::checkout<formalism::Effect<>>(m_builder);
+    data->variant = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Effect<>>::Variant { return as_index(copy(arg)); }, source.get_variant());
     auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->effects, source, out);
     return out;

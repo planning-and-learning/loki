@@ -28,10 +28,10 @@ namespace loki::formalism
 
 void bind_effect_probabilistic(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::EffectProbabilistic>>(m, "EffectProbabilisticIndex");
+    ygg::bind_index<ygg::Index<formalism::Effect<formalism::ProbabilisticTag>>>(m, "EffectProbabilisticIndex");
 
     {
-        using V = Data<formalism::EffectProbabilistic>;
+        using V = Data<formalism::Effect<formalism::ProbabilisticTag>>;
         bind_data<V>(m, "EffectProbabilisticData")
             .def(nb::init<ygg::IndexList<formalism::EffectProbabilisticAlternative>>(), "alternatives"_a)
             .def(nb::init<const std::vector<formalism::EffectProbabilisticAlternativeView>&>(), "alternatives"_a)
@@ -39,7 +39,7 @@ void bind_effect_probabilistic(nb::module_& m, RepositoryBinding& repository)
     }
 
     {
-        using V = formalism::EffectProbabilisticView;
+        using V = formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>;
         auto cls = nb::class_<V>(m, "EffectProbabilistic");
         cls.def("get_index", &V::get_index).def("get_alternatives", &V::get_alternatives);
         ygg::add_print(cls);
@@ -47,7 +47,7 @@ void bind_effect_probabilistic(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::EffectProbabilistic>(repository);
+    bind_insert<formalism::Effect<formalism::ProbabilisticTag>>(repository);
 }
 
 }  // namespace loki::formalism

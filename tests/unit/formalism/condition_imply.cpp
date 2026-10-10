@@ -1,20 +1,19 @@
 #include "loki/formalism/condition_imply_data.hpp"
-#include "loki/formalism/condition_imply_index.hpp"
 #include "loki/formalism/condition_imply_view.hpp"
 #include "loki/formalism/repository.hpp"
 
 #include <concepts>
 
 namespace f = loki::formalism;
-using Index = ygg::Index<f::ConditionImply>;
-using Data = ygg::Data<f::ConditionImply>;
+using Index = ygg::Index<f::Condition<f::ImplyTag>>;
+using Data = ygg::Data<f::Condition<f::ImplyTag>>;
 using View = ygg::View<Index, f::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
 static_assert(std::totally_ordered<Data>);
 static_assert(std::totally_ordered<View>);
-static_assert(std::same_as<View, f::ConditionImplyView>);
+static_assert(std::same_as<View, f::EntityView<f::Condition<f::ImplyTag>>>);
 static_assert(requires(Data& data) {
     data.index;
     data.left;

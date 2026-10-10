@@ -34,12 +34,12 @@ public:
 
     formalism::ConditionView make_generated_axiom_condition(formalism::ConditionView condition);
     formalism::ConditionView remove_universal_quantifiers(formalism::ConditionView condition);
-    formalism::ConditionView remove_universal_quantifiers_node(formalism::ConditionAndView source);
-    formalism::ConditionView remove_universal_quantifiers_node(formalism::ConditionOrView source);
-    formalism::ConditionView remove_universal_quantifiers_node(formalism::ConditionNotView source);
-    formalism::ConditionView remove_universal_quantifiers_node(formalism::ConditionImplyView source);
-    formalism::ConditionView remove_universal_quantifiers_node(formalism::ConditionExistsView source);
-    formalism::ConditionView remove_universal_quantifiers_node(formalism::ConditionForallView source);
+    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::AndTag>> source);
+    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::OrTag>> source);
+    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source);
+    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source);
+    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source);
+    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source);
     template<typename T>
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<T> source);
 };
@@ -83,7 +83,7 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
 
     this->m_context.generated_predicates.push_back(predicate);
     this->m_context.generated_axioms.push_back(axiom);
-    auto condition_data = formalism::checkout<formalism::ConditionLiteral>(this->m_context.builder);
+    auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->m_context.builder);
     condition_data->literal = negative_literal;
     auto result = this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *condition_data).first);
     this->m_context.generated_universal_conditions.emplace(key, result);
@@ -97,54 +97,54 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_u
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::ConditionAndView source)
+formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::AndTag>> source)
 {
-    auto data = formalism::checkout<formalism::ConditionAnd>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
     for (auto condition : source.get_conditions())
         this->self().append_conjunct(*data, this->self().remove_universal_quantifiers(condition));
     return this->self().make_conjunction(*data);
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::ConditionOrView source)
+formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::OrTag>> source)
 {
-    auto data = formalism::checkout<formalism::ConditionOr>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->m_context.builder);
     for (auto condition : source.get_conditions())
         this->self().append_disjunct(*data, this->self().remove_universal_quantifiers(condition));
     return this->self().make_disjunction(*data);
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::ConditionNotView source)
+formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
 {
     const auto condition = as_index(this->self().remove_universal_quantifiers(source.get_condition()));
-    auto data = formalism::checkout<formalism::ConditionNot>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(this->m_context.builder);
     data->condition = condition;
     return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *data).first);
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::ConditionImplyView source)
+formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
 {
     // Sequence the recursions: both sides can generate loki-universal-* names, and argument
     // evaluation order is unspecified.
     const auto left = as_index(this->self().remove_universal_quantifiers(source.get_left()));
     const auto right = as_index(this->self().remove_universal_quantifiers(source.get_right()));
-    auto data = formalism::checkout<formalism::ConditionImply>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(this->m_context.builder);
     data->left = left;
     data->right = right;
     return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *data).first);
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::ConditionExistsView source)
+formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
 {
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
     auto condition = as_index(this->self().remove_universal_quantifiers(source.get_condition()));
     this->self().leave_scope();
-    auto data = formalism::checkout<formalism::ConditionExists>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.get_index());
     data->condition = condition;
@@ -152,14 +152,14 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_u
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::ConditionForallView source)
+formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
 {
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
     auto negated = as_index(this->self().negate_condition(source.get_condition()));
     this->self().leave_scope();
-    auto data = formalism::checkout<formalism::ConditionExists>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.get_index());
     data->condition = negated;

@@ -24,20 +24,17 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::MultiFunctionExpression> C>
-class View<ygg::Index<::loki::formalism::MultiFunctionExpression>, C> :
-    public ygg::formalism::detail::View<ygg::Index<::loki::formalism::MultiFunctionExpression>, C>
+template<ygg::formalism::SymbolContextFor<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>> C>
+class View<ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>, C> :
+    public ygg::IndexViewBase<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::MultiFunctionExpression> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::MultiFunctionExpression>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>, C>::IndexViewBase;
 
     auto get_operator() const noexcept { return this->get_data().op; }
     auto get_args() const noexcept { return ygg::make_view(this->get_data().args, this->get_context()); }

@@ -1,5 +1,4 @@
 #include "loki/formalism/action_data.hpp"
-#include "loki/formalism/action_index.hpp"
 #include "loki/formalism/action_view.hpp"
 #include "loki/formalism/repository.hpp"
 

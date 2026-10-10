@@ -18,10 +18,7 @@
 #ifndef LOKI_FORMALISM_ACTION_DATA_HPP_
 #define LOKI_FORMALISM_ACTION_DATA_HPP_
 
-#include "loki/formalism/action_index.hpp"
-#include "loki/formalism/condition_index.hpp"
-#include "loki/formalism/effect_index.hpp"
-#include "loki/formalism/parameter_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <cista/containers/optional.h>
 #include <cista/containers/string.h>
@@ -45,14 +42,14 @@ struct Data<::loki::formalism::Action>
     ::cista::offset::string original_name;
     ygg::IndexList<::loki::formalism::Parameter> parameters;
     ygg::uint_t original_arity;
-    ::cista::optional<ygg::Index<::loki::formalism::Condition>> precondition;
-    ::cista::optional<ygg::Index<::loki::formalism::Effect>> effect;
+    ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> precondition;
+    ::cista::optional<ygg::Index<::loki::formalism::Effect<>>> effect;
 
     Data() = default;
     Data(::cista::offset::string name_,
          ygg::IndexList<::loki::formalism::Parameter> parameters_,
-         ::cista::optional<ygg::Index<::loki::formalism::Condition>> precondition_,
-         ::cista::optional<ygg::Index<::loki::formalism::Effect>> effect_) :
+         ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> precondition_,
+         ::cista::optional<ygg::Index<::loki::formalism::Effect<>>> effect_) :
         index(),
         name(std::move(name_)),
         original_name(name),
@@ -65,8 +62,8 @@ struct Data<::loki::formalism::Action>
     Data(::cista::offset::string name_,
          ygg::IndexList<::loki::formalism::Parameter> parameters_,
          ygg::uint_t original_arity_,
-         ::cista::optional<ygg::Index<::loki::formalism::Condition>> precondition_,
-         ::cista::optional<ygg::Index<::loki::formalism::Effect>> effect_) :
+         ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> precondition_,
+         ::cista::optional<ygg::Index<::loki::formalism::Effect<>>> effect_) :
         index(),
         name(std::move(name_)),
         original_name(name),
@@ -80,8 +77,8 @@ struct Data<::loki::formalism::Action>
          ::cista::offset::string original_name_,
          ygg::IndexList<::loki::formalism::Parameter> parameters_,
          ygg::uint_t original_arity_,
-         ::cista::optional<ygg::Index<::loki::formalism::Condition>> precondition_,
-         ::cista::optional<ygg::Index<::loki::formalism::Effect>> effect_) :
+         ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> precondition_,
+         ::cista::optional<ygg::Index<::loki::formalism::Effect<>>> effect_) :
         index(),
         name(std::move(name_)),
         original_name(std::move(original_name_)),
@@ -94,8 +91,8 @@ struct Data<::loki::formalism::Action>
     template<typename C>
     Data(const std::string& name_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Condition>, C>>& precondition_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Effect>, C>>& effect_) :
+         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C>>& precondition_,
+         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C>>& effect_) :
         Data(name_, name_, parameters_, parameters_.size(), precondition_, effect_)
     {
     }
@@ -104,8 +101,8 @@ struct Data<::loki::formalism::Action>
          const std::string& original_name_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
          ygg::uint_t original_arity_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Condition>, C>>& precondition_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Effect>, C>>& effect_) :
+         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C>>& precondition_,
+         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C>>& effect_) :
         index(),
         name(name_),
         original_name(original_name_),

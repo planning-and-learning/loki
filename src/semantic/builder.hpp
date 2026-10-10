@@ -111,7 +111,7 @@ private:
 
     // Conditions.
     formalism::ConditionView parse_condition(const ast::Condition& condition);
-    formalism::ConditionView wrap_condition(ygg::Data<formalism::Condition>::Variant value);
+    formalism::ConditionView wrap_condition(ygg::Data<formalism::Condition<>>::Variant value);
     formalism::ConditionView parse_condition_node(const ast::ConditionLiteral& node);
     formalism::ConditionView parse_condition_node(const ast::ConditionAnd& node);
     formalism::ConditionView parse_condition_node(const ast::ConditionOr& node);
@@ -124,7 +124,7 @@ private:
     // Numeric expressions.
     formalism::FunctionTermView parse_function_term(const ast::FunctionTerm& node);
     formalism::FunctionExpressionView parse_function_expression(const ast::FunctionExpression& expression);
-    formalism::FunctionExpressionView wrap_function_expression(ygg::Data<formalism::FunctionExpression>::Variant value);
+    formalism::FunctionExpressionView wrap_function_expression(ygg::Data<formalism::FunctionExpression<>>::Variant value);
     formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionNumber& node);
     formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionFunction& node);
     formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionUnary& node);
@@ -133,7 +133,7 @@ private:
 
     // Effects and top-level constructs.
     formalism::EffectView parse_effect(const ast::Effect& effect);
-    formalism::EffectView wrap_effect(ygg::Data<formalism::Effect>::Variant value);
+    formalism::EffectView wrap_effect(ygg::Data<formalism::Effect<>>::Variant value);
     formalism::EffectView parse_effect_node(const ast::EffectLiteral& node);
     formalism::EffectView parse_effect_node(const ast::EffectAnd& node);
     formalism::EffectView parse_effect_node(const ast::EffectNumeric& node);

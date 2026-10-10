@@ -1,5 +1,4 @@
 #include "loki/formalism/literal_data.hpp"
-#include "loki/formalism/literal_index.hpp"
 #include "loki/formalism/literal_view.hpp"
 #include "loki/formalism/repository.hpp"
 

@@ -24,19 +24,16 @@
 #include <yggdrasil/containers/variant.hpp>
 #include <yggdrasil/containers/vector.hpp>
 #include <yggdrasil/core/types.hpp>
-#include <yggdrasil/formalism/detail/view.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg
 {
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::EffectWhen> C>
-class View<ygg::Index<::loki::formalism::EffectWhen>, C> : public ygg::formalism::detail::View<ygg::Index<::loki::formalism::EffectWhen>, C>
+template<ygg::formalism::SymbolContextFor<::loki::formalism::Effect<::loki::formalism::WhenTag>> C>
+class View<ygg::Index<::loki::formalism::Effect<::loki::formalism::WhenTag>>, C> : public ygg::IndexViewBase<::loki::formalism::Effect<::loki::formalism::WhenTag>, C>
 {
 public:
-    View(ygg::Index<::loki::formalism::EffectWhen> handle, const C& context) noexcept :
-        ygg::formalism::detail::View<ygg::Index<::loki::formalism::EffectWhen>, C>(handle, context)
-    {
-    }
+    using ygg::IndexViewBase<::loki::formalism::Effect<::loki::formalism::WhenTag>, C>::IndexViewBase;
 
     auto get_condition() const noexcept { return ygg::make_view(this->get_data().condition, this->get_context()); }
     auto get_effect() const noexcept { return ygg::make_view(this->get_data().effect, this->get_context()); }

@@ -28,18 +28,18 @@ namespace loki::formalism
 
 void bind_effect_and(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::EffectAnd>>(m, "EffectAndIndex");
+    ygg::bind_index<ygg::Index<formalism::Effect<formalism::AndTag>>>(m, "EffectAndIndex");
 
     {
-        using V = Data<formalism::EffectAnd>;
+        using V = Data<formalism::Effect<formalism::AndTag>>;
         bind_data<V>(m, "EffectAndData")
-            .def(nb::init<ygg::IndexList<formalism::Effect>>(), "effects"_a)
+            .def(nb::init<ygg::IndexList<formalism::Effect<>>>(), "effects"_a)
             .def(nb::init<const std::vector<formalism::EffectView>&>(), "effects"_a)
             .def_rw("effects", &V::effects);
     }
 
     {
-        using V = formalism::EffectAndView;
+        using V = formalism::EntityView<formalism::Effect<formalism::AndTag>>;
         auto cls = nb::class_<V>(m, "EffectAnd");
         cls.def("get_index", &V::get_index).def("get_effects", &V::get_effects);
         ygg::add_print(cls);
@@ -47,7 +47,7 @@ void bind_effect_and(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::EffectAnd>(repository);
+    bind_insert<formalism::Effect<formalism::AndTag>>(repository);
 }
 
 }  // namespace loki::formalism

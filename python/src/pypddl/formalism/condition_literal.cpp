@@ -28,10 +28,10 @@ namespace loki::formalism
 
 void bind_condition_literal(nb::module_& m, RepositoryBinding& repository)
 {
-    ygg::bind_index<ygg::Index<formalism::ConditionLiteral>>(m, "ConditionLiteralIndex");
+    ygg::bind_index<ygg::Index<formalism::Condition<formalism::LiteralTag>>>(m, "ConditionLiteralIndex");
 
     {
-        using V = Data<formalism::ConditionLiteral>;
+        using V = Data<formalism::Condition<formalism::LiteralTag>>;
         bind_data<V>(m, "ConditionLiteralData")
             .def(nb::init<ygg::Index<formalism::Literal>>(), "literal"_a)
             .def(nb::init<formalism::LiteralView>(), "literal"_a)
@@ -39,7 +39,7 @@ void bind_condition_literal(nb::module_& m, RepositoryBinding& repository)
     }
 
     {
-        using V = formalism::ConditionLiteralView;
+        using V = formalism::EntityView<formalism::Condition<formalism::LiteralTag>>;
         auto cls = nb::class_<V>(m, "ConditionLiteral");
         cls.def("get_index", &V::get_index).def("get_literal", &V::get_literal, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
@@ -47,7 +47,7 @@ void bind_condition_literal(nb::module_& m, RepositoryBinding& repository)
         ygg::add_hash(cls);
     }
 
-    bind_insert<formalism::ConditionLiteral>(repository);
+    bind_insert<formalism::Condition<formalism::LiteralTag>>(repository);
 }
 
 }  // namespace loki::formalism

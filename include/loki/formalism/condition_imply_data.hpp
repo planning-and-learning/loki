@@ -18,8 +18,7 @@
 #ifndef LOKI_FORMALISM_CONDITION_IMPLY_DATA_HPP_
 #define LOKI_FORMALISM_CONDITION_IMPLY_DATA_HPP_
 
-#include "loki/formalism/condition_imply_index.hpp"
-#include "loki/formalism/condition_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -34,16 +33,16 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::ConditionImply>
+struct Data<::loki::formalism::Condition<::loki::formalism::ImplyTag>>
 {
-    ygg::Index<::loki::formalism::ConditionImply> index;
-    ygg::Index<::loki::formalism::Condition> left;
-    ygg::Index<::loki::formalism::Condition> right;
+    ygg::Index<::loki::formalism::Condition<::loki::formalism::ImplyTag>> index;
+    ygg::Index<::loki::formalism::Condition<>> left;
+    ygg::Index<::loki::formalism::Condition<>> right;
 
     Data() = default;
-    Data(ygg::Index<::loki::formalism::Condition> left_, ygg::Index<::loki::formalism::Condition> right_) : index(), left(left_), right(right_) {}
+    Data(ygg::Index<::loki::formalism::Condition<>> left_, ygg::Index<::loki::formalism::Condition<>> right_) : index(), left(left_), right(right_) {}
     template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::Condition>, C> left_, ::ygg::View<ygg::Index<::loki::formalism::Condition>, C> right_) :
+    Data(::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> left_, ::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> right_) :
         index(),
         left(),
         right()

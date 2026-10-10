@@ -18,8 +18,7 @@
 #ifndef LOKI_FORMALISM_OBJECT_DATA_HPP_
 #define LOKI_FORMALISM_OBJECT_DATA_HPP_
 
-#include "loki/formalism/object_index.hpp"
-#include "loki/formalism/type_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <cista/containers/string.h>
 #include <optional>

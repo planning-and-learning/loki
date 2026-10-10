@@ -18,7 +18,7 @@
 #ifndef LOKI_FORMALISM_VARIABLE_DATA_HPP_
 #define LOKI_FORMALISM_VARIABLE_DATA_HPP_
 
-#include "loki/formalism/variable_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <cista/containers/string.h>
 #include <optional>

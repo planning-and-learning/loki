@@ -71,15 +71,15 @@ public:
 
     formalism::LiteralView copy(formalism::LiteralView source);
 
-    formalism::FunctionExpressionNumberView copy(formalism::FunctionExpressionNumberView source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> copy(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source);
 
     formalism::FunctionTermView copy(formalism::FunctionTermView source);
 
-    formalism::UnaryFunctionExpressionView copy(formalism::UnaryFunctionExpressionView source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source);
 
-    formalism::BinaryFunctionExpressionView copy(formalism::BinaryFunctionExpressionView source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source);
 
-    formalism::MultiFunctionExpressionView copy(formalism::MultiFunctionExpressionView source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> copy(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source);
 
     formalism::FunctionExpressionView copy(formalism::FunctionExpressionView source);
 };
@@ -333,11 +333,11 @@ formalism::LiteralView BasicCopyTranslator<Derived>::copy(formalism::LiteralView
 }
 
 template<typename Derived>
-formalism::FunctionExpressionNumberView BasicCopyTranslator<Derived>::copy(formalism::FunctionExpressionNumberView source)
+formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source)
 {
     if (auto mapped = find_mapped(this->m_context.storage->numbers, source))
         return *mapped;
-    auto data = formalism::checkout<formalism::FunctionExpressionNumber>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::FunctionExpression<formalism::NumberTag>>(this->m_context.builder);
     data->value = source.get_value();
     auto out = formalism::insert(this->m_context.storage->repository, *data).first;
     remember(this->m_context.storage->numbers, source, out);
@@ -356,23 +356,23 @@ formalism::FunctionTermView BasicCopyTranslator<Derived>::copy(formalism::Functi
 }
 
 template<typename Derived>
-formalism::UnaryFunctionExpressionView BasicCopyTranslator<Derived>::copy(formalism::UnaryFunctionExpressionView source)
+formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source)
 {
     const auto& data = source.get_data();
     const auto expression = as_index(this->self().copy(source.get_expression()));
-    auto result = formalism::checkout<formalism::UnaryFunctionExpression>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(this->m_context.builder);
     result->op = data.op;
     result->expression = expression;
     return formalism::insert(this->m_context.storage->repository, *result).first;
 }
 
 template<typename Derived>
-formalism::BinaryFunctionExpressionView BasicCopyTranslator<Derived>::copy(formalism::BinaryFunctionExpressionView source)
+formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source)
 {
     const auto& data = source.get_data();
     const auto left = as_index(this->self().copy(source.get_left()));
     const auto right = as_index(this->self().copy(source.get_right()));
-    auto result = formalism::checkout<formalism::BinaryFunctionExpression>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::FunctionExpression<formalism::BinaryTag>>(this->m_context.builder);
     result->op = data.op;
     result->left = left;
     result->right = right;
@@ -380,9 +380,9 @@ formalism::BinaryFunctionExpressionView BasicCopyTranslator<Derived>::copy(forma
 }
 
 template<typename Derived>
-formalism::MultiFunctionExpressionView BasicCopyTranslator<Derived>::copy(formalism::MultiFunctionExpressionView source)
+formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source)
 {
-    auto data = formalism::checkout<formalism::MultiFunctionExpression>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::FunctionExpression<formalism::MultiTag>>(this->m_context.builder);
     data->op = source.get_operator();
     for (const auto expression : source.get_args())
         data->args.push_back(as_index(this->self().copy(expression)));
@@ -395,10 +395,10 @@ formalism::FunctionExpressionView BasicCopyTranslator<Derived>::copy(formalism::
     if (this->m_context.phase == TranslationPhase::NormalizeArithmeticExpressions)
         return this->self().normalize_arithmetic_expression(source);
 
-    auto value = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::FunctionExpression>::Variant
-                            { return ygg::Data<formalism::FunctionExpression>::Variant(as_index(this->self().copy(arg))); },
+    auto value = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::FunctionExpression<>>::Variant
+                            { return ygg::Data<formalism::FunctionExpression<>>::Variant(as_index(this->self().copy(arg))); },
                             source.get_variant());
-    auto data = formalism::checkout<formalism::FunctionExpression>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::FunctionExpression<>>(this->m_context.builder);
     data->variant = std::move(value);
     return formalism::insert(this->m_context.storage->repository, *data).first;
 }

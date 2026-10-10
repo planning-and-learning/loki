@@ -18,8 +18,7 @@
 #ifndef LOKI_FORMALISM_CONDITION_NOT_DATA_HPP_
 #define LOKI_FORMALISM_CONDITION_NOT_DATA_HPP_
 
-#include "loki/formalism/condition_index.hpp"
-#include "loki/formalism/condition_not_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -34,15 +33,15 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::ConditionNot>
+struct Data<::loki::formalism::Condition<::loki::formalism::NotTag>>
 {
-    ygg::Index<::loki::formalism::ConditionNot> index;
-    ygg::Index<::loki::formalism::Condition> condition;
+    ygg::Index<::loki::formalism::Condition<::loki::formalism::NotTag>> index;
+    ygg::Index<::loki::formalism::Condition<>> condition;
 
     Data() = default;
-    Data(ygg::Index<::loki::formalism::Condition> condition_) : index(), condition(condition_) {}
+    Data(ygg::Index<::loki::formalism::Condition<>> condition_) : index(), condition(condition_) {}
     template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::Condition>, C> condition_) : index(), condition()
+    Data(::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> condition_) : index(), condition()
     {
         set(condition_, condition);
     }

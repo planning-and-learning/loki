@@ -1,6 +1,5 @@
 #include "loki/formalism/repository.hpp"
 #include "loki/formalism/task_data.hpp"
-#include "loki/formalism/task_index.hpp"
 #include "loki/formalism/task_view.hpp"
 
 #include <concepts>

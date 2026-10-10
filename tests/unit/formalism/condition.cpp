@@ -1,13 +1,12 @@
 #include "loki/formalism/condition_data.hpp"
-#include "loki/formalism/condition_index.hpp"
 #include "loki/formalism/condition_view.hpp"
 #include "loki/formalism/repository.hpp"
 
 #include <concepts>
 
 namespace f = loki::formalism;
-using Index = ygg::Index<f::Condition>;
-using Data = ygg::Data<f::Condition>;
+using Index = ygg::Index<f::Condition<>>;
+using Data = ygg::Data<f::Condition<>>;
 using View = ygg::View<Index, f::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);

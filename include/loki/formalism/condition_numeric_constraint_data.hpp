@@ -18,9 +18,7 @@
 #ifndef LOKI_FORMALISM_CONDITION_NUMERIC_CONSTRAINT_DATA_HPP_
 #define LOKI_FORMALISM_CONDITION_NUMERIC_CONSTRAINT_DATA_HPP_
 
-#include "loki/formalism/condition_numeric_constraint_index.hpp"
 #include "loki/formalism/declarations.hpp"
-#include "loki/formalism/function_expression_index.hpp"
 
 #include <optional>
 #include <string>
@@ -35,17 +33,17 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::ConditionNumericConstraint>
+struct Data<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag>>
 {
-    ygg::Index<::loki::formalism::ConditionNumericConstraint> index;
+    ygg::Index<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag>> index;
     ::loki::formalism::BinaryComparator comparator {};
-    ygg::Index<::loki::formalism::FunctionExpression> left;
-    ygg::Index<::loki::formalism::FunctionExpression> right;
+    ygg::Index<::loki::formalism::FunctionExpression<>> left;
+    ygg::Index<::loki::formalism::FunctionExpression<>> right;
 
     Data() = default;
     Data(::loki::formalism::BinaryComparator comparator_,
-         ygg::Index<::loki::formalism::FunctionExpression> left_,
-         ygg::Index<::loki::formalism::FunctionExpression> right_) :
+         ygg::Index<::loki::formalism::FunctionExpression<>> left_,
+         ygg::Index<::loki::formalism::FunctionExpression<>> right_) :
         index(),
         comparator(comparator_),
         left(left_),
@@ -54,8 +52,8 @@ struct Data<::loki::formalism::ConditionNumericConstraint>
     }
     template<typename C>
     Data(::loki::formalism::BinaryComparator comparator_,
-         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> left_,
-         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> right_) :
+         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> left_,
+         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> right_) :
         index(),
         comparator(comparator_),
         left(),

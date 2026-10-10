@@ -36,9 +36,9 @@ formalism::EffectView AstBuilder::parse_effect(const ast::Effect& effect)
     return boost::apply_visitor([&](const auto& node) { return parse_effect_node(node); }, effect);
 }
 
-formalism::EffectView AstBuilder::wrap_effect(ygg::Data<formalism::Effect>::Variant value)
+formalism::EffectView AstBuilder::wrap_effect(ygg::Data<formalism::Effect<>>::Variant value)
 {
-    auto data = formalism::checkout<formalism::Effect>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<>>(m_builder);
     data->variant = std::move(value);
     return formalism::insert(repo(), *data).first;
 }
@@ -46,14 +46,14 @@ formalism::EffectView AstBuilder::wrap_effect(ygg::Data<formalism::Effect>::Vari
 formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectLiteral& node)
 {
     const auto literal = parse_literal(node.literal);
-    auto data = formalism::checkout<formalism::EffectLiteral>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::LiteralTag>>(m_builder);
     data->literal = literal.get_index();
     return wrap_effect(formalism::insert(repo(), *data).first.get_index());
 }
 
 formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectAnd& node)
 {
-    auto data = formalism::checkout<formalism::EffectAnd>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(m_builder);
     for (const auto& child : node.effects)
         data->effects.push_back(parse_effect(child.get()).get_index());
     return wrap_effect(formalism::insert(repo(), *data).first.get_index());
@@ -79,7 +79,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectNumeric& no
         function_data->terms.push_back(parse_term(term).get_index());
     const auto function_term = formalism::insert(repo(), *function_data).first;
     const auto expression = parse_function_expression(node.expression.get());
-    auto data = formalism::checkout<formalism::EffectNumeric>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::NumericTag>>(m_builder);
     data->op = op;
     data->function = function_term.get_index();
     data->expression = expression.get_index();
@@ -92,7 +92,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectForall& nod
     auto scope = VariableScope(m_parse_context);
     auto parameters = parse_parameters(node.parameters);
     auto child = parse_effect(node.effect.get());
-    auto data = formalism::checkout<formalism::EffectForall>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(m_builder);
     append_indices(parameters, data->parameters);
     data->effect = child.get_index();
     return wrap_effect(formalism::insert(repo(), *data).first.get_index());
@@ -103,7 +103,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectWhen& node)
     checks().require_requirement(formalism::RequirementKind::ConditionalEffects, node);
     const auto condition = parse_condition(node.condition.get());
     const auto effect = parse_effect(node.effect.get());
-    auto data = formalism::checkout<formalism::EffectWhen>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(m_builder);
     data->condition = condition.get_index();
     data->effect = effect.get_index();
     return wrap_effect(formalism::insert(repo(), *data).first.get_index());
@@ -112,7 +112,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectWhen& node)
 formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectOneOf& node)
 {
     checks().require_requirement(formalism::RequirementKind::NonDeterministic, node);
-    auto data = formalism::checkout<formalism::EffectOneOf>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(m_builder);
     for (const auto& child : node.effects)
         data->effects.push_back(parse_effect(child.get()).get_index());
     return wrap_effect(formalism::insert(repo(), *data).first.get_index());
@@ -122,7 +122,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectProbabilist
 {
     checks().require_requirement(formalism::RequirementKind::ProbabilisticEffects, node);
     auto total = 0.0;
-    auto data = formalism::checkout<formalism::EffectProbabilistic>(m_builder);
+    auto data = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(m_builder);
     auto alternative_data = formalism::checkout<formalism::EffectProbabilisticAlternative>(m_builder);
     for (const auto& alternative : node.alternatives)
     {
@@ -251,18 +251,18 @@ bool AstBuilder::writes_total_cost(formalism::EffectView effect)
         [&](const auto& arg) -> bool
         {
             using Node = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<Node, formalism::EffectNumericView>)
+            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::NumericTag>>>)
                 return arg.get_function().get_function().get_name() == "total-cost";
-            else if constexpr (std::is_same_v<Node, formalism::EffectAndView> || std::is_same_v<Node, formalism::EffectOneOfView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 for (auto child : arg.get_effects())
                     if (writes_total_cost(child))
                         return true;
                 return false;
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectForallView> || std::is_same_v<Node, formalism::EffectWhenView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
                 return writes_total_cost(arg.get_effect());
-            else if constexpr (std::is_same_v<Node, formalism::EffectProbabilisticView>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
             {
                 for (auto alternative : arg.get_alternatives())
                     if (writes_total_cost(alternative.get_effect()))
@@ -280,11 +280,11 @@ formalism::ActionView AstBuilder::add_unit_cost(formalism::ActionView view)
     if (const auto effect = view.get_effect(); effect && writes_total_cost(effect.value()))
         return view;
 
-    auto number_data = formalism::checkout<formalism::FunctionExpressionNumber>(m_builder);
+    auto number_data = formalism::checkout<formalism::FunctionExpression<formalism::NumberTag>>(m_builder);
     number_data->value = 1.0;
     const auto one = wrap_function_expression(formalism::insert(repo(), *number_data).first.get_index());
     const auto total_cost = total_cost_term();
-    auto numeric_data = formalism::checkout<formalism::EffectNumeric>(m_builder);
+    auto numeric_data = formalism::checkout<formalism::Effect<formalism::NumericTag>>(m_builder);
     numeric_data->op = formalism::NumericEffectOperator::Increase;
     numeric_data->function = total_cost.get_index();
     numeric_data->expression = one.get_index();
@@ -292,13 +292,13 @@ formalism::ActionView AstBuilder::add_unit_cost(formalism::ActionView view)
     auto combined = increase;
     if (const auto effect = view.get_effect())
     {
-        auto and_data = formalism::checkout<formalism::EffectAnd>(m_builder);
+        auto and_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(m_builder);
         and_data->effects.push_back(effect.value().get_index());
         and_data->effects.push_back(increase.get_index());
         combined = wrap_effect(formalism::insert(repo(), *and_data).first.get_index());
     }
 
-    auto precondition = cista::optional<ygg::Index<formalism::Condition>> {};
+    auto precondition = cista::optional<ygg::Index<formalism::Condition<>>> {};
     if (const auto condition = view.get_precondition())
         precondition = condition.value().get_index();
     auto data = formalism::checkout<formalism::Action>(m_builder);
@@ -354,7 +354,7 @@ void AstBuilder::complete_action_costs(const ast::Task& task,
     }
     if (missing_initial_value)
     {
-        auto number_data = formalism::checkout<formalism::FunctionExpressionNumber>(m_builder);
+        auto number_data = formalism::checkout<formalism::FunctionExpression<formalism::NumberTag>>(m_builder);
         number_data->value = 0.0;
         const auto zero = formalism::insert(repo(), *number_data).first.get_index();
         const auto zero_expression = wrap_function_expression(zero);

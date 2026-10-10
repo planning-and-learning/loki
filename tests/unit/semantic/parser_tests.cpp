@@ -124,7 +124,7 @@ TEST(LokiSemanticParser, PreservesComplementaryLiteralsInConjunctions)
         [&](const auto& node)
         {
             using Node = std::decay_t<decltype(node)>;
-            if constexpr (std::is_same_v<Node, formalism::ConditionAndView>)
+            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
                 conjuncts = node.get_conditions().size();
         },
         action.get_precondition().value().get_variant());

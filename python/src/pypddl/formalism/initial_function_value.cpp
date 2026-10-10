@@ -34,7 +34,7 @@ void bind_initial_function_value(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::InitialFunctionValue>;
         bind_data<V>(m, "InitialFunctionValueData")
-            .def(nb::init<ygg::Index<formalism::FunctionTerm>, ygg::Index<formalism::FunctionExpression>>(), "function"_a, "value"_a)
+            .def(nb::init<ygg::Index<formalism::FunctionTerm>, ygg::Index<formalism::FunctionExpression<>>>(), "function"_a, "value"_a)
             .def(nb::init<formalism::FunctionTermView, formalism::FunctionExpressionView>(), "function"_a, "value"_a)
             .def_rw("function", &V::function)
             .def_rw("value", &V::value);

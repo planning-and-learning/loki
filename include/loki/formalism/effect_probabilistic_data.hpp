@@ -18,8 +18,7 @@
 #ifndef LOKI_FORMALISM_EFFECT_PROBABILISTIC_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_PROBABILISTIC_DATA_HPP_
 
-#include "loki/formalism/effect_probabilistic_alternative_index.hpp"
-#include "loki/formalism/effect_probabilistic_index.hpp"
+#include "loki/formalism/declarations.hpp"
 
 #include <optional>
 #include <string>
@@ -34,9 +33,9 @@ namespace ygg
 {
 
 template<>
-struct Data<::loki::formalism::EffectProbabilistic>
+struct Data<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>>
 {
-    ygg::Index<::loki::formalism::EffectProbabilistic> index;
+    ygg::Index<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>> index;
     ygg::IndexList<::loki::formalism::EffectProbabilisticAlternative> alternatives;
 
     Data() = default;

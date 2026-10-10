@@ -43,16 +43,16 @@ public:
     void collect_free_variables(formalism::FunctionTermView term,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::FunctionExpressionNumberView,
+    void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>,
                                 ygg::UnorderedSet<formalism::VariableView>&,
                                 ygg::UnorderedSet<formalism::VariableView>&) const;
-    void collect_free_variables(formalism::UnaryFunctionExpressionView expression,
+    void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> expression,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::BinaryFunctionExpressionView expression,
+    void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> expression,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::MultiFunctionExpressionView expression,
+    void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> expression,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
     void collect_free_variables(formalism::FunctionExpressionView expression,
@@ -61,28 +61,28 @@ public:
     void collect_free_variables(formalism::ConditionView condition,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::ConditionLiteralView node,
+    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> node,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::ConditionNumericConstraintView node,
+    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> node,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::ConditionNotView node,
+    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NotTag>> node,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::ConditionImplyView node,
+    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> node,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::ConditionAndView node,
+    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::AndTag>> node,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::ConditionOrView node,
+    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::OrTag>> node,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::ConditionExistsView node,
+    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
-    void collect_free_variables(formalism::ConditionForallView node,
+    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ForallTag>> node,
                                 ygg::UnorderedSet<formalism::VariableView>& bound,
                                 ygg::UnorderedSet<formalism::VariableView>& free) const;
     std::vector<std::pair<formalism::ParameterView, formalism::VariableView>> free_parameters_in_scope(formalism::ConditionView condition) const;
@@ -141,14 +141,14 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Fun
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::FunctionExpressionNumberView,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>,
                                                                   ygg::UnorderedSet<formalism::VariableView>&,
                                                                   ygg::UnorderedSet<formalism::VariableView>&) const
 {
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::UnaryFunctionExpressionView expression,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> expression,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
@@ -156,7 +156,7 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Una
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::BinaryFunctionExpressionView expression,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> expression,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
@@ -165,7 +165,7 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Bin
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::MultiFunctionExpressionView expression,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> expression,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
@@ -190,7 +190,7 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Con
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::ConditionLiteralView node,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> node,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
@@ -198,7 +198,7 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Con
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::ConditionNumericConstraintView node,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> node,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
@@ -207,7 +207,7 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Con
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::ConditionNotView node,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NotTag>> node,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
@@ -215,7 +215,7 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Con
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::ConditionImplyView node,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> node,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
@@ -224,7 +224,7 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Con
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::ConditionAndView node,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::AndTag>> node,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
@@ -233,7 +233,7 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Con
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::ConditionOrView node,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::OrTag>> node,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
@@ -242,7 +242,7 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Con
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::ConditionExistsView node,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
@@ -254,7 +254,7 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Con
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::ConditionForallView node,
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ForallTag>> node,
                                                                   ygg::UnorderedSet<formalism::VariableView>& bound,
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
