@@ -15,20 +15,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_CONDITION_OR_DATA_HPP_
 #define LOKI_FORMALISM_CONDITION_OR_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/condition_index.hpp"
+#include "loki/formalism/condition_or_index.hpp"
+
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include "loki/formalism/condition_index.hpp"
-#include "loki/formalism/condition_or_index.hpp"
 
 namespace ygg
 {
@@ -47,9 +47,13 @@ struct Data<::loki::formalism::ConditionOr>
         set(conditions_, conditions);
     }
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(conditions); }
+    auto cista_members() noexcept { return std::tie(index, conditions); }
     auto cista_members() const noexcept { return std::tie(index, conditions); }
     auto identifying_members() const noexcept { return std::tie(conditions); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

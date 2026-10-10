@@ -33,6 +33,10 @@ void bind_binary_function_expression(nb::module_& m, RepositoryBinding& reposito
     {
         using V = Data<formalism::BinaryFunctionExpression>;
         bind_data<V>(m, "BinaryFunctionExpressionData")
+            .def(nb::init<formalism::BinaryArithmeticOperator, ygg::Index<formalism::FunctionExpression>, ygg::Index<formalism::FunctionExpression>>(),
+                 "operator"_a,
+                 "left"_a,
+                 "right"_a)
             .def(nb::init<formalism::BinaryArithmeticOperator, formalism::FunctionExpressionView, formalism::FunctionExpressionView>(),
                  "operator"_a,
                  "left"_a,

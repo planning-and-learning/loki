@@ -33,6 +33,10 @@ void bind_condition_numeric_constraint(nb::module_& m, RepositoryBinding& reposi
     {
         using V = Data<formalism::ConditionNumericConstraint>;
         bind_data<V>(m, "ConditionNumericConstraintData")
+            .def(nb::init<formalism::BinaryComparator, ygg::Index<formalism::FunctionExpression>, ygg::Index<formalism::FunctionExpression>>(),
+                 "comparator"_a,
+                 "left"_a,
+                 "right"_a)
             .def(nb::init<formalism::BinaryComparator, formalism::FunctionExpressionView, formalism::FunctionExpressionView>(),
                  "comparator"_a,
                  "left"_a,

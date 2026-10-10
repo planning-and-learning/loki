@@ -15,19 +15,19 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_FUNCTION_EXPRESSION_NUMBER_DATA_HPP_
 #define LOKI_FORMALISM_FUNCTION_EXPRESSION_NUMBER_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/function_expression_number_index.hpp"
+
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include "loki/formalism/function_expression_number_index.hpp"
 
 namespace ygg
 {
@@ -41,9 +41,13 @@ struct Data<::loki::formalism::FunctionExpressionNumber>
     Data() = default;
     Data(double value_) : index(), value(value_) {}
 
-    void clear() noexcept { ygg::clear(index); value = 0.0; }
+    auto cista_members() noexcept { return std::tie(index, value); }
     auto cista_members() const noexcept { return std::tie(index, value); }
     auto identifying_members() const noexcept { return std::tie(value); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

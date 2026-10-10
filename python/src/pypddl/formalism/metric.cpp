@@ -33,6 +33,7 @@ void bind_metric(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::Metric>;
         bind_data<V>(m, "MetricData")
+            .def(nb::init<formalism::OptimizationDirection, ygg::Index<formalism::FunctionExpression>>(), "optimization_direction"_a, "expression"_a)
             .def(nb::init<formalism::OptimizationDirection, formalism::FunctionExpressionView>(), "optimization_direction"_a, "expression"_a)
             .def_rw("optimization_direction", &V::optimization_direction)
             .def_rw("expression", &V::expression);

@@ -15,21 +15,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_EFFECT_WHEN_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_WHEN_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/condition_index.hpp"
+#include "loki/formalism/effect_index.hpp"
+#include "loki/formalism/effect_when_index.hpp"
+
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include "loki/formalism/condition_index.hpp"
-#include "loki/formalism/effect_index.hpp"
-#include "loki/formalism/effect_when_index.hpp"
 
 namespace ygg
 {
@@ -42,17 +42,26 @@ struct Data<::loki::formalism::EffectWhen>
     ygg::Index<::loki::formalism::Effect> effect;
 
     Data() = default;
-    Data(ygg::Index<::loki::formalism::Condition> condition_, ygg::Index<::loki::formalism::Effect> effect_) : index(), condition(condition_), effect(effect_) {}
+    Data(ygg::Index<::loki::formalism::Condition> condition_, ygg::Index<::loki::formalism::Effect> effect_) : index(), condition(condition_), effect(effect_)
+    {
+    }
     template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::Condition>, C> condition_, ::ygg::View<ygg::Index<::loki::formalism::Effect>, C> effect_) : index(), condition(), effect()
+    Data(::ygg::View<ygg::Index<::loki::formalism::Condition>, C> condition_, ::ygg::View<ygg::Index<::loki::formalism::Effect>, C> effect_) :
+        index(),
+        condition(),
+        effect()
     {
         set(condition_, condition);
         set(effect_, effect);
     }
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(condition); ygg::clear(effect); }
+    auto cista_members() noexcept { return std::tie(index, condition, effect); }
     auto cista_members() const noexcept { return std::tie(index, condition, effect); }
     auto identifying_members() const noexcept { return std::tie(condition, effect); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

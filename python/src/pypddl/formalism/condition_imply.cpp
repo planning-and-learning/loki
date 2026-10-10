@@ -33,6 +33,7 @@ void bind_condition_imply(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::ConditionImply>;
         bind_data<V>(m, "ConditionImplyData")
+            .def(nb::init<ygg::Index<formalism::Condition>, ygg::Index<formalism::Condition>>(), "left"_a, "right"_a)
             .def(nb::init<formalism::ConditionView, formalism::ConditionView>(), "left"_a, "right"_a)
             .def_rw("left", &V::left)
             .def_rw("right", &V::right);

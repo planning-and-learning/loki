@@ -32,7 +32,10 @@ void bind_effect_one_of(nb::module_& m, RepositoryBinding& repository)
 
     {
         using V = Data<formalism::EffectOneOf>;
-        bind_data<V>(m, "EffectOneOfData").def(nb::init<const std::vector<formalism::EffectView>&>(), "effects"_a).def_rw("effects", &V::effects);
+        bind_data<V>(m, "EffectOneOfData")
+            .def(nb::init<ygg::IndexList<formalism::Effect>>(), "effects"_a)
+            .def(nb::init<const std::vector<formalism::EffectView>&>(), "effects"_a)
+            .def_rw("effects", &V::effects);
     }
 
     {

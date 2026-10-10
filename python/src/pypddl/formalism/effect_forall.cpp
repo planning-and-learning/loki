@@ -34,6 +34,7 @@ void bind_effect_forall(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::EffectForall>;
         bind_data<V>(m, "EffectForallData")
+            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Effect>>(), "parameters"_a, "effect"_a)
             .def(nb::init<const std::vector<formalism::ParameterView>&, formalism::EffectView>(), "parameters"_a, "effect"_a)
             .def_rw("parameters", &V::parameters)
             .def_rw("effect", &V::effect);

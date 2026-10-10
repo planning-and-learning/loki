@@ -39,6 +39,22 @@ void bind_domain(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::Domain>;
         bind_data<V>(m, "DomainData")
+            .def(nb::init<std::string,
+                          ygg::IndexList<formalism::Requirement>,
+                          ygg::IndexList<formalism::Type>,
+                          ygg::IndexList<formalism::Object>,
+                          ygg::IndexList<formalism::Predicate>,
+                          ygg::IndexList<formalism::FunctionSkeleton>,
+                          ygg::IndexList<formalism::Action>,
+                          ygg::IndexList<formalism::Axiom>>(),
+                 "name"_a,
+                 "requirements"_a = ygg::IndexList<formalism::Requirement> {},
+                 "types"_a = ygg::IndexList<formalism::Type> {},
+                 "constants"_a = ygg::IndexList<formalism::Object> {},
+                 "predicates"_a = ygg::IndexList<formalism::Predicate> {},
+                 "functions"_a = ygg::IndexList<formalism::FunctionSkeleton> {},
+                 "actions"_a = ygg::IndexList<formalism::Action> {},
+                 "axioms"_a = ygg::IndexList<formalism::Axiom> {})
             .def(nb::init<const std::string&,
                           const std::vector<formalism::RequirementView>&,
                           const std::vector<formalism::TypeView>&,

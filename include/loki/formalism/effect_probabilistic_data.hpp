@@ -15,20 +15,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_EFFECT_PROBABILISTIC_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_PROBABILISTIC_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/effect_probabilistic_alternative_index.hpp"
+#include "loki/formalism/effect_probabilistic_index.hpp"
+
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include "loki/formalism/effect_probabilistic_alternative_index.hpp"
-#include "loki/formalism/effect_probabilistic_index.hpp"
 
 namespace ygg
 {
@@ -47,9 +47,13 @@ struct Data<::loki::formalism::EffectProbabilistic>
         set(alternatives_, alternatives);
     }
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(alternatives); }
+    auto cista_members() noexcept { return std::tie(index, alternatives); }
     auto cista_members() const noexcept { return std::tie(index, alternatives); }
     auto identifying_members() const noexcept { return std::tie(alternatives); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

@@ -15,20 +15,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_VARIABLE_DATA_HPP_
 #define LOKI_FORMALISM_VARIABLE_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/variable_index.hpp"
+
+#include <cista/containers/string.h>
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include <cista/containers/string.h>
-#include "loki/formalism/variable_index.hpp"
 
 namespace ygg
 {
@@ -42,9 +42,13 @@ struct Data<::loki::formalism::Variable>
     Data() = default;
     Data(::cista::offset::string name_) : index(), name(std::move(name_)) {}
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(name); }
+    auto cista_members() noexcept { return std::tie(index, name); }
     auto cista_members() const noexcept { return std::tie(index, name); }
     auto identifying_members() const noexcept { return std::tie(name); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

@@ -33,7 +33,10 @@ void bind_term(nb::module_& m, RepositoryBinding& repository)
 
     {
         using V = Data<formalism::Term>;
-        bind_data<V>(m, "TermData").def(nb::init<typename V::template ViewVariant<formalism::Repository>>(), "variant"_a).def_rw("variant", &V::variant);
+        bind_data<V>(m, "TermData")
+            .def(nb::init<V::Variant>(), "variant"_a)
+            .def(nb::init<typename V::template ViewVariant<formalism::Repository>>(), "variant"_a)
+            .def_rw("variant", &V::variant);
     }
 
     {

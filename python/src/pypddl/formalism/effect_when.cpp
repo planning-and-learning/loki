@@ -34,6 +34,7 @@ void bind_effect_when(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::EffectWhen>;
         bind_data<V>(m, "EffectWhenData")
+            .def(nb::init<ygg::Index<formalism::Condition>, ygg::Index<formalism::Effect>>(), "condition"_a, "effect"_a)
             .def(nb::init<formalism::ConditionView, formalism::EffectView>(), "condition"_a, "effect"_a)
             .def_rw("condition", &V::condition)
             .def_rw("effect", &V::effect);

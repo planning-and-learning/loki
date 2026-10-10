@@ -15,20 +15,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_EFFECT_ONE_OF_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_ONE_OF_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/effect_index.hpp"
+#include "loki/formalism/effect_one_of_index.hpp"
+
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include "loki/formalism/effect_index.hpp"
-#include "loki/formalism/effect_one_of_index.hpp"
 
 namespace ygg
 {
@@ -47,9 +47,13 @@ struct Data<::loki::formalism::EffectOneOf>
         set(effects_, effects);
     }
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(effects); }
+    auto cista_members() noexcept { return std::tie(index, effects); }
     auto cista_members() const noexcept { return std::tie(index, effects); }
     auto identifying_members() const noexcept { return std::tie(effects); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

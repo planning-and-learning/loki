@@ -33,6 +33,7 @@ void bind_effect_probabilistic_alternative(nb::module_& m, RepositoryBinding& re
     {
         using V = Data<formalism::EffectProbabilisticAlternative>;
         bind_data<V>(m, "EffectProbabilisticAlternativeData")
+            .def(nb::init<double, ygg::Index<formalism::Effect>>(), "probability"_a, "effect"_a)
             .def(nb::init<double, formalism::EffectView>(), "probability"_a, "effect"_a)
             .def_rw("probability", &V::probability)
             .def_rw("effect", &V::effect);

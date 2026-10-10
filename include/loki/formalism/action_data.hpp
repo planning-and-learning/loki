@@ -15,7 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_ACTION_DATA_HPP_
 #define LOKI_FORMALISM_ACTION_DATA_HPP_
 
@@ -120,18 +119,13 @@ struct Data<::loki::formalism::Action>
         set(effect_, effect);
     }
 
-    void clear() noexcept
-    {
-        ygg::clear(index);
-        ygg::clear(name);
-        ygg::clear(original_name);
-        ygg::clear(parameters);
-        ygg::clear(original_arity);
-        ygg::clear(precondition);
-        ygg::clear(effect);
-    }
+    auto cista_members() noexcept { return std::tie(index, name, original_name, parameters, original_arity, precondition, effect); }
     auto cista_members() const noexcept { return std::tie(index, name, original_name, parameters, original_arity, precondition, effect); }
     auto identifying_members() const noexcept { return std::tie(original_name, parameters, original_arity, precondition, effect); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

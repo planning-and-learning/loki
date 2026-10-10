@@ -33,6 +33,7 @@ void bind_predicate(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::Predicate>;
         bind_data<V>(m, "PredicateData")
+            .def(nb::init<std::string, ygg::IndexList<formalism::Parameter>>(), "name"_a, "parameters"_a = ygg::IndexList<formalism::Parameter> {})
             .def(nb::init<const std::string&, const std::vector<formalism::ParameterView>&>(),
                  "name"_a,
                  "parameters"_a = std::vector<formalism::ParameterView> {})

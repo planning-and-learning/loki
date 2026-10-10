@@ -38,7 +38,10 @@ void bind_effect(nb::module_& m, RepositoryBinding& repository)
 
     {
         using V = Data<formalism::Effect>;
-        bind_data<V>(m, "EffectData").def(nb::init<typename V::template ViewVariant<formalism::Repository>>(), "variant"_a).def_rw("variant", &V::variant);
+        bind_data<V>(m, "EffectData")
+            .def(nb::init<V::Variant>(), "variant"_a)
+            .def(nb::init<typename V::template ViewVariant<formalism::Repository>>(), "variant"_a)
+            .def_rw("variant", &V::variant);
     }
 
     {

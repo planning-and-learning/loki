@@ -34,6 +34,7 @@ void bind_condition_forall(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::ConditionForall>;
         bind_data<V>(m, "ConditionForallData")
+            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Condition>>(), "parameters"_a, "condition"_a)
             .def(nb::init<const std::vector<formalism::ParameterView>&, formalism::ConditionView>(), "parameters"_a, "condition"_a)
             .def_rw("parameters", &V::parameters)
             .def_rw("condition", &V::condition);

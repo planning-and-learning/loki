@@ -35,11 +35,26 @@ void bind_axiom(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::Axiom>;
         bind_data<V>(m, "AxiomData")
+            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Literal>, ygg::Index<formalism::Condition>>(),
+                 "parameters"_a,
+                 "head"_a,
+                 "condition"_a)
+            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::uint_t, ygg::Index<formalism::Literal>, ygg::Index<formalism::Condition>>(),
+                 "parameters"_a,
+                 "original_arity"_a,
+                 "head"_a,
+                 "condition"_a)
             .def(nb::init<const std::vector<formalism::ParameterView>&, formalism::LiteralView, formalism::ConditionView>(),
                  "parameters"_a,
                  "head"_a,
                  "condition"_a)
+            .def(nb::init<const std::vector<formalism::ParameterView>&, ygg::uint_t, formalism::LiteralView, formalism::ConditionView>(),
+                 "parameters"_a,
+                 "original_arity"_a,
+                 "head"_a,
+                 "condition"_a)
             .def_rw("parameters", &V::parameters)
+            .def_rw("original_arity", &V::original_arity)
             .def_rw("head", &V::head)
             .def_rw("condition", &V::condition);
     }

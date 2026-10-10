@@ -32,7 +32,10 @@ void bind_effect_literal(nb::module_& m, RepositoryBinding& repository)
 
     {
         using V = Data<formalism::EffectLiteral>;
-        bind_data<V>(m, "EffectLiteralData").def(nb::init<formalism::LiteralView>(), "literal"_a).def_rw("literal", &V::literal);
+        bind_data<V>(m, "EffectLiteralData")
+            .def(nb::init<ygg::Index<formalism::Literal>>(), "literal"_a)
+            .def(nb::init<formalism::LiteralView>(), "literal"_a)
+            .def_rw("literal", &V::literal);
     }
 
     {

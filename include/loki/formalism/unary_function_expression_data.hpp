@@ -15,21 +15,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_UNARY_FUNCTION_EXPRESSION_DATA_HPP_
 #define LOKI_FORMALISM_UNARY_FUNCTION_EXPRESSION_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/declarations.hpp"
+#include "loki/formalism/function_expression_index.hpp"
+#include "loki/formalism/unary_function_expression_index.hpp"
+
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include "loki/formalism/declarations.hpp"
-#include "loki/formalism/function_expression_index.hpp"
-#include "loki/formalism/unary_function_expression_index.hpp"
 
 namespace ygg
 {
@@ -42,16 +42,28 @@ struct Data<::loki::formalism::UnaryFunctionExpression>
     ygg::Index<::loki::formalism::FunctionExpression> expression;
 
     Data() = default;
-    Data(::loki::formalism::UnaryArithmeticOperator op_, ygg::Index<::loki::formalism::FunctionExpression> expression_) : index(), op(op_), expression(expression_) {}
+    Data(::loki::formalism::UnaryArithmeticOperator op_, ygg::Index<::loki::formalism::FunctionExpression> expression_) :
+        index(),
+        op(op_),
+        expression(expression_)
+    {
+    }
     template<typename C>
-    Data(::loki::formalism::UnaryArithmeticOperator op_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> expression_) : index(), op(op_), expression()
+    Data(::loki::formalism::UnaryArithmeticOperator op_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> expression_) :
+        index(),
+        op(op_),
+        expression()
     {
         set(expression_, expression);
     }
 
-    void clear() noexcept { ygg::clear(index); op = {}; ygg::clear(expression); }
+    auto cista_members() noexcept { return std::tie(index, op, expression); }
     auto cista_members() const noexcept { return std::tie(index, op, expression); }
     auto identifying_members() const noexcept { return std::tie(op, expression); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

@@ -34,6 +34,7 @@ void bind_function_skeleton(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::FunctionSkeleton>;
         bind_data<V>(m, "FunctionSkeletonData")
+            .def(nb::init<std::string, ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Type>>(), "name"_a, "parameters"_a, "type"_a)
             .def(nb::init<const std::string&, const std::vector<formalism::ParameterView>&, formalism::TypeView>(), "name"_a, "parameters"_a, "type"_a)
             .def_rw("name", &V::name)
             .def_rw("parameters", &V::parameters)

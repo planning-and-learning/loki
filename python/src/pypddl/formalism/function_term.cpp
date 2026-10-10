@@ -34,6 +34,9 @@ void bind_function_term(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::FunctionTerm>;
         bind_data<V>(m, "FunctionTermData")
+            .def(nb::init<ygg::Index<formalism::FunctionSkeleton>, ygg::IndexList<formalism::Term>>(),
+                 "function"_a,
+                 "terms"_a = ygg::IndexList<formalism::Term> {})
             .def(nb::init<formalism::FunctionSkeletonView, const std::vector<formalism::TermView>&>(),
                  "function"_a,
                  "terms"_a = std::vector<formalism::TermView> {})

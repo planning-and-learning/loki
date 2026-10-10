@@ -41,6 +41,26 @@ void bind_task(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::Task>;
         bind_data<V>(m, "TaskData")
+            .def(nb::init<std::string,
+                          ygg::Index<formalism::Domain>,
+                          ygg::IndexList<formalism::Requirement>,
+                          ygg::IndexList<formalism::Object>,
+                          ygg::IndexList<formalism::Literal>,
+                          ygg::IndexList<formalism::InitialFunctionValue>,
+                          cista::optional<ygg::Index<formalism::Condition>>,
+                          cista::optional<ygg::Index<formalism::Metric>>,
+                          ygg::IndexList<formalism::Predicate>,
+                          ygg::IndexList<formalism::Axiom>>(),
+                 "name"_a,
+                 "domain"_a,
+                 "requirements"_a = ygg::IndexList<formalism::Requirement> {},
+                 "objects"_a = ygg::IndexList<formalism::Object> {},
+                 "initial_literals"_a = ygg::IndexList<formalism::Literal> {},
+                 "initial_function_values"_a = ygg::IndexList<formalism::InitialFunctionValue> {},
+                 "goal"_a.none() = cista::optional<ygg::Index<formalism::Condition>> {},
+                 "metric"_a.none() = cista::optional<ygg::Index<formalism::Metric>> {},
+                 "predicates"_a = ygg::IndexList<formalism::Predicate> {},
+                 "axioms"_a = ygg::IndexList<formalism::Axiom> {})
             .def(nb::init<const std::string&,
                           formalism::DomainView,
                           const std::vector<formalism::RequirementView>&,

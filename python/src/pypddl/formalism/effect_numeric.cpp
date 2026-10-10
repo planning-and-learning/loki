@@ -34,6 +34,10 @@ void bind_effect_numeric(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::EffectNumeric>;
         bind_data<V>(m, "EffectNumericData")
+            .def(nb::init<formalism::NumericEffectOperator, ygg::Index<formalism::FunctionTerm>, ygg::Index<formalism::FunctionExpression>>(),
+                 "operator"_a,
+                 "function"_a,
+                 "expression"_a)
             .def(nb::init<formalism::NumericEffectOperator, formalism::FunctionTermView, formalism::FunctionExpressionView>(),
                  "operator"_a,
                  "function"_a,

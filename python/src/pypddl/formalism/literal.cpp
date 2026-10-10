@@ -33,6 +33,7 @@ void bind_literal(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::Literal>;
         bind_data<V>(m, "LiteralData")
+            .def(nb::init<ygg::Index<formalism::Atom>, bool>(), "atom"_a, "polarity"_a = true)
             .def(nb::init<formalism::AtomView, bool>(), "atom"_a, "polarity"_a = true)
             .def_rw("atom", &V::atom)
             .def_rw("polarity", &V::m_polarity);

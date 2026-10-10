@@ -15,7 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_LITERAL_DATA_HPP_
 #define LOKI_FORMALISM_LITERAL_DATA_HPP_
 
@@ -49,14 +48,13 @@ struct Data<::loki::formalism::Literal>
         set(atom_, atom);
     }
 
-    void clear() noexcept
-    {
-        ygg::clear(index);
-        m_polarity = true;
-        ygg::clear(atom);
-    }
+    auto cista_members() noexcept { return std::tie(index, atom, m_polarity); }
     auto cista_members() const noexcept { return std::tie(index, atom, m_polarity); }
     auto identifying_members() const noexcept { return std::tie(atom, m_polarity); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

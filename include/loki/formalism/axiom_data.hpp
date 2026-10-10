@@ -15,7 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_AXIOM_DATA_HPP_
 #define LOKI_FORMALISM_AXIOM_DATA_HPP_
 
@@ -81,17 +80,29 @@ struct Data<::loki::formalism::Axiom>
         set(head_, head);
         set(condition_, condition);
     }
-
-    void clear() noexcept
+    template<typename C>
+    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
+         ygg::uint_t original_arity_,
+         ::ygg::View<ygg::Index<::loki::formalism::Literal>, C> head_,
+         ::ygg::View<ygg::Index<::loki::formalism::Condition>, C> condition_) :
+        index(),
+        parameters(),
+        original_arity(original_arity_),
+        head(),
+        condition()
     {
-        ygg::clear(index);
-        ygg::clear(parameters);
-        ygg::clear(original_arity);
-        ygg::clear(head);
-        ygg::clear(condition);
+        set(parameters_, parameters);
+        set(head_, head);
+        set(condition_, condition);
     }
+
+    auto cista_members() noexcept { return std::tie(index, parameters, original_arity, head, condition); }
     auto cista_members() const noexcept { return std::tie(index, parameters, original_arity, head, condition); }
     auto identifying_members() const noexcept { return std::tie(parameters, original_arity, head, condition); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

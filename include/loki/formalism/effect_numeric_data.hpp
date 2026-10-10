@@ -15,22 +15,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_EFFECT_NUMERIC_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_NUMERIC_DATA_HPP_
 
-#include <tuple>
-#include <utility>
-#include <optional>
-#include <string>
-#include <variant>
-#include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
 #include "loki/formalism/declarations.hpp"
 #include "loki/formalism/effect_numeric_index.hpp"
 #include "loki/formalism/function_expression_index.hpp"
 #include "loki/formalism/function_term_index.hpp"
+
+#include <optional>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <variant>
+#include <vector>
+#include <yggdrasil/core/types.hpp>
+#include <yggdrasil/core/types_utils.hpp>
 
 namespace ygg
 {
@@ -44,17 +44,35 @@ struct Data<::loki::formalism::EffectNumeric>
     ygg::Index<::loki::formalism::FunctionExpression> expression;
 
     Data() = default;
-    Data(::loki::formalism::NumericEffectOperator op_, ygg::Index<::loki::formalism::FunctionTerm> function_, ygg::Index<::loki::formalism::FunctionExpression> expression_) : index(), op(op_), function(function_), expression(expression_) {}
+    Data(::loki::formalism::NumericEffectOperator op_,
+         ygg::Index<::loki::formalism::FunctionTerm> function_,
+         ygg::Index<::loki::formalism::FunctionExpression> expression_) :
+        index(),
+        op(op_),
+        function(function_),
+        expression(expression_)
+    {
+    }
     template<typename C>
-    Data(::loki::formalism::NumericEffectOperator op_, ::ygg::View<ygg::Index<::loki::formalism::FunctionTerm>, C> function_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> expression_) : index(), op(op_), function(), expression()
+    Data(::loki::formalism::NumericEffectOperator op_,
+         ::ygg::View<ygg::Index<::loki::formalism::FunctionTerm>, C> function_,
+         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> expression_) :
+        index(),
+        op(op_),
+        function(),
+        expression()
     {
         set(function_, function);
         set(expression_, expression);
     }
 
-    void clear() noexcept { ygg::clear(index); op = {}; ygg::clear(function); ygg::clear(expression); }
+    auto cista_members() noexcept { return std::tie(index, op, function, expression); }
     auto cista_members() const noexcept { return std::tie(index, op, function, expression); }
     auto identifying_members() const noexcept { return std::tie(op, function, expression); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

@@ -15,21 +15,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_EFFECT_FORALL_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_FORALL_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/effect_forall_index.hpp"
+#include "loki/formalism/effect_index.hpp"
+#include "loki/formalism/parameter_index.hpp"
+
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include "loki/formalism/effect_forall_index.hpp"
-#include "loki/formalism/effect_index.hpp"
-#include "loki/formalism/parameter_index.hpp"
 
 namespace ygg
 {
@@ -42,17 +42,30 @@ struct Data<::loki::formalism::EffectForall>
     ygg::Index<::loki::formalism::Effect> effect;
 
     Data() = default;
-    Data(ygg::IndexList<::loki::formalism::Parameter> parameters_, ygg::Index<::loki::formalism::Effect> effect_) : index(), parameters(std::move(parameters_)), effect(effect_) {}
+    Data(ygg::IndexList<::loki::formalism::Parameter> parameters_, ygg::Index<::loki::formalism::Effect> effect_) :
+        index(),
+        parameters(std::move(parameters_)),
+        effect(effect_)
+    {
+    }
     template<typename C>
-    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_, ::ygg::View<ygg::Index<::loki::formalism::Effect>, C> effect_) : index(), parameters(), effect()
+    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
+         ::ygg::View<ygg::Index<::loki::formalism::Effect>, C> effect_) :
+        index(),
+        parameters(),
+        effect()
     {
         set(parameters_, parameters);
         set(effect_, effect);
     }
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(parameters); ygg::clear(effect); }
+    auto cista_members() noexcept { return std::tie(index, parameters, effect); }
     auto cista_members() const noexcept { return std::tie(index, parameters, effect); }
     auto identifying_members() const noexcept { return std::tie(parameters, effect); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

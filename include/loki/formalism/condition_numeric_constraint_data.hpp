@@ -15,21 +15,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_CONDITION_NUMERIC_CONSTRAINT_DATA_HPP_
 #define LOKI_FORMALISM_CONDITION_NUMERIC_CONSTRAINT_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/condition_numeric_constraint_index.hpp"
+#include "loki/formalism/declarations.hpp"
+#include "loki/formalism/function_expression_index.hpp"
+
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include "loki/formalism/condition_numeric_constraint_index.hpp"
-#include "loki/formalism/declarations.hpp"
-#include "loki/formalism/function_expression_index.hpp"
 
 namespace ygg
 {
@@ -43,17 +43,35 @@ struct Data<::loki::formalism::ConditionNumericConstraint>
     ygg::Index<::loki::formalism::FunctionExpression> right;
 
     Data() = default;
-    Data(::loki::formalism::BinaryComparator comparator_, ygg::Index<::loki::formalism::FunctionExpression> left_, ygg::Index<::loki::formalism::FunctionExpression> right_) : index(), comparator(comparator_), left(left_), right(right_) {}
+    Data(::loki::formalism::BinaryComparator comparator_,
+         ygg::Index<::loki::formalism::FunctionExpression> left_,
+         ygg::Index<::loki::formalism::FunctionExpression> right_) :
+        index(),
+        comparator(comparator_),
+        left(left_),
+        right(right_)
+    {
+    }
     template<typename C>
-    Data(::loki::formalism::BinaryComparator comparator_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> left_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> right_) : index(), comparator(comparator_), left(), right()
+    Data(::loki::formalism::BinaryComparator comparator_,
+         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> left_,
+         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> right_) :
+        index(),
+        comparator(comparator_),
+        left(),
+        right()
     {
         set(left_, left);
         set(right_, right);
     }
 
-    void clear() noexcept { ygg::clear(index); comparator = {}; ygg::clear(left); ygg::clear(right); }
+    auto cista_members() noexcept { return std::tie(index, comparator, left, right); }
     auto cista_members() const noexcept { return std::tie(index, comparator, left, right); }
     auto identifying_members() const noexcept { return std::tie(comparator, left, right); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

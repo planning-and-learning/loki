@@ -32,7 +32,10 @@ void bind_condition_and(nb::module_& m, RepositoryBinding& repository)
 
     {
         using V = Data<formalism::ConditionAnd>;
-        bind_data<V>(m, "ConditionAndData").def(nb::init<const std::vector<formalism::ConditionView>&>(), "conditions"_a).def_rw("conditions", &V::conditions);
+        bind_data<V>(m, "ConditionAndData")
+            .def(nb::init<ygg::IndexList<formalism::Condition>>(), "conditions"_a)
+            .def(nb::init<const std::vector<formalism::ConditionView>&>(), "conditions"_a)
+            .def_rw("conditions", &V::conditions);
     }
 
     {

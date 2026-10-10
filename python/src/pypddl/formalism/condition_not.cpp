@@ -32,7 +32,10 @@ void bind_condition_not(nb::module_& m, RepositoryBinding& repository)
 
     {
         using V = Data<formalism::ConditionNot>;
-        bind_data<V>(m, "ConditionNotData").def(nb::init<formalism::ConditionView>(), "condition"_a).def_rw("condition", &V::condition);
+        bind_data<V>(m, "ConditionNotData")
+            .def(nb::init<ygg::Index<formalism::Condition>>(), "condition"_a)
+            .def(nb::init<formalism::ConditionView>(), "condition"_a)
+            .def_rw("condition", &V::condition);
     }
 
     {

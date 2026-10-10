@@ -15,22 +15,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_FUNCTION_SKELETON_DATA_HPP_
 #define LOKI_FORMALISM_FUNCTION_SKELETON_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/function_skeleton_index.hpp"
+#include "loki/formalism/parameter_index.hpp"
+#include "loki/formalism/type_index.hpp"
+
+#include <cista/containers/string.h>
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include <cista/containers/string.h>
-#include "loki/formalism/function_skeleton_index.hpp"
-#include "loki/formalism/parameter_index.hpp"
-#include "loki/formalism/type_index.hpp"
 
 namespace ygg
 {
@@ -44,17 +44,33 @@ struct Data<::loki::formalism::FunctionSkeleton>
     ygg::Index<::loki::formalism::Type> type;
 
     Data() = default;
-    Data(::cista::offset::string name_, ygg::IndexList<::loki::formalism::Parameter> parameters_, ygg::Index<::loki::formalism::Type> type_) : index(), name(std::move(name_)), parameters(std::move(parameters_)), type(type_) {}
+    Data(::cista::offset::string name_, ygg::IndexList<::loki::formalism::Parameter> parameters_, ygg::Index<::loki::formalism::Type> type_) :
+        index(),
+        name(std::move(name_)),
+        parameters(std::move(parameters_)),
+        type(type_)
+    {
+    }
     template<typename C>
-    Data(const std::string& name_, const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_, ::ygg::View<ygg::Index<::loki::formalism::Type>, C> type_) : index(), name(name_), parameters(), type()
+    Data(const std::string& name_,
+         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
+         ::ygg::View<ygg::Index<::loki::formalism::Type>, C> type_) :
+        index(),
+        name(name_),
+        parameters(),
+        type()
     {
         set(parameters_, parameters);
         set(type_, type);
     }
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(name); ygg::clear(parameters); ygg::clear(type); }
+    auto cista_members() noexcept { return std::tie(index, name, parameters, type); }
     auto cista_members() const noexcept { return std::tie(index, name, parameters, type); }
     auto identifying_members() const noexcept { return std::tie(name, parameters, type); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

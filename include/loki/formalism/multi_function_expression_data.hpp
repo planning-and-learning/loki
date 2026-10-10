@@ -42,26 +42,25 @@ struct Data<::loki::formalism::MultiFunctionExpression>
     ygg::IndexList<::loki::formalism::FunctionExpression> args;
 
     Data() = default;
-    Data(::loki::formalism::MultiArithmeticOperator op_, ygg::IndexList<::loki::formalism::FunctionExpression> args_) :
-        index(), op(op_), args(std::move(args_))
+    Data(::loki::formalism::MultiArithmeticOperator op_, ygg::IndexList<::loki::formalism::FunctionExpression> args_) : index(), op(op_), args(std::move(args_))
     {
     }
     template<typename C>
-    Data(::loki::formalism::MultiArithmeticOperator op_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C>>& args_) :
-        index(), op(op_), args()
+    Data(::loki::formalism::MultiArithmeticOperator op_, const std::vector<::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C>>& args_) :
+        index(),
+        op(op_),
+        args()
     {
         set(args_, args);
     }
 
-    void clear() noexcept
-    {
-        ygg::clear(index);
-        op = {};
-        ygg::clear(args);
-    }
+    auto cista_members() noexcept { return std::tie(index, op, args); }
     auto cista_members() const noexcept { return std::tie(index, op, args); }
     auto identifying_members() const noexcept { return std::tie(op, args); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

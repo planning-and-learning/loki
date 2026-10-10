@@ -34,6 +34,7 @@ void bind_atom(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::Atom>;
         bind_data<V>(m, "AtomData")
+            .def(nb::init<ygg::Index<formalism::Predicate>, ygg::IndexList<formalism::Term>>(), "predicate"_a, "terms"_a = ygg::IndexList<formalism::Term> {})
             .def(nb::init<formalism::PredicateView, const std::vector<formalism::TermView>&>(), "predicate"_a, "terms"_a = std::vector<formalism::TermView> {})
             .def_rw("predicate", &V::predicate)
             .def_rw("terms", &V::terms);

@@ -15,25 +15,25 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_FUNCTION_EXPRESSION_DATA_HPP_
 #define LOKI_FORMALISM_FUNCTION_EXPRESSION_DATA_HPP_
 
-#include <tuple>
-#include <utility>
-#include <optional>
-#include <string>
-#include <variant>
-#include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
-#include <cista/containers/variant.h>
 #include "loki/formalism/binary_function_expression_index.hpp"
 #include "loki/formalism/function_expression_index.hpp"
 #include "loki/formalism/function_expression_number_index.hpp"
 #include "loki/formalism/function_term_index.hpp"
 #include "loki/formalism/multi_function_expression_index.hpp"
 #include "loki/formalism/unary_function_expression_index.hpp"
+
+#include <cista/containers/variant.h>
+#include <optional>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <variant>
+#include <vector>
+#include <yggdrasil/core/types.hpp>
+#include <yggdrasil/core/types_utils.hpp>
 
 namespace ygg
 {
@@ -59,11 +59,17 @@ struct Data<::loki::formalism::FunctionExpression>
     Data() = default;
     explicit Data(Variant variant_) : index(), variant(std::move(variant_)) {}
     template<typename C>
-    explicit Data(ViewVariant<C> variant_) : index(), variant(std::visit([](const auto& view) -> Variant { return Variant(view.get_index()); }, variant_)) {}
+    explicit Data(ViewVariant<C> variant_) : index(), variant(std::visit([](const auto& view) -> Variant { return Variant(view.get_index()); }, variant_))
+    {
+    }
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(variant); }
+    auto cista_members() noexcept { return std::tie(index, variant); }
     auto cista_members() const noexcept { return std::tie(index, variant); }
     auto identifying_members() const noexcept { return std::tie(variant); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

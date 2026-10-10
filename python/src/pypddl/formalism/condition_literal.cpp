@@ -32,7 +32,10 @@ void bind_condition_literal(nb::module_& m, RepositoryBinding& repository)
 
     {
         using V = Data<formalism::ConditionLiteral>;
-        bind_data<V>(m, "ConditionLiteralData").def(nb::init<formalism::LiteralView>(), "literal"_a).def_rw("literal", &V::literal);
+        bind_data<V>(m, "ConditionLiteralData")
+            .def(nb::init<ygg::Index<formalism::Literal>>(), "literal"_a)
+            .def(nb::init<formalism::LiteralView>(), "literal"_a)
+            .def_rw("literal", &V::literal);
     }
 
     {

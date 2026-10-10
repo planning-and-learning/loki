@@ -15,21 +15,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_INITIAL_FUNCTION_VALUE_DATA_HPP_
 #define LOKI_FORMALISM_INITIAL_FUNCTION_VALUE_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/function_expression_index.hpp"
+#include "loki/formalism/function_term_index.hpp"
+#include "loki/formalism/initial_function_value_index.hpp"
+
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include "loki/formalism/function_expression_index.hpp"
-#include "loki/formalism/function_term_index.hpp"
-#include "loki/formalism/initial_function_value_index.hpp"
 
 namespace ygg
 {
@@ -42,17 +42,29 @@ struct Data<::loki::formalism::InitialFunctionValue>
     ygg::Index<::loki::formalism::FunctionExpression> value;
 
     Data() = default;
-    Data(ygg::Index<::loki::formalism::FunctionTerm> function_, ygg::Index<::loki::formalism::FunctionExpression> value_) : index(), function(function_), value(value_) {}
+    Data(ygg::Index<::loki::formalism::FunctionTerm> function_, ygg::Index<::loki::formalism::FunctionExpression> value_) :
+        index(),
+        function(function_),
+        value(value_)
+    {
+    }
     template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::FunctionTerm>, C> function_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> value_) : index(), function(), value()
+    Data(::ygg::View<ygg::Index<::loki::formalism::FunctionTerm>, C> function_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> value_) :
+        index(),
+        function(),
+        value()
     {
         set(function_, function);
         set(value_, value);
     }
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(function); ygg::clear(value); }
+    auto cista_members() noexcept { return std::tie(index, function, value); }
     auto cista_members() const noexcept { return std::tie(index, function, value); }
     auto identifying_members() const noexcept { return std::tie(function, value); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

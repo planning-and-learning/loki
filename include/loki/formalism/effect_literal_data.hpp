@@ -15,20 +15,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_EFFECT_LITERAL_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_LITERAL_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/effect_literal_index.hpp"
+#include "loki/formalism/literal_index.hpp"
+
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include "loki/formalism/effect_literal_index.hpp"
-#include "loki/formalism/literal_index.hpp"
 
 namespace ygg
 {
@@ -47,9 +47,13 @@ struct Data<::loki::formalism::EffectLiteral>
         set(literal_, literal);
     }
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(literal); }
+    auto cista_members() noexcept { return std::tie(index, literal); }
     auto cista_members() const noexcept { return std::tie(index, literal); }
     auto identifying_members() const noexcept { return std::tie(literal); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

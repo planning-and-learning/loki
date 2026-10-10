@@ -32,6 +32,7 @@ void bind_type(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::Type>;
         bind_data<V>(m, "TypeData")
+            .def(nb::init<std::string, ygg::IndexList<formalism::Type>>(), "name"_a, "bases"_a = ygg::IndexList<formalism::Type> {})
             .def(nb::init<const std::string&, const std::vector<formalism::TypeView>&>(), "name"_a, "bases"_a = std::vector<formalism::TypeView> {})
             .def_rw("name", &V::name)
             .def_rw("bases", &V::bases);

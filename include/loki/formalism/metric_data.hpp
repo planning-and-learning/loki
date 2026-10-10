@@ -15,7 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_METRIC_DATA_HPP_
 #define LOKI_FORMALISM_METRIC_DATA_HPP_
 
@@ -24,6 +23,7 @@
 #include "loki/formalism/metric_index.hpp"
 
 #include <tuple>
+#include <utility>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
 
@@ -45,8 +45,7 @@ struct Data<::loki::formalism::Metric>
     {
     }
     template<typename C>
-    Data(::loki::formalism::OptimizationDirection optimization_direction_,
-         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> expression_) :
+    Data(::loki::formalism::OptimizationDirection optimization_direction_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression>, C> expression_) :
         index(),
         optimization_direction(optimization_direction_),
         expression()
@@ -54,14 +53,13 @@ struct Data<::loki::formalism::Metric>
         set(expression_, expression);
     }
 
-    void clear() noexcept
-    {
-        ygg::clear(index);
-        optimization_direction = ::loki::formalism::OptimizationDirection::Minimize;
-        ygg::clear(expression);
-    }
+    auto cista_members() noexcept { return std::tie(index, optimization_direction, expression); }
     auto cista_members() const noexcept { return std::tie(index, optimization_direction, expression); }
     auto identifying_members() const noexcept { return std::tie(optimization_direction, expression); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

@@ -33,6 +33,7 @@ void bind_multi_function_expression(nb::module_& m, RepositoryBinding& repositor
     {
         using V = Data<formalism::MultiFunctionExpression>;
         bind_data<V>(m, "MultiFunctionExpressionData")
+            .def(nb::init<formalism::MultiArithmeticOperator, ygg::IndexList<formalism::FunctionExpression>>(), "operator"_a, "args"_a)
             .def(nb::init<formalism::MultiArithmeticOperator, const std::vector<formalism::FunctionExpressionView>&>(),
                  "operator"_a,
                  "args"_a = std::vector<formalism::FunctionExpressionView> {})

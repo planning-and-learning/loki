@@ -33,6 +33,7 @@ void bind_unary_function_expression(nb::module_& m, RepositoryBinding& repositor
     {
         using V = Data<formalism::UnaryFunctionExpression>;
         bind_data<V>(m, "UnaryFunctionExpressionData")
+            .def(nb::init<formalism::UnaryArithmeticOperator, ygg::Index<formalism::FunctionExpression>>(), "operator"_a, "expression"_a)
             .def(nb::init<formalism::UnaryArithmeticOperator, formalism::FunctionExpressionView>(), "operator"_a, "expression"_a)
             .def_rw("operator", &V::op)
             .def_rw("expression", &V::expression);

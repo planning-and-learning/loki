@@ -15,21 +15,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_OBJECT_DATA_HPP_
 #define LOKI_FORMALISM_OBJECT_DATA_HPP_
 
-#include <tuple>
-#include <utility>
+#include "loki/formalism/object_index.hpp"
+#include "loki/formalism/type_index.hpp"
+
+#include <cista/containers/string.h>
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yggdrasil/core/types.hpp>
 #include <yggdrasil/core/types_utils.hpp>
-#include <cista/containers/string.h>
-#include "loki/formalism/object_index.hpp"
-#include "loki/formalism/type_index.hpp"
 
 namespace ygg
 {
@@ -49,9 +49,13 @@ struct Data<::loki::formalism::Object>
         set(types_, types);
     }
 
-    void clear() noexcept { ygg::clear(index); ygg::clear(name); ygg::clear(types); }
+    auto cista_members() noexcept { return std::tie(index, name, types); }
     auto cista_members() const noexcept { return std::tie(index, name, types); }
     auto identifying_members() const noexcept { return std::tie(name, types); }
+    void clear() noexcept
+    {
+        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+    }
 };
 
 }

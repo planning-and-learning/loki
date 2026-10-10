@@ -34,6 +34,7 @@ void bind_parameter(nb::module_& m, RepositoryBinding& repository)
     {
         using V = Data<formalism::Parameter>;
         bind_data<V>(m, "ParameterData")
+            .def(nb::init<ygg::Index<formalism::Variable>, ygg::IndexList<formalism::Type>>(), "variable"_a, "types"_a = ygg::IndexList<formalism::Type> {})
             .def(nb::init<formalism::VariableView, const std::vector<formalism::TypeView>&>(), "variable"_a, "types"_a = std::vector<formalism::TypeView> {})
             .def_rw("variable", &V::variable)
             .def_rw("types", &V::types);
