@@ -21,13 +21,13 @@
 #include <loki/formalism/effect_view.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_effect_and(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::Effect<formalism::AndTag>>>(m, "EffectAndIndex");
 
     {

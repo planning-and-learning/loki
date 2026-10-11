@@ -216,9 +216,8 @@ std::string to_string(AxiomView value)
     for (auto term : value.get_head().get_atom().get_terms())
     {
         visit(
-            [&](const auto& node)
+            [&]<typename T>(const T& node)
             {
-                using T = std::remove_cvref_t<decltype(node)>;
                 if constexpr (std::same_as<T, VariableView>)
                     head_variables.insert(node);
             },

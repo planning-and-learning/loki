@@ -79,12 +79,10 @@ namespace fmt
 template<typename T>
 struct formatter<ygg::View<ygg::Index<T>, loki::formalism::Repository>, char>
 {
-    using View = ygg::View<ygg::Index<T>, loki::formalism::Repository>;
-
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template<typename FormatContext>
-    auto format(const View& value, FormatContext& ctx) const
+    auto format(const ygg::View<ygg::Index<T>, loki::formalism::Repository>& value, FormatContext& ctx) const
     {
         return fmt::format_to(ctx.out(), "{}", loki::formalism::format::to_string(value));
     }

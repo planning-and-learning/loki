@@ -159,9 +159,8 @@ formalism::EffectView EffectTranslator<Derived>::copy(formalism::EffectView sour
     {
         auto split = std::optional<formalism::EffectView> {};
         ygg::visit(
-            [&](const auto& arg)
+            [&]<typename Node>(const Node& arg)
             {
-                using Node = std::decay_t<decltype(arg)>;
                 if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
                 {
                     const auto condition = this->self().copy(arg.get_condition());

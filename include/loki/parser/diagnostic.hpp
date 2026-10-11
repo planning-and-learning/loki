@@ -25,10 +25,8 @@
 
 namespace loki::parser
 {
-namespace x3 = boost::spirit::x3;
-
 using Iterator = std::string::const_iterator;
-using Position = x3::position_tagged;
+using Position = boost::spirit::x3::position_tagged;
 using PositionList = std::vector<Position>;
 
 using ygg::diagnostics::ErrorHandler;

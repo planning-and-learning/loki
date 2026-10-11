@@ -62,9 +62,8 @@ template<typename Derived>
 bool MaterializeEqualityTranslator<Derived>::condition_uses_equality(formalism::ConditionView condition) const
 {
     return ygg::visit(
-        [&](const auto& node) -> bool
+        [&]<typename Node>(const Node& node) -> bool
         {
-            using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::LiteralTag>>>)
                 return this->self().literal_uses_equality(node.get_literal());
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
@@ -98,9 +97,8 @@ template<typename Derived>
 bool MaterializeEqualityTranslator<Derived>::effect_uses_equality(formalism::EffectView effect) const
 {
     return ygg::visit(
-        [&](const auto& node) -> bool
+        [&]<typename Node>(const Node& node) -> bool
         {
-            using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::LiteralTag>>>)
                 return this->self().literal_uses_equality(node.get_literal());
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)

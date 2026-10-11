@@ -6,17 +6,16 @@
 #include <gtest/gtest.h>
 #include <utility>
 
-namespace f = loki::formalism;
-using Index = ygg::Index<f::FunctionExpression<f::MultiTag>>;
-using Data = ygg::Data<f::FunctionExpression<f::MultiTag>>;
-using View = ygg::View<Index, f::Repository>;
+using Index = ygg::Index<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>;
+using Data = ygg::Data<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>;
+using View = ygg::View<Index, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
 static_assert(std::totally_ordered<Data>);
 static_assert(std::totally_ordered<View>);
-static_assert(std::same_as<View, f::EntityView<f::FunctionExpression<f::MultiTag>>>);
-static_assert(std::constructible_from<Data, f::MultiArithmeticOperator, ygg::IndexList<f::FunctionExpression<>>>);
+static_assert(std::same_as<View, loki::formalism::EntityView<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>>);
+static_assert(std::constructible_from<Data, loki::formalism::MultiArithmeticOperator, ygg::IndexList<loki::formalism::FunctionExpression<>>>);
 static_assert(requires(Data& data) {
     data.index;
     data.op;
@@ -33,62 +32,66 @@ static_assert(requires(const View& view) {
 });
 
 template<typename T, typename Initialize>
-f::EntityView<T> intern(f::Repository& repository, f::Builder& builder, Initialize&& initialize)
+loki::formalism::EntityView<T> intern(loki::formalism::Repository& repository, loki::formalism::Builder& builder, Initialize&& initialize)
 {
-    auto data = f::checkout<T>(builder);
+    auto data = loki::formalism::checkout<T>(builder);
     std::forward<Initialize>(initialize)(*data);
-    return f::insert(repository, *data).first;
+    return loki::formalism::insert(repository, *data).first;
 }
 
 TEST(LokiTests, FunctionExpressionMultiAllowsAnyArity)
 {
-    auto repository = f::Repository(0);
+    auto repository = loki::formalism::Repository(0);
     auto data = Data {};
-    const auto [expression, created] = f::insert(repository, data);
+    const auto [expression, created] = loki::formalism::insert(repository, data);
     EXPECT_TRUE(created);
     EXPECT_TRUE(expression.get_args().empty());
 }
 
 TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
 {
-    auto repository = f::Repository(0);
-    auto builder = f::Builder {};
-    const auto wrap = [&](auto node) {
-        return intern<f::FunctionExpression<>>(repository,
-                                             builder,
-                                             [&](auto& data) { data.variant = ygg::Data<f::FunctionExpression<>>::Variant(node.get_index()); });
+    auto repository = loki::formalism::Repository(0);
+    auto builder = loki::formalism::Builder {};
+    const auto wrap = [&](auto node)
+    {
+        return intern<loki::formalism::FunctionExpression<>>(repository,
+                                                             builder,
+                                                             [&](auto& data)
+                                                             { data.variant = ygg::Data<loki::formalism::FunctionExpression<>>::Variant(node.get_index()); });
     };
-    const auto make_number = [&](double value) { return intern<f::FunctionExpression<f::NumberTag>>(repository, builder, [&](auto& data) { data.value = value; }); };
+    const auto make_number = [&](double value)
+    { return intern<loki::formalism::FunctionExpression<loki::formalism::NumberTag>>(repository, builder, [&](auto& data) { data.value = value; }); };
     const auto one = wrap(make_number(1.0));
     const auto two = wrap(make_number(2.0));
-    const auto binary = wrap(intern<f::FunctionExpression<f::BinaryTag>>(repository,
-                                                                 builder,
-                                                                 [&](auto& data)
-                                                                 {
-                                                                     data.op = f::BinaryArithmeticOperator::Add;
-                                                                     data.left = one.get_index();
-                                                                     data.right = two.get_index();
-                                                                 }));
-    const auto multi = wrap(intern<f::FunctionExpression<f::MultiTag>>(repository,
-                                                               builder,
-                                                               [&](auto& data)
-                                                               {
-                                                                   data.op = f::MultiArithmeticOperator::Add;
-                                                                   data.args.push_back(one.get_index());
-                                                                   data.args.push_back(two.get_index());
-                                                               }));
+    const auto binary = wrap(intern<loki::formalism::FunctionExpression<loki::formalism::BinaryTag>>(repository,
+                                                                                                     builder,
+                                                                                                     [&](auto& data)
+                                                                                                     {
+                                                                                                         data.op =
+                                                                                                             loki::formalism::BinaryArithmeticOperator::Add;
+                                                                                                         data.left = one.get_index();
+                                                                                                         data.right = two.get_index();
+                                                                                                     }));
+    const auto multi = wrap(intern<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>(repository,
+                                                                                                   builder,
+                                                                                                   [&](auto& data)
+                                                                                                   {
+                                                                                                       data.op = loki::formalism::MultiArithmeticOperator::Add;
+                                                                                                       data.args.push_back(one.get_index());
+                                                                                                       data.args.push_back(two.get_index());
+                                                                                                   }));
     ASSERT_NE(binary, multi);
 
     const auto make_product = [&](auto left, auto right)
     {
-        return intern<f::FunctionExpression<f::MultiTag>>(repository,
-                                                  builder,
-                                                  [&](auto& data)
-                                                  {
-                                                      data.op = f::MultiArithmeticOperator::Mul;
-                                                      data.args.push_back(left.get_index());
-                                                      data.args.push_back(right.get_index());
-                                                  });
+        return intern<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>(repository,
+                                                                                      builder,
+                                                                                      [&](auto& data)
+                                                                                      {
+                                                                                          data.op = loki::formalism::MultiArithmeticOperator::Mul;
+                                                                                          data.args.push_back(left.get_index());
+                                                                                          data.args.push_back(right.get_index());
+                                                                                      });
     };
     const auto first = make_product(binary, multi);
     const auto second = make_product(multi, binary);

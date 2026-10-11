@@ -35,7 +35,7 @@
 namespace loki::semantic
 {
 
-std::string read_file(const fs::path& path)
+std::string read_file(const std::filesystem::path& path)
 {
     std::ifstream in(path);
     if (!in)
@@ -55,7 +55,7 @@ struct Parser::Impl
     formalism::Repository& repository() noexcept;
     formalism::DomainView get_domain() const noexcept;
     formalism::TaskView parse_task(const std::string& source);
-    formalism::TaskView parse_task(const fs::path& path);
+    formalism::TaskView parse_task(const std::filesystem::path& path);
 
 private:
     ParserOptions m_options;
@@ -77,7 +77,10 @@ private:
 
 Parser::Parser(const std::string& domain_source, ParserOptions options) : m_impl(std::make_unique<Impl>(domain_source, "", options)) {}
 
-Parser::Parser(const fs::path& domain_path, ParserOptions options) : m_impl(std::make_unique<Impl>(read_file(domain_path), domain_path.string(), options)) {}
+Parser::Parser(const std::filesystem::path& domain_path, ParserOptions options) :
+    m_impl(std::make_unique<Impl>(read_file(domain_path), domain_path.string(), options))
+{
+}
 
 Parser::~Parser() = default;
 Parser::Parser(Parser&&) noexcept = default;
@@ -87,7 +90,7 @@ const formalism::Repository& Parser::repository() const noexcept { return m_impl
 formalism::Repository& Parser::repository() noexcept { return m_impl->repository(); }
 formalism::DomainView Parser::get_domain() const noexcept { return m_impl->get_domain(); }
 formalism::TaskView Parser::parse_task(const std::string& source) { return m_impl->parse_task(source); }
-formalism::TaskView Parser::parse_task(const fs::path& path) { return m_impl->parse_task(path); }
+formalism::TaskView Parser::parse_task(const std::filesystem::path& path) { return m_impl->parse_task(path); }
 
 Parser::Impl::Impl(std::string domain_source, std::string source_name, ParserOptions options) :
     m_options(options),
@@ -109,7 +112,7 @@ formalism::Repository& Parser::Impl::repository() noexcept { return repo(); }
 formalism::DomainView Parser::Impl::get_domain() const noexcept { return *m_domain_context.domain; }
 formalism::TaskView Parser::Impl::parse_task(const std::string& source) { return parse_task_source(source, ""); }
 
-formalism::TaskView Parser::Impl::parse_task(const fs::path& path) { return parse_task_source(read_file(path), path.string()); }
+formalism::TaskView Parser::Impl::parse_task(const std::filesystem::path& path) { return parse_task_source(read_file(path), path.string()); }
 
 formalism::Repository& Parser::Impl::repo() noexcept { return m_domain_context.storage->repository; }
 const formalism::Repository& Parser::Impl::repo() const noexcept { return m_domain_context.storage->repository; }

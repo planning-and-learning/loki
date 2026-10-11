@@ -74,9 +74,8 @@ template<typename Derived>
 void MoveExistentialQuantifiersTranslator<Derived>::collect_binder_names(formalism::ConditionView condition, ygg::UnorderedSet<std::string>& names) const
 {
     ygg::visit(
-        [&](const auto& node)
+        [&]<typename Node>(const Node& node)
         {
-            using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
             {
                 for (auto parameter : node.get_parameters())
@@ -105,9 +104,8 @@ template<typename Derived>
 void MoveExistentialQuantifiersTranslator<Derived>::collect_binder_names(formalism::EffectView effect, ygg::UnorderedSet<std::string>& names) const
 {
     ygg::visit(
-        [&](const auto& node)
+        [&]<typename Node>(const Node& node)
         {
-            using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
             {
                 for (auto parameter : node.get_parameters())

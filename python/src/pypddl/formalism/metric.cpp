@@ -21,13 +21,13 @@
 #include <loki/formalism/metric_view.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_metric(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::Metric>>(m, "MetricIndex");
 
     {

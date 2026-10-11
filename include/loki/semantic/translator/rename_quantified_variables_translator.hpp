@@ -151,9 +151,8 @@ template<typename Derived>
 formalism::TermView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::TermView source)
 {
     auto value = ygg::visit(
-        [&](const auto& arg) -> ygg::Data<formalism::Term>::Variant
+        [&]<typename Arg>(const Arg& arg) -> ygg::Data<formalism::Term>::Variant
         {
-            using Arg = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<Arg, formalism::VariableView>)
                 return as_index(this->self().lookup_variable(arg));
             else
@@ -234,9 +233,8 @@ template<typename Derived>
 formalism::FunctionExpressionView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::FunctionExpressionView source)
 {
     auto value = ygg::visit(
-        [&](const auto& arg) -> ygg::Data<formalism::FunctionExpression<>>::Variant
+        [&]<typename Arg>(const Arg& arg) -> ygg::Data<formalism::FunctionExpression<>>::Variant
         {
-            using Arg = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<Arg, formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>>)
                 return as_index(this->self().copy(arg));
             else

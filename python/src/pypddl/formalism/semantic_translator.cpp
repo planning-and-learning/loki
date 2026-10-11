@@ -23,13 +23,13 @@
 #include <nanobind/stl/string.h>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_semantic_translator(nb::module_& m)
 {
+    using namespace nb::literals;
     nb::class_<semantic::TranslatorOptions>(m, "TranslatorOptions", "Options controlling PDDL normalization and translation.")
         .def(nb::init<>())
         .def_rw("compile_typing", &semantic::TranslatorOptions::compile_typing, "Compile typing away into type predicates and remove type annotations.")

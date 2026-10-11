@@ -102,9 +102,8 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ter
                                                                   ygg::UnorderedSet<formalism::VariableView>& free) const
 {
     ygg::visit(
-        [&](const auto& value)
+        [&]<typename Value>(const Value& value)
         {
-            using Value = std::decay_t<decltype(value)>;
             if constexpr (std::is_same_v<Value, formalism::VariableView>)
             {
                 if (!bound.contains(value))

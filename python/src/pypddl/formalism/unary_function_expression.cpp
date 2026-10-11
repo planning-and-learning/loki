@@ -21,13 +21,13 @@
 #include <loki/formalism/unary_function_expression_view.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_unary_function_expression(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::FunctionExpression<formalism::UnaryTag>>>(m, "UnaryFunctionExpressionIndex");
 
     {

@@ -79,9 +79,8 @@ template<typename Derived>
 formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(formalism::ConditionView condition)
 {
     return ygg::visit(
-        [&](const auto& node) -> formalism::ConditionView
+        [&]<typename Node>(const Node& node) -> formalism::ConditionView
         {
-            using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
             {
                 auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
@@ -89,9 +88,8 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                 {
                     const auto flat = this->self().flatten_condition(child);
                     ygg::visit(
-                        [&](const auto& flat_node)
+                        [&]<typename FlatNode>(const FlatNode& flat_node)
                         {
-                            using FlatNode = std::decay_t<decltype(flat_node)>;
                             if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
                             {
                                 for (auto part : flat_node.get_conditions())
@@ -113,9 +111,8 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                 {
                     const auto flat = this->self().flatten_condition(child);
                     ygg::visit(
-                        [&](const auto& flat_node)
+                        [&]<typename FlatNode>(const FlatNode& flat_node)
                         {
-                            using FlatNode = std::decay_t<decltype(flat_node)>;
                             if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
                             {
                                 for (auto part : flat_node.get_conditions())
@@ -134,9 +131,8 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
             {
                 const auto flat = this->self().flatten_condition(node.get_condition());
                 return ygg::visit(
-                    [&](const auto& flat_node) -> formalism::ConditionView
+                    [&]<typename FlatNode>(const FlatNode& flat_node) -> formalism::ConditionView
                     {
-                        using FlatNode = std::decay_t<decltype(flat_node)>;
                         if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>)
                         {
                             auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
@@ -162,9 +158,8 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
             {
                 const auto flat = this->self().flatten_condition(node.get_condition());
                 return ygg::visit(
-                    [&](const auto& flat_node) -> formalism::ConditionView
+                    [&]<typename FlatNode>(const FlatNode& flat_node) -> formalism::ConditionView
                     {
-                        using FlatNode = std::decay_t<decltype(flat_node)>;
                         if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
                         {
                             auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->m_context.builder);
@@ -198,9 +193,8 @@ template<typename Derived>
 void ConditionBuilderTranslator<Derived>::append_conjunct(ygg::Data<formalism::Condition<formalism::AndTag>>& data, formalism::ConditionView condition)
 {
     ygg::visit(
-        [&](const auto& node)
+        [&]<typename Node>(const Node& node)
         {
-            using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
             {
                 for (auto part : node.get_conditions())
@@ -218,9 +212,8 @@ template<typename Derived>
 void ConditionBuilderTranslator<Derived>::append_disjunct(ygg::Data<formalism::Condition<formalism::OrTag>>& data, formalism::ConditionView condition)
 {
     ygg::visit(
-        [&](const auto& node)
+        [&]<typename Node>(const Node& node)
         {
-            using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
             {
                 for (auto part : node.get_conditions())

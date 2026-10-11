@@ -21,13 +21,13 @@
 #include <loki/formalism/predicate_view.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_predicate(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::Predicate>>(m, "PredicateIndex");
 
     {

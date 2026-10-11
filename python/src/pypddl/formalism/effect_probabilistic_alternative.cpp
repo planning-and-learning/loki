@@ -21,13 +21,13 @@
 #include <loki/formalism/effect_view.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_effect_probabilistic_alternative(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::EffectProbabilisticAlternative>>(m, "EffectProbabilisticAlternativeIndex");
 
     {

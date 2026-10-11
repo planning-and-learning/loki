@@ -27,13 +27,13 @@
 #include <loki/formalism/type_view.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_domain(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::Domain>>(m, "DomainIndex");
 
     {

@@ -26,8 +26,6 @@
 
 namespace loki::parser
 {
-namespace x3 = boost::spirit::x3;
-
 namespace rules
 {
 struct IdentifierClass : ErrorHandlerBase {};
@@ -51,26 +49,26 @@ struct DomainClass : ErrorHandlerBase {};
 struct TaskClass : ErrorHandlerBase {};
 struct FileClass : ErrorHandlerBase {};
 
-using identifier_type = x3::rule<IdentifierClass, ast::Identifier>;
-using type_expression_type = x3::rule<TypeExpressionClass, ast::TypeExpression>;
-using typed_name_list_type = x3::rule<TypedNameListClass, std::vector<ast::TypedGroup>>;
-using typed_variable_list_type = x3::rule<TypedVariableListClass, std::vector<ast::TypedGroup>>;
-using term_type = x3::rule<TermClass, ast::Term>;
-using atom_type = x3::rule<AtomClass, ast::Atom>;
-using literal_type = x3::rule<LiteralClass, ast::Literal>;
-using function_term_type = x3::rule<FunctionTermClass, ast::FunctionTerm>;
-using function_expression_type = x3::rule<FunctionExpressionClass, ast::FunctionExpression>;
-using condition_type = x3::rule<ConditionClass, ast::Condition>;
-using effect_type = x3::rule<EffectClass, ast::Effect>;
-using predicate_declaration_type = x3::rule<PredicateDeclarationClass, ast::PredicateDeclaration>;
-using function_declaration_type = x3::rule<FunctionDeclarationClass, ast::FunctionDeclaration>;
-using action_type = x3::rule<ActionClass, ast::Action>;
-using axiom_type = x3::rule<AxiomClass, ast::Axiom>;
-using metric_type = x3::rule<MetricClass, ast::Metric>;
-using initial_function_value_type = x3::rule<InitialFunctionValueClass, ast::InitialFunctionValue>;
-using domain_type = x3::rule<DomainClass, ast::Domain>;
-using task_type = x3::rule<TaskClass, ast::Task>;
-using file_type = x3::rule<FileClass, ast::File>;
+using identifier_type = boost::spirit::x3::rule<IdentifierClass, ast::Identifier>;
+using type_expression_type = boost::spirit::x3::rule<TypeExpressionClass, ast::TypeExpression>;
+using typed_name_list_type = boost::spirit::x3::rule<TypedNameListClass, std::vector<ast::TypedGroup>>;
+using typed_variable_list_type = boost::spirit::x3::rule<TypedVariableListClass, std::vector<ast::TypedGroup>>;
+using term_type = boost::spirit::x3::rule<TermClass, ast::Term>;
+using atom_type = boost::spirit::x3::rule<AtomClass, ast::Atom>;
+using literal_type = boost::spirit::x3::rule<LiteralClass, ast::Literal>;
+using function_term_type = boost::spirit::x3::rule<FunctionTermClass, ast::FunctionTerm>;
+using function_expression_type = boost::spirit::x3::rule<FunctionExpressionClass, ast::FunctionExpression>;
+using condition_type = boost::spirit::x3::rule<ConditionClass, ast::Condition>;
+using effect_type = boost::spirit::x3::rule<EffectClass, ast::Effect>;
+using predicate_declaration_type = boost::spirit::x3::rule<PredicateDeclarationClass, ast::PredicateDeclaration>;
+using function_declaration_type = boost::spirit::x3::rule<FunctionDeclarationClass, ast::FunctionDeclaration>;
+using action_type = boost::spirit::x3::rule<ActionClass, ast::Action>;
+using axiom_type = boost::spirit::x3::rule<AxiomClass, ast::Axiom>;
+using metric_type = boost::spirit::x3::rule<MetricClass, ast::Metric>;
+using initial_function_value_type = boost::spirit::x3::rule<InitialFunctionValueClass, ast::InitialFunctionValue>;
+using domain_type = boost::spirit::x3::rule<DomainClass, ast::Domain>;
+using task_type = boost::spirit::x3::rule<TaskClass, ast::Task>;
+using file_type = boost::spirit::x3::rule<FileClass, ast::File>;
 
 BOOST_SPIRIT_DECLARE(identifier_type)
 BOOST_SPIRIT_DECLARE(type_expression_type)
@@ -120,8 +118,8 @@ bool parse_ast(Iterator& first, Iterator last, const Parser& parser, Node& out, 
 {
     error_handler.clear_error();
     out = Node {};
-    auto wrapped = x3::with<ErrorHandlerTag>(std::ref(error_handler))[parser];
-    return phrase_parse(first, last, wrapped, pddl_skipper(), out) && !error_handler.last_error();
+    auto wrapped = boost::spirit::x3::with<ErrorHandlerTag>(std::ref(error_handler))[parser];
+    return phrase_parse(first, last, wrapped, ygg::diagnostics::comment_skipper(), out) && !error_handler.last_error();
 }
 
 template<typename Parser, typename Node>

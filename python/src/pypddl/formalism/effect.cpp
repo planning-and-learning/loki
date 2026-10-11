@@ -28,20 +28,20 @@
 #include <yggdrasil/python/type_casters/variant.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_effect(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::Effect<>>>(m, "EffectIndex");
 
     {
         using V = Data<formalism::Effect<>>;
         bind_data<V>(m, "EffectData")
             .def(nb::init<V::Variant>(), "variant"_a)
-            .def(nb::init<typename V::template ViewVariant<formalism::Repository>>(), "variant"_a)
+            .def(nb::init<V::ViewVariant<formalism::Repository>>(), "variant"_a)
             .def_rw("variant", &V::variant);
     }
 

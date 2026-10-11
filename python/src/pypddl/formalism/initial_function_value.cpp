@@ -22,13 +22,13 @@
 #include <loki/formalism/initial_function_value_view.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_initial_function_value(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::InitialFunctionValue>>(m, "InitialFunctionValueIndex");
 
     {

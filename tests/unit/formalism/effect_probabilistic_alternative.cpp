@@ -4,16 +4,15 @@
 
 #include <concepts>
 
-namespace f = loki::formalism;
-using Index = ygg::Index<f::EffectProbabilisticAlternative>;
-using Data = ygg::Data<f::EffectProbabilisticAlternative>;
-using View = ygg::View<Index, f::Repository>;
+using Index = ygg::Index<loki::formalism::EffectProbabilisticAlternative>;
+using Data = ygg::Data<loki::formalism::EffectProbabilisticAlternative>;
+using View = ygg::View<Index, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
 static_assert(std::totally_ordered<Data>);
 static_assert(std::totally_ordered<View>);
-static_assert(std::same_as<View, f::EffectProbabilisticAlternativeView>);
+static_assert(std::same_as<View, loki::formalism::EffectProbabilisticAlternativeView>);
 static_assert(requires(Data& data) {
     data.index;
     data.probability;

@@ -26,149 +26,147 @@
 
 namespace loki::ast
 {
-namespace x3 = boost::spirit::x3;
-
-struct Identifier : x3::position_tagged
+struct Identifier : boost::spirit::x3::position_tagged
 {
     std::string text;
 };
 
 struct TypeExpression;
-using TypeExpressionPtr = x3::forward_ast<TypeExpression>;
+using TypeExpressionPtr = boost::spirit::x3::forward_ast<TypeExpression>;
 
-struct TypeReference : x3::position_tagged
+struct TypeReference : boost::spirit::x3::position_tagged
 {
     Identifier name;
 };
 
-struct EitherType : x3::position_tagged
+struct EitherType : boost::spirit::x3::position_tagged
 {
     std::vector<TypeExpressionPtr> alternatives;
 };
 
-struct TypeExpression : x3::position_tagged, x3::variant<TypeReference, EitherType>
+struct TypeExpression : boost::spirit::x3::position_tagged, boost::spirit::x3::variant<TypeReference, EitherType>
 {
     using base_type::base_type;
     using base_type::operator=;
 };
 
-struct TypedGroup : x3::position_tagged
+struct TypedGroup : boost::spirit::x3::position_tagged
 {
     std::vector<Identifier> names;
     boost::optional<TypeExpression> type;
 };
 
-struct Requirement : x3::position_tagged
+struct Requirement : boost::spirit::x3::position_tagged
 {
     Identifier name;
 };
 
-struct Term : x3::position_tagged
+struct Term : boost::spirit::x3::position_tagged
 {
     Identifier name;
     bool variable = false;
 };
 
-struct Atom : x3::position_tagged
+struct Atom : boost::spirit::x3::position_tagged
 {
     Identifier predicate;
     std::vector<Term> terms;
 };
 
-struct Literal : x3::position_tagged
+struct Literal : boost::spirit::x3::position_tagged
 {
     Atom atom;
     bool positive = true;
 };
 
-struct FunctionTerm : x3::position_tagged
+struct FunctionTerm : boost::spirit::x3::position_tagged
 {
     Identifier function;
     std::vector<Term> terms;
 };
 
 struct FunctionExpression;
-using FunctionExpressionPtr = x3::forward_ast<FunctionExpression>;
+using FunctionExpressionPtr = boost::spirit::x3::forward_ast<FunctionExpression>;
 
-struct FunctionExpressionNumber : x3::position_tagged
+struct FunctionExpressionNumber : boost::spirit::x3::position_tagged
 {
     double value = 0.0;
 };
 
-struct FunctionExpressionFunction : x3::position_tagged
+struct FunctionExpressionFunction : boost::spirit::x3::position_tagged
 {
     FunctionTerm term;
 };
 
-struct FunctionExpressionUnary : x3::position_tagged
+struct FunctionExpressionUnary : boost::spirit::x3::position_tagged
 {
     std::string op;
     FunctionExpressionPtr expression;
 };
 
-struct FunctionExpressionBinary : x3::position_tagged
+struct FunctionExpressionBinary : boost::spirit::x3::position_tagged
 {
     std::string op;
     FunctionExpressionPtr left;
     FunctionExpressionPtr right;
 };
 
-struct FunctionExpressionMulti : x3::position_tagged
+struct FunctionExpressionMulti : boost::spirit::x3::position_tagged
 {
     std::string op;
     std::vector<FunctionExpressionPtr> expressions;
 };
 
 struct FunctionExpression :
-    x3::position_tagged,
-    x3::variant<FunctionExpressionNumber, FunctionExpressionFunction, FunctionExpressionUnary, FunctionExpressionBinary, FunctionExpressionMulti>
+    boost::spirit::x3::position_tagged,
+    boost::spirit::x3::variant<FunctionExpressionNumber, FunctionExpressionFunction, FunctionExpressionUnary, FunctionExpressionBinary, FunctionExpressionMulti>
 {
     using base_type::base_type;
     using base_type::operator=;
 };
 
 struct Condition;
-using ConditionPtr = x3::forward_ast<Condition>;
+using ConditionPtr = boost::spirit::x3::forward_ast<Condition>;
 
-struct ConditionLiteral : x3::position_tagged
+struct ConditionLiteral : boost::spirit::x3::position_tagged
 {
     Literal literal;
 };
 
-struct ConditionAnd : x3::position_tagged
+struct ConditionAnd : boost::spirit::x3::position_tagged
 {
     std::vector<ConditionPtr> conditions;
 };
 
-struct ConditionOr : x3::position_tagged
+struct ConditionOr : boost::spirit::x3::position_tagged
 {
     std::vector<ConditionPtr> conditions;
 };
 
-struct ConditionNot : x3::position_tagged
+struct ConditionNot : boost::spirit::x3::position_tagged
 {
     ConditionPtr condition;
 };
 
-struct ConditionImply : x3::position_tagged
+struct ConditionImply : boost::spirit::x3::position_tagged
 {
     ConditionPtr left;
     ConditionPtr right;
 };
 
-struct ConditionExists : x3::position_tagged
+struct ConditionExists : boost::spirit::x3::position_tagged
 {
     std::vector<TypedGroup> parameters;
     ConditionPtr condition;
 };
 
-struct ConditionForall : x3::position_tagged
+struct ConditionForall : boost::spirit::x3::position_tagged
 {
     std::vector<TypedGroup> parameters;
     ConditionPtr condition;
 };
 
-struct ConditionNumericConstraint : x3::position_tagged
+struct ConditionNumericConstraint : boost::spirit::x3::position_tagged
 {
     std::string comparator;
     FunctionExpressionPtr left;
@@ -176,81 +174,84 @@ struct ConditionNumericConstraint : x3::position_tagged
 };
 
 struct Condition :
-    x3::position_tagged,
-    x3::variant<ConditionLiteral, ConditionAnd, ConditionOr, ConditionNot, ConditionImply, ConditionExists, ConditionForall, ConditionNumericConstraint>
+    boost::spirit::x3::position_tagged,
+    boost::spirit::x3::
+        variant<ConditionLiteral, ConditionAnd, ConditionOr, ConditionNot, ConditionImply, ConditionExists, ConditionForall, ConditionNumericConstraint>
 {
     using base_type::base_type;
     using base_type::operator=;
 };
 
 struct Effect;
-using EffectPtr = x3::forward_ast<Effect>;
+using EffectPtr = boost::spirit::x3::forward_ast<Effect>;
 
-struct EffectLiteral : x3::position_tagged
+struct EffectLiteral : boost::spirit::x3::position_tagged
 {
     Literal literal;
 };
 
-struct EffectAnd : x3::position_tagged
+struct EffectAnd : boost::spirit::x3::position_tagged
 {
     std::vector<EffectPtr> effects;
 };
 
-struct EffectNumeric : x3::position_tagged
+struct EffectNumeric : boost::spirit::x3::position_tagged
 {
     std::string op;
     FunctionTerm function;
     FunctionExpressionPtr expression;
 };
 
-struct EffectForall : x3::position_tagged
+struct EffectForall : boost::spirit::x3::position_tagged
 {
     std::vector<TypedGroup> parameters;
     EffectPtr effect;
 };
 
-struct EffectWhen : x3::position_tagged
+struct EffectWhen : boost::spirit::x3::position_tagged
 {
     ConditionPtr condition;
     EffectPtr effect;
 };
 
-struct EffectOneOf : x3::position_tagged
+struct EffectOneOf : boost::spirit::x3::position_tagged
 {
     std::vector<EffectPtr> effects;
 };
 
-struct ProbabilisticEffectAlternative : x3::position_tagged
+struct ProbabilisticEffectAlternative : boost::spirit::x3::position_tagged
 {
     double probability = 0.0;
     EffectPtr effect;
 };
 
-struct EffectProbabilistic : x3::position_tagged
+struct EffectProbabilistic : boost::spirit::x3::position_tagged
 {
     std::vector<ProbabilisticEffectAlternative> alternatives;
 };
 
-struct Effect : x3::position_tagged, x3::variant<EffectLiteral, EffectAnd, EffectNumeric, EffectForall, EffectWhen, EffectOneOf, EffectProbabilistic>
+struct Effect :
+    boost::spirit::x3::position_tagged,
+    boost::spirit::x3::variant<EffectLiteral, EffectAnd, EffectNumeric, EffectForall, EffectWhen, EffectOneOf, EffectProbabilistic>
 {
     using base_type::base_type;
     using base_type::operator=;
 };
 
-struct PredicateDeclaration : x3::position_tagged
+struct PredicateDeclaration : boost::spirit::x3::position_tagged
 {
     Identifier name;
     std::vector<TypedGroup> parameters;
 };
 
-struct FunctionDeclaration : x3::position_tagged
+struct FunctionDeclaration : boost::spirit::x3::position_tagged
 {
     Identifier name;
     std::vector<TypedGroup> parameters;
     boost::optional<TypeExpression> type;
 };
 
-struct Action : x3::position_tagged
+struct Action : boost::spirit::x3::position_tagged
 {
     Identifier name;
     std::vector<TypedGroup> parameters;
@@ -258,33 +259,33 @@ struct Action : x3::position_tagged
     boost::optional<Effect> effect;
 };
 
-struct Axiom : x3::position_tagged
+struct Axiom : boost::spirit::x3::position_tagged
 {
     PredicateDeclaration head;
     Condition condition;
 };
 
-struct Metric : x3::position_tagged
+struct Metric : boost::spirit::x3::position_tagged
 {
     Identifier optimization;
     FunctionExpression expression;
 };
 
-struct InitialFunctionValue : x3::position_tagged
+struct InitialFunctionValue : boost::spirit::x3::position_tagged
 {
     FunctionTerm function;
     FunctionExpression value;
 };
 
-struct InitialElement : x3::position_tagged, x3::variant<Literal, InitialFunctionValue>
+struct InitialElement : boost::spirit::x3::position_tagged, boost::spirit::x3::variant<Literal, InitialFunctionValue>
 {
     using base_type::base_type;
     using base_type::operator=;
 };
 
-using DomainDeclaration = x3::variant<Axiom, Action>;
+using DomainDeclaration = boost::spirit::x3::variant<Axiom, Action>;
 
-struct Domain : x3::position_tagged
+struct Domain : boost::spirit::x3::position_tagged
 {
     Identifier name;
     std::vector<Requirement> requirements;
@@ -295,7 +296,7 @@ struct Domain : x3::position_tagged
     std::vector<DomainDeclaration> declarations;
 };
 
-struct Task : x3::position_tagged
+struct Task : boost::spirit::x3::position_tagged
 {
     Identifier name;
     Identifier domain_name;
@@ -307,8 +308,7 @@ struct Task : x3::position_tagged
     std::vector<Axiom> axioms;
 };
 
-using File = x3::variant<Domain, Task>;
-
+using File = boost::spirit::x3::variant<Domain, Task>;
 }
 
 #endif

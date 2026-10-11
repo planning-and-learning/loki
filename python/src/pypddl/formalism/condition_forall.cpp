@@ -22,13 +22,13 @@
 #include <loki/formalism/parameter_view.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_condition_forall(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::Condition<formalism::ForallTag>>>(m, "ConditionForallIndex");
 
     {

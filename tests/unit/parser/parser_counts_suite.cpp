@@ -36,7 +36,6 @@
 
 namespace loki::tests
 {
-namespace fs = std::filesystem;
 namespace
 {
 
@@ -47,68 +46,66 @@ constexpr bool no_semantic_actions(const Parsers&...)
     return (!Parsers::has_action && ...);
 }
 
-namespace r = parser::rules;
-namespace d = parser::rules::detail;
-static_assert(no_semantic_actions(r::identifier_def,
-                                  r::type_expression_def,
-                                  r::typed_name_group.rhs,
-                                  r::typed_variable_group.rhs,
-                                  r::typed_name_list_def,
-                                  r::typed_variable_list_def,
-                                  r::term_def,
-                                  r::atom_def,
-                                  r::literal_def,
-                                  r::function_term_def,
-                                  r::function_expression_def,
-                                  r::condition_empty.rhs,
-                                  r::condition_def,
-                                  r::effect_def,
-                                  r::predicate_declaration_def,
-                                  r::function_declaration_def,
-                                  r::action_def,
-                                  r::axiom_def,
-                                  r::metric_def,
-                                  r::initial_function_value_def,
-                                  r::domain_def,
-                                  r::task_def,
-                                  r::file_def,
-                                  d::symbol_character,
-                                  d::symbol,
-                                  d::operator_symbol,
-                                  d::variable_identifier_def,
-                                  d::type_reference_def,
-                                  d::type_expressions.rhs,
-                                  d::either_type_def,
-                                  d::function_expression_number_def,
-                                  d::function_expression_function_def,
-                                  d::function_expression_unary_def,
-                                  d::function_expression_binary_def,
-                                  d::function_expression_multi_def,
-                                  d::condition_literal_def,
-                                  d::condition_and_def,
-                                  d::condition_or_def,
-                                  d::condition_not_def,
-                                  d::condition_imply_def,
-                                  d::condition_exists_def,
-                                  d::condition_forall_def,
-                                  d::condition_numeric_constraint_def,
-                                  d::effect_literal_def,
-                                  d::effect_and_def,
-                                  d::effect_numeric_def,
-                                  d::effect_forall_def,
-                                  d::effect_when_def,
-                                  d::effect_one_of_def,
-                                  d::probabilistic_effect_alternative_def,
-                                  d::effect_probabilistic_def,
-                                  d::requirement_name.rhs,
-                                  d::requirement_section_def,
-                                  d::type_section_def,
-                                  d::constant_section_def,
-                                  d::predicate_section_def,
-                                  d::function_section_def,
-                                  d::object_section_def,
-                                  d::initial_section_def));
-static_assert(!decltype(d::keyword("keyword").rhs)::has_action);
+static_assert(no_semantic_actions(parser::rules::identifier_def,
+                                  parser::rules::type_expression_def,
+                                  parser::rules::typed_name_group.rhs,
+                                  parser::rules::typed_variable_group.rhs,
+                                  parser::rules::typed_name_list_def,
+                                  parser::rules::typed_variable_list_def,
+                                  parser::rules::term_def,
+                                  parser::rules::atom_def,
+                                  parser::rules::literal_def,
+                                  parser::rules::function_term_def,
+                                  parser::rules::function_expression_def,
+                                  parser::rules::condition_empty.rhs,
+                                  parser::rules::condition_def,
+                                  parser::rules::effect_def,
+                                  parser::rules::predicate_declaration_def,
+                                  parser::rules::function_declaration_def,
+                                  parser::rules::action_def,
+                                  parser::rules::axiom_def,
+                                  parser::rules::metric_def,
+                                  parser::rules::initial_function_value_def,
+                                  parser::rules::domain_def,
+                                  parser::rules::task_def,
+                                  parser::rules::file_def,
+                                  parser::rules::detail::symbol_character,
+                                  parser::rules::detail::symbol,
+                                  parser::rules::detail::operator_symbol,
+                                  parser::rules::detail::variable_identifier_def,
+                                  parser::rules::detail::type_reference_def,
+                                  parser::rules::detail::type_expressions.rhs,
+                                  parser::rules::detail::either_type_def,
+                                  parser::rules::detail::function_expression_number_def,
+                                  parser::rules::detail::function_expression_function_def,
+                                  parser::rules::detail::function_expression_unary_def,
+                                  parser::rules::detail::function_expression_binary_def,
+                                  parser::rules::detail::function_expression_multi_def,
+                                  parser::rules::detail::condition_literal_def,
+                                  parser::rules::detail::condition_and_def,
+                                  parser::rules::detail::condition_or_def,
+                                  parser::rules::detail::condition_not_def,
+                                  parser::rules::detail::condition_imply_def,
+                                  parser::rules::detail::condition_exists_def,
+                                  parser::rules::detail::condition_forall_def,
+                                  parser::rules::detail::condition_numeric_constraint_def,
+                                  parser::rules::detail::effect_literal_def,
+                                  parser::rules::detail::effect_and_def,
+                                  parser::rules::detail::effect_numeric_def,
+                                  parser::rules::detail::effect_forall_def,
+                                  parser::rules::detail::effect_when_def,
+                                  parser::rules::detail::effect_one_of_def,
+                                  parser::rules::detail::probabilistic_effect_alternative_def,
+                                  parser::rules::detail::effect_probabilistic_def,
+                                  parser::rules::detail::requirement_name.rhs,
+                                  parser::rules::detail::requirement_section_def,
+                                  parser::rules::detail::type_section_def,
+                                  parser::rules::detail::constant_section_def,
+                                  parser::rules::detail::predicate_section_def,
+                                  parser::rules::detail::function_section_def,
+                                  parser::rules::detail::object_section_def,
+                                  parser::rules::detail::initial_section_def));
+static_assert(!decltype(parser::rules::detail::keyword("keyword").rhs)::has_action);
 
 struct DomainExpectation
 {
@@ -143,8 +140,8 @@ struct ConfigurationExpectation
 struct ParserCountExpectation
 {
     std::string name;
-    fs::path domain_file;
-    fs::path task_file;
+    std::filesystem::path domain_file;
+    std::filesystem::path task_file;
     std::vector<ConfigurationExpectation> configurations;
 };
 
@@ -168,7 +165,7 @@ void expect_counts(formalism::DomainView domain, formalism::TaskView task, const
 }
 
 template<typename Node, typename ParseFn>
-void expect_parse_format_reparse(const fs::path& path, ParseFn parse)
+void expect_parse_format_reparse(const std::filesystem::path& path, ParseFn parse)
 {
     const auto source = read_text(path);
     auto first = source.cbegin();
@@ -217,7 +214,7 @@ std::vector<ParserCountExpectation> load_expectations()
 {
     const auto suite_value = ygg::common::load_json_file(ygg::common::root_path() / "tests/fixtures/parser_counts_suite.json");
     const auto& suite = ygg::common::as_object(suite_value, "suite");
-    const auto benchmark_root = fs::path(std::string(BENCHMARKS_DIR));
+    const auto benchmark_root = std::filesystem::path(std::string(BENCHMARKS_DIR));
     auto result = std::vector<ParserCountExpectation> {};
     for (const auto& case_value : ygg::common::as_array(suite, "cases", "suite"))
     {
@@ -237,23 +234,24 @@ std::vector<ParserCountExpectation> load_expectations()
 
 TEST(LokiParserCountsSuite, GeneratedSuiteCoversEveryBenchmarkProblem)
 {
-    const auto benchmark_root = fs::path(std::string(BENCHMARKS_DIR));
+    const auto benchmark_root = std::filesystem::path(std::string(BENCHMARKS_DIR));
     auto listed = std::set<std::string> {};
     for (const auto& item : load_expectations())
-        listed.insert(fs::relative(item.domain_file, benchmark_root).generic_string() + "|" + fs::relative(item.task_file, benchmark_root).generic_string());
+        listed.insert(std::filesystem::relative(item.domain_file, benchmark_root).generic_string() + "|"
+                      + std::filesystem::relative(item.task_file, benchmark_root).generic_string());
 
     auto discovered = std::set<std::string> {};
     for (const auto& tree : { benchmark_root / "classical" / "tests", benchmark_root / "numeric" / "tests" })
     {
-        for (const auto& entry : fs::recursive_directory_iterator(tree))
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(tree))
         {
             if (!entry.is_regular_file() || entry.path().filename() != "domain.pddl")
                 continue;
-            for (const auto& task_entry : fs::directory_iterator(entry.path().parent_path()))
+            for (const auto& task_entry : std::filesystem::directory_iterator(entry.path().parent_path()))
             {
                 if (task_entry.is_regular_file() && task_entry.path().extension() == ".pddl" && task_entry.path().filename() != "domain.pddl")
-                    discovered.insert(fs::relative(entry.path(), benchmark_root).generic_string() + "|"
-                                      + fs::relative(task_entry.path(), benchmark_root).generic_string());
+                    discovered.insert(std::filesystem::relative(entry.path(), benchmark_root).generic_string() + "|"
+                                      + std::filesystem::relative(task_entry.path(), benchmark_root).generic_string());
             }
         }
     }
@@ -333,7 +331,7 @@ TEST(LokiParserCountsSuite, GroupedAstRetainsNamesTypesSpansAndDeclarationOrder)
     parser::ErrorHandlerType handler(source.cbegin(), source.cend(), std::cerr);
     auto domain = ast::Domain {};
     ASSERT_TRUE(parser::parse_domain(source, domain, handler));
-    auto expect_span = [&](const parser::x3::position_tagged& node, const std::string& expected)
+    auto expect_span = [&](const boost::spirit::x3::position_tagged& node, const std::string& expected)
     {
         const auto diagnostic = handler.make_diagnostic(node, "span");
         ASSERT_TRUE(diagnostic.location);

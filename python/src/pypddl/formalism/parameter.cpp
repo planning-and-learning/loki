@@ -22,13 +22,13 @@
 #include <loki/formalism/variable_view.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_parameter(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::Parameter>>(m, "ParameterIndex");
 
     {

@@ -29,15 +29,14 @@
 
 namespace loki::tests
 {
-namespace fs = std::filesystem;
 namespace
 {
 
 struct ParserSuiteCase
 {
     std::string name;
-    fs::path domain_file;
-    fs::path task_file;
+    std::filesystem::path domain_file;
+    std::filesystem::path task_file;
 };
 
 struct ConfigurationExpectation

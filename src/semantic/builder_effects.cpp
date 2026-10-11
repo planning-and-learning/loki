@@ -248,9 +248,8 @@ formalism::FunctionTermView AstBuilder::total_cost_term()
 bool AstBuilder::writes_total_cost(formalism::EffectView effect)
 {
     return ygg::visit(
-        [&](const auto& arg) -> bool
+        [&]<typename Node>(const Node& arg) -> bool
         {
-            using Node = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::NumericTag>>>)
                 return arg.get_function().get_function().get_name() == "total-cost";
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)

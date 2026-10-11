@@ -4,16 +4,15 @@
 
 #include <concepts>
 
-namespace f = loki::formalism;
-using Index = ygg::Index<f::Task>;
-using Data = ygg::Data<f::Task>;
-using View = ygg::View<Index, f::Repository>;
+using Index = ygg::Index<loki::formalism::Task>;
+using Data = ygg::Data<loki::formalism::Task>;
+using View = ygg::View<Index, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
 static_assert(std::totally_ordered<Data>);
 static_assert(std::totally_ordered<View>);
-static_assert(std::same_as<View, f::TaskView>);
+static_assert(std::same_as<View, loki::formalism::TaskView>);
 static_assert(requires(Data& data) {
     data.index;
     data.name;

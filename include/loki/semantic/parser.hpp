@@ -27,15 +27,13 @@
 
 namespace loki::semantic
 {
-namespace fs = std::filesystem;
-
-std::string read_file(const fs::path& path);
+std::string read_file(const std::filesystem::path& path);
 
 class Parser
 {
 public:
     explicit Parser(const std::string& domain_source, ParserOptions options = {});
-    explicit Parser(const fs::path& domain_path, ParserOptions options = {});
+    explicit Parser(const std::filesystem::path& domain_path, ParserOptions options = {});
     ~Parser();
 
     Parser(const Parser&) = delete;
@@ -49,7 +47,7 @@ public:
     formalism::DomainView get_domain() const noexcept;
 
     formalism::TaskView parse_task(const std::string& source);
-    formalism::TaskView parse_task(const fs::path& path);
+    formalism::TaskView parse_task(const std::filesystem::path& path);
 
 private:
     struct Impl;

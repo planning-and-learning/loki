@@ -4,16 +4,15 @@
 
 #include <concepts>
 
-namespace f = loki::formalism;
-using Index = ygg::Index<f::Effect<f::NumericTag>>;
-using Data = ygg::Data<f::Effect<f::NumericTag>>;
-using View = ygg::View<Index, f::Repository>;
+using Index = ygg::Index<loki::formalism::Effect<loki::formalism::NumericTag>>;
+using Data = ygg::Data<loki::formalism::Effect<loki::formalism::NumericTag>>;
+using View = ygg::View<Index, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
 static_assert(std::totally_ordered<Data>);
 static_assert(std::totally_ordered<View>);
-static_assert(std::same_as<View, f::EntityView<f::Effect<f::NumericTag>>>);
+static_assert(std::same_as<View, loki::formalism::EntityView<loki::formalism::Effect<loki::formalism::NumericTag>>>);
 static_assert(requires(Data& data) {
     data.index;
     data.op;

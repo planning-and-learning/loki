@@ -27,13 +27,13 @@
 #include <string>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_semantic_parser(nb::module_& m)
 {
+    using namespace nb::literals;
     nb::class_<semantic::ParserOptions>(m, "ParserOptions", "Options controlling semantic parser validation.")
         .def(nb::init<>())
         .def_rw("strict", &semantic::ParserOptions::strict, "Enable stricter semantic validation for requirements, arity, and type compatibility.")

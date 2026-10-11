@@ -29,20 +29,20 @@
 #include <yggdrasil/python/type_casters/variant.hpp>
 
 namespace nb = nanobind;
-using namespace nb::literals;
 
 namespace loki::formalism
 {
 
 void bind_condition(nb::module_& m, RepositoryBinding& repository)
 {
+    using namespace nb::literals;
     ygg::bind_index<ygg::Index<formalism::Condition<>>>(m, "ConditionIndex");
 
     {
         using V = Data<formalism::Condition<>>;
         bind_data<V>(m, "ConditionData")
             .def(nb::init<V::Variant>(), "variant"_a)
-            .def(nb::init<typename V::template ViewVariant<formalism::Repository>>(), "variant"_a)
+            .def(nb::init<V::ViewVariant<formalism::Repository>>(), "variant"_a)
             .def_rw("variant", &V::variant);
     }
 

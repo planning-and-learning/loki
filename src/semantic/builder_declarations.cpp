@@ -152,9 +152,8 @@ std::vector<formalism::TypeView> AstBuilder::parse_types(const std::vector<ast::
     resolve_type_expression = [&](const ast::TypeExpression& expression)
     {
         return boost::apply_visitor(
-            [&](const auto& node) -> std::vector<formalism::TypeView>
+            [&]<typename Node>(const Node& node) -> std::vector<formalism::TypeView>
             {
-                using Node = std::decay_t<decltype(node)>;
                 if constexpr (std::is_same_v<Node, ast::TypeReference>)
                 {
                     const auto name = key(node.name.text);

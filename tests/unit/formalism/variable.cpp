@@ -5,16 +5,15 @@
 #include <concepts>
 #include <gtest/gtest.h>
 
-namespace f = loki::formalism;
-using Index = ygg::Index<f::Variable>;
-using Data = ygg::Data<f::Variable>;
-using View = ygg::View<Index, f::Repository>;
+using Index = ygg::Index<loki::formalism::Variable>;
+using Data = ygg::Data<loki::formalism::Variable>;
+using View = ygg::View<Index, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
 static_assert(std::totally_ordered<Data>);
 static_assert(std::totally_ordered<View>);
-static_assert(std::same_as<View, f::VariableView>);
+static_assert(std::same_as<View, loki::formalism::VariableView>);
 static_assert(requires(Data& data) {
     data.index;
     data.name;
@@ -30,9 +29,9 @@ static_assert(requires(const View& view) {
 
 TEST(LokiTests, VariableViewIdentityUsesRepositoryIndex)
 {
-    auto first_repository = f::Repository(0);
-    auto second_repository = f::Repository(1);
-    auto equivalent_repository = f::Repository(0);
+    auto first_repository = loki::formalism::Repository(0);
+    auto second_repository = loki::formalism::Repository(1);
+    auto equivalent_repository = loki::formalism::Repository(0);
     auto first_data = Data(cista::offset::string("?x"));
     auto second_data = Data(cista::offset::string("?x"));
     auto equivalent_data = Data(cista::offset::string("?x"));

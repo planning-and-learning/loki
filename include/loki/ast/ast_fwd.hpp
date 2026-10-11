@@ -22,8 +22,6 @@
 
 namespace loki::ast
 {
-namespace x3 = boost::spirit::x3;
-
 struct Identifier;
 struct TypeExpression;
 struct TypeReference;
@@ -67,8 +65,8 @@ struct InitialFunctionValue;
 struct InitialElement;
 struct Task;
 
-using DomainDeclaration = x3::variant<Axiom, Action>;
-using File = x3::variant<Domain, Task>;
+using DomainDeclaration = boost::spirit::x3::variant<Axiom, Action>;
+using File = boost::spirit::x3::variant<Domain, Task>;
 }
 
 #endif
