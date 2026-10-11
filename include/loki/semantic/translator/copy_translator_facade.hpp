@@ -122,7 +122,9 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
             this->self().add_equality_predicate_to_domain(*data, copied_domain);
             break;
         default:
-            break;
+            // data is unchanged since the first insert, so a second insert would only re-canonicalize it.
+            remember(this->m_context.storage->domains, domain, copied_domain);
+            return { copied_domain, copied_inserted };
     }
 
     auto [view, inserted] = formalism::insert(this->m_context.storage->repository, *data);
@@ -213,7 +215,9 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             this->self().initialize_type_literals(*data, task);
             break;
         default:
-            break;
+            // data is unchanged since the first insert, so a second insert would only re-canonicalize it.
+            remember(this->m_context.storage->tasks, task, copied_task);
+            return { copied_task, copied_inserted };
     }
 
     auto [view, inserted] = formalism::insert(this->m_context.storage->repository, *data);

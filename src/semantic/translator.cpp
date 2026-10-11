@@ -156,7 +156,9 @@ ProblemTranslationResult translate(formalism::TaskView task, const DomainTransla
         if (step.phase == TranslationPhase::NormalizeArithmeticExpressions && !options.normalize_arithmetic_expressions)
             continue;
 
-        auto phase_storage = std::make_shared<detail::TranslationStorage>(phase_index++, result.m_storage);
+        // Chain onto the previous phase so entities a phase leaves unchanged hit the parent layer instead of being re-interned.
+        auto parent_storage = current_storage ? std::shared_ptr<const detail::TranslationStorage>(current_storage) : result.m_storage;
+        auto phase_storage = std::make_shared<detail::TranslationStorage>(phase_index++, std::move(parent_storage));
         if (current_storage)
             detail::inherit_domain_identity_mappings(*phase_storage, *result.m_storage);
         else
