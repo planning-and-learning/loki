@@ -90,7 +90,7 @@ endif()
 
 # Dependencies
 
-set(LOKI_YGGDRASIL_REQUIRED_VERSION 0.3.1)
+set(LOKI_YGGDRASIL_REQUIRED_VERSION 0.4.0)
 
 include("${PROJECT_SOURCE_DIR}/cmake/bootstrap_pyyggdrasil.cmake")
 
@@ -141,7 +141,7 @@ if(LOKI_BUILD_TESTS)
     if(NOT LOKI_BENCHMARKS_RESULT EQUAL 0)
         message(
             FATAL_ERROR
-            "Could not resolve the benchmark data root; install 'pypddl-datasets>=0.0.9,<0.1' into the configuring Python (${Python_EXECUTABLE})."
+            "Could not resolve the benchmark data root; install 'pypddl-datasets>=0.0.17,<0.1' into the configuring Python (${Python_EXECUTABLE})."
         )
     endif()
     message(STATUS "Benchmark data: ${LOKI_BENCHMARKS_DIR}")
