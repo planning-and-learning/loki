@@ -39,6 +39,10 @@ if(MSVC)
 else()
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     add_compile_options(-Wall -Wextra)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # GCC 13+ flags views returned from temporary views; views never refer to the temporary.
+        add_compile_options(-Wno-dangling-reference)
+    endif()
 
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -g2 -ggdb")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g2 -fno-omit-frame-pointer -fno-lto")

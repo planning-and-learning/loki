@@ -56,7 +56,7 @@ TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
 
     auto destination = std::make_shared<semantic::detail::TranslationStorage>(102);
     auto occupied_data = ygg::Data<formalism::Type>(cista::offset::string("occupied"));
-    formalism::insert(destination->repository, occupied_data);
+    static_cast<void>(formalism::insert(destination->repository, occupied_data));
     auto context = semantic::detail::CanonicalCopyTranslator(destination);
     const auto [copied_domain, domain_inserted] = semantic::detail::copy(domain, context);
     EXPECT_TRUE(domain_inserted);
