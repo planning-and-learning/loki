@@ -42,6 +42,9 @@ Stage: build
     # Install Loki to a staging directory
     cmake --install build --prefix=/opt/loki/install
 
+    mkdir -p /opt/loki/runtime-lib
+    cp -a "$(python3 -c 'import pyyggdrasil; print(pyyggdrasil.native_prefix() / "lib")')"/* /opt/loki/runtime-lib/
+
 
 # Runtime stage
 Bootstrap: docker
@@ -51,6 +54,7 @@ Stage: runtime
 %files from build
     /opt/loki/install /usr/local
     /opt/loki/build/exe/loki /usr/local/bin/loki
+    /opt/loki/runtime-lib/* /usr/local/lib/
 
 %post
     # Install only runtime dependencies
