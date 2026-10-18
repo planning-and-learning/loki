@@ -142,6 +142,10 @@ same_type, inserted_again = repository.insert(pddl.TypeData("object"))
 assert inserted and not inserted_again and object_type == same_type
 ```
 
+## Template and include rules
+
+Headers and templates follow the [template and include rules](https://github.com/planning-and-learning/yggdrasil/blob/main/docs/TEMPLATE_RULES.md) maintained in yggdrasil.
+
 ## C++ API
 
 The umbrella header exposes the semantic parser, translator, and reparseable
