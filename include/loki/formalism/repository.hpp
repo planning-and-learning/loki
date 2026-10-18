@@ -45,4 +45,45 @@ void prepare_for_insert(Repository& repository, ygg::Data<T>& data)
 
 }
 
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Requirement>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Type>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Object>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Variable>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Parameter>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Predicate>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionSkeleton>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Term>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Atom>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Literal>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionExpression<loki::formalism::NumberTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionTerm>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionExpression<loki::formalism::UnaryTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionExpression<loki::formalism::BinaryTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionExpression<>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::LiteralTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::AndTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::OrTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::NotTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::ImplyTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::ExistsTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::ForallTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::NumericConstraintTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::LiteralTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::AndTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::NumericTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::ForallTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::WhenTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::OneOfTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::EffectProbabilisticAlternative>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::ProbabilisticTag>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<>>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Action>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Axiom>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Metric>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::InitialFunctionValue>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Domain>;
+extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Task>;
+
 #endif
