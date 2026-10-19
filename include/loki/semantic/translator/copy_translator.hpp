@@ -38,6 +38,8 @@
 #include "loki/semantic/translator/to_negation_normal_form_translator.hpp"
 #include "loki/semantic/translator/top_level_translator.hpp"
 
+#include <utility>
+
 namespace loki::semantic::detail
 {
 
@@ -180,8 +182,9 @@ public:
     using RenameQuantifiedVariablesTranslator<CopyTranslator>::rename_axiom_variables;
 };
 
-inline auto copy(formalism::DomainView source, CopyTranslator& context) { return context.copy(source); }
-inline auto copy(formalism::TaskView source, CopyTranslator& context) { return context.copy(source); }
+// Defined in the library: inline definitions would instantiate the whole copy stack in every includer.
+std::pair<formalism::DomainView, bool> copy(formalism::DomainView source, CopyTranslator& context);
+std::pair<formalism::TaskView, bool> copy(formalism::TaskView source, CopyTranslator& context);
 
 }  // namespace loki::semantic::detail
 

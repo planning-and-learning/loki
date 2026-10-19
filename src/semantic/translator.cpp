@@ -79,6 +79,9 @@ const std::vector<PhaseStep>& task_phase_steps()
     return steps;
 }
 
+std::pair<formalism::DomainView, bool> copy(formalism::DomainView source, CopyTranslator& context) { return context.copy(source); }
+std::pair<formalism::TaskView, bool> copy(formalism::TaskView source, CopyTranslator& context) { return context.copy(source); }
+
 }  // namespace detail
 
 DomainTranslationResult::DomainTranslationResult(formalism::DomainView original_domain_, std::shared_ptr<detail::TranslationStorage> storage_) :
