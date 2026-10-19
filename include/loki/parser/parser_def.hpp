@@ -26,6 +26,13 @@
 #include <string>
 #include <vector>
 
+// X3 grammars combine sequences (>>) with expectations (>) by design; clang's request for parentheses around
+// every such sequence would not change any grammar.
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
+#endif
+
 namespace loki::parser::rules
 {
 using boost::spirit::x3::attr;
@@ -380,5 +387,9 @@ BOOST_SPIRIT_DEFINE(variable_identifier,
                     initial_section)
 }  // namespace detail
 }  // namespace loki::parser::rules
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 #endif
