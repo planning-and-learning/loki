@@ -17,6 +17,8 @@
 
 #include "loki/formalism/repository.hpp"
 
+#include <yggdrasil/formalism/detail/basic_symbol_repository_impl.hpp>
+
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Requirement>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Type>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Object>;
