@@ -48,7 +48,7 @@ struct Data<::loki::formalism::Condition<::loki::formalism::AndTag>>
 
     auto cista_members() noexcept { return std::tie(index, conditions); }
     auto cista_members() const noexcept { return std::tie(index, conditions); }
-    auto identifying_members() const noexcept { return std::tie(conditions); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::conditions> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

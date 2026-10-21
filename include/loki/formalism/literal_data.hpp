@@ -49,7 +49,7 @@ struct Data<::loki::formalism::Literal>
 
     auto cista_members() noexcept { return std::tie(index, atom, m_polarity); }
     auto cista_members() const noexcept { return std::tie(index, atom, m_polarity); }
-    auto identifying_members() const noexcept { return std::tie(atom, m_polarity); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::atom, &Data::m_polarity> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

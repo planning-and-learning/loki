@@ -58,7 +58,7 @@ struct Data<::loki::formalism::InitialFunctionValue>
 
     auto cista_members() noexcept { return std::tie(index, function, value); }
     auto cista_members() const noexcept { return std::tie(index, function, value); }
-    auto identifying_members() const noexcept { return std::tie(function, value); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::function, &Data::value> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

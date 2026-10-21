@@ -53,7 +53,7 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>
 
     auto cista_members() noexcept { return std::tie(index, op, args); }
     auto cista_members() const noexcept { return std::tie(index, op, args); }
-    auto identifying_members() const noexcept { return std::tie(op, args); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::args> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

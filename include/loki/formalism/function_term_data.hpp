@@ -59,7 +59,7 @@ struct Data<::loki::formalism::FunctionTerm>
 
     auto cista_members() noexcept { return std::tie(index, function, terms); }
     auto cista_members() const noexcept { return std::tie(index, function, terms); }
-    auto identifying_members() const noexcept { return std::tie(function, terms); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::function, &Data::terms> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

@@ -43,7 +43,7 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>
 
     auto cista_members() noexcept { return std::tie(index, value); }
     auto cista_members() const noexcept { return std::tie(index, value); }
-    auto identifying_members() const noexcept { return std::tie(value); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::value> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

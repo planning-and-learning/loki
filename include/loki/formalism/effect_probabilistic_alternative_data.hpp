@@ -49,7 +49,7 @@ struct Data<::loki::formalism::EffectProbabilisticAlternative>
 
     auto cista_members() noexcept { return std::tie(index, probability, effect); }
     auto cista_members() const noexcept { return std::tie(index, probability, effect); }
-    auto identifying_members() const noexcept { return std::tie(probability, effect); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::probability, &Data::effect> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

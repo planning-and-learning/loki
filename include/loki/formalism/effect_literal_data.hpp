@@ -48,7 +48,7 @@ struct Data<::loki::formalism::Effect<::loki::formalism::LiteralTag>>
 
     auto cista_members() noexcept { return std::tie(index, literal); }
     auto cista_members() const noexcept { return std::tie(index, literal); }
-    auto identifying_members() const noexcept { return std::tie(literal); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::literal> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

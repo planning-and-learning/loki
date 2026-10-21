@@ -118,7 +118,8 @@ struct Data<::loki::formalism::Action>
 
     auto cista_members() noexcept { return std::tie(index, name, original_name, parameters, original_arity, precondition, effect); }
     auto cista_members() const noexcept { return std::tie(index, name, original_name, parameters, original_arity, precondition, effect); }
-    auto identifying_members() const noexcept { return std::tie(original_name, parameters, original_arity, precondition, effect); }
+    static constexpr auto identifying_members() noexcept
+    { return ygg::Members<&Data::original_name, &Data::parameters, &Data::original_arity, &Data::precondition, &Data::effect> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

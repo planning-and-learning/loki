@@ -96,7 +96,11 @@ struct Data<::loki::formalism::Domain>
 
     auto cista_members() noexcept { return std::tie(index, name, requirements, types, constants, predicates, functions, actions, axioms); }
     auto cista_members() const noexcept { return std::tie(index, name, requirements, types, constants, predicates, functions, actions, axioms); }
-    auto identifying_members() const noexcept { return std::tie(name, requirements, types, constants, predicates, functions, actions, axioms); }
+    static constexpr auto identifying_members() noexcept
+    {
+        return ygg::
+            Members<&Data::name, &Data::requirements, &Data::types, &Data::constants, &Data::predicates, &Data::functions, &Data::actions, &Data::axioms> {};
+    }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

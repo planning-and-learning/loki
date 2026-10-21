@@ -59,7 +59,7 @@ struct Data<::loki::formalism::Atom>
 
     auto cista_members() noexcept { return std::tie(index, predicate, terms); }
     auto cista_members() const noexcept { return std::tie(index, predicate, terms); }
-    auto identifying_members() const noexcept { return std::tie(predicate, terms); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::predicate, &Data::terms> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

@@ -115,9 +115,18 @@ struct Data<::loki::formalism::Task>
     {
         return std::tie(index, name, domain, requirements, objects, initial_literals, initial_function_values, goal, metric, predicates, axioms);
     }
-    auto identifying_members() const noexcept
+    static constexpr auto identifying_members() noexcept
     {
-        return std::tie(name, domain, requirements, objects, initial_literals, initial_function_values, goal, metric, predicates, axioms);
+        return ygg::Members<&Data::name,
+                            &Data::domain,
+                            &Data::requirements,
+                            &Data::objects,
+                            &Data::initial_literals,
+                            &Data::initial_function_values,
+                            &Data::goal,
+                            &Data::metric,
+                            &Data::predicates,
+                            &Data::axioms> {};
     }
     void clear() noexcept
     {

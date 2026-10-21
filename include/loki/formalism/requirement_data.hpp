@@ -43,7 +43,7 @@ struct Data<::loki::formalism::Requirement>
 
     auto cista_members() noexcept { return std::tie(index, kind); }
     auto cista_members() const noexcept { return std::tie(index, kind); }
-    auto identifying_members() const noexcept { return std::tie(kind); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::kind> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());

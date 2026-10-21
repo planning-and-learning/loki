@@ -58,7 +58,7 @@ struct Data<::loki::formalism::Predicate>
 
     auto cista_members() noexcept { return std::tie(index, name, parameters); }
     auto cista_members() const noexcept { return std::tie(index, name, parameters); }
-    auto identifying_members() const noexcept { return std::tie(name, parameters); }
+    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::name, &Data::parameters> {}; }
     void clear() noexcept
     {
         std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
