@@ -51,12 +51,11 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>
         set(args_, args);
     }
 
-    auto cista_members() noexcept { return std::tie(index, op, args); }
-    auto cista_members() const noexcept { return std::tie(index, op, args); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::args> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::args> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

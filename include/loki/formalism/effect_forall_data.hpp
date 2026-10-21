@@ -57,12 +57,11 @@ struct Data<::loki::formalism::Effect<::loki::formalism::ForallTag>>
         set(effect_, effect);
     }
 
-    auto cista_members() noexcept { return std::tie(index, parameters, effect); }
-    auto cista_members() const noexcept { return std::tie(index, parameters, effect); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::parameters, &Data::effect> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::parameters, &Data::effect> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

@@ -107,14 +107,7 @@ struct Data<::loki::formalism::Task>
         set(axioms_, axioms);
     }
 
-    auto cista_members() noexcept
-    {
-        return std::tie(index, name, domain, requirements, objects, initial_literals, initial_function_values, goal, metric, predicates, axioms);
-    }
-    auto cista_members() const noexcept
-    {
-        return std::tie(index, name, domain, requirements, objects, initial_literals, initial_function_values, goal, metric, predicates, axioms);
-    }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::domain, &Data::requirements, &Data::objects, &Data::initial_literals, &Data::initial_function_values, &Data::goal, &Data::metric, &Data::predicates, &Data::axioms> {}; }
     static constexpr auto identifying_members() noexcept
     {
         return ygg::Members<&Data::name,
@@ -130,7 +123,7 @@ struct Data<::loki::formalism::Task>
     }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

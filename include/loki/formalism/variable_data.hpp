@@ -42,12 +42,11 @@ struct Data<::loki::formalism::Variable>
     Data() = default;
     Data(::cista::offset::string name_) : index(), name(std::move(name_)) {}
 
-    auto cista_members() noexcept { return std::tie(index, name); }
-    auto cista_members() const noexcept { return std::tie(index, name); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::name> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

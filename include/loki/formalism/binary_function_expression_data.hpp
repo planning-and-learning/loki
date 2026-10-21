@@ -63,12 +63,11 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
         set(right_, right);
     }
 
-    auto cista_members() noexcept { return std::tie(index, op, left, right); }
-    auto cista_members() const noexcept { return std::tie(index, op, left, right); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::left, &Data::right> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::left, &Data::right> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

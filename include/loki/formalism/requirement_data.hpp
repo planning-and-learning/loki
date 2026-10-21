@@ -41,12 +41,11 @@ struct Data<::loki::formalism::Requirement>
     Data() = default;
     Data(::loki::formalism::RequirementKind kind_) : index(), kind(kind_) {}
 
-    auto cista_members() noexcept { return std::tie(index, kind); }
-    auto cista_members() const noexcept { return std::tie(index, kind); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::kind> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::kind> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

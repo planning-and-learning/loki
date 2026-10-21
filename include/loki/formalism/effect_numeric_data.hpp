@@ -62,12 +62,11 @@ struct Data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
         set(expression_, expression);
     }
 
-    auto cista_members() noexcept { return std::tie(index, op, function, expression); }
-    auto cista_members() const noexcept { return std::tie(index, op, function, expression); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::function, &Data::expression> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::function, &Data::expression> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

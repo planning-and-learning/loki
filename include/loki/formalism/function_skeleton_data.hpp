@@ -62,12 +62,11 @@ struct Data<::loki::formalism::FunctionSkeleton>
         set(type_, type);
     }
 
-    auto cista_members() noexcept { return std::tie(index, name, parameters, type); }
-    auto cista_members() const noexcept { return std::tie(index, name, parameters, type); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::parameters, &Data::type> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::name, &Data::parameters, &Data::type> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

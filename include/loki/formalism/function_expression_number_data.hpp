@@ -41,12 +41,11 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>
     Data() = default;
     Data(double value_) : index(), value(value_) {}
 
-    auto cista_members() noexcept { return std::tie(index, value); }
-    auto cista_members() const noexcept { return std::tie(index, value); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::value> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::value> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

@@ -93,12 +93,11 @@ struct Data<::loki::formalism::Axiom>
         set(condition_, condition);
     }
 
-    auto cista_members() noexcept { return std::tie(index, parameters, original_arity, head, condition); }
-    auto cista_members() const noexcept { return std::tie(index, parameters, original_arity, head, condition); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::parameters, &Data::original_arity, &Data::head, &Data::condition> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::parameters, &Data::original_arity, &Data::head, &Data::condition> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

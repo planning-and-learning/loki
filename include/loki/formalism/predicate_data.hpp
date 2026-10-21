@@ -56,12 +56,11 @@ struct Data<::loki::formalism::Predicate>
         set(parameters_, parameters);
     }
 
-    auto cista_members() noexcept { return std::tie(index, name, parameters); }
-    auto cista_members() const noexcept { return std::tie(index, name, parameters); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::parameters> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::name, &Data::parameters> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

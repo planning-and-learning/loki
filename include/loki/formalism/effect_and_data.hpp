@@ -46,12 +46,11 @@ struct Data<::loki::formalism::Effect<::loki::formalism::AndTag>>
         set(effects_, effects);
     }
 
-    auto cista_members() noexcept { return std::tie(index, effects); }
-    auto cista_members() const noexcept { return std::tie(index, effects); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::effects> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::effects> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

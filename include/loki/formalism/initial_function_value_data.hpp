@@ -56,12 +56,11 @@ struct Data<::loki::formalism::InitialFunctionValue>
         set(value_, value);
     }
 
-    auto cista_members() noexcept { return std::tie(index, function, value); }
-    auto cista_members() const noexcept { return std::tie(index, function, value); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::function, &Data::value> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::function, &Data::value> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

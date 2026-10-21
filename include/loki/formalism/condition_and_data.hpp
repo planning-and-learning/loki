@@ -46,12 +46,11 @@ struct Data<::loki::formalism::Condition<::loki::formalism::AndTag>>
         set(conditions_, conditions);
     }
 
-    auto cista_members() noexcept { return std::tie(index, conditions); }
-    auto cista_members() const noexcept { return std::tie(index, conditions); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::conditions> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::conditions> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

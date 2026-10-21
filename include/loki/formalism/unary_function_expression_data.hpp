@@ -54,12 +54,11 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
         set(expression_, expression);
     }
 
-    auto cista_members() noexcept { return std::tie(index, op, expression); }
-    auto cista_members() const noexcept { return std::tie(index, op, expression); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::expression> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::expression> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 

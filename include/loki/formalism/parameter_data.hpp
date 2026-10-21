@@ -57,12 +57,11 @@ struct Data<::loki::formalism::Parameter>
         set(types_, types);
     }
 
-    auto cista_members() noexcept { return std::tie(index, variable, types); }
-    auto cista_members() const noexcept { return std::tie(index, variable, types); }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::variable, &Data::types> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::variable, &Data::types> {}; }
     void clear() noexcept
     {
-        std::apply([](auto&... member) { (ygg::clear(member), ...); }, cista_members());
+        ygg::clear_members(*this);
     }
 };
 
