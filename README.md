@@ -52,7 +52,7 @@ Install Loki's native dependency providers into the active Python environment,
 then configure CMake with their native prefixes:
 
 ```console
-python -m pip install 'pyyggdrasil>=0.4.1,<0.5' 'pypddl-datasets>=0.0.17,<0.1'
+python -m pip install 'pyyggdrasil>=0.5.0,<0.6' 'pypddl-datasets>=0.0.17,<0.1'
 
 cmake -S . -B build
 ```
@@ -222,7 +222,7 @@ consuming the native prefixes from CMake is in the
 
 The Python package `pypddl` installs Loki's native headers, shared library, and
 CMake package config under `pypddl.native_prefix()`. It depends on
-`pyyggdrasil>=0.4.1,<0.5` for third-party native dependencies:
+`pyyggdrasil>=0.5.0,<0.6` for third-party native dependencies:
 
 ```python
 import pypddl
