@@ -1,0 +1,11 @@
+(define (domain either-typing)
+  (:requirements :strips :typing :derived-predicates :universal-preconditions :existential-preconditions)
+  (:types t1 t2 u - object a - t1 b - t2 c - a)
+  (:constants k - c)
+  (:predicates (p ?x - (either a b)) (q ?x) (r ?x))
+  (:derived (q ?x - (either a b)) (p ?x))
+  (:action act
+    :parameters (?x - (either a b))
+    :precondition (p ?x)
+    :effect (and (not (p ?x)) (forall (?y - (either b a)) (r ?y))))
+)

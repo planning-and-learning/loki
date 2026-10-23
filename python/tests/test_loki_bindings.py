@@ -555,6 +555,7 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     assert task_builder.initial_function_values == []
     assert task_builder.goal is None
     assert task_builder.metric is None
+    assert task_builder.types == []
     assert task_builder.predicates == []
     assert task_builder.axioms == []
     task_builder.name = "mutated-task"
@@ -899,3 +900,26 @@ if __name__ == "__main__":
     from direct_runner import run_tests
 
     run_tests(globals())
+
+
+def test_task_declares_types_and_predicates_and_translation_reparses_strictly() -> None:
+    parser = pypddl.Parser(fixture_path("either-typing"), pypddl.ParserOptions())
+    task = parser.parse_task(fixture_path("either-typing", "task-extension.pddl"))
+    assert sorted(str(t.get_name()) for t in task.get_types()) == ["either_special_vip", "special", "vip"]
+    assert [str(p.get_name()) for p in task.get_predicates()] == ["marked"]
+
+    for compile_typing in (False, True):
+        translator_options = pypddl.TranslatorOptions()
+        translator_options.compile_typing = compile_typing
+        domain_translation = pypddl.translate_domain(parser.domain(), translator_options)
+        translated_task = pypddl.translate_task(task, domain_translation, translator_options).translated_task
+        domain_text = pypddl.format_domain(domain_translation.translated_domain)
+        task_text = pypddl.format_task(translated_task)
+
+        strict = pypddl.ParserOptions()
+        strict.strict = True
+        reparsed = pypddl.Parser(domain_text, strict)
+        reparsed_task = reparsed.parse_task(task_text)
+        retranslation = pypddl.translate_domain(reparsed.domain(), translator_options)
+        assert pypddl.format_domain(retranslation.translated_domain) == domain_text
+        assert pypddl.format_task(pypddl.translate_task(reparsed_task, retranslation, translator_options).translated_task) == task_text

@@ -161,10 +161,12 @@ TEST(LokiSemanticTranslationCountsSuite, TranslatedBenchmarkCountsStayStable)
             EXPECT_EQ(translated_task.get_domain().get_actions().size(), configuration.task_actions);
             EXPECT_EQ(translated_task.get_axioms().size(), configuration.task_axioms);
 
-            // The formatted translation must reparse under the same parser options with stable counts.
+            // The formatted translation must reparse in strict mode with stable counts.
             const auto domain_text = formalism::format::to_string(translated_domain);
             const auto task_text = formalism::format::to_string(translated_task);
-            auto reparsed = semantic::Parser(domain_text, configuration.parser_options);
+            auto strict_options = configuration.parser_options;
+            strict_options.strict = true;
+            auto reparsed = semantic::Parser(domain_text, strict_options);
             const auto reparsed_domain = reparsed.get_domain();
             const auto reparsed_task = reparsed.parse_task(task_text);
             EXPECT_EQ(reparsed_domain.get_name(), translated_domain.get_name());
@@ -176,9 +178,8 @@ TEST(LokiSemanticTranslationCountsSuite, TranslatedBenchmarkCountsStayStable)
             EXPECT_EQ(reparsed_domain.get_actions().size(), configuration.domain_actions);
             EXPECT_EQ(reparsed_domain.get_axioms().size(), configuration.domain_axioms);
             EXPECT_EQ(reparsed_task.get_objects().size(), configuration.task_objects);
-            // Problem PDDL has no :predicates section; generated goal predicates are re-declared
-            // into the domain symbol table when the reparser reads the task axioms.
-            EXPECT_TRUE(reparsed_task.get_predicates().empty());
+            // The task's :predicates section declares the generated goal predicates.
+            EXPECT_EQ(reparsed_task.get_predicates().size(), configuration.task_predicates);
             EXPECT_EQ(reparsed_task.get_initial_literals().size(), configuration.task_initial_literals);
             EXPECT_EQ(reparsed_task.get_initial_function_values().size(), configuration.task_initial_function_values);
             EXPECT_EQ(reparsed_task.get_domain().get_actions().size(), configuration.task_actions);
@@ -197,8 +198,8 @@ TEST(LokiSemanticTranslationCountsSuite, TranslatedBenchmarkCountsStayStable)
             EXPECT_EQ(retranslated_domain.get_axioms().size(), configuration.domain_axioms);
             EXPECT_EQ(retranslated_task.get_objects().size(), configuration.task_objects);
             // Goal simplification never axiomatizes literals or conjunctions of literals; after the
-            // round-trip every goal is in that form, so no goal predicates are regenerated.
-            EXPECT_TRUE(retranslated_task.get_predicates().empty());
+            // round-trip every goal is in that form, so the task keeps exactly the reparsed goal predicates.
+            EXPECT_EQ(retranslated_task.get_predicates().size(), configuration.task_predicates);
             EXPECT_EQ(retranslated_task.get_initial_literals().size(), configuration.task_initial_literals);
             EXPECT_EQ(retranslated_task.get_initial_function_values().size(), configuration.task_initial_function_values);
             EXPECT_EQ(retranslated_task.get_domain().get_actions().size(), configuration.task_actions);

@@ -24,12 +24,163 @@
 #include "loki/semantic/errors.hpp"
 #include "mappings.hpp"
 
+#include <algorithm>
 #include <functional>
+#include <map>
+#include <optional>
+#include <set>
+#include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace loki::semantic
 {
+
+namespace
+{
+
+void collect_type_names(const ast::TypeExpression& expression, std::vector<std::string>& names)
+{
+    boost::apply_visitor(
+        [&]<typename Node>(const Node& node)
+        {
+            if constexpr (std::is_same_v<Node, ast::TypeReference>)
+                names.push_back(key(node.name.text));
+            else
+                for (const auto& alternative : node.alternatives)
+                    collect_type_names(alternative.get(), names);
+        },
+        expression);
+}
+
+/// The sorted alternatives of a type expression that denotes a union of two or more types.
+/// A union containing object is object, so it needs no type of its own.
+std::optional<std::vector<std::string>> union_alternatives(const ast::TypeExpression& expression)
+{
+    auto names = std::vector<std::string> {};
+    collect_type_names(expression, names);
+    std::sort(names.begin(), names.end());
+    names.erase(std::unique(names.begin(), names.end()), names.end());
+    if (names.size() < 2 || std::binary_search(names.begin(), names.end(), "object") || std::binary_search(names.begin(), names.end(), "number"))
+        return std::nullopt;
+    return names;
+}
+
+std::string union_type_name(const std::vector<std::string>& alternatives)
+{
+    auto name = std::string("either");
+    for (const auto& alternative : alternatives)
+        name += "_" + alternative;
+    return name;
+}
+
+}
+
+std::optional<formalism::TypeView> AstBuilder::union_type(const std::vector<std::string>& alternatives, const ast::Identifier& identifier)
+{
+    if (const auto it = m_domain_context.union_type_names.find(alternatives); it != m_domain_context.union_type_names.end())
+        return m_domain_context.types.at(it->second);
+    // parse_type_hierarchy creates union types only over the types it declares, since a task cannot change its domain's types.
+    if (m_parse_context.union_types.contains(alternatives))
+        m_diagnostics.throw_at(identifier, SemanticError("Type " + union_type_name(alternatives) + " over types of the domain must also type a variable in the domain"));
+    // A union type must be a base of its alternatives when they are built, so the parser builds the domain or task again with it.
+    m_parse_context.missing_union_types.insert(alternatives);
+    return std::nullopt;
+}
+
+std::vector<formalism::TypeView> AstBuilder::parse_type_hierarchy(const std::vector<ast::TypedGroup>& groups)
+{
+    if (!groups.empty())
+        checks().require_requirement(formalism::RequirementKind::Typing, groups.front().names.front());
+
+    // Declares types on top of the known ones: object and number for a domain, the domain's types for a task. A variable of type
+    // (either a b) ranges over the objects of a or b, so the union becomes a type that is a base of a and b.
+    auto declarations = ygg::UnorderedMap<std::string, std::pair<const ast::Identifier*, const ast::TypedGroup*>> {};
+    auto declaration_order = std::vector<std::string> {};
+    for (const auto& group : groups)
+        for (const auto& identifier : group.names)
+        {
+            const auto name = key(identifier.text);
+            if (m_domain_context.declared_types.contains(name) || !declarations.emplace(name, std::pair { &identifier, &group }).second)
+                m_diagnostics.throw_at(identifier, DuplicateTypeError(name));
+            declaration_order.push_back(name);
+        }
+
+    auto result = std::vector<formalism::TypeView> {};
+    auto union_bases = std::map<std::string, std::vector<formalism::TypeView>> {};
+    for (const auto& alternatives : m_parse_context.union_types)
+    {
+        const auto over_known_types = std::any_of(alternatives.begin(), alternatives.end(), [&](const auto& name) { return m_domain_context.types.contains(name); });
+        if (m_domain_context.union_type_names.contains(alternatives) || over_known_types)
+            continue;
+        // The name of a union type avoids the names of declared, known, and other union types.
+        const auto base_name = union_type_name(alternatives);
+        auto name = base_name;
+        for (auto suffix = 2; declarations.contains(name) || m_domain_context.types.contains(name); ++suffix)
+            name = base_name + "_" + std::to_string(suffix);
+        m_domain_context.union_type_names.emplace(alternatives, name);
+        const auto type = intern_type(m_domain_context, m_builder, repo(), name, { m_domain_context.object_type });
+        result.push_back(type);
+        for (const auto& alternative : alternatives)
+            union_bases[alternative].push_back(type);
+    }
+
+    auto resolving = ygg::UnorderedSet<std::string> {};
+    auto resolve = std::function<formalism::TypeView(const std::string&, const ast::Identifier*)> {};
+    auto resolve_expression = std::function<void(const ast::TypeExpression&, std::vector<formalism::TypeView>&)> {};
+
+    // A type may inherit from another type declared later in the same :types section.
+    resolve_expression = [&](const ast::TypeExpression& expression, std::vector<formalism::TypeView>& out)
+    {
+        boost::apply_visitor(
+            [&]<typename Node>(const Node& node)
+            {
+                if constexpr (std::is_same_v<Node, ast::TypeReference>)
+                    out.push_back(resolve(key(node.name.text), &node.name));
+                else
+                    for (const auto& alternative : node.alternatives)
+                        resolve_expression(alternative.get(), out);
+            },
+            expression);
+    };
+
+    // identifier is null only for an undeclared union alternative outside strict mode, which cannot fail.
+    resolve = [&](const std::string& name, const ast::Identifier* identifier) -> formalism::TypeView
+    {
+        if (const auto it = m_domain_context.types.find(name); it != m_domain_context.types.end())
+            return it->second;
+        const auto declaration = declarations.find(name);
+        if (declaration == declarations.end() && m_options.strict)
+            m_diagnostics.throw_at(*identifier, UndefinedTypeError(name));
+        if (!resolving.insert(name).second)
+            m_diagnostics.throw_at(*declaration->second.first, SemanticError("Cyclic type hierarchy involving " + name));
+
+        auto bases = std::vector<formalism::TypeView> {};
+        if (declaration != declarations.end() && declaration->second.second->type)
+            resolve_expression(*declaration->second.second->type, bases);
+        if (bases.empty())
+            bases.push_back(m_domain_context.object_type);
+        if (const auto it = union_bases.find(name); it != union_bases.end())
+            bases.insert(bases.end(), it->second.begin(), it->second.end());
+        resolving.erase(name);
+
+        const auto type = intern_type(m_domain_context, m_builder, repo(), name, bases);
+        result.push_back(type);
+        return type;
+    };
+
+    for (const auto& name : declaration_order)
+        resolve(name, declarations.at(name).first);
+    // Outside strict mode a union alternative may be an undeclared type. In strict mode the parameter that uses it reports it.
+    if (!m_options.strict)
+        for (const auto& [name, _] : union_bases)
+            resolve(name, nullptr);
+
+    for (const auto type : result)
+        m_domain_context.declared_types.insert(std::string(type.get_name()));
+    return result;
+}
 
 formalism::PredicateView AstBuilder::predicate(const ast::Identifier& identifier, size_t arity)
 {
@@ -130,76 +281,6 @@ std::vector<formalism::RequirementView> AstBuilder::parse_requirements(const std
     return result;
 }
 
-std::vector<formalism::TypeView> AstBuilder::parse_types(const std::vector<ast::TypedGroup>& groups)
-{
-    if (!groups.empty())
-        checks().require_requirement(formalism::RequirementKind::Typing, groups.front().names.front());
-
-    auto declarations = ygg::UnorderedMap<std::string, std::pair<const ast::Identifier*, const ast::TypedGroup*>> {};
-    for (const auto& group : groups)
-        for (const auto& identifier : group.names)
-        {
-            const auto name = key(identifier.text);
-            checks().ensure_new<DuplicateTypeError>(m_domain_context.declared_types, name, identifier);
-            declarations.emplace(name, std::pair { &identifier, &group });
-        }
-
-    auto resolving = ygg::UnorderedSet<std::string> {};
-    auto build_type = std::function<formalism::TypeView(const ast::Identifier&, const ast::TypedGroup&)> {};
-    auto resolve_type_expression = std::function<std::vector<formalism::TypeView>(const ast::TypeExpression&)> {};
-
-    // A type may inherit from another type declared later in the same :types section.
-    resolve_type_expression = [&](const ast::TypeExpression& expression)
-    {
-        return boost::apply_visitor(
-            [&]<typename Node>(const Node& node) -> std::vector<formalism::TypeView>
-            {
-                if constexpr (std::is_same_v<Node, ast::TypeReference>)
-                {
-                    const auto name = key(node.name.text);
-                    if (const auto it = m_domain_context.types.find(name); it != m_domain_context.types.end())
-                        return { it->second };
-                    if (const auto it = declarations.find(name); it != declarations.end())
-                    {
-                        const auto& [identifier, group] = it->second;
-                        return { build_type(*identifier, *group) };
-                    }
-                    return parse_type_expression_node(node);
-                }
-                else
-                {
-                    auto result = std::vector<formalism::TypeView> {};
-                    for (const auto& alternative : node.alternatives)
-                    {
-                        auto part = resolve_type_expression(alternative.get());
-                        result.insert(result.end(), part.begin(), part.end());
-                    }
-                    return result;
-                }
-            },
-            expression);
-    };
-
-    build_type = [&](const ast::Identifier& identifier, const ast::TypedGroup& group)
-    {
-        const auto name = key(identifier.text);
-        if (const auto it = m_domain_context.types.find(name); it != m_domain_context.types.end())
-            return it->second;
-        if (!resolving.insert(name).second)
-            m_diagnostics.throw_at(identifier, SemanticError("Cyclic type hierarchy involving " + name));
-
-        auto bases = group.type ? resolve_type_expression(*group.type) : std::vector<formalism::TypeView> { m_domain_context.object_type };
-        resolving.erase(name);
-        return intern_type(m_domain_context, m_builder, repo(), name, bases);
-    };
-
-    auto result = std::vector<formalism::TypeView> {};
-    for (const auto& group : groups)
-        for (const auto& identifier : group.names)
-            result.push_back(build_type(identifier, group));
-    return result;
-}
-
 std::vector<formalism::TypeView> AstBuilder::parse_type_expression(const ast::TypeExpression& type)
 {
     return boost::apply_visitor([&](const auto& node) { return parse_type_expression_node(node); }, type);
@@ -274,7 +355,13 @@ std::vector<formalism::ParameterView> AstBuilder::parse_parameters(const std::ve
             auto types = group.type ? parse_type_expression(*group.type) : std::vector<formalism::TypeView> { m_domain_context.object_type };
             auto parameter_data = formalism::checkout<formalism::Parameter>(m_builder);
             parameter_data->variable = variable.get_index();
-            append_indices(types, parameter_data->types);
+            // The parameter gets the union type once it exists. Until then it keeps the alternatives, which the type checks treat
+            // as their union, so a build without the union type checks the same as the build with it.
+            const auto alternatives = group.type ? union_alternatives(*group.type) : std::nullopt;
+            if (const auto union_view = alternatives ? union_type(*alternatives, identifier) : std::nullopt)
+                parameter_data->types.push_back(union_view->get_index());
+            else
+                append_indices(types, parameter_data->types);
             if (auto [it, inserted] = m_parse_context.variable_types.emplace(variable, types); !inserted)
                 it->second = std::move(types);
             result.push_back(formalism::insert(repo(), *parameter_data).first);

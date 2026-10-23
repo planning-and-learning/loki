@@ -107,8 +107,7 @@ public:
     using BasicCopyTranslator<CopyTranslator>::enter_scope;
     using BasicCopyTranslator<CopyTranslator>::leave_scope;
     using BasicCopyTranslator<CopyTranslator>::append_generated_domain_objects;
-    using BasicCopyTranslator<CopyTranslator>::strip_requirement;
-    using BasicCopyTranslator<CopyTranslator>::strip_typing_requirement;
+    using BasicCopyTranslator<CopyTranslator>::set_requirements;
     using ConditionTranslator<CopyTranslator>::copy;
 
     using ConditionAnalysisTranslator<CopyTranslator>::term_from_variable;

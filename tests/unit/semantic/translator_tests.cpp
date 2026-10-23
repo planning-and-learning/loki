@@ -323,6 +323,118 @@ TEST(LokiSemanticTranslator, CompilesTypingWhenEnabled)
     EXPECT_TRUE(initial_literals_use_predicate(translated_task.get_initial_literals(), "thing", *thing_predicate));
 }
 
+TEST(LokiSemanticTranslator, CompilesEitherTypesIntoUnionTypes)
+{
+    semantic::Parser parser(fixture_path("either-typing"));
+
+    const auto options = semantic::TranslatorOptions { .compile_typing = true };
+    const auto translation = semantic::translate(parser.get_domain(), options);
+    const auto translated_domain = translation.get_translated_domain();
+
+    // (either a b) and (either b a) share one union type predicate.
+    EXPECT_TRUE(has_predicate_named(translated_domain, "either_a_b"));
+    EXPECT_FALSE(has_predicate_named(translated_domain, "either_b_a"));
+    ASSERT_EQ(translated_domain.get_actions().size(), 1);
+    const auto precondition = translated_domain.get_actions().front().get_precondition();
+    ASSERT_TRUE(precondition.has_value());
+    EXPECT_TRUE(condition_mentions_predicate(precondition.value(), "either_a_b"));
+    EXPECT_FALSE(condition_mentions_predicate(precondition.value(), "a"));
+    EXPECT_FALSE(condition_mentions_predicate(precondition.value(), "b"));
+    ASSERT_EQ(translated_domain.get_axioms().size(), 1);
+    EXPECT_TRUE(condition_mentions_predicate(translated_domain.get_axioms().front().get_condition(), "either_a_b"));
+
+    const auto task = parser.parse_task(fixture_path("either-typing", "task.pddl"));
+    const auto translated_task_result = semantic::translate(task, translation, options);
+    const auto translated_task = translated_task_result.get_translated_task();
+    // oa - a, ob - b, oc - c and the constant k - c, with c a subtype of a; ou - u is in neither.
+    EXPECT_EQ(count_initial_literals_for_predicate(translated_task.get_initial_literals(), "either_a_b"), 4);
+}
+
+TEST(LokiSemanticTranslator, UnionTypeNamesAvoidDeclaredTypes)
+{
+    const auto domain_source = std::string(
+        "(define (domain d) (:requirements :strips :typing) (:types a b either_a_b - object)"
+        " (:predicates (p ?x - (either a b))) (:action act :parameters (?x - (either a b)) :precondition (p ?x) :effect (not (p ?x))))");
+    semantic::Parser parser(domain_source);
+    const auto translation = semantic::translate(parser.get_domain(), semantic::TranslatorOptions { .compile_typing = true });
+    const auto translated_domain = translation.get_translated_domain();
+    EXPECT_TRUE(has_predicate_named(translated_domain, "either_a_b"));
+    EXPECT_TRUE(has_predicate_named(translated_domain, "either_a_b_2"));
+    const auto precondition = translated_domain.get_actions().front().get_precondition();
+    ASSERT_TRUE(precondition.has_value());
+    EXPECT_TRUE(condition_mentions_predicate(precondition.value(), "either_a_b_2"));
+    EXPECT_FALSE(condition_mentions_predicate(precondition.value(), "either_a_b"));
+
+    // The declared type either_a_b is unrelated to the union of a and b.
+    const auto task = parser.parse_task(std::string("(define (problem q) (:domain d) (:objects oa - a ox - either_a_b) (:init) (:goal (p oa)))"));
+    const auto task_translation = semantic::translate(task, translation, semantic::TranslatorOptions { .compile_typing = true });
+    const auto literals = task_translation.get_translated_task().get_initial_literals();
+    EXPECT_EQ(count_initial_literals_for_predicate(literals, "either_a_b_2"), 1);
+    EXPECT_EQ(count_initial_literals_for_predicate(literals, "either_a_b"), 1);
+}
+
+TEST(LokiSemanticTranslator, DeclaresTypesInTask)
+{
+    for (const auto compile_typing : { false, true })
+    {
+        SCOPED_TRACE("compile_typing=" + std::to_string(compile_typing));
+        semantic::Parser parser(fixture_path("either-typing"));
+        const auto options = semantic::TranslatorOptions { .compile_typing = compile_typing };
+        const auto domain_translation = semantic::translate(parser.get_domain(), options);
+
+        // The task declares special and vip below the domain type u, and its goal uses (either special vip).
+        const auto task = parser.parse_task(fixture_path("either-typing", "task-extension.pddl"));
+        ASSERT_EQ(task.get_predicates().size(), 1);
+        EXPECT_EQ(std::string(task.get_predicates().front().get_name()), "marked");
+        const auto task_translation = semantic::translate(task, domain_translation, options);
+        const auto translated_task = task_translation.get_translated_task();
+        const auto literals = translated_task.get_initial_literals();
+
+        EXPECT_EQ(count_initial_literals_for_predicate(literals, "special"), 1);
+        EXPECT_EQ(count_initial_literals_for_predicate(literals, "u"), 3);
+        EXPECT_EQ(count_initial_literals_for_predicate(literals, "either_special_vip"), 2);
+        // oa - a, ob - b, oc - c and the constant k - c.
+        EXPECT_EQ(count_initial_literals_for_predicate(literals, "either_a_b"), 4);
+
+        // The printed translation reparses in strict mode and retranslates to the same text.
+        const auto domain_text = formalism::format::to_string(domain_translation.get_translated_domain());
+        const auto task_text = formalism::format::to_string(translated_task);
+        auto reparsed = semantic::Parser(domain_text, semantic::ParserOptions { .strict = true });
+        const auto reparsed_task = reparsed.parse_task(task_text);
+        const auto retranslation = semantic::translate(reparsed.get_domain(), options);
+        const auto task_retranslation = semantic::translate(reparsed_task, retranslation, options);
+        EXPECT_EQ(formalism::format::to_string(retranslation.get_translated_domain()), domain_text);
+        EXPECT_EQ(formalism::format::to_string(task_retranslation.get_translated_task()), task_text);
+    }
+}
+
+TEST(LokiSemanticTranslator, ConstantMetricUsesNumericFluents)
+{
+    const auto strict = semantic::ParserOptions { .strict = true, .add_action_costs = false };
+    auto parser = semantic::Parser(std::string("(define (domain d) (:requirements :strips) (:predicates (p)) (:action a :parameters () :effect (p)))"), strict);
+    const auto task = parser.parse_task(std::string("(define (problem q) (:domain d) (:requirements :numeric-fluents) (:init) (:goal (p)) (:metric minimize 5))"));
+
+    // The translated task declares :numeric-fluents for its metric, so it reparses in strict mode.
+    const auto domain_translation = semantic::translate(parser.get_domain());
+    const auto task_translation = semantic::translate(task, domain_translation);
+    const auto task_text = formalism::format::to_string(task_translation.get_translated_task());
+    EXPECT_TRUE(has_requirement_kind(task_translation.get_translated_task().get_requirements(), formalism::RequirementKind::NumericFluents));
+    auto reparsed = semantic::Parser(formalism::format::to_string(domain_translation.get_translated_domain()), strict);
+    EXPECT_NO_THROW(static_cast<void>(reparsed.parse_task(task_text)));
+}
+
+TEST(LokiSemanticTranslator, TaskCannotChangeDomainTypes)
+{
+    semantic::Parser parser(fixture_path("either-typing"));
+    const auto task = [](const std::string& sections)
+    { return "(define (problem q) (:domain either-typing) " + sections + " (:objects o - u) (:init) (:goal (r o)))"; };
+
+    // Redeclaring a domain type is a duplicate.
+    EXPECT_THROW(parser.parse_task(task("(:types special - object u - special)")), semantic::DuplicateTypeError);
+    // A union over domain types would have to become a base of them.
+    EXPECT_THROW(parser.parse_task(task("(:predicates (s ?x - (either a u)))")), semantic::SemanticError);
+}
+
 TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
 {
     auto original = formalism::Repository(0);

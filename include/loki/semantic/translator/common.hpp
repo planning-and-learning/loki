@@ -52,6 +52,7 @@ enum class TranslationPhase
     CompileConditionalEffects,
     MaterializeEquality,
     NormalizeArithmeticExpressions,
+    InferRequirements,
 };
 
 inline const std::vector<std::string_view>& domain_translation_steps()
@@ -67,6 +68,7 @@ inline const std::vector<std::string_view>& domain_translation_steps()
         "to-effect-normal-form",
         "materialize-equality",
         "normalize-arithmetic-expressions",
+        "infer-requirements",
     };
     return steps;
 }
@@ -85,6 +87,7 @@ inline const std::vector<std::string_view>& task_translation_steps()
         "materialize-equality",
         "compile-typing",
         "normalize-arithmetic-expressions",
+        "infer-requirements",
     };
     return steps;
 }

@@ -20,6 +20,7 @@
 
 #include "loki/semantic/errors.hpp"
 #include "loki/semantic/translator/copy_translator_component.hpp"
+#include "loki/semantic/translator/infer_requirements.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -103,9 +104,7 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
     switch (this->m_context.phase)
     {
         case TranslationPhase::RemoveUniversalQuantifiers:
-            this->self().append_generated_domain_objects(*data, copied_domain.get_requirements());
-            if (!data->axioms.empty())
-                this->self().ensure_derived_predicates_requirement(copied_domain.get_requirements(), data->requirements);
+            this->self().append_generated_domain_objects(*data);
             break;
         case TranslationPhase::SplitDisjunctiveConditions:
             this->self().split_disjunctive_actions(copied_domain.get_actions(), data->actions);
@@ -113,13 +112,15 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
             break;
         case TranslationPhase::CompileConditionalEffects:
             this->self().compile_conditional_effect_actions(copied_domain.get_actions(), data->actions);
-            this->self().strip_requirement(copied_domain.get_requirements(), formalism::RequirementKind::ConditionalEffects, data->requirements);
             break;
         case TranslationPhase::CompileTyping:
             this->self().compile_typing_to_domain(*data, copied_domain);
             break;
         case TranslationPhase::MaterializeEquality:
             this->self().add_equality_predicate_to_domain(*data, copied_domain);
+            break;
+        case TranslationPhase::InferRequirements:
+            this->self().set_requirements(infer_requirements(copied_domain), data->requirements);
             break;
         default:
             // data is unchanged since the first insert, so a second insert would only re-canonicalize it.
@@ -175,6 +176,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
         data->metric = {};
     this->self().template copy_list<formalism::Predicate>(task.get_predicates(), data->predicates);
     this->self().template copy_list<formalism::Axiom>(task.get_axioms(), data->axioms);
+    this->self().template copy_list<formalism::Type>(task.get_types(), data->types);
 
     auto [copied_task, copied_inserted] = formalism::insert(this->m_context.storage->repository, *data);
     data->index = {};
@@ -200,9 +202,6 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             for (auto axiom : this->m_context.generated_axioms)
                 if (existing_axioms.insert(axiom).second)
                     data->axioms.push_back(axiom.get_index());
-
-            if (!data->axioms.empty())
-                this->self().ensure_derived_predicates_requirement(copied_task.get_requirements(), data->requirements);
             break;
         }
         case TranslationPhase::SplitDisjunctiveConditions:
@@ -213,6 +212,9 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             break;
         case TranslationPhase::CompileTyping:
             this->self().initialize_type_literals(*data, task);
+            break;
+        case TranslationPhase::InferRequirements:
+            this->self().set_requirements(infer_requirements(copied_task, *this->m_context.storage->translated_domain), data->requirements);
             break;
         default:
             // data is unchanged since the first insert, so a second insert would only re-canonicalize it.

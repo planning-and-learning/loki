@@ -1,0 +1,8 @@
+(define (problem either-typing-extension)
+  (:domain either-typing)
+  (:types special vip - u)
+  (:predicates (marked ?x - special))
+  (:objects oa - a ob - b oc - c ou - u os - special ov - vip)
+  (:init (p oa) (marked os))
+  (:goal (exists (?z - (either special vip)) (r ?z)))
+)

@@ -268,7 +268,9 @@ TEST(LokiPublicFacade, FormatsTypedNumericTaskSectionsAsReparseablePddl)
 
     EXPECT_NE(domain_text.find("(:types item - object)"), std::string::npos);
     EXPECT_NE(domain_text.find("(:constants depot - item)"), std::string::npos);
-    EXPECT_NE(domain_text.find("(cost ?x - item) - number"), std::string::npos);
+    // number is the default function type and is left out.
+    EXPECT_NE(domain_text.find("(cost ?x - item)"), std::string::npos);
+    EXPECT_EQ(domain_text.find("- number"), std::string::npos);
     EXPECT_NE(domain_text.find("(increase (cost ?x) 1.5)"), std::string::npos);
     EXPECT_NE(task_text.find("(:objects package - item)"), std::string::npos);
     EXPECT_NE(task_text.find("(= (cost package) 0)"), std::string::npos);

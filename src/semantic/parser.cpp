@@ -28,6 +28,7 @@
 #include "mappings.hpp"
 #include "parser_runtime.hpp"
 
+#include <cassert>
 #include <fstream>
 #include <sstream>
 #include <utility>
@@ -132,10 +133,24 @@ formalism::TaskView Parser::Impl::parse_task_source(std::string source, const st
 
 formalism::DomainView Parser::Impl::parse_domain_ast(const ast::Domain& domain)
 {
-    reset_domain();
-
-    auto parse_context = ParseContext {};
-    auto view = AstBuilder(m_options, m_diagnostics, repo(), m_domain_context, parse_context).build_domain(domain);
+    // Builds a second time only if variables use (either ...) types, now with their union types known.
+    auto union_types = std::set<std::vector<std::string>> {};
+    auto build = [&]
+    {
+        reset_domain();
+        auto parse_context = ParseContext {};
+        parse_context.union_types = union_types;
+        auto view = AstBuilder(m_options, m_diagnostics, repo(), m_domain_context, parse_context).build_domain(domain);
+        union_types.merge(parse_context.missing_union_types);
+        return view;
+    };
+    auto view = build();
+    if (!union_types.empty())
+    {
+        [[maybe_unused]] const auto num_union_types = union_types.size();
+        view = build();
+        assert(union_types.size() == num_union_types && "the second build knows all union types");
+    }
     const auto declared_requirements = m_domain_context.requirement_kinds;
     const auto declared_action_costs = m_domain_context.action_costs;
     const auto declared_numeric_fluents = m_domain_context.numeric_fluents;
@@ -150,16 +165,31 @@ formalism::DomainView Parser::Impl::parse_domain_ast(const ast::Domain& domain)
 formalism::TaskView Parser::Impl::parse_task_ast(const ast::Task& task)
 {
     const auto domain_storage = m_domain_context.storage;
-    auto parse_storage = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, domain_storage);
-    detail::inherit_domain_identity_mappings(*parse_storage, *domain_storage);
-
-    auto task_domain_context = m_domain_context;
-    auto parse_context = ParseContext {};
-    parse_context.active_requirements = m_domain_context.requirement_kinds;
-    parse_context.active_action_costs = m_domain_context.action_costs;
-    parse_context.active_numeric_fluents = m_domain_context.numeric_fluents;
-    parse_context.declared_objects = m_domain_context.declared_objects;
-    auto view = AstBuilder(m_options, m_diagnostics, parse_storage->repository, task_domain_context, parse_context).build_task(task);
+    // The task reuses the domain's union types and builds a second time only if its own variables use new ones.
+    auto union_types = std::set<std::vector<std::string>> {};
+    auto parse_storage = std::shared_ptr<detail::TranslationStorage> {};
+    auto build = [&]
+    {
+        parse_storage = std::make_shared<detail::TranslationStorage>(m_task_storages.size() + 1, domain_storage);
+        detail::inherit_domain_identity_mappings(*parse_storage, *domain_storage);
+        auto task_domain_context = m_domain_context;
+        auto parse_context = ParseContext {};
+        parse_context.active_requirements = m_domain_context.requirement_kinds;
+        parse_context.active_action_costs = m_domain_context.action_costs;
+        parse_context.active_numeric_fluents = m_domain_context.numeric_fluents;
+        parse_context.declared_objects = m_domain_context.declared_objects;
+        parse_context.union_types = union_types;
+        auto view = AstBuilder(m_options, m_diagnostics, parse_storage->repository, task_domain_context, parse_context).build_task(task);
+        union_types.merge(parse_context.missing_union_types);
+        return view;
+    };
+    auto view = build();
+    if (!union_types.empty())
+    {
+        [[maybe_unused]] const auto num_union_types = union_types.size();
+        view = build();
+        assert(union_types.size() == num_union_types && "the second build knows all union types");
+    }
     return canonicalize_task(view, domain_storage);
 }
 

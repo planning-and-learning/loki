@@ -76,6 +76,7 @@ std::pair<formalism::TaskView, bool> CanonicalCopyTranslator::copy(formalism::Ta
         data->metric = as_index(copy(source_metric.value()));
     copy_list(task.get_predicates(), data->predicates);
     copy_list(task.get_axioms(), data->axioms);
+    copy_list(task.get_types(), data->types);
     auto [view, inserted] = formalism::insert(m_storage->repository, *data);
     remember(m_storage->tasks, task, view);
     return { view, inserted };

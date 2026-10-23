@@ -59,6 +59,6 @@ BOOST_FUSION_ADAPT_STRUCT(loki::ast::Axiom, head, condition)
 BOOST_FUSION_ADAPT_STRUCT(loki::ast::Metric, optimization, expression)
 BOOST_FUSION_ADAPT_STRUCT(loki::ast::InitialFunctionValue, function, value)
 BOOST_FUSION_ADAPT_STRUCT(loki::ast::Domain, name, requirements, types, constants, predicates, functions, declarations)
-BOOST_FUSION_ADAPT_STRUCT(loki::ast::Task, name, domain_name, requirements, objects, initial, goal, metric, axioms)
+BOOST_FUSION_ADAPT_STRUCT(loki::ast::Task, name, domain_name, requirements, types, predicates, objects, initial, goal, metric, axioms)
 
 #endif

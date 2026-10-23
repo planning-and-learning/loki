@@ -83,6 +83,9 @@ std::string to_string(PredicateView value) { return fmt::format("({}{})", value.
 
 std::string to_string(FunctionSkeletonView value)
 {
+    // number is the default function type; writing it out would demand :typing of a domain without types.
+    if (std::string_view(value.get_type().get_name()) == "number")
+        return fmt::format("({}{})", value.get_name(), detail::spaced(value.get_parameters()));
     return fmt::format("({}{}) - {}", value.get_name(), detail::spaced(value.get_parameters()), to_string(value.get_type()));
 }
 
@@ -231,7 +234,25 @@ std::string to_string(AxiomView value)
             existential_parameters.push_back(parameter);
     }
 
-    auto result = fmt::format("(:derived {} ", to_string(value.get_head()));
+    // The head declares the types of its variables, as in (:derived (p ?x - t) ...).
+    auto parameters = ygg::UnorderedMap<VariableView, ParameterView> {};
+    for (auto parameter : value.get_parameters())
+        parameters.emplace(parameter.get_variable(), parameter);
+    auto head = fmt::format("({}", value.get_head().get_atom().get_predicate().get_name());
+    for (auto term : value.get_head().get_atom().get_terms())
+    {
+        auto text = to_string(term);
+        visit(
+            [&]<typename T>(const T& node)
+            {
+                if constexpr (std::same_as<T, VariableView>)
+                    if (const auto it = parameters.find(node); it != parameters.end())
+                        text = to_string(it->second);
+            },
+            term.get_variant());
+        head += " " + text;
+    }
+    auto result = fmt::format("(:derived {}) ", head);
     if (!existential_parameters.empty())
         return result + fmt::format("(exists ({}) {}))", fmt::join(detail::to_strings(existential_parameters), " "), to_string(value.get_condition()));
     return result + fmt::format("{})", to_string(value.get_condition()));
@@ -332,6 +353,27 @@ std::string to_string(TaskView value)
             os << '\n' << ygg::print_indent << "(:requirements";
             for (auto requirement : value.get_requirements())
                 os << ' ' << to_string(requirement);
+            os << ')';
+        }
+        if (!value.get_types().empty())
+        {
+            os << '\n' << ygg::print_indent << "(:types";
+            for (auto type : value.get_types())
+            {
+                os << ' ' << to_string(type);
+                if (!type.get_bases().empty())
+                    os << detail::type_annotation(type.get_bases());
+            }
+            os << ')';
+        }
+        if (!value.get_predicates().empty())
+        {
+            os << '\n' << ygg::print_indent << "(:predicates";
+            {
+                ygg::IndentScope predicates(os);
+                for (auto predicate : value.get_predicates())
+                    os << '\n' << ygg::print_indent << to_string(predicate);
+            }
             os << ')';
         }
         if (!value.get_objects().empty())

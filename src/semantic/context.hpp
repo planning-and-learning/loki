@@ -26,8 +26,10 @@
 #include "loki/formalism/type_view.hpp"
 #include "loki/formalism/variable_view.hpp"
 
+#include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 #include <yggdrasil/containers/associative_containers.hpp>
@@ -55,6 +57,8 @@ struct DomainContext
     formalism::TypeView object_type;
     formalism::TypeView number_type;
     ygg::UnorderedMap<std::string, formalism::TypeView> types;
+    // Sorted alternatives of an (either ...) type -> name of its union type.
+    std::map<std::vector<std::string>, std::string> union_type_names;
     ygg::UnorderedMap<std::string, formalism::ObjectView> objects;
     ygg::UnorderedMap<std::string, formalism::PredicateView> predicates;
     ygg::UnorderedMap<std::string, formalism::FunctionSkeletonView> functions;
@@ -80,6 +84,9 @@ struct ParseContext
     std::vector<ygg::UnorderedMap<std::string, formalism::VariableView>> variable_scopes;
     ygg::UnorderedSet<std::string> declared_objects;
     ygg::UnorderedMap<std::string, formalism::ObjectView> task_objects;
+    // The sorted alternatives of the (either ...) types of variables: those known before the build, and those it found missing.
+    std::set<std::vector<std::string>> union_types;
+    std::set<std::vector<std::string>> missing_union_types;
 };
 
 void remember_requirement(ParseContext& parse_context, formalism::RequirementKind kind);

@@ -41,35 +41,38 @@ struct Data<::loki::formalism::Task>
     ::cista::offset::string name;
     ygg::Index<::loki::formalism::Domain> domain;
     ygg::IndexList<::loki::formalism::Requirement> requirements;
+    ygg::IndexList<::loki::formalism::Type> types;
+    ygg::IndexList<::loki::formalism::Predicate> predicates;
     ygg::IndexList<::loki::formalism::Object> objects;
     ygg::IndexList<::loki::formalism::Literal> initial_literals;
     ygg::IndexList<::loki::formalism::InitialFunctionValue> initial_function_values;
     ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> goal;
     ::cista::optional<ygg::Index<::loki::formalism::Metric>> metric;
-    ygg::IndexList<::loki::formalism::Predicate> predicates;
     ygg::IndexList<::loki::formalism::Axiom> axioms;
 
     Data() = default;
     Data(::cista::offset::string name_,
          ygg::Index<::loki::formalism::Domain> domain_,
          ygg::IndexList<::loki::formalism::Requirement> requirements_,
+         ygg::IndexList<::loki::formalism::Type> types_,
+         ygg::IndexList<::loki::formalism::Predicate> predicates_,
          ygg::IndexList<::loki::formalism::Object> objects_,
          ygg::IndexList<::loki::formalism::Literal> initial_literals_,
          ygg::IndexList<::loki::formalism::InitialFunctionValue> initial_function_values_,
          ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> goal_,
          ::cista::optional<ygg::Index<::loki::formalism::Metric>> metric_,
-         ygg::IndexList<::loki::formalism::Predicate> predicates_,
          ygg::IndexList<::loki::formalism::Axiom> axioms_) :
         index(),
         name(std::move(name_)),
         domain(domain_),
         requirements(std::move(requirements_)),
+        types(std::move(types_)),
+        predicates(std::move(predicates_)),
         objects(std::move(objects_)),
         initial_literals(std::move(initial_literals_)),
         initial_function_values(std::move(initial_function_values_)),
         goal(goal_),
         metric(metric_),
-        predicates(std::move(predicates_)),
         axioms(std::move(axioms_))
     {
     }
@@ -77,48 +80,52 @@ struct Data<::loki::formalism::Task>
     Data(const std::string& name_,
          ::ygg::View<ygg::Index<::loki::formalism::Domain>, C> domain_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::Requirement>, C>>& requirements_,
+         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Type>, C>>& types_,
+         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Predicate>, C>>& predicates_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::Object>, C>>& objects_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::Literal>, C>>& initial_literals_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::InitialFunctionValue>, C>>& initial_function_values_,
          const std::optional<::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C>>& goal_,
          const std::optional<::ygg::View<ygg::Index<::loki::formalism::Metric>, C>>& metric_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Predicate>, C>>& predicates_,
          const std::vector<::ygg::View<ygg::Index<::loki::formalism::Axiom>, C>>& axioms_) :
         index(),
         name(name_),
         domain(),
         requirements(),
+        types(),
+        predicates(),
         objects(),
         initial_literals(),
         initial_function_values(),
         goal(),
         metric(),
-        predicates(),
         axioms()
     {
         set(domain_, domain);
         set(requirements_, requirements);
+        set(types_, types);
+        set(predicates_, predicates);
         set(objects_, objects);
         set(initial_literals_, initial_literals);
         set(initial_function_values_, initial_function_values);
         set(goal_, goal);
         set(metric_, metric);
-        set(predicates_, predicates);
         set(axioms_, axioms);
     }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::domain, &Data::requirements, &Data::objects, &Data::initial_literals, &Data::initial_function_values, &Data::goal, &Data::metric, &Data::predicates, &Data::axioms> {}; }
+    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::domain, &Data::requirements, &Data::types, &Data::predicates, &Data::objects, &Data::initial_literals, &Data::initial_function_values, &Data::goal, &Data::metric, &Data::axioms> {}; }
     static constexpr auto identifying_members() noexcept
     {
         return ygg::Members<&Data::name,
                             &Data::domain,
                             &Data::requirements,
+                            &Data::types,
+                            &Data::predicates,
                             &Data::objects,
                             &Data::initial_literals,
                             &Data::initial_function_values,
                             &Data::goal,
                             &Data::metric,
-                            &Data::predicates,
                             &Data::axioms> {};
     }
     void clear() noexcept

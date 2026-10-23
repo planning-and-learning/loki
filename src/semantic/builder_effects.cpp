@@ -212,8 +212,8 @@ void AstBuilder::parse_initial_element(const ast::InitialFunctionValue& value,
 
 formalism::MetricView AstBuilder::parse_metric(const ast::Metric& node)
 {
-    if (m_options.strict && !m_parse_context.active_requirements.contains(formalism::RequirementKind::NumericFluents))
-        m_diagnostics.throw_at(node, MissingRequirementError(requirement_name(formalism::RequirementKind::NumericFluents)));
+    // A metric uses numeric fluents even if it is a constant, such as (:metric minimize 5).
+    checks().require_requirement(formalism::RequirementKind::NumericFluents, node);
     const auto optimization = key(node.optimization.text);
     if (optimization != "minimize" && optimization != "maximize")
         m_diagnostics.throw_at(node.optimization, InvalidMetricError(optimization));

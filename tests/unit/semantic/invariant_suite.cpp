@@ -212,9 +212,12 @@ void expect_task_invariants(formalism::DomainView translated_domain, formalism::
     }
 
     expect_axiom_invariants(task.get_axioms(), "task " + std::string(task.get_name()));
+    // The task declares a requirement only if its domain does not; redeclaring it is redundant in strict mode.
     if (!task.get_axioms().empty())
     {
-        EXPECT_TRUE(has_requirement_kind(task.get_requirements(), formalism::RequirementKind::DerivedPredicates)) << task.get_name();
+        EXPECT_TRUE(has_requirement_kind(task.get_requirements(), formalism::RequirementKind::DerivedPredicates)
+                    || has_requirement_kind(task.get_domain().get_requirements(), formalism::RequirementKind::DerivedPredicates))
+            << task.get_name();
     }
 }
 

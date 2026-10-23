@@ -674,6 +674,32 @@ struct formatter<loki::ast::Task, char>
                     fmt::print(os, fmt::runtime(" {}"), requirement);
                 os << ')';
             }
+            if (!value.types.empty())
+            {
+                os << '\n' << ygg::print_indent << "(:types ";
+                auto first = true;
+                for (const auto& type : value.types)
+                {
+                    if (!first)
+                        os << ' ';
+                    first = false;
+                    fmt::print(os, fmt::runtime("{}"), type);
+                }
+                os << ')';
+            }
+            if (!value.predicates.empty())
+            {
+                os << '\n' << ygg::print_indent << "(:predicates";
+                {
+                    ygg::IndentScope predicates(os);
+                    for (const auto& predicate : value.predicates)
+                    {
+                        os << '\n' << ygg::print_indent;
+                        fmt::print(os, fmt::runtime("{}"), predicate);
+                    }
+                }
+                os << ')';
+            }
             if (!value.objects.empty())
             {
                 os << '\n' << ygg::print_indent << "(:objects ";

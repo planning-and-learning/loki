@@ -38,12 +38,13 @@ public:
     const auto& get_name() const noexcept { return this->get_data().name; }
     auto get_domain() const noexcept { return ygg::make_view(this->get_data().domain, this->get_context()); }
     auto get_requirements() const noexcept { return ygg::make_view(this->get_data().requirements, this->get_context()); }
+    auto get_types() const noexcept { return ygg::make_view(this->get_data().types, this->get_context()); }
+    auto get_predicates() const noexcept { return ygg::make_view(this->get_data().predicates, this->get_context()); }
     auto get_objects() const noexcept { return ygg::make_view(this->get_data().objects, this->get_context()); }
     auto get_initial_literals() const noexcept { return ygg::make_view(this->get_data().initial_literals, this->get_context()); }
     auto get_initial_function_values() const noexcept { return ygg::make_view(this->get_data().initial_function_values, this->get_context()); }
     auto get_goal() const noexcept { return ygg::make_view(this->get_data().goal, this->get_context()); }
     auto get_metric() const noexcept { return ygg::make_view(this->get_data().metric, this->get_context()); }
-    auto get_predicates() const noexcept { return ygg::make_view(this->get_data().predicates, this->get_context()); }
     auto get_axioms() const noexcept { return ygg::make_view(this->get_data().axioms, this->get_context()); }
 };
 

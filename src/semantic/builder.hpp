@@ -29,6 +29,7 @@
 #include <cista/containers/optional.h>
 #include <cstddef>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 #include <yggdrasil/containers/associative_containers.hpp>
@@ -93,7 +94,8 @@ private:
 
     // Domain and task sections.
     std::vector<formalism::RequirementView> parse_requirements(const std::vector<ast::Requirement>& nodes);
-    std::vector<formalism::TypeView> parse_types(const std::vector<ast::TypedGroup>& groups);
+    std::vector<formalism::TypeView> parse_type_hierarchy(const std::vector<ast::TypedGroup>& groups);
+    std::optional<formalism::TypeView> union_type(const std::vector<std::string>& alternatives, const ast::Identifier& identifier);
     std::vector<formalism::TypeView> parse_type_expression(const ast::TypeExpression& type);
     std::vector<formalism::TypeView> parse_type_expression_node(const ast::TypeReference& node);
     std::vector<formalism::TypeView> parse_type_expression_node(const ast::EitherType& node);

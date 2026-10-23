@@ -281,6 +281,8 @@ auto const task_def =
     context("problem definition")[('(' >> detail::keyword("define") >> context("problem header")['(' >> detail::keyword("problem") > identifier > ')']
                                    > context("problem domain")['(' >> detail::keyword(":domain") > identifier > ')'])
                                   >> (detail::requirement_section | attr(std::vector<ast::Requirement> {}))
+                                  >> (detail::type_section | attr(std::vector<ast::TypedGroup> {}))
+                                  >> (detail::predicate_section | attr(std::vector<ast::PredicateDeclaration> {}))
                                   >> (detail::object_section | attr(std::vector<ast::TypedGroup> {})) >> boost::spirit::x3::expect[detail::initial_section]
                                   >> -context("goal")['(' >> detail::keyword(":goal") > condition > ')'] >> -metric >> *axiom > ')'];
 auto const file_def = domain | task;

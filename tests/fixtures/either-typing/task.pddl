@@ -1,0 +1,6 @@
+(define (problem either-typing-task)
+  (:domain either-typing)
+  (:objects oa - a ob - b oc - c ou - u)
+  (:init (p oa) (p ob) (p oc) (p ou))
+  (:goal (r oa))
+)

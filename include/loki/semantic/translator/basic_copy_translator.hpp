@@ -40,16 +40,9 @@ public:
 
     void leave_scope();
 
-    void append_generated_domain_objects(ygg::Data<formalism::Domain>& data, formalism::EntityListView<formalism::Requirement> requirements);
+    void append_generated_domain_objects(ygg::Data<formalism::Domain>& data);
 
-    void ensure_derived_predicates_requirement(formalism::EntityListView<formalism::Requirement> requirements,
-                                               ygg::IndexList<formalism::Requirement>& out_requirements);
-
-    void strip_requirement(formalism::EntityListView<formalism::Requirement> requirements,
-                           formalism::RequirementKind kind,
-                           ygg::IndexList<formalism::Requirement>& result);
-
-    void strip_typing_requirement(formalism::EntityListView<formalism::Requirement> requirements, ygg::IndexList<formalism::Requirement>& result);
+    void set_requirements(const std::vector<formalism::RequirementKind>& kinds, ygg::IndexList<formalism::Requirement>& result);
 
     formalism::RequirementView copy(formalism::RequirementView source);
 
@@ -132,8 +125,7 @@ void BasicCopyTranslator<Derived>::leave_scope()
 }
 
 template<typename Derived>
-void BasicCopyTranslator<Derived>::append_generated_domain_objects(ygg::Data<formalism::Domain>& data,
-                                                                   formalism::EntityListView<formalism::Requirement> requirements)
+void BasicCopyTranslator<Derived>::append_generated_domain_objects(ygg::Data<formalism::Domain>& data)
 {
     if (this->m_context.generated_predicates.empty() && this->m_context.generated_axioms.empty())
         return;
@@ -142,51 +134,18 @@ void BasicCopyTranslator<Derived>::append_generated_domain_objects(ygg::Data<for
         data.predicates.push_back(predicate.get_index());
     for (auto axiom : this->m_context.generated_axioms)
         data.axioms.push_back(axiom.get_index());
-
-    this->self().ensure_derived_predicates_requirement(requirements, data.requirements);
 }
 
 template<typename Derived>
-void BasicCopyTranslator<Derived>::ensure_derived_predicates_requirement(formalism::EntityListView<formalism::Requirement> requirements,
-                                                                         ygg::IndexList<formalism::Requirement>& out_requirements)
-{
-    auto has_derived_requirement = false;
-    for (auto requirement : requirements)
-    {
-        if (requirement.get_kind() == formalism::RequirementKind::DerivedPredicates)
-        {
-            has_derived_requirement = true;
-            break;
-        }
-    }
-    if (!has_derived_requirement)
-    {
-        auto data = formalism::checkout<formalism::Requirement>(this->m_context.builder);
-        data->kind = formalism::RequirementKind::DerivedPredicates;
-        out_requirements.push_back(formalism::insert(this->m_context.storage->repository, *data).first.get_index());
-    }
-}
-
-template<typename Derived>
-void BasicCopyTranslator<Derived>::strip_requirement(formalism::EntityListView<formalism::Requirement> requirements,
-                                                     formalism::RequirementKind kind,
-                                                     ygg::IndexList<formalism::Requirement>& result)
+void BasicCopyTranslator<Derived>::set_requirements(const std::vector<formalism::RequirementKind>& kinds, ygg::IndexList<formalism::Requirement>& result)
 {
     result.clear();
-    for (auto requirement : requirements)
-        if (requirement.get_kind() != kind)
-            result.push_back(as_index(this->self().copy(requirement)));
-}
-
-template<typename Derived>
-void BasicCopyTranslator<Derived>::strip_typing_requirement(formalism::EntityListView<formalism::Requirement> requirements,
-                                                            ygg::IndexList<formalism::Requirement>& result)
-{
-    result.clear();
-    if (this->m_context.compile_typing)
-        this->self().strip_requirement(requirements, formalism::RequirementKind::Typing, result);
-    else
-        this->self().template copy_list<formalism::Requirement>(requirements, result);
+    auto data = formalism::checkout<formalism::Requirement>(this->m_context.builder);
+    for (const auto kind : kinds)
+    {
+        data->kind = kind;
+        result.push_back(formalism::insert(this->m_context.storage->repository, *data).first.get_index());
+    }
 }
 
 template<typename Derived>

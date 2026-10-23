@@ -101,8 +101,14 @@ formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formal
         return it->second;
 
     auto parameter_data = formalism::checkout<formalism::Parameter>(this->m_context.builder);
+    // A type predicate tests any object for membership, so its argument has the root of the type's hierarchy (object, or number).
     if (!this->self().compiles_typing_now())
-        parameter_data->types.push_back(as_index(this->self().copy(type)));
+        for (auto ancestor : this->self().collect_type_hierarchy(type))
+            if (ancestor.get_bases().empty())
+            {
+                parameter_data->types.push_back(as_index(this->self().copy(ancestor)));
+                break;
+            }
     auto variable_data = formalism::checkout<formalism::Variable>(this->m_context.builder);
     variable_data->name = cista::offset::string("?arg");
     parameter_data->variable = formalism::insert(this->m_context.storage->repository, *variable_data).first.get_index();
@@ -200,7 +206,6 @@ void CompileTypingTranslator<Derived>::compile_typing_to_domain(ygg::Data<formal
         for (auto type : object.get_types())
             add_type(add_type, type);
 
-    this->self().strip_typing_requirement(domain.get_requirements(), data.requirements);
     if (this->self().compiles_typing_now())
         data.types.clear();
 }
@@ -241,7 +246,14 @@ void CompileTypingTranslator<Derived>::initialize_type_literals(ygg::Data<formal
         this->self().add_type_literals_for_object(data.initial_literals, object);
     for (auto object : task.get_objects())
         this->self().add_type_literals_for_object(data.initial_literals, object);
-    this->self().strip_typing_requirement(task.get_requirements(), data.requirements);
+
+    // The task's own types need type predicates; a reparsed translation may declare them already.
+    auto existing = ygg::UnorderedSet<ygg::Index<formalism::Predicate>>(data.predicates.begin(), data.predicates.end());
+    for (auto type : task.get_types())
+        if (const auto predicate = this->self().type_predicate(type).get_index(); existing.insert(predicate).second)
+            data.predicates.push_back(predicate);
+    if (this->self().compiles_typing_now())
+        data.types.clear();
 }
 
 }  // namespace loki::semantic::detail

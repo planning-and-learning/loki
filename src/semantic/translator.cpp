@@ -57,6 +57,8 @@ const std::vector<PhaseStep>& domain_phase_steps()
         { TranslationPhase::MoveExistentialQuantifiers, "move-existential-quantifiers", true },
         { TranslationPhase::MaterializeEquality, "materialize-equality" },
         { TranslationPhase::NormalizeArithmeticExpressions, "normalize-arithmetic-expressions" },
+        // Last, so that the requirements are exactly those the strict parser demands of the translation.
+        { TranslationPhase::InferRequirements, "infer-requirements" },
     };
     return steps;
 }
@@ -75,6 +77,7 @@ const std::vector<PhaseStep>& task_phase_steps()
         { TranslationPhase::MaterializeEquality, "materialize-equality" },
         { TranslationPhase::CompileTyping, "compile-typing" },
         { TranslationPhase::NormalizeArithmeticExpressions, "normalize-arithmetic-expressions" },
+        { TranslationPhase::InferRequirements, "infer-requirements" },
     };
     return steps;
 }

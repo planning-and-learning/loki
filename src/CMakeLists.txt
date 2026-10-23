@@ -12,6 +12,7 @@ add_library(
     semantic/canonical_copy_symbols.cpp
     semantic/context.cpp
     semantic/diagnostics.cpp
+    semantic/infer_requirements.cpp
     semantic/mappings.cpp
     semantic/parser.cpp
     semantic/translation_storage.cpp

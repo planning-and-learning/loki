@@ -74,7 +74,7 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
     m_domain_context.requirement_kinds = m_parse_context.active_requirements;
     m_domain_context.action_costs = m_parse_context.active_action_costs;
     m_domain_context.numeric_fluents = m_parse_context.active_numeric_fluents;
-    auto types = parse_types(domain.types);
+    auto types = parse_type_hierarchy(domain.types);
     auto constants = parse_objects(domain.constants, m_domain_context.objects, m_domain_context.declared_objects);
     auto predicates = parse_predicates(domain.predicates);
     auto functions = parse_functions(domain.functions);
@@ -135,6 +135,8 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
                     m_diagnostics.throw_at(node.name, RedundantRequirementError(node.name.text));
         }
     }
+    auto types = parse_type_hierarchy(task.types);
+    auto predicates = parse_predicates(task.predicates);
     auto objects = parse_objects(task.objects, m_parse_context.task_objects, m_parse_context.declared_objects);
     auto initial_literals = std::vector<formalism::LiteralView> {};
     auto initial_function_values = std::vector<formalism::InitialFunctionValueView> {};
@@ -162,6 +164,8 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
     data->name = to_cista(task.name.text);
     data->domain = m_domain_context.domain->get_index();
     append_indices(requirements, data->requirements);
+    append_indices(types, data->types);
+    append_indices(predicates, data->predicates);
     append_indices(objects, data->objects);
     append_indices(initial_literals, data->initial_literals);
     append_indices(initial_function_values, data->initial_function_values);
