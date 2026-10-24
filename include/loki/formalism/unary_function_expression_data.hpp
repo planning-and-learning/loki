@@ -19,6 +19,7 @@
 #define LOKI_FORMALISM_UNARY_FUNCTION_EXPRESSION_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+
 #include <optional>
 #include <string>
 #include <tuple>
@@ -50,16 +51,11 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
         index(),
         op(op_),
         expression()
-    {
-        set(expression_, expression);
-    }
+    { set(expression_, expression); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::expression> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::expression> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

@@ -18,8 +18,9 @@
 #ifndef LOKI_FORMALISM_METRIC_DATA_HPP_
 #define LOKI_FORMALISM_METRIC_DATA_HPP_
 
-#include "loki/formalism/enums.hpp"
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/enums.hpp"
+
 #include <tuple>
 #include <utility>
 #include <yggdrasil/core/types.hpp>
@@ -47,16 +48,11 @@ struct Data<::loki::formalism::Metric>
         index(),
         optimization_direction(optimization_direction_),
         expression()
-    {
-        set(expression_, expression);
-    }
+    { set(expression_, expression); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::optimization_direction, &Data::expression> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::optimization_direction, &Data::expression> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

@@ -42,16 +42,11 @@ struct Data<::loki::formalism::Condition<::loki::formalism::OrTag>>
     Data(ygg::IndexList<::loki::formalism::Condition<>> conditions_) : index(), conditions(std::move(conditions_)) {}
     template<typename C>
     Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C>>& conditions_) : index(), conditions()
-    {
-        set(conditions_, conditions);
-    }
+    { set(conditions_, conditions); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::conditions> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::conditions> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

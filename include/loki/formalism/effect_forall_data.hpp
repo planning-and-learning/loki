@@ -59,10 +59,7 @@ struct Data<::loki::formalism::Effect<::loki::formalism::ForallTag>>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::parameters, &Data::effect> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::parameters, &Data::effect> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

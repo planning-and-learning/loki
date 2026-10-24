@@ -173,8 +173,8 @@ struct Effect
 {
 };
 
-using FunctionExpressionTypes =
-    ygg::ConcatTypeListsT<ygg::TypeList<FunctionExpression<NumberTag>, FunctionTerm>, ygg::MapTypeListT<FunctionExpression, ygg::TypeList<UnaryTag, BinaryTag, MultiTag>>>;
+using FunctionExpressionTypes = ygg::ConcatTypeListsT<ygg::TypeList<FunctionExpression<NumberTag>, FunctionTerm>,
+                                                      ygg::MapTypeListT<FunctionExpression, ygg::TypeList<UnaryTag, BinaryTag, MultiTag>>>;
 
 struct Action
 {
@@ -195,35 +195,27 @@ struct Task
 {
 };
 
-using SymbolRepositoryTypes = ygg::ConcatTypeListsT<ygg::TypeList<Requirement,
-                                                                   Type,
-                                                                   Object,
-                                                                   Variable,
-                                                                   Parameter,
-                                                                   Predicate,
-                                                                   FunctionSkeleton,
-                                                                   Term,
-                                                                   Atom,
-                                                                   Literal>,
-                                                    FunctionExpressionTypes,
-                                                    ygg::TypeList<FunctionExpression<>>,
-                                                    ygg::MapTypeListT<Condition, ConditionTags>,
-                                                    ygg::TypeList<Condition<>,
-                                                                  Effect<LiteralTag>,
-                                                                  Effect<AndTag>,
-                                                                  Effect<NumericTag>,
-                                                                  Effect<ForallTag>,
-                                                                  Effect<WhenTag>,
-                                                                  Effect<OneOfTag>,
-                                                                  EffectProbabilisticAlternative,
-                                                                  Effect<ProbabilisticTag>,
-                                                                  Effect<>,
-                                                                  Action,
-                                                                  Axiom,
-                                                                  Metric,
-                                                                  InitialFunctionValue,
-                                                                  Domain,
-                                                                  Task>>;
+using SymbolRepositoryTypes =
+    ygg::ConcatTypeListsT<ygg::TypeList<Requirement, Type, Object, Variable, Parameter, Predicate, FunctionSkeleton, Term, Atom, Literal>,
+                          FunctionExpressionTypes,
+                          ygg::TypeList<FunctionExpression<>>,
+                          ygg::MapTypeListT<Condition, ConditionTags>,
+                          ygg::TypeList<Condition<>,
+                                        Effect<LiteralTag>,
+                                        Effect<AndTag>,
+                                        Effect<NumericTag>,
+                                        Effect<ForallTag>,
+                                        Effect<WhenTag>,
+                                        Effect<OneOfTag>,
+                                        EffectProbabilisticAlternative,
+                                        Effect<ProbabilisticTag>,
+                                        Effect<>,
+                                        Action,
+                                        Axiom,
+                                        Metric,
+                                        InitialFunctionValue,
+                                        Domain,
+                                        Task>>;
 using RelationRepositoryTypes = ygg::TypeList<Atom>;
 
 using SymbolRepository = ygg::ApplyTypeListT<::ygg::formalism::SymbolRepository, SymbolRepositoryTypes>;

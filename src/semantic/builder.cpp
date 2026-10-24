@@ -52,7 +52,7 @@ AstBuilder::AstBuilder(const ParserOptions& options,
 
 formalism::Repository& AstBuilder::repo() noexcept { return m_repository; }
 
-SemanticChecks AstBuilder::checks() const { return SemanticChecks { m_options, m_diagnostics, m_domain_context, m_parse_context }; }
+SemanticChecks AstBuilder::checks() const { return SemanticChecks { &m_options, &m_diagnostics, &m_domain_context, &m_parse_context }; }
 
 formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
 {

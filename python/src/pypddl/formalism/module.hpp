@@ -15,7 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_PYTHON_PYPDDL_FORMALISM_MODULE_HPP_
 #define LOKI_PYTHON_PYPDDL_FORMALISM_MODULE_HPP_
 

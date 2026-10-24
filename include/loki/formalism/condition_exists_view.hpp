@@ -30,7 +30,8 @@ namespace ygg
 {
 
 template<ygg::formalism::SymbolContextFor<::loki::formalism::Condition<::loki::formalism::ExistsTag>> C>
-class View<ygg::Index<::loki::formalism::Condition<::loki::formalism::ExistsTag>>, C> : public ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ExistsTag>, C>
+class View<ygg::Index<::loki::formalism::Condition<::loki::formalism::ExistsTag>>, C> :
+    public ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ExistsTag>, C>
 {
 public:
     using ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ExistsTag>, C>::IndexViewBase;

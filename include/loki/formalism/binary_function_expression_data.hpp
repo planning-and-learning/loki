@@ -65,10 +65,7 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::left, &Data::right> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::left, &Data::right> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

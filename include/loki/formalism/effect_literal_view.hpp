@@ -30,7 +30,8 @@ namespace ygg
 {
 
 template<ygg::formalism::SymbolContextFor<::loki::formalism::Effect<::loki::formalism::LiteralTag>> C>
-class View<ygg::Index<::loki::formalism::Effect<::loki::formalism::LiteralTag>>, C> : public ygg::IndexViewBase<::loki::formalism::Effect<::loki::formalism::LiteralTag>, C>
+class View<ygg::Index<::loki::formalism::Effect<::loki::formalism::LiteralTag>>, C> :
+    public ygg::IndexViewBase<::loki::formalism::Effect<::loki::formalism::LiteralTag>, C>
 {
 public:
     using ygg::IndexViewBase<::loki::formalism::Effect<::loki::formalism::LiteralTag>, C>::IndexViewBase;

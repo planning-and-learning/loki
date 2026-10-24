@@ -58,10 +58,7 @@ struct Data<::loki::formalism::InitialFunctionValue>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::function, &Data::value> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::function, &Data::value> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

@@ -58,9 +58,7 @@ inline std::vector<SuiteCase> load_suite_cases(const std::filesystem::path& suit
 }
 
 inline std::vector<SuiteCase> benchmark_suite_cases()
-{
-    return load_suite_cases(ygg::common::root_path() / "tests/fixtures/parser_counts_suite.json", std::filesystem::path(BENCHMARKS_DIR));
-}
+{ return load_suite_cases(ygg::common::root_path() / "tests/fixtures/parser_counts_suite.json", std::filesystem::path(BENCHMARKS_DIR)); }
 
 inline std::vector<SuiteCase> fixture_suite_cases() { return load_suite_cases(ygg::common::root_path() / "tests/fixtures/suite.json"); }
 
@@ -74,9 +72,7 @@ inline std::vector<SuiteCase> all_positive_cases()
 }
 
 inline std::filesystem::path fixture_path(const std::string& case_dir, const std::string& file = "domain.pddl")
-{
-    return ygg::common::root_path() / "tests/fixtures" / case_dir / file;
-}
+{ return ygg::common::root_path() / "tests/fixtures" / case_dir / file; }
 
 inline std::string read_text(const std::filesystem::path& path)
 {

@@ -28,26 +28,66 @@ namespace loki::parser
 {
 namespace rules
 {
-struct IdentifierClass : ErrorHandlerBase {};
-struct TypeExpressionClass : ErrorHandlerBase {};
-struct TypedNameListClass : ErrorHandlerBase {};
-struct TypedVariableListClass : ErrorHandlerBase {};
-struct TermClass : ErrorHandlerBase {};
-struct AtomClass : ErrorHandlerBase {};
-struct LiteralClass : ErrorHandlerBase {};
-struct FunctionTermClass : ErrorHandlerBase {};
-struct FunctionExpressionClass : ErrorHandlerBase {};
-struct ConditionClass : ErrorHandlerBase {};
-struct EffectClass : ErrorHandlerBase {};
-struct PredicateDeclarationClass : ErrorHandlerBase {};
-struct FunctionDeclarationClass : ErrorHandlerBase {};
-struct ActionClass : ErrorHandlerBase {};
-struct AxiomClass : ErrorHandlerBase {};
-struct MetricClass : ErrorHandlerBase {};
-struct InitialFunctionValueClass : ErrorHandlerBase {};
-struct DomainClass : ErrorHandlerBase {};
-struct TaskClass : ErrorHandlerBase {};
-struct FileClass : ErrorHandlerBase {};
+struct IdentifierClass : ErrorHandlerBase
+{
+};
+struct TypeExpressionClass : ErrorHandlerBase
+{
+};
+struct TypedNameListClass : ErrorHandlerBase
+{
+};
+struct TypedVariableListClass : ErrorHandlerBase
+{
+};
+struct TermClass : ErrorHandlerBase
+{
+};
+struct AtomClass : ErrorHandlerBase
+{
+};
+struct LiteralClass : ErrorHandlerBase
+{
+};
+struct FunctionTermClass : ErrorHandlerBase
+{
+};
+struct FunctionExpressionClass : ErrorHandlerBase
+{
+};
+struct ConditionClass : ErrorHandlerBase
+{
+};
+struct EffectClass : ErrorHandlerBase
+{
+};
+struct PredicateDeclarationClass : ErrorHandlerBase
+{
+};
+struct FunctionDeclarationClass : ErrorHandlerBase
+{
+};
+struct ActionClass : ErrorHandlerBase
+{
+};
+struct AxiomClass : ErrorHandlerBase
+{
+};
+struct MetricClass : ErrorHandlerBase
+{
+};
+struct InitialFunctionValueClass : ErrorHandlerBase
+{
+};
+struct DomainClass : ErrorHandlerBase
+{
+};
+struct TaskClass : ErrorHandlerBase
+{
+};
+struct FileClass : ErrorHandlerBase
+{
+};
 
 using identifier_type = boost::spirit::x3::rule<IdentifierClass, ast::Identifier>;
 using type_expression_type = boost::spirit::x3::rule<TypeExpressionClass, ast::TypeExpression>;
@@ -146,9 +186,7 @@ bool parse_full(const std::string& source, const Parser& parser, Node& out, Erro
 }
 
 inline bool parse_domain(const std::string& source, ast::Domain& out, ErrorHandlerType& error_handler)
-{
-    return parse_full(source, domain(), out, error_handler);
-}
+{ return parse_full(source, domain(), out, error_handler); }
 
 inline bool parse_task(const std::string& source, ast::Task& out, ErrorHandlerType& error_handler) { return parse_full(source, task(), out, error_handler); }
 

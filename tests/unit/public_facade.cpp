@@ -171,7 +171,8 @@ TEST(LokiPublicFacade, ViewConvenienceMethodsCoverNumericEffectsAndMetrics)
                                     [](const auto expression_node)
                                     {
                                         using ExpressionHandle = std::decay_t<decltype(expression_node.get_index())>;
-                                        if constexpr (std::is_same_v<ExpressionHandle, ygg::Index<loki::formalism::FunctionExpression<loki::formalism::NumberTag>>>)
+                                        if constexpr (std::is_same_v<ExpressionHandle,
+                                                                     ygg::Index<loki::formalism::FunctionExpression<loki::formalism::NumberTag>>>)
                                         {
                                             EXPECT_EQ(expression_node.get_value(), 1);
                                         }

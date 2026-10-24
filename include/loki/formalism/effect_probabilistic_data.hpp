@@ -42,16 +42,11 @@ struct Data<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>>
     Data(ygg::IndexList<::loki::formalism::EffectProbabilisticAlternative> alternatives_) : index(), alternatives(std::move(alternatives_)) {}
     template<typename C>
     Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::EffectProbabilisticAlternative>, C>>& alternatives_) : index(), alternatives()
-    {
-        set(alternatives_, alternatives);
-    }
+    { set(alternatives_, alternatives); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::alternatives> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::alternatives> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

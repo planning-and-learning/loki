@@ -39,9 +39,7 @@ using ygg::formalism::insert;
 
 template<typename T>
 void prepare_for_insert(Repository& repository, ygg::Data<T>& data)
-{
-    canonicalize(repository, data);
-}
+{ canonicalize(repository, data); }
 
 }
 

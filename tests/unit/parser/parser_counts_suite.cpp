@@ -42,9 +42,7 @@ namespace
 // A named X3 rule hides its definition's has_action flag, so check each RHS.
 template<typename... Parsers>
 constexpr bool no_semantic_actions(const Parsers&...)
-{
-    return (!Parsers::has_action && ...);
-}
+{ return (!Parsers::has_action && ...); }
 
 static_assert(no_semantic_actions(parser::rules::identifier_def,
                                   parser::rules::type_expression_def,

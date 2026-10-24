@@ -42,16 +42,11 @@ struct Data<::loki::formalism::Condition<::loki::formalism::LiteralTag>>
     Data(ygg::Index<::loki::formalism::Literal> literal_) : index(), literal(literal_) {}
     template<typename C>
     Data(::ygg::View<ygg::Index<::loki::formalism::Literal>, C> literal_) : index(), literal()
-    {
-        set(literal_, literal);
-    }
+    { set(literal_, literal); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::literal> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::literal> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

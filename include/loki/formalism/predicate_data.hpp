@@ -52,16 +52,11 @@ struct Data<::loki::formalism::Predicate>
         index(),
         name(name_),
         parameters()
-    {
-        set(parameters_, parameters);
-    }
+    { set(parameters_, parameters); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::parameters> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::name, &Data::parameters> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

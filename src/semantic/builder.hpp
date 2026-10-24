@@ -66,6 +66,8 @@ private:
 
         VariableScope(const VariableScope&) = delete;
         VariableScope& operator=(const VariableScope&) = delete;
+        VariableScope(VariableScope&&) = delete;
+        VariableScope& operator=(VariableScope&&) = delete;
 
     private:
         ParseContext& m_context;

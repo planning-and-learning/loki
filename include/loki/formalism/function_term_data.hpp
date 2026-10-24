@@ -59,10 +59,7 @@ struct Data<::loki::formalism::FunctionTerm>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::function, &Data::terms> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::function, &Data::terms> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

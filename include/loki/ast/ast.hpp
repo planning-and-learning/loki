@@ -301,8 +301,8 @@ struct Task : boost::spirit::x3::position_tagged
     Identifier name;
     Identifier domain_name;
     std::vector<Requirement> requirements;
-    std::vector<TypedGroup> types;                    ///< Extends the domain's types; not standard PDDL.
-    std::vector<PredicateDeclaration> predicates;     ///< Extends the domain's predicates; not standard PDDL.
+    std::vector<TypedGroup> types;                 ///< Extends the domain's types; not standard PDDL.
+    std::vector<PredicateDeclaration> predicates;  ///< Extends the domain's predicates; not standard PDDL.
     std::vector<TypedGroup> objects;
     std::vector<InitialElement> initial;
     boost::optional<Condition> goal;

@@ -43,16 +43,11 @@ struct Data<::loki::formalism::EffectProbabilisticAlternative>
     Data(double probability_, ygg::Index<::loki::formalism::Effect<>> effect_) : index(), probability(probability_), effect(effect_) {}
     template<typename C>
     Data(double probability_, ::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C> effect_) : index(), probability(probability_), effect()
-    {
-        set(effect_, effect);
-    }
+    { set(effect_, effect); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::probability, &Data::effect> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::probability, &Data::effect> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

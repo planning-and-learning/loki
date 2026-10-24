@@ -42,6 +42,8 @@ struct DiagnosticContext
 
         Scope(const Scope&) = delete;
         Scope& operator=(const Scope&) = delete;
+        Scope(Scope&&) = delete;
+        Scope& operator=(Scope&&) = delete;
     };
 
     static ParseError parse_error(const parser::ErrorHandlerType& error_handler, const std::string& fallback, parser::Iterator position);

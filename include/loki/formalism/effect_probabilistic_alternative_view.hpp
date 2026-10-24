@@ -30,8 +30,7 @@ namespace ygg
 {
 
 template<ygg::formalism::SymbolContextFor<::loki::formalism::EffectProbabilisticAlternative> C>
-class View<ygg::Index<::loki::formalism::EffectProbabilisticAlternative>, C> :
-    public ygg::IndexViewBase<::loki::formalism::EffectProbabilisticAlternative, C>
+class View<ygg::Index<::loki::formalism::EffectProbabilisticAlternative>, C> : public ygg::IndexViewBase<::loki::formalism::EffectProbabilisticAlternative, C>
 {
 public:
     using ygg::IndexViewBase<::loki::formalism::EffectProbabilisticAlternative, C>::IndexViewBase;

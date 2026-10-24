@@ -43,16 +43,11 @@ struct Data<::loki::formalism::Literal>
     Data(ygg::Index<::loki::formalism::Atom> atom_, bool polarity_ = true) : index(), atom(atom_), m_polarity(polarity_) {}
     template<typename C>
     Data(::ygg::View<ygg::Index<::loki::formalism::Atom>, C> atom_, bool polarity_ = true) : index(), atom(), m_polarity(polarity_)
-    {
-        set(atom_, atom);
-    }
+    { set(atom_, atom); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::atom, &Data::m_polarity> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::atom, &Data::m_polarity> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

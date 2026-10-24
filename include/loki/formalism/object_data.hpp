@@ -44,16 +44,11 @@ struct Data<::loki::formalism::Object>
     Data(::cista::offset::string name_, ygg::IndexList<::loki::formalism::Type> types_ = {}) : index(), name(std::move(name_)), types(std::move(types_)) {}
     template<typename C>
     Data(const std::string& name_, const std::vector<::ygg::View<ygg::Index<::loki::formalism::Type>, C>>& types_ = {}) : index(), name(name_), types()
-    {
-        set(types_, types);
-    }
+    { set(types_, types); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::types> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::name, &Data::types> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

@@ -42,16 +42,11 @@ struct Data<::loki::formalism::Effect<::loki::formalism::AndTag>>
     Data(ygg::IndexList<::loki::formalism::Effect<>> effects_) : index(), effects(std::move(effects_)) {}
     template<typename C>
     Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C>>& effects_) : index(), effects()
-    {
-        set(effects_, effects);
-    }
+    { set(effects_, effects); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::effects> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::effects> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

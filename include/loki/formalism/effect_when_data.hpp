@@ -40,7 +40,10 @@ struct Data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
     ygg::Index<::loki::formalism::Effect<>> effect;
 
     Data() = default;
-    Data(ygg::Index<::loki::formalism::Condition<>> condition_, ygg::Index<::loki::formalism::Effect<>> effect_) : index(), condition(condition_), effect(effect_)
+    Data(ygg::Index<::loki::formalism::Condition<>> condition_, ygg::Index<::loki::formalism::Effect<>> effect_) :
+        index(),
+        condition(condition_),
+        effect(effect_)
     {
     }
     template<typename C>
@@ -55,10 +58,7 @@ struct Data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::condition, &Data::effect> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::condition, &Data::effect> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

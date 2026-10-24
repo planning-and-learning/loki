@@ -19,6 +19,7 @@
 #define LOKI_FORMALISM_MULTI_FUNCTION_EXPRESSION_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+
 #include <optional>
 #include <string>
 #include <tuple>
@@ -39,7 +40,10 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>
     ygg::IndexList<::loki::formalism::FunctionExpression<>> args;
 
     Data() = default;
-    Data(::loki::formalism::MultiArithmeticOperator op_, ygg::IndexList<::loki::formalism::FunctionExpression<>> args_) : index(), op(op_), args(std::move(args_))
+    Data(::loki::formalism::MultiArithmeticOperator op_, ygg::IndexList<::loki::formalism::FunctionExpression<>> args_) :
+        index(),
+        op(op_),
+        args(std::move(args_))
     {
     }
     template<typename C>
@@ -47,16 +51,11 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>
         index(),
         op(op_),
         args()
-    {
-        set(args_, args);
-    }
+    { set(args_, args); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::args> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::args> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

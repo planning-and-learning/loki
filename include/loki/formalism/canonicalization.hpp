@@ -74,24 +74,21 @@ inline void canonicalize(Repository& repository, ygg::Data<Task>& data)
 // types verify each list member with detail::is_canonical_list instead of blindly returning true.
 template<typename T>
 inline bool is_canonical(const Repository&, const ygg::Data<T>&) noexcept
-{
-    return true;
-}
+{ return true; }
 
 inline bool is_canonical(const Repository& repository, const ygg::Data<Type>& data) { return ygg::is_canonical(repository, data.bases); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<Object>& data) { return ygg::is_canonical(repository, data.types); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<Parameter>& data) { return ygg::is_canonical(repository, data.types); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<FunctionExpression<MultiTag>>& data)
-{
-    return ygg::is_canonical<false>(repository, data.args);
-}
+{ return ygg::is_canonical<false>(repository, data.args); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<Condition<AndTag>>& data) { return ygg::is_canonical(repository, data.conditions); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<Condition<OrTag>>& data) { return ygg::is_canonical(repository, data.conditions); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<Condition<ExistsTag>>& data) { return ygg::is_canonical(repository, data.parameters); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<Condition<ForallTag>>& data) { return ygg::is_canonical(repository, data.parameters); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<Effect<AndTag>>& data) { return ygg::is_canonical(repository, data.effects); }
 inline bool is_canonical(const Repository& repository, const ygg::Data<Effect<OneOfTag>>& data) { return ygg::is_canonical(repository, data.effects); }
-inline bool is_canonical(const Repository& repository, const ygg::Data<Effect<ProbabilisticTag>>& data) { return ygg::is_canonical(repository, data.alternatives); }
+inline bool is_canonical(const Repository& repository, const ygg::Data<Effect<ProbabilisticTag>>& data)
+{ return ygg::is_canonical(repository, data.alternatives); }
 
 inline bool is_canonical(const Repository& repository, const ygg::Data<Domain>& data)
 {

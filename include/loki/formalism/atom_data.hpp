@@ -59,10 +59,7 @@ struct Data<::loki::formalism::Atom>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::predicate, &Data::terms> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::predicate, &Data::terms> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

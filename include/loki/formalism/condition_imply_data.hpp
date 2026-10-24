@@ -53,10 +53,7 @@ struct Data<::loki::formalism::Condition<::loki::formalism::ImplyTag>>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::left, &Data::right> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::left, &Data::right> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

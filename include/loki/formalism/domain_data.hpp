@@ -94,16 +94,24 @@ struct Data<::loki::formalism::Domain>
         set(axioms_, axioms);
     }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::requirements, &Data::types, &Data::constants, &Data::predicates, &Data::functions, &Data::actions, &Data::axioms> {}; }
+    static constexpr auto cista_members() noexcept
+    {
+        return ygg::Members<&Data::index,
+                            &Data::name,
+                            &Data::requirements,
+                            &Data::types,
+                            &Data::constants,
+                            &Data::predicates,
+                            &Data::functions,
+                            &Data::actions,
+                            &Data::axioms> {};
+    }
     static constexpr auto identifying_members() noexcept
     {
         return ygg::
             Members<&Data::name, &Data::requirements, &Data::types, &Data::constants, &Data::predicates, &Data::functions, &Data::actions, &Data::axioms> {};
     }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

@@ -30,7 +30,8 @@ namespace ygg
 {
 
 template<ygg::formalism::SymbolContextFor<::loki::formalism::Condition<::loki::formalism::NotTag>> C>
-class View<ygg::Index<::loki::formalism::Condition<::loki::formalism::NotTag>>, C> : public ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::NotTag>, C>
+class View<ygg::Index<::loki::formalism::Condition<::loki::formalism::NotTag>>, C> :
+    public ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::NotTag>, C>
 {
 public:
     using ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::NotTag>, C>::IndexViewBase;

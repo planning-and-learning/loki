@@ -20,7 +20,6 @@
 
 #include <string>
 #include <vector>
-
 #include <yggdrasil/diagnostics/x3.hpp>
 
 namespace loki::parser

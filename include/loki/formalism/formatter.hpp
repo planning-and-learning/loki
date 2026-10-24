@@ -83,9 +83,7 @@ struct formatter<ygg::View<ygg::Index<T>, loki::formalism::Repository>, char>
 
     template<typename FormatContext>
     auto format(const ygg::View<ygg::Index<T>, loki::formalism::Repository>& value, FormatContext& ctx) const
-    {
-        return fmt::format_to(ctx.out(), "{}", loki::formalism::format::to_string(value));
-    }
+    { return fmt::format_to(ctx.out(), "{}", loki::formalism::format::to_string(value)); }
 };
 
 }  // namespace fmt

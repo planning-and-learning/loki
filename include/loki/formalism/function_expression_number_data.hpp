@@ -43,10 +43,7 @@ struct Data<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::value> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::value> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

@@ -15,7 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_PARSER_HPP_
 #define LOKI_PARSER_HPP_
 

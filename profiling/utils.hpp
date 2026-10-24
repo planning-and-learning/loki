@@ -15,12 +15,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_BENCHMARKS_UTILS_HPP_
 #define LOKI_BENCHMARKS_UTILS_HPP_
 
 #include <loki/loki.hpp>
-
 #include <vector>
 
 namespace loki::benchmarks

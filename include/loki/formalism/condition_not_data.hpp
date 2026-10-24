@@ -42,16 +42,11 @@ struct Data<::loki::formalism::Condition<::loki::formalism::NotTag>>
     Data(ygg::Index<::loki::formalism::Condition<>> condition_) : index(), condition(condition_) {}
     template<typename C>
     Data(::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> condition_) : index(), condition()
-    {
-        set(condition_, condition);
-    }
+    { set(condition_, condition); }
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::condition> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::condition> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

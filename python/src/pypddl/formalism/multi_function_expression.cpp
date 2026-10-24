@@ -19,6 +19,7 @@
 
 #include <loki/formalism/function_expression_view.hpp>
 #include <loki/formalism/multi_function_expression_view.hpp>
+#include <ranges>
 
 namespace nb = nanobind;
 
@@ -43,14 +44,15 @@ void bind_multi_function_expression(nb::module_& m, RepositoryBinding& repositor
 
     {
         using V = formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>;
-        const auto attach_owner = nb::cpp_function([](nb::object child, nb::object) { return child; }, nb::keep_alive<0, 2>());
+        const auto attach_owner = nb::cpp_function([](nb::object child, const nb::object&) { return child; }, nb::keep_alive<0, 2>());
         auto cls = nb::class_<V>(m, "MultiFunctionExpression");
         cls.def("get_index", &V::get_index)
             .def("get_operator", &V::get_operator)
             .def("get_args",
                  [attach_owner](const V& self)
                  {
-                     auto result = nb::list();
+                     using Arg = std::ranges::range_value_t<decltype(self.get_args())>;
+                     auto result = nb::typed<nb::list, Arg>();
                      const auto parent = nb::find(self);
                      for (const auto expression : self.get_args())
                      {

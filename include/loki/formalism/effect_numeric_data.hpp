@@ -19,6 +19,7 @@
 #define LOKI_FORMALISM_EFFECT_NUMERIC_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+
 #include <optional>
 #include <string>
 #include <tuple>
@@ -64,10 +65,7 @@ struct Data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::function, &Data::expression> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::function, &Data::expression> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

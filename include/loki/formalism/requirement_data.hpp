@@ -43,10 +43,7 @@ struct Data<::loki::formalism::Requirement>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::kind> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::kind> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

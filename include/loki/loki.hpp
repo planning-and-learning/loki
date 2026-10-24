@@ -63,20 +63,14 @@ using ProblemTranslationResult = semantic::ProblemTranslationResult;
 inline DomainTranslationResult translate(formalism::DomainView domain, const TranslatorOptions& options = {}) { return semantic::translate(domain, options); }
 
 inline ProblemTranslationResult translate(formalism::TaskView task, const DomainTranslationResult& domain_translation, const TranslatorOptions& options = {})
-{
-    return semantic::translate(task, domain_translation, options);
-}
+{ return semantic::translate(task, domain_translation, options); }
 
 inline DomainTranslationResult translate_domain(formalism::DomainView domain, const TranslatorOptions& options = {})
-{
-    return semantic::translate(domain, options);
-}
+{ return semantic::translate(domain, options); }
 
 inline ProblemTranslationResult
 translate_task(formalism::TaskView task, const DomainTranslationResult& domain_translation, const TranslatorOptions& options = {})
-{
-    return semantic::translate(task, domain_translation, options);
-}
+{ return semantic::translate(task, domain_translation, options); }
 
 inline std::string format_domain(formalism::DomainView domain) { return formalism::format::to_string(domain); }
 

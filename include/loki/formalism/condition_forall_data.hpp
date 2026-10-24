@@ -59,10 +59,7 @@ struct Data<::loki::formalism::Condition<::loki::formalism::ForallTag>>
 
     static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::parameters, &Data::condition> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::parameters, &Data::condition> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }
