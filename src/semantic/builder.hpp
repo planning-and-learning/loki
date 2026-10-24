@@ -19,11 +19,11 @@
 #define LOKI_SEMANTIC_BUILDER_HPP_
 
 #include "loki/ast/ast_fwd.hpp"
-#include "loki/formalism/repository.hpp"
 #include "loki/formalism/condition_data.hpp"
 #include "loki/formalism/declarations.hpp"
 #include "loki/formalism/effect_data.hpp"
 #include "loki/formalism/function_expression_data.hpp"
+#include "loki/formalism/repository.hpp"
 #include "loki/semantic/options.hpp"
 
 #include <cista/containers/optional.h>
@@ -172,9 +172,7 @@ void AstBuilder::append_indices(const std::vector<formalism::EntityView<T>>& vie
 
 template<typename T>
 cista::optional<ygg::Index<T>> AstBuilder::to_optional_index(const std::optional<formalism::EntityView<T>>& view)
-{
-    return view ? cista::optional<ygg::Index<T>> { view->get_index() } : cista::optional<ygg::Index<T>> {};
-}
+{ return view ? cista::optional<ygg::Index<T>> { view->get_index() } : cista::optional<ygg::Index<T>> {}; }
 
 }  // namespace loki::semantic
 

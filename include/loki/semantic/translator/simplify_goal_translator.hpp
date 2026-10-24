@@ -31,8 +31,10 @@ public:
 
     formalism::ConditionView make_generated_goal_condition(ygg::Index<formalism::Condition<>> condition);
     formalism::ConditionView simplify_goal_condition(formalism::ConditionView condition);
-    formalism::ConditionView simplify_goal_condition_node(formalism::ConditionView condition, formalism::EntityView<formalism::Condition<formalism::LiteralTag>>);
-    formalism::ConditionView simplify_goal_condition_node(formalism::ConditionView condition, formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>);
+    formalism::ConditionView simplify_goal_condition_node(formalism::ConditionView condition,
+                                                          formalism::EntityView<formalism::Condition<formalism::LiteralTag>>);
+    formalism::ConditionView simplify_goal_condition_node(formalism::ConditionView condition,
+                                                          formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>);
     formalism::ConditionView simplify_goal_condition_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::AndTag>> node);
     template<typename T>
     formalism::ConditionView simplify_goal_condition_node(formalism::ConditionView condition, T);
@@ -42,26 +44,26 @@ template<typename Derived>
 formalism::ConditionView SimplifyGoalTranslator<Derived>::make_generated_goal_condition(ygg::Index<formalism::Condition<>> condition)
 {
     const auto name = cista::offset::string(this->self().next_generated_predicate_name("loki-goal-"));
-    auto predicate_data = formalism::checkout<formalism::Predicate>(this->m_context.builder);
+    auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
     predicate_data->name = name;
-    const auto predicate = formalism::insert(this->m_context.storage->repository, *predicate_data).first;
-    auto atom_data = formalism::checkout<formalism::Atom>(this->m_context.builder);
+    const auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first;
+    auto atom_data = formalism::checkout<formalism::Atom>(this->copy_context().builder);
     atom_data->predicate = predicate.get_index();
-    const auto atom = formalism::insert(this->m_context.storage->repository, *atom_data).first.get_index();
-    auto literal_data = formalism::checkout<formalism::Literal>(this->m_context.builder);
+    const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.get_index();
+    auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
     literal_data->m_polarity = true;
-    const auto literal = formalism::insert(this->m_context.storage->repository, *literal_data).first.get_index();
-    auto axiom_data = formalism::checkout<formalism::Axiom>(this->m_context.builder);
+    const auto literal = formalism::insert(this->copy_context().storage->repository, *literal_data).first.get_index();
+    auto axiom_data = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
     axiom_data->original_arity = 0;
     axiom_data->head = literal;
     axiom_data->condition = condition;
-    const auto axiom = formalism::insert(this->m_context.storage->repository, *axiom_data).first;
-    this->m_context.generated_predicates.push_back(predicate);
-    this->m_context.generated_axioms.push_back(axiom);
-    auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->m_context.builder);
+    const auto axiom = formalism::insert(this->copy_context().storage->repository, *axiom_data).first;
+    this->copy_context().generated_predicates.push_back(predicate);
+    this->copy_context().generated_axioms.push_back(axiom);
+    auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
     condition_data->literal = literal;
-    return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *condition_data).first);
+    return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
 }
 
 template<typename Derived>
@@ -71,22 +73,21 @@ formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_conditio
 }
 
 template<typename Derived>
-formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_condition_node(formalism::ConditionView condition, formalism::EntityView<formalism::Condition<formalism::LiteralTag>>)
-{
-    return condition;
-}
-
-template<typename Derived>
 formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_condition_node(formalism::ConditionView condition,
-                                                                                       formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>)
-{
-    return condition;
-}
+                                                                                       formalism::EntityView<formalism::Condition<formalism::LiteralTag>>)
+{ return condition; }
 
 template<typename Derived>
-formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_condition_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::AndTag>> node)
+formalism::ConditionView
+SimplifyGoalTranslator<Derived>::simplify_goal_condition_node(formalism::ConditionView condition,
+                                                              formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>)
+{ return condition; }
+
+template<typename Derived>
+formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_condition_node(formalism::ConditionView,
+                                                                                       formalism::EntityView<formalism::Condition<formalism::AndTag>> node)
 {
-    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
     for (auto child : node.get_conditions())
         this->self().append_conjunct(*data, this->self().simplify_goal_condition(child));
     return this->self().make_conjunction(*data);
@@ -95,9 +96,7 @@ formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_conditio
 template<typename Derived>
 template<typename T>
 formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_condition_node(formalism::ConditionView condition, T)
-{
-    return this->self().make_generated_goal_condition(condition.get_index());
-}
+{ return this->self().make_generated_goal_condition(condition.get_index()); }
 
 }  // namespace loki::semantic::detail
 

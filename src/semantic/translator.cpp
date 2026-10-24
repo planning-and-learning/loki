@@ -30,6 +30,8 @@ namespace loki::semantic
 namespace detail
 {
 
+namespace
+{
 struct PhaseStep
 {
     TranslationPhase phase;
@@ -38,6 +40,7 @@ struct PhaseStep
     // and quantifiers into preconditions; the normalization phases must run again afterwards.
     bool requires_compile_conditional_effects = false;
 };
+}  // namespace
 
 static const std::vector<PhaseStep>& domain_phase_steps()
 {

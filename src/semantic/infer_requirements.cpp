@@ -168,8 +168,8 @@ struct RequirementCollector
                 else if constexpr (is<Node, formalism::Effect<formalism::NumericTag>>)
                 {
                     // Bare :action-costs permits only writes of the form (increase (total-cost) ...).
-                    const auto increases_total_cost = node.get_operator() == formalism::NumericEffectOperator::Increase
-                                                      && is_total_cost(node.get_function().get_function());
+                    const auto increases_total_cost =
+                        node.get_operator() == formalism::NumericEffectOperator::Increase && is_total_cost(node.get_function().get_function());
                     requirements.insert(increases_total_cost ? ActionCosts : NumericFluents);
                     function_term(node.get_function());
                     expression(node.get_expression());

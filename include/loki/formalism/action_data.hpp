@@ -41,7 +41,7 @@ struct Data<::loki::formalism::Action>
     ::cista::offset::string name;
     ::cista::offset::string original_name;
     ygg::IndexList<::loki::formalism::Parameter> parameters;
-    ygg::uint_t original_arity;
+    ygg::uint_t original_arity = 0;
     ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> precondition;
     ::cista::optional<ygg::Index<::loki::formalism::Effect<>>> effect;
 
@@ -55,8 +55,8 @@ struct Data<::loki::formalism::Action>
         original_name(name),
         parameters(std::move(parameters_)),
         original_arity(parameters.size()),
-        precondition(precondition_),
-        effect(effect_)
+        precondition(std::move(precondition_)),
+        effect(std::move(effect_))
     {
     }
     Data(::cista::offset::string name_,
@@ -69,8 +69,8 @@ struct Data<::loki::formalism::Action>
         original_name(name),
         parameters(std::move(parameters_)),
         original_arity(original_arity_),
-        precondition(precondition_),
-        effect(effect_)
+        precondition(std::move(precondition_)),
+        effect(std::move(effect_))
     {
     }
     Data(::cista::offset::string name_,
@@ -84,8 +84,8 @@ struct Data<::loki::formalism::Action>
         original_name(std::move(original_name_)),
         parameters(std::move(parameters_)),
         original_arity(original_arity_),
-        precondition(precondition_),
-        effect(effect_)
+        precondition(std::move(precondition_)),
+        effect(std::move(effect_))
     {
     }
     template<typename C>
@@ -116,13 +116,11 @@ struct Data<::loki::formalism::Action>
         set(effect_, effect);
     }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::original_name, &Data::parameters, &Data::original_arity, &Data::precondition, &Data::effect> {}; }
+    static constexpr auto cista_members() noexcept
+    { return ygg::Members<&Data::index, &Data::name, &Data::original_name, &Data::parameters, &Data::original_arity, &Data::precondition, &Data::effect> {}; }
     static constexpr auto identifying_members() noexcept
     { return ygg::Members<&Data::original_name, &Data::parameters, &Data::original_arity, &Data::precondition, &Data::effect> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

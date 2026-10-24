@@ -58,10 +58,10 @@ void CopyTranslatorFacade<Derived>::push_unique(ygg::IndexList<T>& list, ygg::Un
 template<typename Derived>
 ygg::UnorderedSet<std::string> CopyTranslatorFacade<Derived>::used_predicate_names() const
 {
-    auto names = this->m_context.used_predicate_names;
-    if (this->m_context.storage->translated_domain)
+    auto names = this->copy_context().used_predicate_names;
+    if (this->copy_context().storage->translated_domain)
     {
-        for (auto predicate : this->m_context.storage->translated().get_predicates())
+        for (auto predicate : this->copy_context().storage->translated().get_predicates())
             names.insert(std::string(predicate.get_name()));
     }
     return names;
@@ -73,10 +73,10 @@ std::string CopyTranslatorFacade<Derived>::next_generated_predicate_name(std::st
     auto used = this->self().used_predicate_names();
     while (true)
     {
-        auto name = std::string(prefix) + std::to_string(this->m_context.num_generated_axioms++);
+        auto name = std::string(prefix) + std::to_string(this->copy_context().num_generated_axioms++);
         if (used.insert(name).second)
         {
-            this->m_context.used_predicate_names.insert(name);
+            this->copy_context().used_predicate_names.insert(name);
             return name;
         }
     }
@@ -85,9 +85,9 @@ std::string CopyTranslatorFacade<Derived>::next_generated_predicate_name(std::st
 template<typename Derived>
 std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(formalism::DomainView domain)
 {
-    if (auto mapped = find_mapped(this->m_context.storage->domains, domain))
+    if (auto mapped = find_mapped(this->copy_context().storage->domains, domain))
         return { *mapped, false };
-    auto data = formalism::checkout<formalism::Domain>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Domain>(this->copy_context().builder);
     data->name = domain.get_data().name;
     this->self().template copy_list<formalism::Requirement>(domain.get_requirements(), data->requirements);
     this->self().template copy_list<formalism::Type>(domain.get_types(), data->types);
@@ -97,11 +97,11 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
     this->self().template copy_list<formalism::Action>(domain.get_actions(), data->actions);
     this->self().template copy_list<formalism::Axiom>(domain.get_axioms(), data->axioms);
 
-    auto [copied_domain, copied_inserted] = formalism::insert(this->m_context.storage->repository, *data);
-    this->m_context.storage->translated_domain = copied_domain;
+    auto [copied_domain, copied_inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    this->copy_context().storage->translated_domain = copied_domain;
     data->index = {};
 
-    switch (this->m_context.phase)
+    switch (this->copy_context().phase)
     {
         case TranslationPhase::RemoveUniversalQuantifiers:
             this->self().append_generated_domain_objects(*data);
@@ -124,24 +124,24 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
             break;
         default:
             // data is unchanged since the first insert, so a second insert would only re-canonicalize it.
-            remember(this->m_context.storage->domains, domain, copied_domain);
+            remember(this->copy_context().storage->domains, domain, copied_domain);
             return { copied_domain, copied_inserted };
     }
 
-    auto [view, inserted] = formalism::insert(this->m_context.storage->repository, *data);
-    this->m_context.storage->translated_domain = view;
-    remember(this->m_context.storage->domains, domain, view);
+    auto [view, inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    this->copy_context().storage->translated_domain = view;
+    remember(this->copy_context().storage->domains, domain, view);
     return { view, inserted || (copied_inserted && view == copied_domain) };
 }
 
 template<typename Derived>
 std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formalism::TaskView task)
 {
-    if (auto mapped = find_mapped(this->m_context.storage->tasks, task))
+    if (auto mapped = find_mapped(this->copy_context().storage->tasks, task))
         return { *mapped, false };
-    auto data = formalism::checkout<formalism::Task>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Task>(this->copy_context().builder);
     data->name = task.get_data().name;
-    data->domain = this->m_context.storage->translated().get_index();
+    data->domain = this->copy_context().storage->translated().get_index();
     this->self().template copy_list<formalism::Requirement>(task.get_requirements(), data->requirements);
     this->self().template copy_list<formalism::Object>(task.get_objects(), data->objects);
     this->self().template copy_list<formalism::Literal>(task.get_initial_literals(), data->initial_literals);
@@ -149,16 +149,16 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
 
     if (const auto goal = task.get_goal())
     {
-        if (this->m_context.phase == TranslationPhase::RenameQuantifiedVariables)
+        if (this->copy_context().phase == TranslationPhase::RenameQuantifiedVariables)
         {
-            this->m_context.num_quantifications.clear();
+            this->copy_context().num_quantifications.clear();
             this->self().enter_variable_scope();
             const auto renamed_goal = this->self().rename_variables(goal.value());
             this->self().leave_variable_scope();
-            const auto previous = this->m_context.renaming_enabled;
-            this->m_context.renaming_enabled = false;
+            const auto previous = this->copy_context().renaming_enabled;
+            this->copy_context().renaming_enabled = false;
             data->goal = as_index(this->self().copy(renamed_goal));
-            this->m_context.renaming_enabled = previous;
+            this->copy_context().renaming_enabled = previous;
         }
         else
         {
@@ -178,28 +178,28 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     this->self().template copy_list<formalism::Axiom>(task.get_axioms(), data->axioms);
     this->self().template copy_list<formalism::Type>(task.get_types(), data->types);
 
-    auto [copied_task, copied_inserted] = formalism::insert(this->m_context.storage->repository, *data);
+    auto [copied_task, copied_inserted] = formalism::insert(this->copy_context().storage->repository, *data);
     data->index = {};
 
-    switch (this->m_context.phase)
+    switch (this->copy_context().phase)
     {
         case TranslationPhase::RemoveUniversalQuantifiers:
         case TranslationPhase::SimplifyGoal:
         {
-            if (this->m_context.phase == TranslationPhase::SimplifyGoal && data->goal)
+            if (this->copy_context().phase == TranslationPhase::SimplifyGoal && data->goal)
                 data->goal = as_index(this->self().simplify_goal_condition(copied_task.get_goal().value()));
 
             auto existing_predicates = ygg::UnorderedSet<formalism::PredicateView> {};
             for (auto predicate : copied_task.get_predicates())
                 existing_predicates.insert(predicate);
-            for (auto predicate : this->m_context.generated_predicates)
+            for (auto predicate : this->copy_context().generated_predicates)
                 if (existing_predicates.insert(predicate).second)
                     data->predicates.push_back(predicate.get_index());
 
             auto existing_axioms = ygg::UnorderedSet<formalism::AxiomView> {};
             for (auto axiom : copied_task.get_axioms())
                 existing_axioms.insert(axiom);
-            for (auto axiom : this->m_context.generated_axioms)
+            for (auto axiom : this->copy_context().generated_axioms)
                 if (existing_axioms.insert(axiom).second)
                     data->axioms.push_back(axiom.get_index());
             break;
@@ -214,16 +214,16 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             this->self().initialize_type_literals(*data, task);
             break;
         case TranslationPhase::InferRequirements:
-            this->self().set_requirements(infer_requirements(copied_task, this->m_context.storage->translated()), data->requirements);
+            this->self().set_requirements(infer_requirements(copied_task, this->copy_context().storage->translated()), data->requirements);
             break;
         default:
             // data is unchanged since the first insert, so a second insert would only re-canonicalize it.
-            remember(this->m_context.storage->tasks, task, copied_task);
+            remember(this->copy_context().storage->tasks, task, copied_task);
             return { copied_task, copied_inserted };
     }
 
-    auto [view, inserted] = formalism::insert(this->m_context.storage->repository, *data);
-    remember(this->m_context.storage->tasks, task, view);
+    auto [view, inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    remember(this->copy_context().storage->tasks, task, view);
     return { view, inserted || (copied_inserted && view == copied_task) };
 }
 

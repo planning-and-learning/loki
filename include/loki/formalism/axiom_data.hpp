@@ -37,7 +37,7 @@ struct Data<::loki::formalism::Axiom>
 {
     ygg::Index<::loki::formalism::Axiom> index;
     ygg::IndexList<::loki::formalism::Parameter> parameters;
-    ygg::uint_t original_arity;
+    ygg::uint_t original_arity = 0;
     ygg::Index<::loki::formalism::Literal> head;
     ygg::Index<::loki::formalism::Condition<>> condition;
 
@@ -93,12 +93,10 @@ struct Data<::loki::formalism::Axiom>
         set(condition_, condition);
     }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::parameters, &Data::original_arity, &Data::head, &Data::condition> {}; }
+    static constexpr auto cista_members() noexcept
+    { return ygg::Members<&Data::index, &Data::parameters, &Data::original_arity, &Data::head, &Data::condition> {}; }
     static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::parameters, &Data::original_arity, &Data::head, &Data::condition> {}; }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

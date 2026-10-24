@@ -15,7 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #include "utils.hpp"
 
 #include <benchmark/benchmark.h>
@@ -31,7 +30,7 @@ static void BM_ConstructAtoms(benchmark::State& state)
     const size_t num_objects = 100;
     const size_t num_predicates = 10;
 
-    for (auto _ : state)
+    for ([[maybe_unused]] auto _ : state)
     {
         auto repository = loki::formalism::Repository(0);
         auto builder = loki::formalism::Builder {};

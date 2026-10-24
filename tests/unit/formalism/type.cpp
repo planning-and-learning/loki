@@ -19,14 +19,14 @@ struct TypeRepository
 };
 struct TypeContext
 {
-    const TypeRepository& repository;
+    const TypeRepository* repository;
     // Only checked by SymbolContextFor in unevaluated contexts.
-    [[maybe_unused]] friend const TypeRepository& get_repository(const TypeContext& context) { return context.repository; }
+    [[maybe_unused]] friend const TypeRepository& get_repository(const TypeContext& context) { return *context.repository; }
 };
 struct RepositoryContext
 {
-    const loki::formalism::Repository& repository;
-    friend const loki::formalism::Repository& get_repository(const RepositoryContext& context) { return context.repository; }
+    const loki::formalism::Repository* repository;
+    friend const loki::formalism::Repository& get_repository(const RepositoryContext& context) { return *context.repository; }
 };
 
 template<typename T>
@@ -99,7 +99,7 @@ TEST(LokiTests, SymbolViewsUseTheRepositoryOfTheirContext)
     auto repository = loki::formalism::Repository(13);
     auto data = Data(cista::offset::string("type"));
     const auto original = loki::formalism::insert(repository, data).first;
-    const auto context = RepositoryContext { repository };
+    const auto context = RepositoryContext { &repository };
     const auto forwarded = ygg::make_view(original.get_index(), context);
     EXPECT_EQ(&forwarded.get_data(), &original.get_data());
     EXPECT_EQ(forwarded.get_name(), original.get_name());

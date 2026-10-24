@@ -28,12 +28,15 @@ template<typename Derived, typename Component>
 class CopyTranslatorComponent
 {
 protected:
-    explicit CopyTranslatorComponent(CopyContext& context) : m_context(context) {}
+    explicit CopyTranslatorComponent(CopyContext& context) : m_context(&context) {}
 
     Derived& self() noexcept { return static_cast<Derived&>(static_cast<Component&>(*this)); }
     [[nodiscard]] const Derived& self() const noexcept { return static_cast<const Derived&>(static_cast<const Component&>(*this)); }
 
-    CopyContext& m_context;
+    [[nodiscard]] CopyContext& copy_context() const noexcept { return *m_context; }
+
+private:
+    CopyContext* m_context;
 };
 
 }  // namespace loki::semantic::detail

@@ -17,6 +17,7 @@
 
 #include "mappings.hpp"
 
+#include "ast_mappings.hpp"
 #include "diagnostics.hpp"
 #include "loki/ast/ast.hpp"
 #include "loki/semantic/errors.hpp"
@@ -105,9 +106,7 @@ std::vector<formalism::RequirementKind> requirement_capabilities(formalism::Requ
 }
 
 std::vector<formalism::RequirementKind> requirement_capabilities(const ast::Requirement& node, const DiagnosticContext& diagnostics)
-{
-    return requirement_capabilities(requirement_kind(node, diagnostics));
-}
+{ return requirement_capabilities(requirement_kind(node, diagnostics)); }
 
 std::string requirement_name(formalism::RequirementKind kind)
 {
@@ -178,9 +177,7 @@ formalism::BinaryArithmeticOperator binary_operator(std::string op)
 }
 
 formalism::MultiArithmeticOperator multi_operator(std::string op)
-{
-    return key(std::move(op)) == "*" ? formalism::MultiArithmeticOperator::Mul : formalism::MultiArithmeticOperator::Add;
-}
+{ return key(std::move(op)) == "*" ? formalism::MultiArithmeticOperator::Mul : formalism::MultiArithmeticOperator::Add; }
 
 formalism::NumericEffectOperator numeric_effect_operator(const ast::EffectNumeric& node, const DiagnosticContext& diagnostics)
 {

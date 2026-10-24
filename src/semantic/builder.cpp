@@ -17,6 +17,7 @@
 
 #include "builder.hpp"
 
+#include "ast_mappings.hpp"
 #include "checks.hpp"
 #include "context.hpp"
 #include "diagnostics.hpp"

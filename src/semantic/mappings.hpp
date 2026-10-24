@@ -18,7 +18,6 @@
 #ifndef LOKI_SEMANTIC_MAPPINGS_HPP_
 #define LOKI_SEMANTIC_MAPPINGS_HPP_
 
-#include "loki/ast/ast_fwd.hpp"
 #include "loki/formalism/enums.hpp"
 
 #include <cista/containers/string.h>
@@ -28,8 +27,6 @@
 namespace loki::semantic
 {
 
-struct DiagnosticContext;
-
 // Lowercase an owned PDDL source buffer before parsing.
 std::string lowercase(std::string text);
 // Semantic keys strip the requirement marker after source normalization.
@@ -37,14 +34,10 @@ std::string key(std::string text);
 cista::offset::string to_cista(const std::string& text);
 
 // PDDL name <-> enum mappings.
-formalism::RequirementKind requirement_kind(const ast::Requirement& node, const DiagnosticContext& diagnostics);
 std::vector<formalism::RequirementKind> requirement_capabilities(formalism::RequirementKind kind);
-std::vector<formalism::RequirementKind> requirement_capabilities(const ast::Requirement& node, const DiagnosticContext& diagnostics);
 std::string requirement_name(formalism::RequirementKind kind);
-formalism::BinaryComparator comparator(const ast::ConditionNumericConstraint& node, const DiagnosticContext& diagnostics);
 formalism::BinaryArithmeticOperator binary_operator(std::string op);
 formalism::MultiArithmeticOperator multi_operator(std::string op);
-formalism::NumericEffectOperator numeric_effect_operator(const ast::EffectNumeric& node, const DiagnosticContext& diagnostics);
 
 }  // namespace loki::semantic
 

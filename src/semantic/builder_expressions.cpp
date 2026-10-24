@@ -15,6 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "ast_mappings.hpp"
 #include "builder.hpp"
 #include "checks.hpp"
 #include "context.hpp"
@@ -189,9 +190,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
 }
 
 formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(const ast::FunctionExpressionFunction& node)
-{
-    return wrap_function_expression(parse_function_term(node.term).get_index());
-}
+{ return wrap_function_expression(parse_function_term(node.term).get_index()); }
 
 formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(const ast::FunctionExpressionUnary& node)
 {

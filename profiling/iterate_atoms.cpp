@@ -26,12 +26,15 @@
 namespace loki::benchmarks
 {
 
+namespace
+{
 struct AtomAccessResult
 {
     size_t atom_identifier;
     loki::formalism::PredicateView atom_predicate;
     std::vector<loki::formalism::TermView> atom_terms;
 };
+}  // namespace
 
 static AtomAccessResult access_atom_data(loki::formalism::AtomView atom)
 {
@@ -56,13 +59,13 @@ static void BM_IterateAtoms(benchmark::State& state)
     const size_t num_atoms = state.range(0);
     const size_t num_predicates = 100;
     // Choose num_objects sufficiently large, we cast to size_t to stay slightly below to fit into the cache
-    const size_t num_objects = static_cast<size_t>(sqrt(num_atoms / num_predicates));
+    const size_t num_objects = static_cast<size_t>(std::sqrt(static_cast<double>(num_atoms) / static_cast<double>(num_predicates)));
     auto repository = loki::formalism::Repository(0);
     auto builder = loki::formalism::Builder {};
     auto atoms = create_atoms(num_objects, num_predicates, repository, builder);
     benchmark::DoNotOptimize(atoms);
 
-    for (auto _ : state)
+    for ([[maybe_unused]] auto _ : state)
     {
         for (const auto& atom : atoms)
         {
@@ -71,14 +74,14 @@ static void BM_IterateAtoms(benchmark::State& state)
         }
     }
 
-    state.SetBytesProcessed(state.iterations() * atoms.size() * sizeof(loki::formalism::AtomView));
+    state.SetBytesProcessed(state.iterations() * static_cast<int64_t>(atoms.size() * sizeof(loki::formalism::AtomView)));
 }
 
 static void BM_RandomlyIterateAtoms(benchmark::State& state)
 {
     const size_t num_atoms = state.range(0);
     const size_t num_predicates = 100;
-    const size_t num_objects = static_cast<size_t>(sqrt(num_atoms / num_predicates));
+    const size_t num_objects = static_cast<size_t>(std::sqrt(static_cast<double>(num_atoms) / static_cast<double>(num_predicates)));
     auto repository = loki::formalism::Repository(0);
     auto builder = loki::formalism::Builder {};
     auto atoms = create_atoms(num_objects, num_predicates, repository, builder);
@@ -87,7 +90,7 @@ static void BM_RandomlyIterateAtoms(benchmark::State& state)
     std::random_device rd;   // Obtain a random number from hardware
     std::mt19937 eng(rd());  // Seed the generator
 
-    for (auto _ : state)
+    for ([[maybe_unused]] auto _ : state)
     {
         std::vector<int> indices(atoms.size());
         std::iota(indices.begin(), indices.end(), 0);
@@ -100,7 +103,7 @@ static void BM_RandomlyIterateAtoms(benchmark::State& state)
         }
     }
 
-    state.SetBytesProcessed(state.iterations() * atoms.size() * sizeof(loki::formalism::AtomView));
+    state.SetBytesProcessed(state.iterations() * static_cast<int64_t>(atoms.size() * sizeof(loki::formalism::AtomView)));
 }
 
 }

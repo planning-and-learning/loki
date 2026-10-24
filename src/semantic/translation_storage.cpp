@@ -220,7 +220,7 @@ void inherit_domain_identity_mappings(TranslationStorage& problem, const Transla
 
 std::shared_ptr<TranslationStorage> canonicalize_problem_storage(formalism::TaskView middle_task,
                                                                  const std::shared_ptr<TranslationStorage>& middle,
-                                                                 std::shared_ptr<const TranslationStorage> domain)
+                                                                 const std::shared_ptr<const TranslationStorage>& domain)
 {
     auto canonical = std::make_shared<TranslationStorage>(middle->repository.get_index(), domain);
     inherit_domain_identity_mappings(*canonical, *domain);

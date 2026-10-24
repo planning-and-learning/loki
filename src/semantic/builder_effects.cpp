@@ -15,6 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "ast_mappings.hpp"
 #include "builder.hpp"
 #include "checks.hpp"
 #include "context.hpp"
@@ -135,7 +136,8 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectProbabilist
         alternative_data->effect = effect.get_index();
         data->alternatives.push_back(formalism::insert(repo(), *alternative_data).first.get_index());
     }
-    if (total > 1.0 + 1e-9)
+    constexpr auto rounding_tolerance = 1e-9;
+    if (total > 1.0 + rounding_tolerance)
         m_diagnostics.throw_at(node, InvalidProbabilisticEffectError("probabilities sum to more than 1"));
     return wrap_effect(formalism::insert(repo(), *data).first.get_index());
 }
@@ -194,9 +196,7 @@ formalism::AxiomView AstBuilder::parse_axiom(const ast::Axiom& node)
 void AstBuilder::parse_initial_element(const ast::Literal& literal,
                                        std::vector<formalism::LiteralView>& literals,
                                        std::vector<formalism::InitialFunctionValueView>&)
-{
-    literals.push_back(parse_literal(literal));
-}
+{ literals.push_back(parse_literal(literal)); }
 
 void AstBuilder::parse_initial_element(const ast::InitialFunctionValue& value,
                                        std::vector<formalism::LiteralView>&,
@@ -252,14 +252,16 @@ bool AstBuilder::writes_total_cost(formalism::EffectView effect)
         {
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::NumericTag>>>)
                 return arg.get_function().get_function().get_name() == "total-cost";
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 for (auto child : arg.get_effects())
                     if (writes_total_cost(child))
                         return true;
                 return false;
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
                 return writes_total_cost(arg.get_effect());
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
             {

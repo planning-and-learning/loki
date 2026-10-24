@@ -165,19 +165,19 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::hoist_ex
             if (!avoid.contains(name))
                 break;
         }
-        auto variable_data = formalism::checkout<formalism::Variable>(this->m_context.builder);
+        auto variable_data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
         variable_data->name = cista::offset::string(name);
-        const auto fresh = formalism::insert(this->m_context.storage->repository, *variable_data).first;
+        const auto fresh = formalism::insert(this->copy_context().storage->repository, *variable_data).first;
         this->self().enter_variable_scope();
-        this->m_context.variable_bindings.back().emplace(variable, fresh);
+        this->copy_context().variable_bindings.back().emplace(variable, fresh);
         condition = this->self().rename_variables(condition);
         this->self().leave_variable_scope();
         claimed.insert(name);
-        auto parameter_data = formalism::checkout<formalism::Parameter>(this->m_context.builder);
+        auto parameter_data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
         parameter_data->variable = fresh.get_index();
         for (auto type : parameter.get_data().types)
             parameter_data->types.push_back(type);
-        parameters.push_back(formalism::insert(this->m_context.storage->repository, *parameter_data).first);
+        parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first);
     }
     return condition;
 }
@@ -189,7 +189,7 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
 {
     auto parameters = std::vector<formalism::ParameterView> {};
     auto claimed = ygg::UnorderedSet<std::string> {};
-    auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
+    auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
     for (auto child : node.get_conditions())
     {
         const auto moved = this->self().move_existentials(child);
@@ -205,11 +205,11 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
     auto conjunction = this->self().make_conjunction(*condition_data);
     if (parameters.empty())
         return conjunction;
-    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameters)
         data->parameters.push_back(parameter.get_index());
     data->condition = conjunction.get_index();
-    return this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *data).first));
+    return this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first));
 }
 
 template<typename Derived>
@@ -219,11 +219,11 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
 {
     const auto& data = node.get_data();
     const auto condition = this->self().move_existentials(node.get_condition());
-    auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : data.parameters)
         result->parameters.push_back(parameter);
     result->condition = condition.get_index();
-    return this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *result).first));
+    return this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *result).first));
 }
 
 template<typename Derived>
@@ -231,7 +231,7 @@ formalism::ConditionView
 MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism::ConditionView,
                                                                       formalism::EntityView<formalism::Condition<formalism::OrTag>> node)
 {
-    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
     for (auto child : node.get_conditions())
         this->self().append_disjunct(*data, this->self().move_existentials(child));
     return this->self().make_disjunction(*data);

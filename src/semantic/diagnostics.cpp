@@ -23,9 +23,7 @@ namespace loki::semantic
 DiagnosticContext::Scope::Scope(DiagnosticContext& diagnostics_, const parser::ErrorHandlerType& error_handler) :
     diagnostics(diagnostics_),
     previous(diagnostics_.active)
-{
-    diagnostics.active = std::cref(error_handler);
-}
+{ diagnostics.active = std::cref(error_handler); }
 
 DiagnosticContext::Scope::~Scope() { diagnostics.active = previous; }
 

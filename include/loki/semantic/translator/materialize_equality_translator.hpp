@@ -72,18 +72,15 @@ bool MaterializeEqualityTranslator<Derived>::condition_uses_equality(formalism::
                         return true;
                 return false;
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::NotTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::NotTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
             {
                 return this->self().condition_uses_equality(node.get_condition());
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ImplyTag>>>)
             {
                 return this->self().condition_uses_equality(node.get_left()) || this->self().condition_uses_equality(node.get_right());
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>
-                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
-            {
-                return this->self().condition_uses_equality(node.get_condition());
             }
             else
             {
@@ -109,7 +106,8 @@ bool MaterializeEqualityTranslator<Derived>::effect_uses_equality(formalism::Eff
                         return true;
                 return false;
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>
+                               || std::is_same_v<Node, formalism::EffectProbabilisticAlternativeView>)
             {
                 return this->self().effect_uses_equality(node.get_effect());
             }
@@ -124,10 +122,6 @@ bool MaterializeEqualityTranslator<Derived>::effect_uses_equality(formalism::Eff
                         return true;
                 return false;
             }
-            else if constexpr (std::is_same_v<Node, formalism::EffectProbabilisticAlternativeView>)
-            {
-                return this->self().effect_uses_equality(node.get_effect());
-            }
             else
             {
                 return false;
@@ -141,14 +135,14 @@ bool MaterializeEqualityTranslator<Derived>::equality_required(formalism::TaskVi
 {
     if (this->self().has_requirement(task.get_requirements(), formalism::RequirementKind::Equality))
         return true;
-    return this->self().has_requirement(this->m_context.storage->translated().get_requirements(), formalism::RequirementKind::Equality)
-           || this->self().domain_uses_equality(this->m_context.storage->translated());
+    return this->self().has_requirement(this->copy_context().storage->translated().get_requirements(), formalism::RequirementKind::Equality)
+           || this->self().domain_uses_equality(this->copy_context().storage->translated());
 }
 
 template<typename Derived>
 std::optional<formalism::PredicateView> MaterializeEqualityTranslator<Derived>::find_domain_equality_predicate() const
 {
-    for (auto predicate : this->m_context.storage->translated().get_predicates())
+    for (auto predicate : this->copy_context().storage->translated().get_predicates())
     {
         if (std::string_view(predicate.get_name()) == "=")
             return predicate;
@@ -159,18 +153,18 @@ std::optional<formalism::PredicateView> MaterializeEqualityTranslator<Derived>::
 template<typename Derived>
 formalism::LiteralView MaterializeEqualityTranslator<Derived>::equality_literal(formalism::PredicateView predicate, ygg::Index<formalism::Object> object)
 {
-    auto term_data = formalism::checkout<formalism::Term>(this->m_context.builder);
+    auto term_data = formalism::checkout<formalism::Term>(this->copy_context().builder);
     term_data->variant = ygg::Data<formalism::Term>::Variant(object);
-    const auto term = formalism::insert(this->m_context.storage->repository, *term_data).first.get_index();
-    auto atom_data = formalism::checkout<formalism::Atom>(this->m_context.builder);
+    const auto term = formalism::insert(this->copy_context().storage->repository, *term_data).first.get_index();
+    auto atom_data = formalism::checkout<formalism::Atom>(this->copy_context().builder);
     atom_data->predicate = predicate.get_index();
     atom_data->terms.push_back(term);
     atom_data->terms.push_back(term);
-    const auto atom = formalism::insert(this->m_context.storage->repository, *atom_data).first.get_index();
-    auto literal_data = formalism::checkout<formalism::Literal>(this->m_context.builder);
+    const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.get_index();
+    auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
     literal_data->m_polarity = true;
-    return formalism::insert(this->m_context.storage->repository, *literal_data).first;
+    return formalism::insert(this->copy_context().storage->repository, *literal_data).first;
 }
 
 template<typename Derived>
@@ -223,25 +217,25 @@ void MaterializeEqualityTranslator<Derived>::add_equality_predicate_to_domain(yg
         }
     }
 
-    auto variable_data = formalism::checkout<formalism::Variable>(this->m_context.builder);
+    auto variable_data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
     variable_data->name = cista::offset::string("?lhs");
-    const auto left = formalism::insert(this->m_context.storage->repository, *variable_data).first.get_index();
+    const auto left = formalism::insert(this->copy_context().storage->repository, *variable_data).first.get_index();
     variable_data->clear();
     variable_data->name = cista::offset::string("?rhs");
-    const auto right = formalism::insert(this->m_context.storage->repository, *variable_data).first.get_index();
-    auto parameter_data = formalism::checkout<formalism::Parameter>(this->m_context.builder);
+    const auto right = formalism::insert(this->copy_context().storage->repository, *variable_data).first.get_index();
+    auto parameter_data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
     parameter_data->variable = left;
     if (object_type)
         parameter_data->types.push_back(*object_type);
-    auto predicate_data = formalism::checkout<formalism::Predicate>(this->m_context.builder);
+    auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
     predicate_data->name = cista::offset::string("=");
-    predicate_data->parameters.push_back(formalism::insert(this->m_context.storage->repository, *parameter_data).first.get_index());
+    predicate_data->parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first.get_index());
     parameter_data->clear();
     parameter_data->variable = right;
     if (object_type)
         parameter_data->types.push_back(*object_type);
-    predicate_data->parameters.push_back(formalism::insert(this->m_context.storage->repository, *parameter_data).first.get_index());
-    const auto predicate = formalism::insert(this->m_context.storage->repository, *predicate_data).first.get_index();
+    predicate_data->parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first.get_index());
+    const auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first.get_index();
     data.predicates.push_back(predicate);
 }
 
@@ -253,11 +247,11 @@ void MaterializeEqualityTranslator<Derived>::materialize_equality(ygg::Data<form
     const auto predicate = this->self().find_domain_equality_predicate();
     if (!predicate)
         throw InvalidEqualityError("expected equality predicate to be declared in the translated domain");
-    for (auto object : this->m_context.storage->translated().get_constants())
+    for (auto object : this->copy_context().storage->translated().get_constants())
         data.initial_literals.push_back(as_index(this->self().equality_literal(*predicate, object.get_index())));
     for (auto object : data.objects)
         data.initial_literals.push_back(as_index(this->self().equality_literal(*predicate, object)));
-    data.domain = this->m_context.storage->translated().get_index();
+    data.domain = this->copy_context().storage->translated().get_index();
 }
 
 }  // namespace loki::semantic::detail

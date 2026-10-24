@@ -71,8 +71,8 @@ struct Data<::loki::formalism::Task>
         objects(std::move(objects_)),
         initial_literals(std::move(initial_literals_)),
         initial_function_values(std::move(initial_function_values_)),
-        goal(goal_),
-        metric(metric_),
+        goal(std::move(goal_)),
+        metric(std::move(metric_)),
         axioms(std::move(axioms_))
     {
     }
@@ -113,7 +113,21 @@ struct Data<::loki::formalism::Task>
         set(axioms_, axioms);
     }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::domain, &Data::requirements, &Data::types, &Data::predicates, &Data::objects, &Data::initial_literals, &Data::initial_function_values, &Data::goal, &Data::metric, &Data::axioms> {}; }
+    static constexpr auto cista_members() noexcept
+    {
+        return ygg::Members<&Data::index,
+                            &Data::name,
+                            &Data::domain,
+                            &Data::requirements,
+                            &Data::types,
+                            &Data::predicates,
+                            &Data::objects,
+                            &Data::initial_literals,
+                            &Data::initial_function_values,
+                            &Data::goal,
+                            &Data::metric,
+                            &Data::axioms> {};
+    }
     static constexpr auto identifying_members() noexcept
     {
         return ygg::Members<&Data::name,
@@ -128,10 +142,7 @@ struct Data<::loki::formalism::Task>
                             &Data::metric,
                             &Data::axioms> {};
     }
-    void clear() noexcept
-    {
-        ygg::clear_members(*this);
-    }
+    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }

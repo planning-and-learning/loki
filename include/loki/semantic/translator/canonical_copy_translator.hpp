@@ -53,11 +53,15 @@ private:
     formalism::TermView copy(formalism::TermView source);
     formalism::AtomView copy(formalism::AtomView source);
     formalism::LiteralView copy(formalism::LiteralView source);
-    formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> copy(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>
+    copy(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source);
     formalism::FunctionTermView copy(formalism::FunctionTermView source);
-    formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source);
-    formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source);
-    formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> copy(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>>
+    copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>
+    copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source);
+    formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>
+    copy(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source);
     formalism::FunctionExpressionView copy(formalism::FunctionExpressionView source);
     formalism::EntityView<formalism::Condition<formalism::LiteralTag>> copy(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source);
     formalism::EntityView<formalism::Condition<formalism::AndTag>> copy(formalism::EntityView<formalism::Condition<formalism::AndTag>> source);
@@ -66,7 +70,8 @@ private:
     formalism::EntityView<formalism::Condition<formalism::ImplyTag>> copy(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source);
     formalism::EntityView<formalism::Condition<formalism::ExistsTag>> copy(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source);
     formalism::EntityView<formalism::Condition<formalism::ForallTag>> copy(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source);
-    formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source);
+    formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>
+    copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source);
     formalism::ConditionView copy(formalism::ConditionView source);
     formalism::EntityView<formalism::Effect<formalism::LiteralTag>> copy(formalism::EntityView<formalism::Effect<formalism::LiteralTag>> source);
     formalism::EntityView<formalism::Effect<formalism::AndTag>> copy(formalism::EntityView<formalism::Effect<formalism::AndTag>> source);

@@ -45,16 +45,18 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf(form
 }
 
 template<typename Derived>
-formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::OrTag>> node)
+formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView,
+                                                                                 formalism::EntityView<formalism::Condition<formalism::OrTag>> node)
 {
-    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
     for (auto child : node.get_conditions())
         this->self().append_disjunct(*data, this->self().to_dnf(child));
     return this->self().make_disjunction(*data);
 }
 
 template<typename Derived>
-formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::AndTag>> node)
+formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView,
+                                                                                 formalism::EntityView<formalism::Condition<formalism::AndTag>> node)
 {
     auto combinations = std::vector<std::vector<formalism::ConditionView>> { {} };
     for (auto child : node.get_conditions())
@@ -84,15 +86,15 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
     }
     if (combinations.size() == 1)
     {
-        auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
+        auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
         for (auto condition : combinations.front())
             this->self().append_conjunct(*data, condition);
         return this->self().make_conjunction(*data);
     }
-    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
     for (const auto& combination : combinations)
     {
-        auto conjunction_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
+        auto conjunction_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
         for (auto condition : combination)
             this->self().append_conjunct(*conjunction_data, condition);
         this->self().append_disjunct(*data, this->self().make_conjunction(*conjunction_data));
@@ -101,65 +103,65 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
 }
 
 template<typename Derived>
-formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node)
+formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView,
+                                                                                 formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node)
 {
     const auto& data = node.get_data();
     const auto child = this->self().to_dnf(node.get_condition());
     if (const auto child_or = this->self().as_or(child))
     {
-        auto condition_data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->m_context.builder);
+        auto condition_data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
         for (auto nested : child_or->get_conditions())
         {
-            auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
+            auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
             for (auto parameter : data.parameters)
                 result->parameters.push_back(parameter);
             result->condition = nested.get_index();
-            const auto exists = this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *result).first);
+            const auto exists = this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *result).first);
             this->self().append_disjunct(*condition_data, exists);
         }
         return this->self().to_dnf(this->self().make_disjunction(*condition_data));
     }
-    auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : data.parameters)
         result->parameters.push_back(parameter);
     result->condition = child.get_index();
-    const auto exists = this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *result).first);
+    const auto exists = this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *result).first);
     return this->self().flatten_condition(exists);
 }
 
 template<typename Derived>
-formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::ForallTag>> node)
+formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView,
+                                                                                 formalism::EntityView<formalism::Condition<formalism::ForallTag>> node)
 {
     const auto& data = node.get_data();
     const auto child = this->self().to_dnf(node.get_condition());
     if (const auto child_or = this->self().as_or(child))
     {
-        auto condition_data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->m_context.builder);
+        auto condition_data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
         for (auto nested : child_or->get_conditions())
         {
-            auto result = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->m_context.builder);
+            auto result = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
             for (auto parameter : data.parameters)
                 result->parameters.push_back(parameter);
             result->condition = nested.get_index();
-            const auto forall = this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *result).first);
+            const auto forall = this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *result).first);
             this->self().append_disjunct(*condition_data, forall);
         }
         return this->self().to_dnf(this->self().make_disjunction(*condition_data));
     }
-    auto result = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->m_context.builder);
+    auto result = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
     for (auto parameter : data.parameters)
         result->parameters.push_back(parameter);
     result->condition = child.get_index();
-    const auto forall = this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *result).first);
+    const auto forall = this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *result).first);
     return this->self().flatten_condition(forall);
 }
 
 template<typename Derived>
 template<typename T>
 formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView condition, T)
-{
-    return condition;
-}
+{ return condition; }
 
 }  // namespace loki::semantic::detail
 

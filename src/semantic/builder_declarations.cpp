@@ -15,6 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "ast_mappings.hpp"
 #include "builder.hpp"
 #include "checks.hpp"
 #include "context.hpp"
@@ -83,7 +84,8 @@ std::optional<formalism::TypeView> AstBuilder::union_type(const std::vector<std:
         return m_domain_context.types.at(it->second);
     // parse_type_hierarchy creates union types only over the types it declares, since a task cannot change its domain's types.
     if (m_parse_context.union_types.contains(alternatives))
-        m_diagnostics.throw_at(identifier, SemanticError("Type " + union_type_name(alternatives) + " over types of the domain must also type a variable in the domain"));
+        m_diagnostics.throw_at(identifier,
+                               SemanticError("Type " + union_type_name(alternatives) + " over types of the domain must also type a variable in the domain"));
     // A union type must be a base of its alternatives when they are built, so the parser builds the domain or task again with it.
     m_parse_context.missing_union_types.insert(alternatives);
     return std::nullopt;
@@ -111,7 +113,8 @@ std::vector<formalism::TypeView> AstBuilder::parse_type_hierarchy(const std::vec
     auto union_bases = std::map<std::string, std::vector<formalism::TypeView>> {};
     for (const auto& alternatives : m_parse_context.union_types)
     {
-        const auto over_known_types = std::any_of(alternatives.begin(), alternatives.end(), [&](const auto& name) { return m_domain_context.types.contains(name); });
+        const auto over_known_types =
+            std::any_of(alternatives.begin(), alternatives.end(), [&](const auto& name) { return m_domain_context.types.contains(name); });
         if (m_domain_context.union_type_names.contains(alternatives) || over_known_types)
             continue;
         // The name of a union type avoids the names of declared, known, and other union types.

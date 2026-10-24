@@ -23,6 +23,7 @@
 
 #include <cista/containers/optional.h>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -39,7 +40,7 @@
 namespace loki::semantic
 {
 
-enum class TranslationPhase
+enum class TranslationPhase : std::uint8_t
 {
     ToNegationNormalForm,
     RenameQuantifiedVariables,
@@ -168,7 +169,7 @@ void inherit_domain_mappings(TranslationStorage& problem, const TranslationStora
 void inherit_domain_identity_mappings(TranslationStorage& problem, const TranslationStorage& domain);
 std::shared_ptr<TranslationStorage> canonicalize_problem_storage(formalism::TaskView middle_task,
                                                                  const std::shared_ptr<TranslationStorage>& middle,
-                                                                 std::shared_ptr<const TranslationStorage> domain);
+                                                                 const std::shared_ptr<const TranslationStorage>& domain);
 
 template<typename T>
 ygg::Index<T> as_index(ygg::Index<T> index) noexcept

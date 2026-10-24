@@ -46,14 +46,16 @@ std::size_t count_effect_nodes(formalism::EffectView effect);
 template<typename Target, typename Node>
 std::size_t count_nested_effect_nodes(const Node& node)
 {
-    if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
+    if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
+                  || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
     {
         auto result = std::size_t {};
         for (auto child : node.get_effects())
             result += count_effect_nodes<Target>(child);
         return result;
     }
-    else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
+    else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>
+                       || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
     {
         return count_effect_nodes<Target>(node.get_effect());
     }
@@ -97,12 +99,15 @@ std::size_t count_condition_nodes(formalism::ConditionView condition)
             {
                 ++result;
             }
-            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
+            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>
+                          || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
             {
                 for (auto child : node.get_conditions())
                     result += count_condition_nodes<Target>(child);
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::NotTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::NotTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
             {
                 result += count_condition_nodes<Target>(node.get_condition());
             }
@@ -111,10 +116,6 @@ std::size_t count_condition_nodes(formalism::ConditionView condition)
                 result += count_condition_nodes<Target>(node.get_left());
                 result += count_condition_nodes<Target>(node.get_right());
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
-            {
-                result += count_condition_nodes<Target>(node.get_condition());
-            }
             return result;
         },
         condition.get_variant());
@@ -122,7 +123,8 @@ std::size_t count_condition_nodes(formalism::ConditionView condition)
 
 inline bool contains_not_or_imply(formalism::ConditionView condition)
 {
-    return count_condition_nodes<formalism::Condition<formalism::NotTag>>(condition) > 0 || count_condition_nodes<formalism::Condition<formalism::ImplyTag>>(condition) > 0;
+    return count_condition_nodes<formalism::Condition<formalism::NotTag>>(condition) > 0
+           || count_condition_nodes<formalism::Condition<formalism::ImplyTag>>(condition) > 0;
 }
 
 inline bool contains_forall(formalism::ConditionView condition) { return count_condition_nodes<formalism::Condition<formalism::ForallTag>>(condition) > 0; }
@@ -137,7 +139,8 @@ inline bool condition_mentions_predicate(formalism::ConditionView condition, con
 {
     return ygg::visit(
         Overloaded {
-            [&](formalism::EntityView<formalism::Condition<formalism::LiteralTag>> node) { return std::string(node.get_literal().get_atom().get_predicate().get_name()) == name; },
+            [&](formalism::EntityView<formalism::Condition<formalism::LiteralTag>> node)
+            { return std::string(node.get_literal().get_atom().get_predicate().get_name()) == name; },
             [&](formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>) { return false; },
             [&](formalism::EntityView<formalism::Condition<formalism::NotTag>> node) { return condition_mentions_predicate(node.get_condition(), name); },
             [&](formalism::EntityView<formalism::Condition<formalism::ImplyTag>> node)
@@ -176,7 +179,8 @@ inline bool is_conjunctive(formalism::ConditionView condition)
                         return false;
                 return true;
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::LiteralTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::LiteralTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>>)
                 return true;
             else
                 return false;
@@ -192,14 +196,16 @@ inline bool writes_function_named(formalism::EffectView effect, std::string_view
             using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::NumericTag>>>)
                 return std::string_view(node.get_function().get_function().get_name()) == name;
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 for (auto child : node.get_effects())
                     if (writes_function_named(child, name))
                         return true;
                 return false;
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
                 return writes_function_named(node.get_effect(), name);
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
             {
@@ -250,9 +256,7 @@ bool has_requirement_kind(const RequirementRange& requirements, formalism::Requi
 }
 
 inline bool has_requirement_kind(formalism::DomainView domain, formalism::RequirementKind kind)
-{
-    return has_requirement_kind(domain.get_requirements(), kind);
-}
+{ return has_requirement_kind(domain.get_requirements(), kind); }
 
 inline std::optional<std::string> object_term_name(formalism::TermView term)
 {

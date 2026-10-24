@@ -24,7 +24,8 @@
 namespace loki::semantic::detail
 {
 
-formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source)
+formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->numbers, source))
         return *mapped;
@@ -47,7 +48,8 @@ formalism::FunctionTermView CanonicalCopyTranslator::copy(formalism::FunctionTer
     return out;
 }
 
-formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source)
+formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->unary_expressions, source))
         return *mapped;
@@ -59,7 +61,8 @@ formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> Canoni
     return out;
 }
 
-formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source)
+formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->binary_expressions, source))
         return *mapped;
@@ -72,7 +75,8 @@ formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> Canon
     return out;
 }
 
-formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source)
+formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->multi_expressions, source))
         return *mapped;
@@ -89,13 +93,15 @@ formalism::FunctionExpressionView CanonicalCopyTranslator::copy(formalism::Funct
     if (auto mapped = find_mapped(m_storage->function_expressions, source))
         return *mapped;
     auto data = formalism::checkout<formalism::FunctionExpression<>>(m_builder);
-    data->variant = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::FunctionExpression<>>::Variant { return as_index(copy(arg)); }, source.get_variant());
+    data->variant =
+        ygg::visit([&](const auto& arg) -> ygg::Data<formalism::FunctionExpression<>>::Variant { return as_index(copy(arg)); }, source.get_variant());
     auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->function_expressions, source, out);
     return out;
 }
 
-formalism::EntityView<formalism::Condition<formalism::LiteralTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source)
+formalism::EntityView<formalism::Condition<formalism::LiteralTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->condition_literals, source))
         return *mapped;
@@ -106,7 +112,8 @@ formalism::EntityView<formalism::Condition<formalism::LiteralTag>> CanonicalCopy
     return out;
 }
 
-formalism::EntityView<formalism::Condition<formalism::AndTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::AndTag>> source)
+formalism::EntityView<formalism::Condition<formalism::AndTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::AndTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->condition_ands, source))
         return *mapped;
@@ -117,7 +124,8 @@ formalism::EntityView<formalism::Condition<formalism::AndTag>> CanonicalCopyTran
     return out;
 }
 
-formalism::EntityView<formalism::Condition<formalism::OrTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::OrTag>> source)
+formalism::EntityView<formalism::Condition<formalism::OrTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::OrTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->condition_ors, source))
         return *mapped;
@@ -128,7 +136,8 @@ formalism::EntityView<formalism::Condition<formalism::OrTag>> CanonicalCopyTrans
     return out;
 }
 
-formalism::EntityView<formalism::Condition<formalism::NotTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
+formalism::EntityView<formalism::Condition<formalism::NotTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->condition_nots, source))
         return *mapped;
@@ -139,7 +148,8 @@ formalism::EntityView<formalism::Condition<formalism::NotTag>> CanonicalCopyTran
     return out;
 }
 
-formalism::EntityView<formalism::Condition<formalism::ImplyTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
+formalism::EntityView<formalism::Condition<formalism::ImplyTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->condition_implies, source))
         return *mapped;
@@ -151,7 +161,8 @@ formalism::EntityView<formalism::Condition<formalism::ImplyTag>> CanonicalCopyTr
     return out;
 }
 
-formalism::EntityView<formalism::Condition<formalism::ExistsTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
+formalism::EntityView<formalism::Condition<formalism::ExistsTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->condition_exists, source))
         return *mapped;
@@ -163,7 +174,8 @@ formalism::EntityView<formalism::Condition<formalism::ExistsTag>> CanonicalCopyT
     return out;
 }
 
-formalism::EntityView<formalism::Condition<formalism::ForallTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
+formalism::EntityView<formalism::Condition<formalism::ForallTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->condition_foralls, source))
         return *mapped;
@@ -175,7 +187,8 @@ formalism::EntityView<formalism::Condition<formalism::ForallTag>> CanonicalCopyT
     return out;
 }
 
-formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source)
+formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->condition_numeric_constraints, source))
         return *mapped;

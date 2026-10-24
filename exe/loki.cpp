@@ -25,6 +25,7 @@
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
 #include <loki/semantic/translator.hpp>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -34,19 +35,6 @@
 #endif
 
 static constexpr auto version = LOKI_VERSION;
-
-static void add_version(argparse::ArgumentParser& program)
-{
-    program.add_argument("-V", "--version")
-        .nargs(0)
-        .action(
-            [&](const auto&)
-            {
-                std::cout << version << std::endl;
-                std::exit(0);
-            })
-        .help("Print version information and exit.");
-}
 
 static void write_file(const std::filesystem::path& path, std::string_view text)
 {
@@ -84,7 +72,7 @@ static int run(const argparse::ArgumentParser& program)
     const auto domain_translation_result = loki::semantic::translate(domain, translator_options);
     const auto translated_domain_text = loki::formalism::format::to_string(domain_translation_result.get_translated_domain());
     if (verbose)
-        std::cout << translated_domain_text << std::endl;
+        std::cout << translated_domain_text << '\n';
 
     if (program.is_used("--out-domain"))
         write_file(program.get<std::string>("--out-domain"), translated_domain_text);
@@ -96,7 +84,7 @@ static int run(const argparse::ArgumentParser& program)
         const auto translated_task_result = loki::semantic::translate(task, domain_translation_result, translator_options);
         const auto translated_task_text = loki::formalism::format::to_string(translated_task_result.get_translated_task());
         if (verbose)
-            std::cout << translated_task_text << std::endl;
+            std::cout << translated_task_text << '\n';
 
         if (program.is_used("--out-problem"))
             write_file(program.get<std::string>("--out-problem"), translated_task_text);
@@ -107,52 +95,60 @@ static int run(const argparse::ArgumentParser& program)
 
 int main(int argc, char** argv)
 {
-    auto program = argparse::ArgumentParser("loki", version, argparse::default_arguments::help);
-    add_version(program);
-
-    program.add_argument("domain").required().help("The path to the PDDL domain file.");
-    program.add_argument("problem").default_value(std::string {}).help("The path to the PDDL problem file.");
-    program.add_argument("-d", "--out-domain").help("The path to the output PDDL domain file.");
-    program.add_argument("-p", "--out-problem").help("The path to the output PDDL problem file.");
-    program.add_argument("-s", "--strict")
-        .default_value(false)
-        .implicit_value(true)
-        .help("Enable strict semantic checks for requirements, arity, and type compatibility.");
-    program.add_argument("-v", "--verbose").default_value(false).implicit_value(true).help("Enable verbose console prints.");
-    program.add_argument("--add-action-costs")
-        .default_value(false)
-        .implicit_value(true)
-        .help("Complete missing :action-costs artifacts; without :action-costs, inject the requirement, total-cost, and unit-cost effects.");
-    program.add_argument("--compile-typing")
-        .default_value(false)
-        .implicit_value(true)
-        .help("Compile typing away into type predicates and remove type annotations.");
-    program.add_argument("--compile-conditional-effects")
-        .default_value(false)
-        .implicit_value(true)
-        .help("Split actions to eliminate top-level conditional effects after effect normalization.");
-    program.add_argument("--materialize-equality")
-        .default_value(false)
-        .implicit_value(true)
-        .help("Add the = predicate and (= o o) initial literals for consumers without native equality handling.");
-    program.add_argument("--normalize-arithmetic-expressions")
-        .default_value(false)
-        .implicit_value(true)
-        .help("Normalize addition and multiplication modulo associativity, commutativity, and identity elements.");
-
+    const auto arguments = std::span(argv, static_cast<size_t>(argc));
     try
     {
-        program.parse_args(argc, argv);
-    }
-    catch (const std::runtime_error& err)
-    {
-        std::cerr << err.what() << "\n";
-        std::cerr << program;
-        return 1;
-    }
+        auto program = argparse::ArgumentParser("loki", version, argparse::default_arguments::help);
+        program.add_argument("-V", "--version").default_value(false).implicit_value(true).help("Print version information and exit.");
 
-    try
-    {
+        program.add_argument("domain").required().help("The path to the PDDL domain file.");
+        program.add_argument("problem").default_value(std::string {}).help("The path to the PDDL problem file.");
+        program.add_argument("-d", "--out-domain").help("The path to the output PDDL domain file.");
+        program.add_argument("-p", "--out-problem").help("The path to the output PDDL problem file.");
+        program.add_argument("-s", "--strict")
+            .default_value(false)
+            .implicit_value(true)
+            .help("Enable strict semantic checks for requirements, arity, and type compatibility.");
+        program.add_argument("-v", "--verbose").default_value(false).implicit_value(true).help("Enable verbose console prints.");
+        program.add_argument("--add-action-costs")
+            .default_value(false)
+            .implicit_value(true)
+            .help("Complete missing :action-costs artifacts; without :action-costs, inject the requirement, total-cost, and unit-cost effects.");
+        program.add_argument("--compile-typing")
+            .default_value(false)
+            .implicit_value(true)
+            .help("Compile typing away into type predicates and remove type annotations.");
+        program.add_argument("--compile-conditional-effects")
+            .default_value(false)
+            .implicit_value(true)
+            .help("Split actions to eliminate top-level conditional effects after effect normalization.");
+        program.add_argument("--materialize-equality")
+            .default_value(false)
+            .implicit_value(true)
+            .help("Add the = predicate and (= o o) initial literals for consumers without native equality handling.");
+        program.add_argument("--normalize-arithmetic-expressions")
+            .default_value(false)
+            .implicit_value(true)
+            .help("Normalize addition and multiplication modulo associativity, commutativity, and identity elements.");
+
+        // Before parsing, which would first demand the domain file.
+        if (arguments.size() == 2 && (std::string_view(arguments[1]) == "-V" || std::string_view(arguments[1]) == "--version"))
+        {
+            std::cout << version << '\n';
+            return 0;
+        }
+
+        try
+        {
+            program.parse_args(argc, argv);
+        }
+        catch (const std::runtime_error& err)
+        {
+            std::cerr << err.what() << "\n";
+            std::cerr << program;
+            return 1;
+        }
+
         return run(program);
     }
     catch (const std::exception& err)

@@ -18,6 +18,7 @@
 #ifndef LOKI_SEMANTIC_CHECKS_HPP_
 #define LOKI_SEMANTIC_CHECKS_HPP_
 
+#include "ast_mappings.hpp"
 #include "context.hpp"
 #include "diagnostics.hpp"
 #include "loki/ast/ast.hpp"

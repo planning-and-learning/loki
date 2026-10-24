@@ -89,8 +89,8 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
             throw SemanticError("Too many conditional effects to compile.");
 
         const auto num_variants = size_t { 1 } << conditional.size();
-        auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
-        auto effect_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->m_context.builder);
+        auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
+        auto effect_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
         for (auto mask = size_t { 0 }; mask < num_variants; ++mask)
         {
             condition_data->clear();
@@ -125,7 +125,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 effect = effect_data->effects.front();
             else if (!effect_data->effects.empty())
             {
-                effect = this->self().wrap_effect(formalism::insert(this->m_context.storage->repository, *effect_data).first).get_index();
+                effect = this->self().wrap_effect(formalism::insert(this->copy_context().storage->repository, *effect_data).first).get_index();
             }
 
             auto name = std::string(data.name) + "_" + std::to_string(action.get_index().get_value());
@@ -133,7 +133,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 name += "_" + std::to_string(item.when.get_index().get_value());
             name += "_" + std::to_string(mask);
 
-            auto action_data = formalism::checkout<formalism::Action>(this->m_context.builder);
+            auto action_data = formalism::checkout<formalism::Action>(this->copy_context().builder);
             action_data->name = cista::offset::string(name);
             action_data->original_name = data.original_name;
             for (auto parameter : data.parameters)
@@ -141,7 +141,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
             action_data->original_arity = data.original_arity;
             action_data->precondition = precondition;
             action_data->effect = effect;
-            this->self().push_unique(result, seen, formalism::insert(this->m_context.storage->repository, *action_data).first);
+            this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *action_data).first);
         }
     }
 }

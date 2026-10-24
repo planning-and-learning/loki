@@ -54,7 +54,7 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(fo
             {
                 for (auto part : condition_or->get_conditions())
                 {
-                    auto action_data = formalism::checkout<formalism::Action>(this->m_context.builder);
+                    auto action_data = formalism::checkout<formalism::Action>(this->copy_context().builder);
                     action_data->name = data.name;
                     action_data->original_name = data.original_name;
                     for (auto parameter : data.parameters)
@@ -62,7 +62,7 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(fo
                     action_data->original_arity = data.original_arity;
                     action_data->precondition = part.get_index();
                     action_data->effect = data.effect;
-                    this->self().push_unique(result, seen, formalism::insert(this->m_context.storage->repository, *action_data).first);
+                    this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *action_data).first);
                 }
                 continue;
             }
@@ -85,13 +85,13 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_axioms(for
         {
             for (auto part : condition_or->get_conditions())
             {
-                auto axiom_data = formalism::checkout<formalism::Axiom>(this->m_context.builder);
+                auto axiom_data = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
                 for (auto parameter : data.parameters)
                     axiom_data->parameters.push_back(parameter);
                 axiom_data->original_arity = data.original_arity;
                 axiom_data->head = data.head;
                 axiom_data->condition = part.get_index();
-                this->self().push_unique(result, seen, formalism::insert(this->m_context.storage->repository, *axiom_data).first);
+                this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *axiom_data).first);
             }
         }
         else

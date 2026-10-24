@@ -50,11 +50,11 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
     const auto free_parameters = this->self().free_parameters_in_scope(condition);
 
     const auto key = GeneratedUniversalConditionKey { free_parameters, condition };
-    if (auto it = this->m_context.generated_universal_conditions.find(key); it != this->m_context.generated_universal_conditions.end())
+    if (auto it = this->copy_context().generated_universal_conditions.find(key); it != this->copy_context().generated_universal_conditions.end())
         return it->second;
 
-    auto predicate_data = formalism::checkout<formalism::Predicate>(this->m_context.builder);
-    auto atom_data = formalism::checkout<formalism::Atom>(this->m_context.builder);
+    auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
+    auto atom_data = formalism::checkout<formalism::Atom>(this->copy_context().builder);
     for (auto [parameter, variable] : free_parameters)
     {
         predicate_data->parameters.push_back(parameter.get_index());
@@ -62,31 +62,31 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
     }
 
     predicate_data->name = cista::offset::string(this->self().next_generated_predicate_name("loki-universal-"));
-    const auto predicate = formalism::insert(this->m_context.storage->repository, *predicate_data).first;
+    const auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first;
     atom_data->predicate = predicate.get_index();
-    const auto atom = formalism::insert(this->m_context.storage->repository, *atom_data).first.get_index();
-    auto literal_data = formalism::checkout<formalism::Literal>(this->m_context.builder);
+    const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.get_index();
+    auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
     literal_data->m_polarity = true;
-    const auto positive_head = formalism::insert(this->m_context.storage->repository, *literal_data).first.get_index();
+    const auto positive_head = formalism::insert(this->copy_context().storage->repository, *literal_data).first.get_index();
     literal_data->clear();
     literal_data->atom = atom;
     literal_data->m_polarity = false;
-    const auto negative_literal = formalism::insert(this->m_context.storage->repository, *literal_data).first.get_index();
-    auto axiom_data = formalism::checkout<formalism::Axiom>(this->m_context.builder);
+    const auto negative_literal = formalism::insert(this->copy_context().storage->repository, *literal_data).first.get_index();
+    auto axiom_data = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
     for (auto parameter : predicate_data->parameters)
         axiom_data->parameters.push_back(parameter);
     axiom_data->original_arity = axiom_data->parameters.size();
     axiom_data->head = positive_head;
     axiom_data->condition = condition.get_index();
-    const auto axiom = formalism::insert(this->m_context.storage->repository, *axiom_data).first;
+    const auto axiom = formalism::insert(this->copy_context().storage->repository, *axiom_data).first;
 
-    this->m_context.generated_predicates.push_back(predicate);
-    this->m_context.generated_axioms.push_back(axiom);
-    auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->m_context.builder);
+    this->copy_context().generated_predicates.push_back(predicate);
+    this->copy_context().generated_axioms.push_back(axiom);
+    auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
     condition_data->literal = negative_literal;
-    auto result = this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *condition_data).first);
-    this->m_context.generated_universal_conditions.emplace(key, result);
+    auto result = this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
+    this->copy_context().generated_universal_conditions.emplace(key, result);
     return result;
 }
 
@@ -97,73 +97,80 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_u
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::AndTag>> source)
+formalism::ConditionView
+RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::AndTag>> source)
 {
-    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
     for (auto condition : source.get_conditions())
         this->self().append_conjunct(*data, this->self().remove_universal_quantifiers(condition));
     return this->self().make_conjunction(*data);
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::OrTag>> source)
+formalism::ConditionView
+RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::OrTag>> source)
 {
-    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
     for (auto condition : source.get_conditions())
         this->self().append_disjunct(*data, this->self().remove_universal_quantifiers(condition));
     return this->self().make_disjunction(*data);
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
+formalism::ConditionView
+RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
 {
     const auto condition = as_index(this->self().remove_universal_quantifiers(source.get_condition()));
-    auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(this->copy_context().builder);
     data->condition = condition;
-    return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *data).first);
+    return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first);
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
+formalism::ConditionView
+RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
 {
     // Sequence the recursions: both sides can generate loki-universal-* names, and argument
     // evaluation order is unspecified.
     const auto left = as_index(this->self().remove_universal_quantifiers(source.get_left()));
     const auto right = as_index(this->self().remove_universal_quantifiers(source.get_right()));
-    auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(this->copy_context().builder);
     data->left = left;
     data->right = right;
-    return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *data).first);
+    return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first);
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
+formalism::ConditionView
+RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
 {
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
     auto condition = as_index(this->self().remove_universal_quantifiers(source.get_condition()));
     this->self().leave_scope();
-    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.get_index());
     data->condition = condition;
-    return this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *data).first));
+    return this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first));
 }
 
 template<typename Derived>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
+formalism::ConditionView
+RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
 {
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
     auto negated = as_index(this->self().negate_condition(source.get_condition()));
     this->self().leave_scope();
-    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->m_context.builder);
+    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.get_index());
     data->condition = negated;
-    const auto exists_not = this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, *data).first));
+    const auto exists_not =
+        this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first));
     const auto translated_exists_not = this->self().remove_universal_quantifiers(exists_not);
     return this->self().make_generated_axiom_condition(translated_exists_not);
 }
@@ -171,9 +178,7 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_u
 template<typename Derived>
 template<typename T>
 formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<T> source)
-{
-    return this->self().wrap_condition(this->self().copy(source));
-}
+{ return this->self().wrap_condition(this->self().copy(source)); }
 
 }  // namespace loki::semantic::detail
 
