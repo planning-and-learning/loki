@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Dominik Drexler
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Regenerate parser_counts_suite.json from all packaged benchmark problems.
 
 Usage: uv run python tests/fixtures/generate_parser_counts_suite.py
@@ -7,8 +9,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-from pypddl import formalism as pypddl
 import pypddl_datasets
+
+from pypddl import formalism as pypddl
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIGURATIONS: list[dict[str, bool]] = [
@@ -19,15 +22,12 @@ CONFIGURATIONS: list[dict[str, bool]] = [
 
 
 def discover_cases(prefix: Path) -> list[dict[str, Any]]:
+    """Each domain and task of the dataset's test suites, named uniquely."""
     cases: list[dict[str, Any]] = []
     for family in ("classical", "numeric"):
         family_root = prefix / family / "tests"
         for domain_file in sorted(family_root.rglob("domain.pddl")):
-            task_files = sorted(
-                path
-                for path in domain_file.parent.glob("*.pddl")
-                if path.name != "domain.pddl"
-            )
+            task_files = sorted(path for path in domain_file.parent.glob("*.pddl") if path.name != "domain.pddl")
             relative_dir = domain_file.parent.relative_to(family_root).as_posix()
             for task_file in task_files:
                 name = f"{family}/{relative_dir}"
@@ -40,11 +40,17 @@ def discover_cases(prefix: Path) -> list[dict[str, Any]]:
                         "task_file": task_file.relative_to(prefix).as_posix(),
                     }
                 )
-    assert cases and len({case["name"] for case in cases}) == len(cases)
+    if not cases:
+        msg = f"no test cases under {prefix}"
+        raise RuntimeError(msg)
+    if len({case["name"] for case in cases}) != len(cases):
+        msg = "test case names are not unique"
+        raise RuntimeError(msg)
     return cases
 
 
 def make_options(config: dict[str, bool]) -> pypddl.ParserOptions:
+    """Parser options with the given settings."""
     options = pypddl.ParserOptions()
     for key, value in config.items():
         setattr(options, key, value)
@@ -52,6 +58,7 @@ def make_options(config: dict[str, bool]) -> pypddl.ParserOptions:
 
 
 def domain_counts(domain: pypddl.Domain) -> dict[str, int]:
+    """How many of each part the domain has."""
     return {
         "requirements": len(domain.get_requirements()),
         "types": len(domain.get_types()),
@@ -64,6 +71,7 @@ def domain_counts(domain: pypddl.Domain) -> dict[str, int]:
 
 
 def task_counts(task: pypddl.Task) -> dict[str, int | bool]:
+    """How many of each part the task has, and whether it has a goal and a metric."""
     return {
         "requirements": len(task.get_requirements()),
         "objects": len(task.get_objects()),
@@ -77,14 +85,13 @@ def task_counts(task: pypddl.Task) -> dict[str, int | bool]:
 
 
 def main() -> None:
+    """Write the parser counts suite."""
     prefix = Path(pypddl_datasets.data_root())
     cases = discover_cases(prefix)
     for case in cases:
         configurations: list[dict[str, Any]] = []
         for options_config in CONFIGURATIONS:
-            parser = pypddl.Parser(
-                prefix / case["domain_file"], make_options(options_config)
-            )
+            parser = pypddl.Parser(prefix / case["domain_file"], make_options(options_config))
             domain = parser.domain()
             task = parser.parse_task(prefix / case["task_file"])
             configurations.append(

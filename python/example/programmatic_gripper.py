@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Dominik Drexler
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Build a gripper domain and two tasks programmatically with pypddl."""
 
 from collections.abc import Sequence
@@ -9,8 +11,10 @@ def make_literal(
     repository: pypddl.Repository,
     predicate: pypddl.Predicate,
     terms: Sequence[pypddl.Term],
+    *,
     positive: bool = True,
 ) -> pypddl.Literal:
+    """Intern the literal of predicate over terms."""
     atom, _ = repository.insert(pypddl.AtomData(predicate, list(terms)))
     return repository.insert(pypddl.LiteralData(atom, positive))[0]
 
@@ -19,14 +23,17 @@ def make_condition(
     repository: pypddl.Repository,
     predicate: pypddl.Predicate,
     terms: Sequence[pypddl.Term],
+    *,
     positive: bool = True,
 ) -> pypddl.Condition:
-    literal = make_literal(repository, predicate, terms, positive)
+    """Intern the condition that holds the literal of predicate over terms."""
+    literal = make_literal(repository, predicate, terms, positive=positive)
     condition_literal, _ = repository.insert(pypddl.ConditionLiteralData(literal))
     return repository.insert(pypddl.ConditionData(condition_literal))[0]
 
 
 def make_effect(repository: pypddl.Repository, literal: pypddl.Literal) -> pypddl.Effect:
+    """Intern the effect that sets literal."""
     effect_literal, _ = repository.insert(pypddl.EffectLiteralData(literal))
     return repository.insert(pypddl.EffectData(effect_literal))[0]
 
@@ -35,6 +42,7 @@ def make_condition_and(
     repository: pypddl.Repository,
     conditions: Sequence[pypddl.Condition],
 ) -> pypddl.Condition:
+    """Intern the conjunction of conditions."""
     conjunction, _ = repository.insert(pypddl.ConditionAndData(list(conditions)))
     return repository.insert(pypddl.ConditionData(conjunction))[0]
 
@@ -43,11 +51,13 @@ def make_effect_and(
     repository: pypddl.Repository,
     effects: Sequence[pypddl.Effect],
 ) -> pypddl.Effect:
+    """Intern the conjunction of effects."""
     conjunction, _ = repository.insert(pypddl.EffectAndData(list(effects)))
     return repository.insert(pypddl.EffectData(conjunction))[0]
 
 
 def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypddl.Task]:
+    """Build the gripper domain and two of its tasks."""
     repository = pypddl.RepositoryFactory().create()
     strips, _ = repository.insert(pypddl.RequirementData(pypddl.RequirementKind.Strips))
     typing, _ = repository.insert(pypddl.RequirementData(pypddl.RequirementKind.Typing))
@@ -57,18 +67,10 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
     ball_t, _ = repository.insert(pypddl.TypeData("ball", [object_t]))
     gripper_t, _ = repository.insert(pypddl.TypeData("gripper", [object_t]))
 
-    x, _ = repository.insert(
-        pypddl.ParameterData(repository.insert(pypddl.VariableData("?x"))[0], [room_t])
-    )
-    y, _ = repository.insert(
-        pypddl.ParameterData(repository.insert(pypddl.VariableData("?y"))[0], [room_t])
-    )
-    b, _ = repository.insert(
-        pypddl.ParameterData(repository.insert(pypddl.VariableData("?b"))[0], [ball_t])
-    )
-    g, _ = repository.insert(
-        pypddl.ParameterData(repository.insert(pypddl.VariableData("?g"))[0], [gripper_t])
-    )
+    x, _ = repository.insert(pypddl.ParameterData(repository.insert(pypddl.VariableData("?x"))[0], [room_t]))
+    y, _ = repository.insert(pypddl.ParameterData(repository.insert(pypddl.VariableData("?y"))[0], [room_t]))
+    b, _ = repository.insert(pypddl.ParameterData(repository.insert(pypddl.VariableData("?b"))[0], [ball_t]))
+    g, _ = repository.insert(pypddl.ParameterData(repository.insert(pypddl.VariableData("?g"))[0], [gripper_t]))
 
     at_robby, _ = repository.insert(pypddl.PredicateData("at-robby", [x]))
     at, _ = repository.insert(pypddl.PredicateData("at", [b, x]))
@@ -81,33 +83,48 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
     g_term, _ = repository.insert(pypddl.TermData(g.get_variable()))
 
     move_pre = make_condition(repository, at_robby, [x_term])
-    move_eff = make_effect_and(repository, [
-        make_effect(repository, make_literal(repository, at_robby, [x_term], False)),
-        make_effect(repository, make_literal(repository, at_robby, [y_term])),
-    ])
+    move_eff = make_effect_and(
+        repository,
+        [
+            make_effect(repository, make_literal(repository, at_robby, [x_term], positive=False)),
+            make_effect(repository, make_literal(repository, at_robby, [y_term])),
+        ],
+    )
     move, _ = repository.insert(pypddl.ActionData("move", [x, y], move_pre, move_eff))
 
-    pick_pre = make_condition_and(repository, [
-        make_condition(repository, at, [b_term, x_term]),
-        make_condition(repository, at_robby, [x_term]),
-        make_condition(repository, free, [g_term]),
-    ])
-    pick_eff = make_effect_and(repository, [
-        make_effect(repository, make_literal(repository, at, [b_term, x_term], False)),
-        make_effect(repository, make_literal(repository, free, [g_term], False)),
-        make_effect(repository, make_literal(repository, carry, [b_term, g_term])),
-    ])
+    pick_pre = make_condition_and(
+        repository,
+        [
+            make_condition(repository, at, [b_term, x_term]),
+            make_condition(repository, at_robby, [x_term]),
+            make_condition(repository, free, [g_term]),
+        ],
+    )
+    pick_eff = make_effect_and(
+        repository,
+        [
+            make_effect(repository, make_literal(repository, at, [b_term, x_term], positive=False)),
+            make_effect(repository, make_literal(repository, free, [g_term], positive=False)),
+            make_effect(repository, make_literal(repository, carry, [b_term, g_term])),
+        ],
+    )
     pick, _ = repository.insert(pypddl.ActionData("pick", [b, x, g], pick_pre, pick_eff))
 
-    drop_pre = make_condition_and(repository, [
-        make_condition(repository, carry, [b_term, g_term]),
-        make_condition(repository, at_robby, [x_term]),
-    ])
-    drop_eff = make_effect_and(repository, [
-        make_effect(repository, make_literal(repository, carry, [b_term, g_term], False)),
-        make_effect(repository, make_literal(repository, free, [g_term])),
-        make_effect(repository, make_literal(repository, at, [b_term, x_term])),
-    ])
+    drop_pre = make_condition_and(
+        repository,
+        [
+            make_condition(repository, carry, [b_term, g_term]),
+            make_condition(repository, at_robby, [x_term]),
+        ],
+    )
+    drop_eff = make_effect_and(
+        repository,
+        [
+            make_effect(repository, make_literal(repository, carry, [b_term, g_term], positive=False)),
+            make_effect(repository, make_literal(repository, free, [g_term])),
+            make_effect(repository, make_literal(repository, at, [b_term, x_term])),
+        ],
+    )
     drop, _ = repository.insert(pypddl.ActionData("drop", [b, x, g], drop_pre, drop_eff))
 
     domain, _ = repository.insert(
@@ -160,6 +177,14 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
 
 if __name__ == "__main__":
     _, domain, one_ball, two_ball = build_gripper()
-    print(f"domain: {domain.get_name()}, actions={len(domain.get_actions())}, predicates={len(domain.get_predicates())}")
-    print(f"task: {one_ball.get_name()}, objects={len(one_ball.get_objects())}, init={len(one_ball.get_initial_literals())}")
-    print(f"task: {two_ball.get_name()}, objects={len(two_ball.get_objects())}, init={len(two_ball.get_initial_literals())}")
+    print(
+        f"domain: {domain.get_name()}, actions={len(domain.get_actions())}, predicates={len(domain.get_predicates())}"
+    )
+    print(
+        f"task: {one_ball.get_name()}, objects={len(one_ball.get_objects())}, "
+        f"init={len(one_ball.get_initial_literals())}"
+    )
+    print(
+        f"task: {two_ball.get_name()}, objects={len(two_ball.get_objects())}, "
+        f"init={len(two_ball.get_initial_literals())}"
+    )

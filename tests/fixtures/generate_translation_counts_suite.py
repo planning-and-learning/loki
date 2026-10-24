@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Dominik Drexler
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Regenerate translation_counts_suite.json.
 
 Runs every parser-suite fixture through each parser/translator configuration and records
@@ -9,6 +11,8 @@ Usage: uv run python tests/fixtures/generate_translation_counts_suite.py
 import json
 from pathlib import Path
 from typing import Any, TypeVar
+
+import pypddl_datasets
 
 from pypddl import formalism as pypddl
 
@@ -38,6 +42,7 @@ CONFIGURATIONS: list[dict[str, dict[str, bool]]] = [
 
 
 def make_options(cls: type[_Options], config: dict[str, bool]) -> _Options:
+    """Options of type cls with the given settings."""
     options = cls()
     for key, value in config.items():
         setattr(options, key, value)
@@ -45,9 +50,8 @@ def make_options(cls: type[_Options], config: dict[str, bool]) -> _Options:
 
 
 def main() -> None:
+    """Write the translation counts suite."""
     parser_suite: dict[str, Any] = json.loads((ROOT / "tests/fixtures/parser_counts_suite.json").read_text())
-
-    import pypddl_datasets
 
     prefix = pypddl_datasets.data_root()
 

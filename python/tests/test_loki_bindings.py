@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Dominik Drexler
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import gc
 import json
 import operator
@@ -6,10 +9,11 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, cast
 
-from pypddl import formalism as pypddl
 import pypddl_datasets
+import pytest
 from pyyggdrasil.diagnostics import Diagnostic, format_diagnostic
 
+from pypddl import formalism as pypddl
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_DIR = ROOT / "tests" / "fixtures"
@@ -24,70 +28,66 @@ def fixture_text(case_dir: str, file_name: str = "domain.pddl") -> str:
 
 
 def load_suite(file_name: str) -> dict[str, Any]:
-    return cast(dict[str, Any], json.loads((FIXTURE_DIR / file_name).read_text(encoding="utf-8")))
+    return cast("dict[str, Any]", json.loads((FIXTURE_DIR / file_name).read_text(encoding="utf-8")))
 
 
 def test_positive_fixture_suite_replays() -> None:
     suite = load_suite("suite.json")
-    base = ROOT / cast(str, suite["prefix"])
-    for case in cast(list[dict[str, Any]], suite["cases"]):
-        parser = pypddl.Parser(base / cast(str, case["domain_file"]), pypddl.ParserOptions())
+    base = ROOT / cast("str", suite["prefix"])
+    for case in cast("list[dict[str, Any]]", suite["cases"]):
+        parser = pypddl.Parser(base / cast("str", case["domain_file"]), pypddl.ParserOptions())
         translator_options = pypddl.TranslatorOptions()
         domain_translation = pypddl.translate_domain(parser.domain(), translator_options)
-        task_file = cast(str | None, case.get("task_file"))
+        task_file = cast("str | None", case.get("task_file"))
         if task_file is not None:
             task = parser.parse_task(base / task_file)
             pypddl.translate_task(task, domain_translation, translator_options)
 
 
+def parse_case(base: Path, case: dict[str, Any], options: pypddl.ParserOptions) -> None:
+    """Parse a fixture case's domain and, when it has one, its task."""
+    parser = pypddl.Parser((base / cast("str", case["domain_file"])).read_text(encoding="utf-8"), options)
+    task_file = cast("str | None", case.get("task_file"))
+    if task_file is not None:
+        parser.parse_task((base / task_file).read_text(encoding="utf-8"))
+
+
 def test_negative_fixture_suite_replays() -> None:
     suite = load_suite("negative_suite.json")
-    base = ROOT / cast(str, suite["prefix"])
-    for case in cast(list[dict[str, Any]], suite["cases"]):
+    base = ROOT / cast("str", suite["prefix"])
+    for case in cast("list[dict[str, Any]]", suite["cases"]):
         options = pypddl.ParserOptions()
-        options.strict = cast(bool, case.get("strict", False))
+        options.strict = cast("bool", case.get("strict", False))
         options.add_action_costs = False
-        try:
-            parser = pypddl.Parser((base / cast(str, case["domain_file"])).read_text(encoding="utf-8"), options)
-            task_file = cast(str | None, case.get("task_file"))
-            if task_file is not None:
-                parser.parse_task((base / task_file).read_text(encoding="utf-8"))
-        except pypddl.SemanticError as error:
-            expected_error = cast(str, case["expected_error"])
-            assert expected_error == "SemanticError" or type(error).__name__ == expected_error, case["name"]
-            message = str(error)
-            expected_message = cast(str | None, case.get("expected_message"))
-            if expected_message is not None:
-                assert expected_message in message, case["name"]
-            expected_line = cast(int | None, case.get("expected_line"))
-            if expected_line is not None:
-                assert f"In line {expected_line}:" in message, case["name"]
-            expected_column = cast(int | None, case.get("expected_column"))
-            if expected_column is not None:
-                assert error.diagnostic.location is not None, case["name"]
-                assert error.diagnostic.location.column == expected_column, case["name"]
-        else:
-            raise AssertionError(f"{case['name']}: expected semantic error")
+        with pytest.raises(pypddl.SemanticError) as raised:
+            parse_case(base, case, options)
+        error = raised.value
+        expected_error = cast("str", case["expected_error"])
+        assert expected_error == "SemanticError" or type(error).__name__ == expected_error, case["name"]
+        message = str(error)
+        expected_message = cast("str | None", case.get("expected_message"))
+        if expected_message is not None:
+            assert expected_message in message, case["name"]
+        expected_line = cast("int | None", case.get("expected_line"))
+        if expected_line is not None:
+            assert f"In line {expected_line}:" in message, case["name"]
+        expected_column = cast("int | None", case.get("expected_column"))
+        if expected_column is not None:
+            assert error.diagnostic.location is not None, case["name"]
+            assert error.diagnostic.location.column == expected_column, case["name"]
+        del raised, error  # gone after the block, as the except clause's name was
 
 
 def test_parse_error_keeps_owned_diagnostic_context_and_filename() -> None:
     path = fixture_path("broken-syntax")
-    try:
+    with pytest.raises(pypddl.ParseError) as raised:
         pypddl.Parser(path, pypddl.ParserOptions())
-    except pypddl.ParseError as error:
-        assert type(error) is pypddl.ParseError
-        assert isinstance(error, pypddl.SemanticError)
-        diagnostic = error.diagnostic
-        rendered = str(error)
-        try:
-            setattr(error, "diagnostic", diagnostic)
-        except AttributeError:
-            pass
-        else:
-            raise AssertionError("diagnostic must be read-only")
-    else:
-        raise AssertionError("expected ParseError")
-
+    error = raised.value
+    assert type(error) is pypddl.ParseError
+    assert isinstance(error, pypddl.SemanticError)
+    diagnostic = error.diagnostic
+    rendered = str(error)
+    del raised, error  # gone after the block, as the except clause's name was
     gc.collect()
     assert isinstance(diagnostic, Diagnostic)
     assert diagnostic.location is not None
@@ -129,19 +129,22 @@ def test_parser_distinguishes_comments_trailing_tokens_and_missing_close() -> No
 
 
 def test_semantic_error_keeps_typed_category_and_owned_identifier_range() -> None:
-    source = "(define (domain sample) (:requirements :strips)\n (:predicates (p))\n (:action a :parameters () :precondition (missing) :effect (p)))"
+    source = (
+        "(define (domain sample) (:requirements :strips)\n"
+        " (:predicates (p))\n"
+        " (:action a :parameters () :precondition (missing) :effect (p)))"
+    )
     options = pypddl.ParserOptions()
     options.strict = True
     options.add_action_costs = False
-    try:
+    with pytest.raises(pypddl.UndefinedPredicateError) as raised:
         pypddl.Parser(source, options)
-    except pypddl.UndefinedPredicateError as error:
-        assert type(error) is pypddl.UndefinedPredicateError
-        assert isinstance(error, pypddl.SemanticError)
-        diagnostic = error.diagnostic
-        rendered = str(error)
-    else:
-        raise AssertionError("expected UndefinedPredicateError")
+    error = raised.value
+    assert type(error) is pypddl.UndefinedPredicateError
+    assert isinstance(error, pypddl.SemanticError)
+    diagnostic = error.diagnostic
+    rendered = str(error)
+    del raised, error  # gone after the block, as the except clause's name was
     del source
     gc.collect()
     assert isinstance(diagnostic, Diagnostic)
@@ -149,7 +152,7 @@ def test_semantic_error_keeps_typed_category_and_owned_identifier_range() -> Non
     assert diagnostic.location is not None
     span = diagnostic.location
     assert span.line == 3
-    assert span.source.text.encode("utf-8")[span.begin:span.end] == b"missing"
+    assert span.source.text.encode("utf-8")[span.begin : span.end] == b"missing"
     assert rendered == format_diagnostic(diagnostic)
 
 
@@ -165,19 +168,18 @@ def test_syntax_error_belongs_to_the_deepest_identified_construct() -> None:
     ]
     for action, owner, opening in cases:
         source = f"(define (domain sample) (:predicates (p)) {action})"
-        try:
+        with pytest.raises(pypddl.ParseError) as raised:
             pypddl.Parser(source, pypddl.ParserOptions())
-        except pypddl.ParseError as error:
-            diagnostic = error.diagnostic
-            assert f"while parsing {owner}" in diagnostic.message, action
-            assert diagnostic.location is not None
-            assert diagnostic.location.begin == source.index("bare"), action
-            assert len(diagnostic.notes) == 1
-            assert diagnostic.notes[0].message == f"{owner} starts here"
-            assert diagnostic.notes[0].location is not None
-            assert diagnostic.notes[0].location.begin == source.index(opening), action
-        else:
-            raise AssertionError(f"malformed construct was accepted as an atom: {action}")
+        error = raised.value
+        diagnostic = error.diagnostic
+        assert f"while parsing {owner}" in diagnostic.message, action
+        assert diagnostic.location is not None
+        assert diagnostic.location.begin == source.index("bare"), action
+        assert len(diagnostic.notes) == 1
+        assert diagnostic.notes[0].message == f"{owner} starts here"
+        assert diagnostic.notes[0].location is not None
+        assert diagnostic.notes[0].location.begin == source.index(opening), action
+        del raised, error  # gone after the block, as the except clause's name was
 
 
 def test_manually_created_exception_has_locationless_diagnostic() -> None:
@@ -193,40 +195,40 @@ def test_expected_grammar_subjects_are_readable() -> None:
         ("(define (domain))", "Expected identifier while parsing domain header"),
         ("(define (domain d) (:action a))", "Expected :parameters while parsing action"),
         ("(define (domain d) (:action a :parameters bare))", "Expected action parameters while parsing action"),
-        ("(define (domain d) (:types a - (either)))", "Expected one or more type expressions while parsing either type"),
+        (
+            "(define (domain d) (:types a - (either)))",
+            "Expected one or more type expressions while parsing either type",
+        ),
     ]
     for source, expected in cases:
-        try:
+        with pytest.raises(pypddl.ParseError) as raised:
             pypddl.Parser(source, pypddl.ParserOptions())
-        except pypddl.ParseError as error:
-            assert error.diagnostic.message == expected
-        else:
-            raise AssertionError(f"expected syntax error: {source}")
-
+        error = raised.value
+        assert error.diagnostic.message == expected
+        del raised, error  # gone after the block, as the except clause's name was
     parser = pypddl.Parser("(define (domain d))", pypddl.ParserOptions())
     for source, expected in [
         ("(define (problem p) (:init))", "Expected problem domain while parsing problem definition"),
         ("(define (problem p) (:domain d))", "Expected init section while parsing problem definition"),
     ]:
-        try:
+        with pytest.raises(pypddl.ParseError) as raised:
             parser.parse_task(source)
-        except pypddl.ParseError as error:
-            assert error.diagnostic.message == expected
-        else:
-            raise AssertionError(f"expected syntax error: {source}")
+        error = raised.value
+        assert error.diagnostic.message == expected
+        del raised, error  # gone after the block, as the except clause's name was
 
 
 def test_parser_count_fixture_suite_replays() -> None:
     benchmark_root = pypddl_datasets.data_root()
-    for case in cast(list[dict[str, Any]], load_suite("parser_counts_suite.json")["cases"]):
-        for configuration in cast(list[dict[str, Any]], case["configurations"]):
-            option_values = cast(dict[str, bool], configuration["parser_options"])
+    for case in cast("list[dict[str, Any]]", load_suite("parser_counts_suite.json")["cases"]):
+        for configuration in cast("list[dict[str, Any]]", case["configurations"]):
+            option_values = cast("dict[str, bool]", configuration["parser_options"])
             options = pypddl.ParserOptions()
             options.strict = option_values["strict"]
             options.add_action_costs = option_values["add_action_costs"]
-            parser = pypddl.Parser(benchmark_root / cast(str, case["domain_file"]), options)
+            parser = pypddl.Parser(benchmark_root / cast("str", case["domain_file"]), options)
             domain = parser.domain()
-            task = parser.parse_task(benchmark_root / cast(str, case["task_file"]))
+            task = parser.parse_task(benchmark_root / cast("str", case["task_file"]))
 
             assert {
                 "requirements": len(domain.get_requirements()),
@@ -252,22 +254,24 @@ def test_parser_count_fixture_suite_replays() -> None:
 def test_translation_count_fixture_suite_replays() -> None:
     benchmark_root = pypddl_datasets.data_root()
     parser_cases = {
-        cast(str, case["name"]): case
-        for case in cast(list[dict[str, Any]], load_suite("parser_counts_suite.json")["cases"])
+        cast("str", case["name"]): case
+        for case in cast("list[dict[str, Any]]", load_suite("parser_counts_suite.json")["cases"])
     }
-    for expected in cast(list[dict[str, Any]], load_suite("translation_counts_suite.json")["cases"]):
-        case = parser_cases[cast(str, expected["name"])]
-        for configuration in cast(list[dict[str, Any]], expected["configurations"]):
+    for expected in cast("list[dict[str, Any]]", load_suite("translation_counts_suite.json")["cases"]):
+        case = parser_cases[cast("str", expected["name"])]
+        for configuration in cast("list[dict[str, Any]]", expected["configurations"]):
             parser_options = pypddl.ParserOptions()
-            parser_options.add_action_costs = cast(dict[str, bool], configuration["parser_options"])["add_action_costs"]
-            option_values = cast(dict[str, bool], configuration["options"])
+            parser_options.add_action_costs = cast("dict[str, bool]", configuration["parser_options"])[
+                "add_action_costs"
+            ]
+            option_values = cast("dict[str, bool]", configuration["options"])
             translator_options = pypddl.TranslatorOptions()
             translator_options.compile_typing = option_values["compile_typing"]
             translator_options.compile_conditional_effects = option_values["compile_conditional_effects"]
             translator_options.materialize_equality = option_values["materialize_equality"]
 
-            parser = pypddl.Parser(benchmark_root / cast(str, case["domain_file"]), parser_options)
-            task = parser.parse_task(benchmark_root / cast(str, case["task_file"]))
+            parser = pypddl.Parser(benchmark_root / cast("str", case["domain_file"]), parser_options)
+            task = parser.parse_task(benchmark_root / cast("str", case["task_file"]))
             domain_translation = pypddl.translate_domain(parser.domain(), translator_options)
             domain = domain_translation.translated_domain
             translated_task = pypddl.translate_task(task, domain_translation, translator_options).translated_task
@@ -310,7 +314,11 @@ def test_parser_views_keep_temporary_parser_alive() -> None:
 
 
 def test_child_view_getters_keep_parent_views_alive() -> None:
-    domain = pypddl.Parser(fixture_text("facade"), pypddl.ParserOptions()).parse_task(fixture_text("facade", "task.pddl")).get_domain()
+    domain = (
+        pypddl.Parser(fixture_text("facade"), pypddl.ParserOptions())
+        .parse_task(fixture_text("facade", "task.pddl"))
+        .get_domain()
+    )
 
     assert domain.get_name() == "facade"
 
@@ -382,7 +390,9 @@ def test_translation_bindings_return_translated_views() -> None:
     assert domain_translation.original_domain.get_name() == "facade"
     assert domain_translation.translated_domain.get_actions()
     assert problem_translation.original_task.get_name() == "facade-task"
-    assert problem_translation.translated_task.get_domain().get_name() == domain_translation.translated_domain.get_name()
+    assert (
+        problem_translation.translated_task.get_domain().get_name() == domain_translation.translated_domain.get_name()
+    )
     assert temporary_translated_task.get_domain().get_name() == domain_translation.translated_domain.get_name()
 
 
@@ -473,13 +483,19 @@ def test_semantic_exceptions_have_expected_hierarchy() -> None:
         assert issubclass(error, pypddl.SemanticError)
 
 
-def make_literal(repository: pypddl.Repository, predicate: pypddl.Predicate, terms: Iterable[pypddl.Term], positive: bool = True) -> pypddl.Literal:
+def make_literal(
+    repository: pypddl.Repository, predicate: pypddl.Predicate, terms: Iterable[pypddl.Term], *, positive: bool = True
+) -> pypddl.Literal:
     atom, _ = repository.insert(pypddl.AtomData(predicate, list(terms)))
     return repository.insert(pypddl.LiteralData(atom, positive))[0]
 
 
-def make_condition(repository: pypddl.Repository, predicate: pypddl.Predicate, terms: Iterable[pypddl.Term], positive: bool = True) -> pypddl.Condition:
-    condition_literal, _ = repository.insert(pypddl.ConditionLiteralData(make_literal(repository, predicate, terms, positive)))
+def make_condition(
+    repository: pypddl.Repository, predicate: pypddl.Predicate, terms: Iterable[pypddl.Term], *, positive: bool = True
+) -> pypddl.Condition:
+    condition_literal, _ = repository.insert(
+        pypddl.ConditionLiteralData(make_literal(repository, predicate, terms, positive=positive))
+    )
     return repository.insert(pypddl.ConditionData(variant=condition_literal))[0]
 
 
@@ -517,7 +533,9 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     assert action_builder.precondition is None
     assert action_builder.effect is None
 
-    explicit_action_builder = pypddl.ActionData("generated-action", "original-action", [parameter], 3, condition, effect)
+    explicit_action_builder = pypddl.ActionData(
+        "generated-action", "original-action", [parameter], 3, condition, effect
+    )
     assert explicit_action_builder.name == "generated-action"
     assert explicit_action_builder.original_name == "original-action"
     assert explicit_action_builder.parameters == [parameter.get_index()]
@@ -592,12 +610,15 @@ def test_repository_constructs_numeric_function_task_bits() -> None:
     one = make_number_expression(repository, 1.0)
     numeric_node, _ = repository.insert(pypddl.ConditionNumericConstraintData(pypddl.BinaryComparator.Ge, zero, zero))
     condition, _ = repository.insert(pypddl.ConditionData(numeric_node))
-    numeric_effect_node, _ = repository.insert(pypddl.EffectNumericData(pypddl.NumericEffectOperator.Assign, function_term, one))
+    numeric_effect_node, _ = repository.insert(
+        pypddl.EffectNumericData(pypddl.NumericEffectOperator.Assign, function_term, one)
+    )
     effect, _ = repository.insert(pypddl.EffectData(numeric_effect_node))
     action, _ = repository.insert(pypddl.ActionData("refuel", [parameter], condition, effect))
     initial_value, _ = repository.insert(pypddl.InitialFunctionValueData(function_term, zero))
     metric, _ = repository.insert(pypddl.MetricData(pypddl.OptimizationDirection.Minimize, one))
-    domain, _ = repository.insert(pypddl.DomainData(
+    domain, _ = repository.insert(
+        pypddl.DomainData(
             "numeric-programmatic",
             requirements=[numeric],
             types=[object_type, number_type],
@@ -605,7 +626,8 @@ def test_repository_constructs_numeric_function_task_bits() -> None:
             actions=[action],
         ),
     )
-    task, _ = repository.insert(pypddl.TaskData(
+    task, _ = repository.insert(
+        pypddl.TaskData(
             "numeric-programmatic-task",
             domain,
             objects=[location],
@@ -683,12 +705,8 @@ def test_data_compare_by_identifying_members_and_are_unhashable() -> None:
     assert typing >= strips
     assert sorted([typing, strips]) == [strips, typing]
 
-    try:
+    with pytest.raises(TypeError):
         hash(strips)
-    except TypeError:
-        pass
-    else:
-        raise AssertionError("mutable Data bindings must be unhashable")
 
 
 def test_views_are_hashable_and_compare_by_identity() -> None:
@@ -729,12 +747,8 @@ def test_translate_task_from_different_domain_translation_uses_typed_exception()
     second_parser = pypddl.Parser(fixture_text("repo-mismatch"), pypddl.ParserOptions())
     second_task = second_parser.parse_task(fixture_text("repo-mismatch", "task.pddl"))
 
-    try:
+    with pytest.raises(pypddl.MismatchedDomainError):
         pypddl.translate_task(second_task, first_translation, pypddl.TranslatorOptions())
-    except pypddl.MismatchedDomainError:
-        pass
-    else:
-        raise AssertionError("expected mismatched domain diagnostic")
 
 
 def test_translate_task_task_only_equality_uses_typed_exception() -> None:
@@ -744,12 +758,11 @@ def test_translate_task_task_only_equality_uses_typed_exception() -> None:
     domain_translation = pypddl.translate_domain(parser.domain(), options)
     task = parser.parse_task(fixture_text("task-only-equality", "task.pddl"))
 
-    try:
+    with pytest.raises(pypddl.InvalidEqualityError) as raised:
         pypddl.translate_task(task, domain_translation, options)
-    except pypddl.InvalidEqualityError as error:
-        assert "equality predicate" in str(error)
-    else:
-        raise AssertionError("expected invalid equality diagnostic")
+    error = raised.value
+    assert "equality predicate" in str(error)
+    del raised, error  # gone after the block, as the except clause's name was
 
 
 def test_recursive_variant_views_are_inspectable() -> None:
@@ -787,12 +800,14 @@ def test_multi_args_keep_repository_alive() -> None:
                 operands,
             )
         )
-        return cast(list[pypddl.FunctionExpression], multi.get_args())
+        return multi.get_args()
 
     args = make_args()
     gc.collect()
 
-    assert args[2].get_variant().get_value() == 3.0
+    number = args[2].get_variant()
+    assert isinstance(number, pypddl.FunctionExpressionNumber)
+    assert number.get_value() == 3.0
 
 
 def test_repository_exposes_recursive_constructors_and_accessors() -> None:
@@ -824,14 +839,20 @@ def test_repository_exposes_recursive_constructors_and_accessors() -> None:
     number = make_number_expression(repository, 1.0)
     unary_node, _ = repository.insert(pypddl.UnaryFunctionExpressionData(pypddl.UnaryArithmeticOperator.Sub, number))
     unary, _ = repository.insert(pypddl.FunctionExpressionData(unary_node))
-    binary_node, _ = repository.insert(pypddl.BinaryFunctionExpressionData(pypddl.BinaryArithmeticOperator.Add, number, unary))
+    binary_node, _ = repository.insert(
+        pypddl.BinaryFunctionExpressionData(pypddl.BinaryArithmeticOperator.Add, number, unary)
+    )
     binary, _ = repository.insert(pypddl.FunctionExpressionData(binary_node))
-    multi_node, _ = repository.insert(pypddl.MultiFunctionExpressionData(pypddl.MultiArithmeticOperator.Add, [number, binary]))
+    multi_node, _ = repository.insert(
+        pypddl.MultiFunctionExpressionData(pypddl.MultiArithmeticOperator.Add, [number, binary])
+    )
     multi, _ = repository.insert(pypddl.FunctionExpressionData(multi_node))
 
     fluent, _ = repository.insert(pypddl.FunctionSkeletonData("f", [parameter], number_type))
     function_term, _ = repository.insert(pypddl.FunctionTermData(fluent, [term]))
-    numeric_effect_node, _ = repository.insert(pypddl.EffectNumericData(pypddl.NumericEffectOperator.Assign, function_term, multi))
+    numeric_effect_node, _ = repository.insert(
+        pypddl.EffectNumericData(pypddl.NumericEffectOperator.Assign, function_term, multi)
+    )
     numeric_effect, _ = repository.insert(pypddl.EffectData(numeric_effect_node))
     literal_effect = make_effect(repository, literal)
     effect_when_node, _ = repository.insert(pypddl.EffectWhenData(condition_forall, literal_effect))
@@ -846,7 +867,16 @@ def test_repository_exposes_recursive_constructors_and_accessors() -> None:
     effect_probabilistic, _ = repository.insert(pypddl.EffectData(effect_probabilistic_node))
     axiom, _ = repository.insert(pypddl.AxiomData([parameter], literal, condition_forall))
     action, _ = repository.insert(pypddl.ActionData("a", [parameter], condition_forall, effect_probabilistic))
-    domain, _ = repository.insert(pypddl.DomainData("full-builder", types=[object_type, number_type], predicates=[predicate], functions=[fluent], actions=[action], axioms=[axiom]))
+    domain, _ = repository.insert(
+        pypddl.DomainData(
+            "full-builder",
+            types=[object_type, number_type],
+            predicates=[predicate],
+            functions=[fluent],
+            actions=[action],
+            axioms=[axiom],
+        )
+    )
     task, _ = repository.insert(pypddl.TaskData("full-builder-task", domain, goal=condition_forall, axioms=[axiom]))
 
     condition_forall_variant = condition_forall.get_variant()
@@ -896,6 +926,7 @@ def test_repository_exposes_recursive_constructors_and_accessors() -> None:
     assert task_goal is not None
     assert isinstance(task_goal.get_variant(), pypddl.ConditionForall)
 
+
 if __name__ == "__main__":
     from direct_runner import run_tests
 
@@ -922,4 +953,7 @@ def test_task_declares_types_and_predicates_and_translation_reparses_strictly() 
         reparsed_task = reparsed.parse_task(task_text)
         retranslation = pypddl.translate_domain(reparsed.domain(), translator_options)
         assert pypddl.format_domain(retranslation.translated_domain) == domain_text
-        assert pypddl.format_task(pypddl.translate_task(reparsed_task, retranslation, translator_options).translated_task) == task_text
+        assert (
+            pypddl.format_task(pypddl.translate_task(reparsed_task, retranslation, translator_options).translated_task)
+            == task_text
+        )

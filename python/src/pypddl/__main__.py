@@ -1,9 +1,15 @@
+# Copyright (C) 2026 Dominik Drexler
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""``python -m pypddl``: print where the bundled native loki library is."""
+
 import argparse
 
 import pypddl
 
 
 def main() -> None:
+    """Print the requested path or version."""
     parser = argparse.ArgumentParser(
         prog="python -m pypddl",
         description="Print discovery paths for the bundled native loki library.",

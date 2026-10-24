@@ -34,5 +34,10 @@ ban-relative-imports = "all"
 # document the behavior, pytest passes parametrized values by name, every assertion
 # counts as a branch, and the test folders are not packages.
 "python/tests/**" = ["S101", "PLR2004", "D1", "FBT001", "C901", "PLR0912", "PLR0915", "INP001"]
+# Imports pyyggdrasil before its own extension: the provider's native libraries must be
+# loaded first, so the formalism import follows that call.
+"python/src/pypddl/__init__.py" = ["E402"]
+# Command-line entry points and scripts print their output.
+"{python/src/pypddl/__main__.py,profiling/combine_results.py,tests/fixtures/*.py,python/example/*.py}" = ["T201"]
 # Standalone scripts, run by the build frontend and by hand, not packages.
 "{python/pypddl_build_backend.py,profiling/combine_results.py,tests/fixtures/*.py,python/example/*.py}" = ["INP001"]
