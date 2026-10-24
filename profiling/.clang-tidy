@@ -1,0 +1,9 @@
+# Benchmarks: literal values are the benchmark sizes and data, and benchmarks register
+# themselves during static initialization, which may throw. They run on Linux, so
+# thread safety follows glibc, whose getenv is thread-safe (no benchmark calls setenv).
+InheritParentConfig: true
+Checks: >
+  -cppcoreguidelines-avoid-magic-numbers,
+  -bugprone-throwing-static-initialization
+CheckOptions:
+  concurrency-mt-unsafe.FunctionSet: glibc

@@ -33,11 +33,10 @@ static void BM_ConstructAtoms(benchmark::State& state)
 
     for (auto _ : state)
     {
-        auto repository_factory = loki::pddl::RepositoryFactory();
-        auto repository = repository_factory.create_shared();
-        auto builder = loki::pddl::Builder();
+        auto repository = loki::formalism::Repository(0);
+        auto builder = loki::formalism::Builder {};
 
-        auto atoms = create_atoms(num_objects, num_predicates, *repository, builder);
+        auto atoms = create_atoms(num_objects, num_predicates, repository, builder);
         benchmark::DoNotOptimize(atoms);
     }
 }

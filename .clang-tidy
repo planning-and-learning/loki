@@ -1,0 +1,49 @@
+# clang-tidy for peachycheck: every bugprone, cppcoreguidelines and performance check is on,
+# except where the check is wrong for any code, not just for today's:
+# - unchecked container access, constant array index: the only fix, .at(), puts a bounds
+#   check into hot loops. Debug builds check those bounds instead: LOKI_STDLIB_ASSERTIONS
+#   (CMakeLists.txt) defines _GLIBCXX_ASSERTIONS, so operator[] of std::vector, std::array and
+#   std::span asserts its index there, at no cost in Release;
+# - std-namespace-modification: std::ranges::enable_borrowed_range must be specialized in std;
+# - easily-swappable-parameters: a heuristic without a clear fix;
+# - pro-type-reinterpret-cast: byte storage views its bytes as objects (reinterpret_cast plus
+#   std::launder); casting through void* instead stays forbidden (bugprone-casting-through-void);
+# - avoid-c-arrays: std::unique_ptr<T[]> with make_unique_for_overwrite is the uninitialized buffer,
+#   which std::vector would zero;
+# - pro-type-const-cast: std::atomic_ref of a const object needs C++26; until then atomic loads of
+#   const blocks cast;
+# - crtp-constructor-accessibility: private mixin constructors break inheriting constructors
+#   (using Base::Base) and aggregate initialization of derived types.
+# From the other families, the checks that find defects rather than enforce a style:
+# the static analyzer (clang-analyzer-*), concurrency, include cycles, redundant expressions, external linkage of file-local
+# functions, discarded results, nested namespace syntax and C-style casts. Not
+# misc-const-correctness: in templates it reports variables as never modified that an
+# overload chosen at instantiation does modify (hash_combine's seed, fold-expression
+# counters); following it made hash_combine recurse forever.
+# tests/, profiling/ and python/src/ turn off more in their own files, each with its reason.
+Checks: >
+  -*,
+  bugprone-*,
+  cppcoreguidelines-*,
+  performance-*,
+  clang-analyzer-*,
+  concurrency-*,
+  misc-header-include-cycle,
+  misc-redundant-expression,
+  misc-use-internal-linkage,
+  modernize-use-nodiscard,
+  modernize-concat-nested-namespaces,
+  modernize-avoid-c-style-cast,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -bugprone-std-namespace-modification,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-pro-type-const-cast,
+  -bugprone-crtp-constructor-accessibility
+HeaderFilterRegex: '.*/(include/loki|tests|profiling|python/src|exe)/.*'
+ExcludeHeaderFilterRegex: '.*/(dependencies-install|dependencies-build|build|site-packages|_deps)/.*'
+CheckOptions:
+  # Member initializers are written `= value`, as elsewhere in the code.
+  cppcoreguidelines-use-default-member-init.UseAssignment: true

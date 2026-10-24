@@ -26,9 +26,9 @@
 namespace loki::benchmarks
 {
 
-using AtomList = std::vector<pddl::AtomView>;
+using AtomList = std::vector<formalism::AtomView>;
 
-extern AtomList create_atoms(size_t num_objects, size_t num_predicates, pddl::Repository& repository, pddl::Builder& builder);
+extern AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repository& repository, formalism::Builder& builder);
 
 }
 

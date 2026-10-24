@@ -1,0 +1,38 @@
+# ruff for peachycheck: every rule is on, except where a rule is wrong for any code
+# here, not just for today's; each exception says why.
+line-length = 120
+src = ["python/src"]
+
+[lint]
+select = ["ALL"]
+ignore = [
+    # Trailing commas are the formatter's; ruff's docs list COM812 as conflicting with it.
+    "COM812",
+    # Messages say what failed where it is raised; a class per message would only move the text.
+    "TRY003",
+    # Fires on every subprocess call, though they pass fixed argument lists and no shell.
+    "S603",
+    # Imports used only in annotations stay ordinary imports: no `if TYPE_CHECKING:`
+    # blocks (banned below), so every name a module annotates is also there at runtime.
+    "TC001", "TC002", "TC003",
+]
+
+# Google Python Style Guide docstrings; this also settles ruff's conflicting
+# docstring rules (D203/D211, D212/D213).
+[lint.pydocstyle]
+convention = "google"
+
+# Absolute imports only.
+[lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[lint.flake8-tidy-imports.banned-api]
+"typing.TYPE_CHECKING".msg = "Import at module level instead; modules here have no import cycles to break."
+
+[lint.per-file-ignores]
+# Tests: pytest asserts with `assert`, literal values are the test data, test names
+# document the behavior, pytest passes parametrized values by name, every assertion
+# counts as a branch, and the test folders are not packages.
+"python/tests/**" = ["S101", "PLR2004", "D1", "FBT001", "C901", "PLR0912", "PLR0915", "INP001"]
+# Standalone scripts, run by the build frontend and by hand, not packages.
+"{python/pypddl_build_backend.py,profiling/combine_results.py,tests/fixtures/*.py,python/example/*.py}" = ["INP001"]

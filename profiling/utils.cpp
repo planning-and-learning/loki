@@ -18,41 +18,64 @@
 #include "utils.hpp"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace loki::benchmarks
 {
-
-AtomList create_atoms(size_t num_objects, size_t num_predicates, pddl::Repository& repository, pddl::Builder& builder)
+namespace
 {
-    auto objects = std::vector<pddl::ObjectView> {};
+template<typename T, typename Initialize>
+formalism::EntityView<T> intern(formalism::Repository& repository, formalism::Builder& builder, Initialize&& initialize)
+{
+    auto data = formalism::checkout<T>(builder);
+    std::forward<Initialize>(initialize)(*data);
+    return formalism::insert(repository, *data).first;
+}
+}  // namespace
+
+AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repository& repository, formalism::Builder& builder)
+{
+    auto objects = std::vector<formalism::ObjectView> {};
     objects.reserve(num_objects);
     for (size_t i = 1; i <= num_objects; ++i)
-        objects.push_back(builder.object(repository, cista::offset::string("object_" + std::to_string(i)), {}));
+        objects.push_back(intern<formalism::Object>(repository, builder, [&](auto& data) { data.name = "object_" + std::to_string(i); }));
 
-    auto parameters = ygg::IndexList<pddl::Parameter> {};
-    parameters.push_back(builder.parameter(repository, builder.variable(repository, cista::offset::string("variable_left")).get_index(), {}).get_index());
-    parameters.push_back(builder.parameter(repository, builder.variable(repository, cista::offset::string("variable_right")).get_index(), {}).get_index());
+    const auto parameter = [&](const char* name)
+    {
+        const auto variable = intern<formalism::Variable>(repository, builder, [&](auto& data) { data.name = name; });
+        return intern<formalism::Parameter>(repository, builder, [&](auto& data) { data.variable = variable.get_index(); }).get_index();
+    };
+    const auto parameters = ygg::IndexList<formalism::Parameter> { parameter("variable_left"), parameter("variable_right") };
 
-    auto predicates = std::vector<pddl::PredicateView> {};
+    auto predicates = std::vector<formalism::PredicateView> {};
     predicates.reserve(num_predicates);
     for (size_t i = 1; i <= num_predicates; ++i)
-        predicates.push_back(builder.predicate(repository, cista::offset::string("predicate_" + std::to_string(i)), parameters));
+        predicates.push_back(intern<formalism::Predicate>(repository,
+                                                          builder,
+                                                          [&](auto& data)
+                                                          {
+                                                              data.name = "predicate_" + std::to_string(i);
+                                                              data.parameters = parameters;
+                                                          }));
 
+    const auto term = [&](formalism::ObjectView object)
+    {
+        return intern<formalism::Term>(repository, builder, [&](auto& data) { data.variant = ygg::Data<formalism::Term>::Variant(object.get_index()); })
+            .get_index();
+    };
     auto atoms = AtomList {};
     atoms.reserve(num_objects * num_objects * num_predicates);
     for (const auto& predicate : predicates)
-    {
         for (const auto& object_left : objects)
-        {
-            const auto left_term = builder.term(repository, ygg::Data<pddl::Term>::Variant(object_left.get_index())).get_index();
             for (const auto& object_right : objects)
-            {
-                const auto right_term = builder.term(repository, ygg::Data<pddl::Term>::Variant(object_right.get_index())).get_index();
-                atoms.push_back(builder.atom(repository, predicate.get_index(), ygg::IndexList<pddl::Term> { left_term, right_term }));
-            }
-        }
-    }
+                atoms.push_back(intern<formalism::Atom>(repository,
+                                                        builder,
+                                                        [&](auto& data)
+                                                        {
+                                                            data.predicate = predicate.get_index();
+                                                            data.terms = ygg::IndexList<formalism::Term> { term(object_left), term(object_right) };
+                                                        }));
     return atoms;
 }
 

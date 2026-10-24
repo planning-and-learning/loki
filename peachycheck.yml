@@ -1,0 +1,4 @@
+# peachycheck's configuration: https://github.com/drexlerd/peachycheck#configuration
+ENABLE_LINTERS: [PYTHON_RUFF, PYTHON_RUFF_FORMAT, PYTHON_PYRIGHT, CPP_CLANG_TIDY, CPP_CLANG_FORMAT]
+# The file that holds nothing but nanobind's module macro, whose global and C variadic call are nanobind's.
+CPP_CLANG_TIDY_FILTER_REGEX_EXCLUDE: '^python/src/module\.cpp$'
