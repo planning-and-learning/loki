@@ -130,7 +130,7 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
         for (const auto& node : task.requirements)
         {
             const auto kind = requirement_kind(node, m_diagnostics);
-            for (const auto domain_requirement : m_domain_context.domain->get_requirements())
+            for (const auto domain_requirement : m_domain_context.get_domain().get_requirements())
                 if (domain_requirement.get_kind() == kind)
                     m_diagnostics.throw_at(node.name, RedundantRequirementError(node.name.text));
         }
@@ -162,7 +162,7 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
 
     auto data = formalism::checkout<formalism::Task>(m_builder);
     data->name = to_cista(task.name.text);
-    data->domain = m_domain_context.domain->get_index();
+    data->domain = m_domain_context.get_domain().get_index();
     append_indices(requirements, data->requirements);
     append_indices(types, data->types);
     append_indices(predicates, data->predicates);

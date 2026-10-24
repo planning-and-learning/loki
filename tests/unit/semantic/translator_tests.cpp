@@ -21,8 +21,8 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 #include <initializer_list>
-#include <loki/formalism/repository.hpp>
 #include <loki/formalism/formatter.hpp>
+#include <loki/formalism/repository.hpp>
 #include <loki/semantic/errors.hpp>
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
@@ -80,13 +80,15 @@ template<typename T>
 formalism::FunctionExpressionView wrap_expression(formalism::Repository& repository, formalism::Builder& builder, T node)
 {
     return intern<formalism::FunctionExpression<>>(repository,
-                                                 builder,
-                                                 [&](auto& data) { data.variant = ygg::Data<formalism::FunctionExpression<>>::Variant(node.get_index()); });
+                                                   builder,
+                                                   [&](auto& data) { data.variant = ygg::Data<formalism::FunctionExpression<>>::Variant(node.get_index()); });
 }
 
 formalism::FunctionExpressionView number_expression(formalism::Repository& repository, formalism::Builder& builder, double value)
 {
-    return wrap_expression(repository, builder, intern<formalism::FunctionExpression<formalism::NumberTag>>(repository, builder, [&](auto& data) { data.value = value; }));
+    return wrap_expression(repository,
+                           builder,
+                           intern<formalism::FunctionExpression<formalism::NumberTag>>(repository, builder, [&](auto& data) { data.value = value; }));
 }
 
 formalism::FunctionExpressionView binary_expression(formalism::Repository& repository,
@@ -98,13 +100,13 @@ formalism::FunctionExpressionView binary_expression(formalism::Repository& repos
     return wrap_expression(repository,
                            builder,
                            intern<formalism::FunctionExpression<formalism::BinaryTag>>(repository,
-                                                                       builder,
-                                                                       [&](auto& data)
-                                                                       {
-                                                                           data.op = op;
-                                                                           data.left = left.get_index();
-                                                                           data.right = right.get_index();
-                                                                       }));
+                                                                                       builder,
+                                                                                       [&](auto& data)
+                                                                                       {
+                                                                                           data.op = op;
+                                                                                           data.left = left.get_index();
+                                                                                           data.right = right.get_index();
+                                                                                       }));
 }
 
 formalism::FunctionExpressionView multi_expression(formalism::Repository& repository,
@@ -115,13 +117,13 @@ formalism::FunctionExpressionView multi_expression(formalism::Repository& reposi
     return wrap_expression(repository,
                            builder,
                            intern<formalism::FunctionExpression<formalism::MultiTag>>(repository,
-                                                                      builder,
-                                                                      [&](auto& data)
-                                                                      {
-                                                                          data.op = op;
-                                                                          for (const auto expression : expressions)
-                                                                              data.args.push_back(expression.get_index());
-                                                                      }));
+                                                                                      builder,
+                                                                                      [&](auto& data)
+                                                                                      {
+                                                                                          data.op = op;
+                                                                                          for (const auto expression : expressions)
+                                                                                              data.args.push_back(expression.get_index());
+                                                                                      }));
 }
 
 bool contains_binary_add_or_multiply(formalism::FunctionExpressionView expression)
@@ -186,8 +188,8 @@ TEST(LokiSemanticTranslator, SeparatesSiblingExistentialsOverSameVariable)
     const auto second_reference = conjunct_variable(action.get_precondition().value(), "b", 0);
     ASSERT_TRUE(first_reference.has_value());
     ASSERT_TRUE(second_reference.has_value());
-    EXPECT_EQ(*first_reference, first);
-    EXPECT_EQ(*second_reference, second);
+    EXPECT_EQ(first_reference.value(), first);
+    EXPECT_EQ(second_reference.value(), second);
 }
 
 TEST(LokiSemanticTranslator, LiftedParameterAvoidsFreeVariablesWhenRenaming)
@@ -209,7 +211,7 @@ TEST(LokiSemanticTranslator, LiftedParameterAvoidsFreeVariablesWhenRenaming)
     ASSERT_TRUE(action.get_precondition().has_value());
     const auto free_reference = conjunct_variable(action.get_precondition().value(), "b", 1);
     ASSERT_TRUE(free_reference.has_value());
-    EXPECT_EQ(*free_reference, "?p_0");
+    EXPECT_EQ(free_reference.value(), "?p_0");
 }
 
 TEST(LokiSemanticTranslator, RenamesBeforeNegationNormalFormOnlyOnce)
@@ -320,7 +322,7 @@ TEST(LokiSemanticTranslator, CompilesTypingWhenEnabled)
 
     const auto thing_predicate = predicate_named(translated_domain, "thing");
     ASSERT_TRUE(thing_predicate.has_value());
-    EXPECT_TRUE(initial_literals_use_predicate(translated_task.get_initial_literals(), "thing", *thing_predicate));
+    EXPECT_TRUE(initial_literals_use_predicate(translated_task.get_initial_literals(), "thing", thing_predicate.value()));
 }
 
 TEST(LokiSemanticTranslator, CompilesEitherTypesIntoUnionTypes)
@@ -352,9 +354,9 @@ TEST(LokiSemanticTranslator, CompilesEitherTypesIntoUnionTypes)
 
 TEST(LokiSemanticTranslator, UnionTypeNamesAvoidDeclaredTypes)
 {
-    const auto domain_source = std::string(
-        "(define (domain d) (:requirements :strips :typing) (:types a b either_a_b - object)"
-        " (:predicates (p ?x - (either a b))) (:action act :parameters (?x - (either a b)) :precondition (p ?x) :effect (not (p ?x))))");
+    const auto domain_source =
+        std::string("(define (domain d) (:requirements :strips :typing) (:types a b either_a_b - object)"
+                    " (:predicates (p ?x - (either a b))) (:action act :parameters (?x - (either a b)) :precondition (p ?x) :effect (not (p ?x))))");
     semantic::Parser parser(domain_source);
     const auto translation = semantic::translate(parser.get_domain(), semantic::TranslatorOptions { .compile_typing = true });
     const auto translated_domain = translation.get_translated_domain();
@@ -412,7 +414,8 @@ TEST(LokiSemanticTranslator, ConstantMetricUsesNumericFluents)
 {
     const auto strict = semantic::ParserOptions { .strict = true, .add_action_costs = false };
     auto parser = semantic::Parser(std::string("(define (domain d) (:requirements :strips) (:predicates (p)) (:action a :parameters () :effect (p)))"), strict);
-    const auto task = parser.parse_task(std::string("(define (problem q) (:domain d) (:requirements :numeric-fluents) (:init) (:goal (p)) (:metric minimize 5))"));
+    const auto task =
+        parser.parse_task(std::string("(define (problem q) (:domain d) (:requirements :numeric-fluents) (:init) (:goal (p)) (:metric minimize 5))"));
 
     // The translated task declares :numeric-fluents for its metric, so it reparses in strict mode.
     const auto domain_translation = semantic::translate(parser.get_domain());
@@ -442,22 +445,24 @@ TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
     auto target = semantic::detail::TranslationStorage(2);
     auto builder = formalism::Builder {};
     const auto original_base = intern<formalism::Type>(original, builder, [](auto& data) { data.name = "parent"; });
-    const auto original_type = intern<formalism::Type>(original, builder, [&](auto& data)
-    {
-        data.name = "child";
-        data.bases.push_back(original_base.get_index());
-    });
+    const auto original_type = intern<formalism::Type>(original,
+                                                       builder,
+                                                       [&](auto& data)
+                                                       {
+                                                           data.name = "child";
+                                                           data.bases.push_back(original_base.get_index());
+                                                       });
     const auto middle_base = intern<formalism::Type>(previous.repository, builder, [](auto& data) { data.name = "parent"; });
-    const auto middle_type = intern<formalism::Type>(previous.repository, builder, [&](auto& data)
-    {
-        data.name = "child";
-        data.bases.push_back(middle_base.get_index());
-    });
+    const auto middle_type = intern<formalism::Type>(previous.repository,
+                                                     builder,
+                                                     [&](auto& data)
+                                                     {
+                                                         data.name = "child";
+                                                         data.bases.push_back(middle_base.get_index());
+                                                     });
     const auto final_base = intern<formalism::Type>(target.repository, builder, [](auto& data) { data.name = "parent"; });
     const auto object = [&](formalism::Repository& repository, const char* name)
-    {
-        return intern<formalism::Object>(repository, builder, [&](auto& data) { data.name = name; });
-    };
+    { return intern<formalism::Object>(repository, builder, [&](auto& data) { data.name = name; }); };
     const auto original_object = object(original, "kept");
     const auto middle_object = object(previous.repository, "kept");
     const auto final_object = object(target.repository, "kept");
@@ -788,8 +793,11 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
     const auto q_literal = make_literal(q_atom);
     const auto make_condition = [&](auto literal)
     {
-        const auto condition_literal = intern<formalism::Condition<formalism::LiteralTag>>(repository, builder, [&](auto& data) { data.literal = literal; }).get_index();
-        return intern<formalism::Condition<>>(repository, builder, [&](auto& data) { data.variant = ygg::Data<formalism::Condition<>>::Variant(condition_literal); });
+        const auto condition_literal =
+            intern<formalism::Condition<formalism::LiteralTag>>(repository, builder, [&](auto& data) { data.literal = literal; }).get_index();
+        return intern<formalism::Condition<>>(repository,
+                                              builder,
+                                              [&](auto& data) { data.variant = ygg::Data<formalism::Condition<>>::Variant(condition_literal); });
     };
     const auto p_condition_view = make_condition(p_literal);
     const auto q_condition_view = make_condition(q_literal);
@@ -797,20 +805,20 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
     const auto q_condition = q_condition_view.get_index();
 
     const auto first = intern<formalism::Condition<formalism::AndTag>>(repository,
-                                                       builder,
-                                                       [&](auto& data)
-                                                       {
-                                                           data.conditions.push_back(q_condition);
-                                                           data.conditions.push_back(p_condition);
-                                                       });
+                                                                       builder,
+                                                                       [&](auto& data)
+                                                                       {
+                                                                           data.conditions.push_back(q_condition);
+                                                                           data.conditions.push_back(p_condition);
+                                                                       });
 
     const auto second = intern<formalism::Condition<formalism::AndTag>>(repository,
-                                                        builder,
-                                                        [&](auto& data)
-                                                        {
-                                                            data.conditions.push_back(p_condition);
-                                                            data.conditions.push_back(q_condition);
-                                                        });
+                                                                        builder,
+                                                                        [&](auto& data)
+                                                                        {
+                                                                            data.conditions.push_back(p_condition);
+                                                                            data.conditions.push_back(q_condition);
+                                                                        });
 
     EXPECT_EQ(first, second);
     ASSERT_EQ(first.get_conditions().size(), 2);

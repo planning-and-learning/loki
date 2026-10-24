@@ -25,7 +25,7 @@ namespace loki::semantic::detail
 {
 
 template<typename T>
-void compose_map(ViewMap<T>& out, const ViewMap<T>& source_to_middle, const ViewMap<T>& middle_to_target)
+static void compose_map(ViewMap<T>& out, const ViewMap<T>& source_to_middle, const ViewMap<T>& middle_to_target)
 {
     ViewMap<T> composed;
     for (const auto& [source, middle] : source_to_middle)
@@ -37,7 +37,7 @@ void compose_map(ViewMap<T>& out, const ViewMap<T>& source_to_middle, const View
     out = std::move(composed);
 }
 
-formalism::TypeView copy_type_view_for_metadata(TranslationStorage& target, formalism::Builder& builder, formalism::TypeView source)
+static formalism::TypeView copy_type_view_for_metadata(TranslationStorage& target, formalism::Builder& builder, formalism::TypeView source)
 {
     if (auto mapped = find_mapped(target.types, source))
         return *mapped;
@@ -52,11 +52,11 @@ formalism::TypeView copy_type_view_for_metadata(TranslationStorage& target, form
     return out;
 }
 
-void remap_object_type_metadata(TranslationStorage& target,
-                                formalism::Builder& builder,
-                                const TranslationStorage& source,
-                                const ViewMap<formalism::Object>& object_map,
-                                const ViewMap<formalism::Type>& type_map)
+static void remap_object_type_metadata(TranslationStorage& target,
+                                       formalism::Builder& builder,
+                                       const TranslationStorage& source,
+                                       const ViewMap<formalism::Object>& object_map,
+                                       const ViewMap<formalism::Type>& type_map)
 {
     target.object_type_views.clear();
     for (const auto& [source_object, type_views] : source.object_type_views)
@@ -135,10 +135,8 @@ std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::Domai
 }
 
 template<typename T>
-void copy_map(ViewMap<T>& target, const ViewMap<T>& source)
-{
-    target = source;
-}
+static void copy_map(ViewMap<T>& target, const ViewMap<T>& source)
+{ target = source; }
 
 void compose_storage_maps_from_previous(TranslationStorage& target, const TranslationStorage& previous)
 {
@@ -202,7 +200,7 @@ void inherit_domain_mappings(TranslationStorage& problem, const TranslationStora
 }
 
 template<typename T>
-void copy_identity_map(ViewMap<T>& target, const ViewMap<T>& source)
+static void copy_identity_map(ViewMap<T>& target, const ViewMap<T>& source)
 {
     for (const auto& [_, view] : source)
         target.emplace(view, view);
@@ -210,7 +208,7 @@ void copy_identity_map(ViewMap<T>& target, const ViewMap<T>& source)
 
 void inherit_domain_identity_mappings(TranslationStorage& problem, const TranslationStorage& domain)
 {
-    problem.domains.emplace(*domain.translated_domain, *domain.translated_domain);
+    problem.domains.emplace(domain.translated(), domain.translated());
     copy_identity_map(problem.requirements, domain.requirements);
     copy_identity_map(problem.types, domain.types);
     copy_identity_map(problem.objects, domain.objects);
@@ -220,15 +218,14 @@ void inherit_domain_identity_mappings(TranslationStorage& problem, const Transla
     problem.translated_domain = domain.translated_domain;
 }
 
-std::shared_ptr<TranslationStorage>
-canonicalize_problem_storage(formalism::TaskView middle_task,
-                             const std::shared_ptr<TranslationStorage>& middle,
-                             std::shared_ptr<const TranslationStorage> domain)
+std::shared_ptr<TranslationStorage> canonicalize_problem_storage(formalism::TaskView middle_task,
+                                                                 const std::shared_ptr<TranslationStorage>& middle,
+                                                                 std::shared_ptr<const TranslationStorage> domain)
 {
     auto canonical = std::make_shared<TranslationStorage>(middle->repository.get_index(), domain);
     inherit_domain_identity_mappings(*canonical, *domain);
-    if (middle->translated_domain->get_index() == domain->translated_domain->get_index())
-        remember(canonical->domains, *middle->translated_domain, *domain->translated_domain);
+    if (middle->translated().get_index() == domain->translated().get_index())
+        remember(canonical->domains, middle->translated(), domain->translated());
     auto context = CanonicalCopyTranslator(canonical);
     copy(middle_task, context);
     compose_storage_maps_from_previous(*canonical, *middle);

@@ -39,7 +39,7 @@ struct PhaseStep
     bool requires_compile_conditional_effects = false;
 };
 
-const std::vector<PhaseStep>& domain_phase_steps()
+static const std::vector<PhaseStep>& domain_phase_steps()
 {
     static const auto steps = std::vector<PhaseStep> {
         { TranslationPhase::ToNegationNormalForm, "to-negation-normal-form" },
@@ -63,7 +63,7 @@ const std::vector<PhaseStep>& domain_phase_steps()
     return steps;
 }
 
-const std::vector<PhaseStep>& task_phase_steps()
+static const std::vector<PhaseStep>& task_phase_steps()
 {
     static const auto steps = std::vector<PhaseStep> {
         { TranslationPhase::ToNegationNormalForm, "to-negation-normal-form" },
@@ -95,7 +95,7 @@ DomainTranslationResult::DomainTranslationResult(formalism::DomainView original_
 
 formalism::DomainView DomainTranslationResult::get_original_domain() const noexcept { return m_original_domain; }
 
-formalism::DomainView DomainTranslationResult::get_translated_domain() const noexcept { return *m_storage->translated_domain; }
+formalism::DomainView DomainTranslationResult::get_translated_domain() const noexcept { return m_storage->translated(); }
 
 const formalism::Repository& DomainTranslationResult::get_repository() const noexcept { return m_storage->repository; }
 

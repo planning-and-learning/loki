@@ -64,7 +64,7 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::wrap_effect(formali
 
 template<typename Derived>
 template<typename T>
-std::optional<formalism::EntityView<T>> ToEffectNormalFormTranslator<Derived>::as_effect(formalism::EffectView effect) const
+[[nodiscard]] std::optional<formalism::EntityView<T>> ToEffectNormalFormTranslator<Derived>::as_effect(formalism::EffectView effect) const
 {
     const auto variant = effect.get_variant();
     if (variant.template is<ygg::Index<T>>())
@@ -81,12 +81,11 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect(fo
 template<typename Derived>
 template<typename T>
 formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView effect, formalism::EntityView<T>)
-{
-    return effect;
-}
+{ return effect; }
 
 template<typename Derived>
-formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView, formalism::EntityView<formalism::Effect<formalism::AndTag>> node)
+formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView,
+                                                                                   formalism::EntityView<formalism::Effect<formalism::AndTag>> node)
 {
     struct NumericGroup
     {
@@ -164,7 +163,8 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
 }
 
 template<typename Derived>
-formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView, formalism::EntityView<formalism::Effect<formalism::ForallTag>> node)
+formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView,
+                                                                                   formalism::EntityView<formalism::Effect<formalism::ForallTag>> node)
 {
     const auto& data = node.get_data();
     const auto nested = this->self().normalize_effect(node.get_effect());
@@ -202,7 +202,8 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
 }
 
 template<typename Derived>
-formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView, formalism::EntityView<formalism::Effect<formalism::WhenTag>> node)
+formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView,
+                                                                                   formalism::EntityView<formalism::Effect<formalism::WhenTag>> node)
 {
     const auto moved_condition = this->self().move_existentials(node.get_condition());
     auto condition = this->self().flatten_condition(this->self().to_dnf(moved_condition));

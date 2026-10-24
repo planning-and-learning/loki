@@ -38,7 +38,7 @@ public:
     template<typename T>
     void push_unique(ygg::IndexList<T>& list, ygg::UnorderedSet<formalism::EntityView<T>>& seen, formalism::EntityView<T> value);
 
-    ygg::UnorderedSet<std::string> used_predicate_names() const;
+    [[nodiscard]] ygg::UnorderedSet<std::string> used_predicate_names() const;
 
     std::string next_generated_predicate_name(std::string_view prefix);
 
@@ -61,7 +61,7 @@ ygg::UnorderedSet<std::string> CopyTranslatorFacade<Derived>::used_predicate_nam
     auto names = this->m_context.used_predicate_names;
     if (this->m_context.storage->translated_domain)
     {
-        for (auto predicate : this->m_context.storage->translated_domain->get_predicates())
+        for (auto predicate : this->m_context.storage->translated().get_predicates())
             names.insert(std::string(predicate.get_name()));
     }
     return names;
@@ -141,7 +141,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
         return { *mapped, false };
     auto data = formalism::checkout<formalism::Task>(this->m_context.builder);
     data->name = task.get_data().name;
-    data->domain = this->m_context.storage->translated_domain->get_index();
+    data->domain = this->m_context.storage->translated().get_index();
     this->self().template copy_list<formalism::Requirement>(task.get_requirements(), data->requirements);
     this->self().template copy_list<formalism::Object>(task.get_objects(), data->objects);
     this->self().template copy_list<formalism::Literal>(task.get_initial_literals(), data->initial_literals);
@@ -214,7 +214,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             this->self().initialize_type_literals(*data, task);
             break;
         case TranslationPhase::InferRequirements:
-            this->self().set_requirements(infer_requirements(copied_task, *this->m_context.storage->translated_domain), data->requirements);
+            this->self().set_requirements(infer_requirements(copied_task, this->m_context.storage->translated()), data->requirements);
             break;
         default:
             // data is unchanged since the first insert, so a second insert would only re-canonicalize it.

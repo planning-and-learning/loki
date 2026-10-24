@@ -32,6 +32,7 @@
 #include <variant>
 #include <vector>
 #include <yggdrasil/containers/associative_containers.hpp>
+#include <yggdrasil/core/config.hpp>
 #include <yggdrasil/semantics/equal_to.hpp>
 #include <yggdrasil/semantics/hash.hpp>
 
@@ -105,6 +106,13 @@ struct TranslationStorage
     formalism::Repository repository;
     std::optional<formalism::DomainView> translated_domain;
 
+    /// The translated domain; a problem's translation starts from it, so it is set (asserted in Debug).
+    [[nodiscard]] formalism::DomainView translated() const noexcept
+    {
+        YGG_ASSUME(translated_domain.has_value());
+        return *translated_domain;
+    }
+
     ViewMap<formalism::Requirement> requirements;
     ViewMap<formalism::Type> types;
     ViewMap<formalism::Object> objects;
@@ -158,22 +166,17 @@ std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::Domai
 void compose_storage_maps_from_previous(TranslationStorage& target, const TranslationStorage& previous);
 void inherit_domain_mappings(TranslationStorage& problem, const TranslationStorage& domain);
 void inherit_domain_identity_mappings(TranslationStorage& problem, const TranslationStorage& domain);
-std::shared_ptr<TranslationStorage>
-canonicalize_problem_storage(formalism::TaskView middle_task,
-                             const std::shared_ptr<TranslationStorage>& middle,
-                             std::shared_ptr<const TranslationStorage> domain);
+std::shared_ptr<TranslationStorage> canonicalize_problem_storage(formalism::TaskView middle_task,
+                                                                 const std::shared_ptr<TranslationStorage>& middle,
+                                                                 std::shared_ptr<const TranslationStorage> domain);
 
 template<typename T>
 ygg::Index<T> as_index(ygg::Index<T> index) noexcept
-{
-    return index;
-}
+{ return index; }
 
 template<typename T>
 ygg::Index<T> as_index(formalism::EntityView<T> view) noexcept
-{
-    return view.get_index();
-}
+{ return view.get_index(); }
 
 template<typename T>
 std::optional<formalism::EntityView<T>> find_mapped(const ViewMap<T>& map, formalism::EntityView<T> source)
@@ -185,9 +188,7 @@ std::optional<formalism::EntityView<T>> find_mapped(const ViewMap<T>& map, forma
 
 template<typename T>
 void remember(ViewMap<T>& map, formalism::EntityView<T> source, formalism::EntityView<T> target)
-{
-    map.emplace(source, target);
-}
+{ map.emplace(source, target); }
 
 }  // namespace detail
 }  // namespace loki::semantic

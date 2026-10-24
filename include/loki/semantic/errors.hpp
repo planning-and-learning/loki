@@ -37,9 +37,9 @@ class LOKI_SEMANTIC_ERROR_API SemanticError : public std::runtime_error
 public:
     explicit SemanticError(std::string message) : std::runtime_error(message), m_diagnostic { std::move(message) }, m_display_message(m_diagnostic.message) {}
 
-    const char* what() const noexcept override { return m_display_message.c_str(); }
-    const std::string& message() const noexcept { return m_diagnostic.message; }
-    const ygg::diagnostics::Diagnostic& diagnostic() const noexcept { return m_diagnostic; }
+    [[nodiscard]] const char* what() const noexcept override { return m_display_message.c_str(); }
+    [[nodiscard]] const std::string& message() const noexcept { return m_diagnostic.message; }
+    [[nodiscard]] const ygg::diagnostics::Diagnostic& diagnostic() const noexcept { return m_diagnostic; }
 
     void set_diagnostic(ygg::diagnostics::Diagnostic diagnostic)
     {
@@ -90,10 +90,7 @@ public:
 class LOKI_SEMANTIC_ERROR_API RedundantRequirementError : public SemanticError
 {
 public:
-    explicit RedundantRequirementError(const std::string& requirement) :
-        SemanticError("Task requirement already declared by the domain: :" + requirement)
-    {
-    }
+    explicit RedundantRequirementError(const std::string& requirement) : SemanticError("Task requirement already declared by the domain: :" + requirement) {}
 };
 
 class LOKI_SEMANTIC_ERROR_API UndefinedTypeError : public SemanticError

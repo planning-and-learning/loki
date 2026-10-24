@@ -15,7 +15,7 @@ struct TypeRepository
 {
     using SymbolTypes = ygg::TypeList<loki::formalism::Type>;
     const Data& operator[](Index) const;
-    size_t get_index() const;
+    [[nodiscard]] size_t get_index() const;
 };
 struct TypeContext
 {

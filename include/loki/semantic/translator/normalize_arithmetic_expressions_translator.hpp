@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <yggdrasil/core/config.hpp>
 
 namespace loki::semantic::detail
 {
@@ -61,7 +62,7 @@ private:
                                    formalism::FunctionExpressionView source,
                                    ygg::IndexList<formalism::FunctionExpression<>>& operands,
                                    std::optional<formalism::FunctionExpressionView>& first_operand);
-    bool is_unit(formalism::MultiArithmeticOperator op, formalism::FunctionExpressionView expression) const;
+    [[nodiscard]] bool is_unit(formalism::MultiArithmeticOperator op, formalism::FunctionExpressionView expression) const;
 };
 
 template<typename Derived>
@@ -84,19 +85,17 @@ formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Deriv
 }
 
 template<typename Derived>
-formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source)
-{
-    return wrap(this->self().copy(source));
-}
+formalism::FunctionExpressionView
+NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source)
+{ return wrap(this->self().copy(source)); }
 
 template<typename Derived>
 formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::FunctionTermView source)
-{
-    return wrap(this->self().copy(source));
-}
+{ return wrap(this->self().copy(source)); }
 
 template<typename Derived>
-formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source)
+formalism::FunctionExpressionView
+NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source)
 {
     const auto expression = normalize_arithmetic_expression(source.get_expression());
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(this->m_context.builder);
@@ -106,7 +105,8 @@ formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Deriv
 }
 
 template<typename Derived>
-formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source)
+formalism::FunctionExpressionView
+NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source)
 {
     switch (source.get_operator())
     {
@@ -130,10 +130,9 @@ formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Deriv
 }
 
 template<typename Derived>
-formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source)
-{
-    return normalize_associative(source.get_operator(), source.get_args());
-}
+formalism::FunctionExpressionView
+NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source)
+{ return normalize_associative(source.get_operator(), source.get_args()); }
 
 template<typename Derived>
 formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Derived>::make_number(double value)
@@ -156,7 +155,10 @@ formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Deriv
     if (data->args.empty())
         return make_number(op == formalism::MultiArithmeticOperator::Add ? 0.0 : 1.0);
     if (data->args.size() == 1)
-        return first_operand.value();
+    {
+        YGG_ASSUME(first_operand.has_value());  // the one operand appended is the first
+        return *first_operand;
+    }
 
     data->op = op;
     return wrap(formalism::insert(this->m_context.storage->repository, *data).first);

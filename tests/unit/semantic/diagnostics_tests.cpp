@@ -117,10 +117,10 @@ TEST(LokiSemanticDiagnostics, NestedExpressionKeepsItsFirstFailureAndContext)
     const auto diagnostic = handler.diagnostic("fallback", source.cbegin());
     EXPECT_NE(diagnostic.message.find("while parsing and condition"), std::string::npos);
     ASSERT_TRUE(diagnostic.location);
-    EXPECT_EQ(diagnostic.location->begin(), source.size());
+    EXPECT_EQ(diagnostic.location.value().begin(), source.size());
     ASSERT_EQ(diagnostic.notes.size(), 1);
     ASSERT_TRUE(diagnostic.notes.front().location);
-    EXPECT_EQ(diagnostic.notes.front().location->begin(), 2);
+    EXPECT_EQ(diagnostic.notes.front().location.value().begin(), 2);
 }
 
 TEST(LokiSemanticDiagnostics, OnlyIdentifiedChildConditionsOwnTheirErrors)
@@ -154,11 +154,11 @@ TEST(LokiSemanticDiagnostics, OnlyIdentifiedChildConditionsOwnTheirErrors)
         EXPECT_NE(diagnostic.message.find("while parsing " + item.owner), std::string::npos);
         ASSERT_TRUE(diagnostic.location);
         const auto opening = item.source.find(item.opening);
-        EXPECT_EQ(diagnostic.location->begin(), item.source.find(item.offending, opening + 1));
+        EXPECT_EQ(diagnostic.location.value().begin(), item.source.find(item.offending, opening + 1));
         ASSERT_EQ(diagnostic.notes.size(), 1);
         EXPECT_EQ(diagnostic.notes.front().message, item.owner + " starts here");
         ASSERT_TRUE(diagnostic.notes.front().location);
-        EXPECT_EQ(diagnostic.notes.front().location->begin(), opening);
+        EXPECT_EQ(diagnostic.notes.front().location.value().begin(), opening);
     }
 }
 
@@ -183,10 +183,10 @@ TEST(LokiSemanticDiagnostics, OnlyIdentifiedChildEffectsOwnTheirErrors)
         const auto diagnostic = handler.diagnostic("fallback", source.cbegin());
         EXPECT_NE(diagnostic.message.find(std::string("while parsing ") + owner), std::string::npos);
         ASSERT_TRUE(diagnostic.location);
-        EXPECT_EQ(diagnostic.location->begin(), source.find("bare"));
+        EXPECT_EQ(diagnostic.location.value().begin(), source.find("bare"));
         ASSERT_EQ(diagnostic.notes.size(), 1);
         ASSERT_TRUE(diagnostic.notes.front().location);
-        EXPECT_EQ(diagnostic.notes.front().location->begin(), source.find(opening));
+        EXPECT_EQ(diagnostic.notes.front().location.value().begin(), source.find(opening));
     }
 }
 
@@ -241,7 +241,7 @@ TEST(LokiSemanticDiagnostics, RequirementPrefixesAreSyntaxRatherThanNameCleanup)
             EXPECT_EQ(diagnostic.message, std::string("Expected ") + expected + " while parsing requirements section");
             ASSERT_EQ(diagnostic.notes.size(), 1);
             ASSERT_TRUE(diagnostic.notes.front().location);
-            EXPECT_EQ(diagnostic.notes.front().location->begin(), source.find("(:requirements"));
+            EXPECT_EQ(diagnostic.notes.front().location.value().begin(), source.find("(:requirements"));
         }
 }
 
@@ -377,10 +377,10 @@ TEST(LokiSemanticDiagnostics, ArithmeticErrorsKeepTheInnermostIdentifiedExpressi
         const auto diagnostic = handler.diagnostic("fallback", source.cbegin());
         EXPECT_NE(diagnostic.message.find(std::string("while parsing ") + owner), std::string::npos);
         ASSERT_TRUE(diagnostic.location);
-        EXPECT_EQ(diagnostic.location->begin(), source.find("bare"));
+        EXPECT_EQ(diagnostic.location.value().begin(), source.find("bare"));
         ASSERT_EQ(diagnostic.notes.size(), 1);
         ASSERT_TRUE(diagnostic.notes.front().location);
-        EXPECT_EQ(diagnostic.notes.front().location->begin(), source.find(opening));
+        EXPECT_EQ(diagnostic.notes.front().location.value().begin(), source.find(opening));
     }
 }
 
@@ -403,10 +403,10 @@ TEST(LokiSemanticDiagnostics, TypedSemanticErrorOwnsItsSourceAfterParserDestruct
     const auto& diagnostic = error.diagnostic();
     EXPECT_EQ(diagnostic.message, "Undefined predicate: missing");
     ASSERT_TRUE(diagnostic.location);
-    const auto& source = diagnostic.location->source()->text();
-    EXPECT_EQ(diagnostic.location->begin(), source.find("missing"));
-    EXPECT_EQ(diagnostic.location->end(), source.find("missing") + 7);
-    EXPECT_EQ(diagnostic.location->line(), 3);
+    const auto& source = diagnostic.location.value().source()->text();
+    EXPECT_EQ(diagnostic.location.value().begin(), source.find("missing"));
+    EXPECT_EQ(diagnostic.location.value().end(), source.find("missing") + 7);
+    EXPECT_EQ(diagnostic.location.value().line(), 3);
     EXPECT_EQ(std::string(error.what()), ygg::diagnostics::format_diagnostic(diagnostic));
 }
 

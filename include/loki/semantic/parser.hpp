@@ -41,10 +41,10 @@ public:
     Parser(Parser&&) noexcept;
     Parser& operator=(Parser&&) noexcept;
 
-    const formalism::Repository& repository() const noexcept;
+    [[nodiscard]] const formalism::Repository& repository() const noexcept;
     formalism::Repository& repository() noexcept;
 
-    formalism::DomainView get_domain() const noexcept;
+    [[nodiscard]] formalism::DomainView get_domain() const noexcept;
 
     formalism::TaskView parse_task(const std::string& source);
     formalism::TaskView parse_task(const std::filesystem::path& path);

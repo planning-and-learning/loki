@@ -15,9 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "../semantic/parser_runtime.hpp"
 #include "loki/parser/parser_def.hpp"
-
-#include "semantic/parser_runtime.hpp"
 
 namespace loki::parser::rules
 {
@@ -73,14 +72,10 @@ namespace detail
 {
 
 bool parse_domain_full(Iterator& first, Iterator last, ast::Domain& out, ErrorHandlerType& error_handler)
-{
-    return parse_full(first, last, domain(), out, error_handler);
-}
+{ return parse_full(first, last, domain(), out, error_handler); }
 
 bool parse_task_full(Iterator& first, Iterator last, ast::Task& out, ErrorHandlerType& error_handler)
-{
-    return parse_full(first, last, task(), out, error_handler);
-}
+{ return parse_full(first, last, task(), out, error_handler); }
 
 }  // namespace detail
 

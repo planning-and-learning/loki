@@ -32,7 +32,7 @@ public:
     {
     }
 
-    std::optional<formalism::EntityView<formalism::Condition<formalism::ExistsTag>>> as_exists(formalism::ConditionView condition) const;
+    [[nodiscard]] std::optional<formalism::EntityView<formalism::Condition<formalism::ExistsTag>>> as_exists(formalism::ConditionView condition) const;
     formalism::ConditionView move_existentials(formalism::ConditionView condition);
     formalism::ConditionView move_existentials_node(formalism::ConditionView condition, formalism::EntityView<formalism::Condition<formalism::AndTag>> node);
     formalism::ConditionView move_existentials_node(formalism::ConditionView condition, formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node);
@@ -51,12 +51,14 @@ private:
     // Hoists the binders of an exists into parameters/claimed; a binder whose name is already
     // claimed by a sibling scope is alpha-renamed together with its bound occurrences. Fresh
     // names avoid the claimed names and the free variables of the body, so no capture is possible.
-    formalism::ConditionView
-    hoist_exists(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> exists, ygg::UnorderedSet<std::string>& claimed, std::vector<formalism::ParameterView>& parameters);
+    formalism::ConditionView hoist_exists(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> exists,
+                                          ygg::UnorderedSet<std::string>& claimed,
+                                          std::vector<formalism::ParameterView>& parameters);
 };
 
 template<typename Derived>
-std::optional<formalism::EntityView<formalism::Condition<formalism::ExistsTag>>> MoveExistentialQuantifiersTranslator<Derived>::as_exists(formalism::ConditionView condition) const
+std::optional<formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>
+MoveExistentialQuantifiersTranslator<Derived>::as_exists(formalism::ConditionView condition) const
 {
     const auto variant = condition.get_variant();
     if (variant.template is<ygg::Index<formalism::Condition<formalism::ExistsTag>>>())
@@ -76,13 +78,15 @@ void MoveExistentialQuantifiersTranslator<Derived>::collect_binder_names(formali
     ygg::visit(
         [&]<typename Node>(const Node& node)
         {
-            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
+            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>
+                          || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
             {
                 for (auto parameter : node.get_parameters())
                     names.insert(std::string(parameter.get_variable().get_name()));
                 collect_binder_names(node.get_condition(), names);
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
             {
                 for (auto child : node.get_conditions())
                     collect_binder_names(child, names);
@@ -112,7 +116,8 @@ void MoveExistentialQuantifiersTranslator<Derived>::collect_binder_names(formali
                     names.insert(std::string(parameter.get_variable().get_name()));
                 collect_binder_names(node.get_effect(), names);
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 for (auto child : node.get_effects())
                     collect_binder_names(child, names);
@@ -178,7 +183,9 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::hoist_ex
 }
 
 template<typename Derived>
-formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::AndTag>> node)
+formalism::ConditionView
+MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism::ConditionView,
+                                                                      formalism::EntityView<formalism::Condition<formalism::AndTag>> node)
 {
     auto parameters = std::vector<formalism::ParameterView> {};
     auto claimed = ygg::UnorderedSet<std::string> {};
@@ -206,7 +213,9 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::move_exi
 }
 
 template<typename Derived>
-formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node)
+formalism::ConditionView
+MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism::ConditionView,
+                                                                      formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node)
 {
     const auto& data = node.get_data();
     const auto condition = this->self().move_existentials(node.get_condition());
@@ -218,7 +227,9 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::move_exi
 }
 
 template<typename Derived>
-formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::OrTag>> node)
+formalism::ConditionView
+MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism::ConditionView,
+                                                                      formalism::EntityView<formalism::Condition<formalism::OrTag>> node)
 {
     auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->m_context.builder);
     for (auto child : node.get_conditions())
@@ -229,9 +240,7 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::move_exi
 template<typename Derived>
 template<typename T>
 formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism::ConditionView condition, formalism::EntityView<T>)
-{
-    return condition;
-}
+{ return condition; }
 
 template<typename Derived>
 formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::lift_top_level_exists(std::vector<formalism::ParameterView>& parameters,

@@ -29,7 +29,7 @@ class CompileTypingTranslator : public CopyTranslatorComponent<Derived, CompileT
 public:
     explicit CompileTypingTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, CompileTypingTranslator<Derived>>(context) {}
 
-    bool compiles_typing_now() const noexcept;
+    [[nodiscard]] bool compiles_typing_now() const noexcept;
     std::vector<formalism::TypeView> collect_type_hierarchy(formalism::TypeView type);
     void copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, ygg::IndexList<formalism::Type>& result);
     void copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters, ygg::IndexList<formalism::Parameter>& result);
@@ -46,9 +46,7 @@ public:
 
 template<typename Derived>
 bool CompileTypingTranslator<Derived>::compiles_typing_now() const noexcept
-{
-    return this->m_context.compile_typing && this->m_context.phase == TranslationPhase::CompileTyping;
-}
+{ return this->m_context.compile_typing && this->m_context.phase == TranslationPhase::CompileTyping; }
 
 template<typename Derived>
 std::vector<formalism::TypeView> CompileTypingTranslator<Derived>::collect_type_hierarchy(formalism::TypeView type)
@@ -242,7 +240,7 @@ void CompileTypingTranslator<Derived>::add_type_literals_for_object(ygg::IndexLi
 template<typename Derived>
 void CompileTypingTranslator<Derived>::initialize_type_literals(ygg::Data<formalism::Task>& data, formalism::TaskView task)
 {
-    for (auto object : this->m_context.storage->translated_domain->get_constants())
+    for (auto object : this->m_context.storage->translated().get_constants())
         this->self().add_type_literals_for_object(data.initial_literals, object);
     for (auto object : task.get_objects())
         this->self().add_type_literals_for_object(data.initial_literals, object);

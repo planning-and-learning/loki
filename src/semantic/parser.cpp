@@ -52,9 +52,9 @@ struct Parser::Impl
 {
     Impl(std::string domain_source, std::string source_name, ParserOptions options);
 
-    const formalism::Repository& repository() const noexcept;
+    [[nodiscard]] const formalism::Repository& repository() const noexcept;
     formalism::Repository& repository() noexcept;
-    formalism::DomainView get_domain() const noexcept;
+    [[nodiscard]] formalism::DomainView get_domain() const noexcept;
     formalism::TaskView parse_task(const std::string& source);
     formalism::TaskView parse_task(const std::filesystem::path& path);
 
@@ -65,7 +65,7 @@ private:
     std::vector<std::shared_ptr<detail::TranslationStorage>> m_task_storages;
 
     formalism::Repository& repo() noexcept;
-    const formalism::Repository& repo() const noexcept;
+    [[nodiscard]] const formalism::Repository& repo() const noexcept;
 
     formalism::DomainView parse_domain_ast(const ast::Domain& domain);
     formalism::TaskView parse_task_source(std::string source, const std::string& source_name);
@@ -110,7 +110,7 @@ Parser::Impl::Impl(std::string domain_source, std::string source_name, ParserOpt
 
 const formalism::Repository& Parser::Impl::repository() const noexcept { return repo(); }
 formalism::Repository& Parser::Impl::repository() noexcept { return repo(); }
-formalism::DomainView Parser::Impl::get_domain() const noexcept { return *m_domain_context.domain; }
+formalism::DomainView Parser::Impl::get_domain() const noexcept { return m_domain_context.get_domain(); }
 formalism::TaskView Parser::Impl::parse_task(const std::string& source) { return parse_task_source(source, ""); }
 
 formalism::TaskView Parser::Impl::parse_task(const std::filesystem::path& path) { return parse_task_source(read_file(path), path.string()); }

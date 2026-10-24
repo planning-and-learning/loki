@@ -30,14 +30,14 @@ class MaterializeEqualityTranslator : public CopyTranslatorComponent<Derived, Ma
 public:
     explicit MaterializeEqualityTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, MaterializeEqualityTranslator<Derived>>(context) {}
 
-    bool has_requirement(formalism::EntityListView<formalism::Requirement> requirements, formalism::RequirementKind kind) const;
-    bool literal_uses_equality(formalism::LiteralView literal) const;
-    bool condition_uses_equality(formalism::ConditionView condition) const;
-    bool effect_uses_equality(formalism::EffectView effect) const;
-    bool equality_required(formalism::TaskView task) const;
-    std::optional<formalism::PredicateView> find_domain_equality_predicate() const;
+    [[nodiscard]] bool has_requirement(formalism::EntityListView<formalism::Requirement> requirements, formalism::RequirementKind kind) const;
+    [[nodiscard]] bool literal_uses_equality(formalism::LiteralView literal) const;
+    [[nodiscard]] bool condition_uses_equality(formalism::ConditionView condition) const;
+    [[nodiscard]] bool effect_uses_equality(formalism::EffectView effect) const;
+    [[nodiscard]] bool equality_required(formalism::TaskView task) const;
+    [[nodiscard]] std::optional<formalism::PredicateView> find_domain_equality_predicate() const;
     formalism::LiteralView equality_literal(formalism::PredicateView predicate, ygg::Index<formalism::Object> object);
-    bool domain_uses_equality(formalism::DomainView domain) const;
+    [[nodiscard]] bool domain_uses_equality(formalism::DomainView domain) const;
     void add_equality_predicate_to_domain(ygg::Data<formalism::Domain>& data, formalism::DomainView domain);
     void materialize_equality(ygg::Data<formalism::Task>& data, formalism::TaskView task);
 };
@@ -54,9 +54,7 @@ bool MaterializeEqualityTranslator<Derived>::has_requirement(formalism::EntityLi
 
 template<typename Derived>
 bool MaterializeEqualityTranslator<Derived>::literal_uses_equality(formalism::LiteralView literal) const
-{
-    return std::string_view(literal.get_atom().get_predicate().get_name()) == "=";
-}
+{ return std::string_view(literal.get_atom().get_predicate().get_name()) == "="; }
 
 template<typename Derived>
 bool MaterializeEqualityTranslator<Derived>::condition_uses_equality(formalism::ConditionView condition) const
@@ -66,7 +64,8 @@ bool MaterializeEqualityTranslator<Derived>::condition_uses_equality(formalism::
         {
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::LiteralTag>>>)
                 return this->self().literal_uses_equality(node.get_literal());
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
             {
                 for (auto child : node.get_conditions())
                     if (this->self().condition_uses_equality(child))
@@ -81,7 +80,8 @@ bool MaterializeEqualityTranslator<Derived>::condition_uses_equality(formalism::
             {
                 return this->self().condition_uses_equality(node.get_left()) || this->self().condition_uses_equality(node.get_right());
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
             {
                 return this->self().condition_uses_equality(node.get_condition());
             }
@@ -101,7 +101,8 @@ bool MaterializeEqualityTranslator<Derived>::effect_uses_equality(formalism::Eff
         {
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::LiteralTag>>>)
                 return this->self().literal_uses_equality(node.get_literal());
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 for (auto child : node.get_effects())
                     if (this->self().effect_uses_equality(child))
@@ -140,14 +141,14 @@ bool MaterializeEqualityTranslator<Derived>::equality_required(formalism::TaskVi
 {
     if (this->self().has_requirement(task.get_requirements(), formalism::RequirementKind::Equality))
         return true;
-    return this->self().has_requirement(this->m_context.storage->translated_domain->get_requirements(), formalism::RequirementKind::Equality)
-           || this->self().domain_uses_equality(*this->m_context.storage->translated_domain);
+    return this->self().has_requirement(this->m_context.storage->translated().get_requirements(), formalism::RequirementKind::Equality)
+           || this->self().domain_uses_equality(this->m_context.storage->translated());
 }
 
 template<typename Derived>
 std::optional<formalism::PredicateView> MaterializeEqualityTranslator<Derived>::find_domain_equality_predicate() const
 {
-    for (auto predicate : this->m_context.storage->translated_domain->get_predicates())
+    for (auto predicate : this->m_context.storage->translated().get_predicates())
     {
         if (std::string_view(predicate.get_name()) == "=")
             return predicate;
@@ -252,11 +253,11 @@ void MaterializeEqualityTranslator<Derived>::materialize_equality(ygg::Data<form
     const auto predicate = this->self().find_domain_equality_predicate();
     if (!predicate)
         throw InvalidEqualityError("expected equality predicate to be declared in the translated domain");
-    for (auto object : this->m_context.storage->translated_domain->get_constants())
+    for (auto object : this->m_context.storage->translated().get_constants())
         data.initial_literals.push_back(as_index(this->self().equality_literal(*predicate, object.get_index())));
     for (auto object : data.objects)
         data.initial_literals.push_back(as_index(this->self().equality_literal(*predicate, object)));
-    data.domain = this->m_context.storage->translated_domain->get_index();
+    data.domain = this->m_context.storage->translated().get_index();
 }
 
 }  // namespace loki::semantic::detail

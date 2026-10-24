@@ -103,25 +103,25 @@ void rebuild_domain_symbols(DomainContext& domain_context, formalism::Repository
     };
 
     auto parse_context = ParseContext {};
-    for (auto requirement : domain_context.domain->get_requirements())
+    for (auto requirement : domain_context.get_domain().get_requirements())
         remember_requirement(parse_context, requirement.get_kind());
     domain_context.requirement_kinds = parse_context.active_requirements;
-    for (auto type : domain_context.domain->get_types())
+    for (auto type : domain_context.get_domain().get_types())
         remember_type(remember_type, type);
-    for (auto object : domain_context.domain->get_constants())
+    for (auto object : domain_context.get_domain().get_constants())
     {
         domain_context.objects.emplace(std::string(object.get_name()), object);
         domain_context.declared_objects.insert(std::string(object.get_name()));
         for (auto type : object.get_types())
             remember_type(remember_type, type);
     }
-    for (auto predicate : domain_context.domain->get_predicates())
+    for (auto predicate : domain_context.get_domain().get_predicates())
     {
         const auto name = std::string(predicate.get_name());
         domain_context.predicates.emplace(name, predicate);
         domain_context.declared_predicates.insert(name);
     }
-    for (auto function : domain_context.domain->get_functions())
+    for (auto function : domain_context.get_domain().get_functions())
     {
         domain_context.functions.emplace(std::string(function.get_name()), function);
         domain_context.declared_functions.insert(std::string(function.get_name()));

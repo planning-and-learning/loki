@@ -34,7 +34,7 @@ public:
     formalism::ConditionView wrap_condition(formalism::EntityView<T> value);
     template<typename T>
     formalism::ConditionView wrap_condition(ygg::Index<T> value);
-    std::optional<formalism::EntityView<formalism::Condition<formalism::OrTag>>> as_or(formalism::ConditionView condition) const;
+    [[nodiscard]] std::optional<formalism::EntityView<formalism::Condition<formalism::OrTag>>> as_or(formalism::ConditionView condition) const;
     formalism::ConditionView flatten_condition(formalism::ConditionView condition);
     void append_conjunct(ygg::Data<formalism::Condition<formalism::AndTag>>& data, formalism::ConditionView condition);
     void append_disjunct(ygg::Data<formalism::Condition<formalism::OrTag>>& data, formalism::ConditionView condition);
@@ -62,12 +62,11 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::wrap_condition(for
 template<typename Derived>
 template<typename T>
 formalism::ConditionView ConditionBuilderTranslator<Derived>::wrap_condition(ygg::Index<T> value)
-{
-    return this->self().wrap_condition(ygg::Data<formalism::Condition<>>::Variant(value));
-}
+{ return this->self().wrap_condition(ygg::Data<formalism::Condition<>>::Variant(value)); }
 
 template<typename Derived>
-std::optional<formalism::EntityView<formalism::Condition<formalism::OrTag>>> ConditionBuilderTranslator<Derived>::as_or(formalism::ConditionView condition) const
+std::optional<formalism::EntityView<formalism::Condition<formalism::OrTag>>>
+ConditionBuilderTranslator<Derived>::as_or(formalism::ConditionView condition) const
 {
     const auto variant = condition.get_variant();
     if (variant.template is<ygg::Index<formalism::Condition<formalism::OrTag>>>())
@@ -229,15 +228,11 @@ void ConditionBuilderTranslator<Derived>::append_disjunct(ygg::Data<formalism::C
 
 template<typename Derived>
 formalism::ConditionView ConditionBuilderTranslator<Derived>::make_conjunction(ygg::Data<formalism::Condition<formalism::AndTag>>& data)
-{
-    return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, data).first);
-}
+{ return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, data).first); }
 
 template<typename Derived>
 formalism::ConditionView ConditionBuilderTranslator<Derived>::make_disjunction(ygg::Data<formalism::Condition<formalism::OrTag>>& data)
-{
-    return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, data).first);
-}
+{ return this->self().wrap_condition(formalism::insert(this->m_context.storage->repository, data).first); }
 
 }  // namespace loki::semantic::detail
 

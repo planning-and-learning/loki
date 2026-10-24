@@ -33,6 +33,7 @@
 #include <string>
 #include <vector>
 #include <yggdrasil/containers/associative_containers.hpp>
+#include <yggdrasil/core/config.hpp>
 #include <yggdrasil/semantics/equal_to.hpp>
 #include <yggdrasil/semantics/hash.hpp>
 
@@ -53,6 +54,13 @@ struct DomainContext
     std::shared_ptr<detail::TranslationStorage> storage;
     std::optional<formalism::DomainView> domain;
     std::string domain_name;
+
+    /// The domain built from the domain file; a problem is built only after it (asserted in Debug).
+    [[nodiscard]] formalism::DomainView get_domain() const noexcept
+    {
+        YGG_ASSUME(domain.has_value());
+        return *domain;
+    }
 
     formalism::TypeView object_type;
     formalism::TypeView number_type;

@@ -46,7 +46,8 @@ void collect_effect_binder_names(formalism::EffectView effect, ygg::UnorderedSet
                     names.insert(std::string(parameter.get_variable().get_name()));
                 collect_effect_binder_names(node.get_effect(), names);
             }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>> || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
+                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 for (auto child : node.get_effects())
                     collect_effect_binder_names(child, names);
@@ -117,11 +118,13 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
             {
                 EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::OrTag>>(node.get_condition()), 0) << what << ": disjunctive when-condition";
                 EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(node.get_effect()), 0) << what << ": nested when";
-                EXPECT_FALSE(node.get_effect().get_variant().template is<ygg::Index<formalism::Effect<formalism::AndTag>>>()) << what << ": conjunctive when-body";
+                EXPECT_FALSE(node.get_effect().get_variant().template is<ygg::Index<formalism::Effect<formalism::AndTag>>>())
+                    << what << ": conjunctive when-body";
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
             {
-                EXPECT_FALSE(node.get_effect().get_variant().template is<ygg::Index<formalism::Effect<formalism::AndTag>>>()) << what << ": undistributed universal effect";
+                EXPECT_FALSE(node.get_effect().get_variant().template is<ygg::Index<formalism::Effect<formalism::AndTag>>>())
+                    << what << ": undistributed universal effect";
                 expect_effect_normal_form(node.get_effect(), false, what);
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
@@ -387,7 +390,7 @@ TEST(LokiSemanticInvariantSuite, AddActionCostsOptionHoldsAcrossFixtures)
 
         if (!item.task_file)
             continue;
-        const auto task = parser.parse_task(*item.task_file);
+        const auto task = parser.parse_task(item.task_file.value());
 
         ASSERT_TRUE(task.get_metric().has_value());
         EXPECT_EQ(task.get_metric().value().get_optimization_direction(), formalism::OptimizationDirection::Minimize);

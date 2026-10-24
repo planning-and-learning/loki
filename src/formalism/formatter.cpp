@@ -39,7 +39,7 @@ namespace loki::formalism::format
 namespace detail
 {
 
-inline bool is_builtin_type(TypeView type)
+static inline bool is_builtin_type(TypeView type)
 {
     const auto name = std::string_view(type.get_name().data(), type.get_name().size());
     return name == "object" || name == "number";
@@ -47,7 +47,7 @@ inline bool is_builtin_type(TypeView type)
 
 // Serializes a range as " e1 e2 ..." with a leading space per element; an empty range yields "".
 template<typename Range>
-inline std::string spaced(const Range& range)
+static inline std::string spaced(const Range& range)
 {
     auto result = std::string {};
     for (auto element : range)
@@ -57,7 +57,7 @@ inline std::string spaced(const Range& range)
 
 // Renders " - type" or " - (either t1 t2 ...)"; multiple types require an either wrapper to reparse.
 template<typename Types>
-inline std::string type_annotation(const Types& types)
+static inline std::string type_annotation(const Types& types)
 {
     if (types.size() == 1)
         return fmt::format(" - {}", to_string(types[0]));
@@ -75,9 +75,7 @@ std::string to_string(ObjectView value) { return fmt::format("{}", value.get_nam
 std::string to_string(VariableView value) { return fmt::format("{}", value.get_name()); }
 
 std::string to_string(ParameterView value)
-{
-    return fmt::format("{}{}", to_string(value.get_variable()), value.get_types().empty() ? "" : detail::type_annotation(value.get_types()));
-}
+{ return fmt::format("{}{}", to_string(value.get_variable()), value.get_types().empty() ? "" : detail::type_annotation(value.get_types())); }
 
 std::string to_string(PredicateView value) { return fmt::format("({}{})", value.get_name(), detail::spaced(value.get_parameters())); }
 
@@ -112,14 +110,10 @@ std::string to_string(FunctionTermView value) { return fmt::format("({}{})", val
 std::string to_string(EntityView<FunctionExpression<UnaryTag>> value) { return fmt::format("(- {})", to_string(value.get_expression())); }
 
 std::string to_string(EntityView<FunctionExpression<BinaryTag>> value)
-{
-    return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().op), to_string(value.get_left()), to_string(value.get_right()));
-}
+{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().op), to_string(value.get_left()), to_string(value.get_right())); }
 
 std::string to_string(EntityView<FunctionExpression<MultiTag>> value)
-{
-    return fmt::format("({}{})", loki::formalism::to_string(value.get_operator()), detail::spaced(value.get_args()));
-}
+{ return fmt::format("({}{})", loki::formalism::to_string(value.get_operator()), detail::spaced(value.get_args())); }
 
 std::string to_string(FunctionExpressionView value)
 {
@@ -143,7 +137,7 @@ namespace detail
 
 // Materializes element strings so fmt::join never needs the guarded view formatters.
 template<typename Range>
-inline std::vector<std::string> to_strings(const Range& range)
+static inline std::vector<std::string> to_strings(const Range& range)
 {
     auto result = std::vector<std::string> {};
     for (auto element : range)
@@ -154,19 +148,13 @@ inline std::vector<std::string> to_strings(const Range& range)
 }  // namespace detail
 
 std::string to_string(EntityView<Condition<ExistsTag>> value)
-{
-    return fmt::format("(exists ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_condition()));
-}
+{ return fmt::format("(exists ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_condition())); }
 
 std::string to_string(EntityView<Condition<ForallTag>> value)
-{
-    return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_condition()));
-}
+{ return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_condition())); }
 
 std::string to_string(EntityView<Condition<NumericConstraintTag>> value)
-{
-    return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().comparator), to_string(value.get_left()), to_string(value.get_right()));
-}
+{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().comparator), to_string(value.get_left()), to_string(value.get_right())); }
 
 std::string to_string(ConditionView value)
 {
@@ -180,16 +168,13 @@ std::string to_string(EntityView<Effect<LiteralTag>> value) { return to_string(v
 std::string to_string(EntityView<Effect<AndTag>> value) { return fmt::format("(and{})", detail::spaced(value.get_effects())); }
 
 std::string to_string(EntityView<Effect<NumericTag>> value)
-{
-    return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().op), to_string(value.get_function()), to_string(value.get_expression()));
-}
+{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().op), to_string(value.get_function()), to_string(value.get_expression())); }
 
 std::string to_string(EntityView<Effect<ForallTag>> value)
-{
-    return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_effect()));
-}
+{ return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_effect())); }
 
-std::string to_string(EntityView<Effect<WhenTag>> value) { return fmt::format("(when {} {})", to_string(value.get_condition()), to_string(value.get_effect())); }
+std::string to_string(EntityView<Effect<WhenTag>> value)
+{ return fmt::format("(when {} {})", to_string(value.get_condition()), to_string(value.get_effect())); }
 
 std::string to_string(EntityView<Effect<OneOfTag>> value) { return fmt::format("(oneof{})", detail::spaced(value.get_effects())); }
 
@@ -259,9 +244,7 @@ std::string to_string(AxiomView value)
 }
 
 std::string to_string(MetricView value)
-{
-    return fmt::format("(:metric {} {})", formalism::to_string(value.get_optimization_direction()), to_string(value.get_expression()));
-}
+{ return fmt::format("(:metric {} {})", formalism::to_string(value.get_optimization_direction()), to_string(value.get_expression())); }
 
 std::string to_string(InitialFunctionValueView value) { return fmt::format("(= {} {})", to_string(value.get_function()), to_string(value.get_value())); }
 

@@ -47,3 +47,6 @@ ExcludeHeaderFilterRegex: '.*/(dependencies-install|dependencies-build|build|sit
 CheckOptions:
   # Member initializers are written `= value`, as elsewhere in the code.
   cppcoreguidelines-use-default-member-init.UseAssignment: true
+  # YGG_ASSUME (yggdrasil/core/config.hpp) must expand at its call site, like assert: the
+  # analysis of optionals sees a condition only in the function that states it, never through a call.
+  cppcoreguidelines-macro-usage.AllowedRegexp: '^YGG_ASSUME$'

@@ -15,12 +15,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #include "utils.hpp"
 
 #include <benchmark/benchmark.h>
-#include <iostream>
 #include <cmath>
+#include <iostream>
 #include <numeric>
 #include <random>
 
@@ -67,7 +66,7 @@ static void BM_IterateAtoms(benchmark::State& state)
     {
         for (const auto& atom : atoms)
         {
-            const auto atom_access_data = access_atom_data(atom);
+            auto atom_access_data = access_atom_data(atom);
             benchmark::DoNotOptimize(atom_access_data);
         }
     }
@@ -96,7 +95,7 @@ static void BM_RandomlyIterateAtoms(benchmark::State& state)
 
         for (int index : indices)
         {
-            const auto atom_access_data = access_atom_data(atoms[index]);
+            auto atom_access_data = access_atom_data(atoms[index]);
             benchmark::DoNotOptimize(atom_access_data);
         }
     }

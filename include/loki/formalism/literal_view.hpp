@@ -35,7 +35,7 @@ class View<ygg::Index<::loki::formalism::Literal>, C> : public ygg::IndexViewBas
 public:
     using ygg::IndexViewBase<::loki::formalism::Literal, C>::IndexViewBase;
 
-    bool get_polarity() const noexcept { return this->get_data().m_polarity; }
+    [[nodiscard]] bool get_polarity() const noexcept { return this->get_data().m_polarity; }
     auto get_atom() const noexcept { return ygg::make_view(this->get_data().atom, this->get_context()); }
 };
 

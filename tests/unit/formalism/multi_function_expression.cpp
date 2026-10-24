@@ -32,7 +32,7 @@ static_assert(requires(const View& view) {
 });
 
 template<typename T, typename Initialize>
-loki::formalism::EntityView<T> intern(loki::formalism::Repository& repository, loki::formalism::Builder& builder, Initialize&& initialize)
+static loki::formalism::EntityView<T> intern(loki::formalism::Repository& repository, loki::formalism::Builder& builder, Initialize&& initialize)
 {
     auto data = loki::formalism::checkout<T>(builder);
     std::forward<Initialize>(initialize)(*data);

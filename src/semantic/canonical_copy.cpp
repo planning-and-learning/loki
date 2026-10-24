@@ -65,7 +65,7 @@ std::pair<formalism::TaskView, bool> CanonicalCopyTranslator::copy(formalism::Ta
     }
     auto data = formalism::checkout<formalism::Task>(m_builder);
     data->name = task.get_data().name;
-    data->domain = m_storage->translated_domain ? m_storage->translated_domain->get_index() : copy(task.get_domain()).first.get_index();
+    data->domain = m_storage->translated_domain ? m_storage->translated().get_index() : copy(task.get_domain()).first.get_index();
     copy_list(task.get_requirements(), data->requirements);
     copy_list(task.get_objects(), data->objects);
     copy_list(task.get_initial_literals(), data->initial_literals);
@@ -82,7 +82,8 @@ std::pair<formalism::TaskView, bool> CanonicalCopyTranslator::copy(formalism::Ta
     return { view, inserted };
 }
 
-formalism::EntityView<formalism::Effect<formalism::LiteralTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::LiteralTag>> source)
+formalism::EntityView<formalism::Effect<formalism::LiteralTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::LiteralTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_literals, source))
         return *mapped;
@@ -104,7 +105,8 @@ formalism::EntityView<formalism::Effect<formalism::AndTag>> CanonicalCopyTransla
     return out;
 }
 
-formalism::EntityView<formalism::Effect<formalism::NumericTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source)
+formalism::EntityView<formalism::Effect<formalism::NumericTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_numerics, source))
         return *mapped;
@@ -117,7 +119,8 @@ formalism::EntityView<formalism::Effect<formalism::NumericTag>> CanonicalCopyTra
     return out;
 }
 
-formalism::EntityView<formalism::Effect<formalism::ForallTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::ForallTag>> source)
+formalism::EntityView<formalism::Effect<formalism::ForallTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::ForallTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_foralls, source))
         return *mapped;
@@ -141,7 +144,8 @@ formalism::EntityView<formalism::Effect<formalism::WhenTag>> CanonicalCopyTransl
     return out;
 }
 
-formalism::EntityView<formalism::Effect<formalism::OneOfTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::OneOfTag>> source)
+formalism::EntityView<formalism::Effect<formalism::OneOfTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::OneOfTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_one_ofs, source))
         return *mapped;
@@ -164,7 +168,8 @@ formalism::EffectProbabilisticAlternativeView CanonicalCopyTranslator::copy(form
     return out;
 }
 
-formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> source)
+formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>
+CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> source)
 {
     if (auto mapped = find_mapped(m_storage->effect_probabilistics, source))
         return *mapped;

@@ -40,9 +40,9 @@ class DomainTranslationResult
 public:
     DomainTranslationResult(formalism::DomainView original_domain_, std::shared_ptr<detail::TranslationStorage> storage_);
 
-    formalism::DomainView get_original_domain() const noexcept;
-    formalism::DomainView get_translated_domain() const noexcept;
-    const formalism::Repository& get_repository() const noexcept;
+    [[nodiscard]] formalism::DomainView get_original_domain() const noexcept;
+    [[nodiscard]] formalism::DomainView get_translated_domain() const noexcept;
+    [[nodiscard]] const formalism::Repository& get_repository() const noexcept;
     formalism::Repository& get_repository() noexcept;
 
 private:
@@ -58,9 +58,9 @@ class ProblemTranslationResult
 public:
     ProblemTranslationResult(formalism::TaskView original_task_, std::shared_ptr<detail::TranslationStorage> storage_, formalism::TaskView translated_task_);
 
-    formalism::TaskView get_original_task() const noexcept;
-    formalism::TaskView get_translated_task() const noexcept;
-    const formalism::Repository& get_repository() const noexcept;
+    [[nodiscard]] formalism::TaskView get_original_task() const noexcept;
+    [[nodiscard]] formalism::TaskView get_translated_task() const noexcept;
+    [[nodiscard]] const formalism::Repository& get_repository() const noexcept;
     formalism::Repository& get_repository() noexcept;
 
 private:

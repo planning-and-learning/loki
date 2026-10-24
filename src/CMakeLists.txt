@@ -2,7 +2,7 @@ add_library(
     parsers SHARED
     formalism/formatter.cpp
     formalism/repository.cpp
-    parser.cpp
+    parser/parser.cpp
     semantic/builder.cpp
     semantic/builder_declarations.cpp
     semantic/builder_effects.cpp
