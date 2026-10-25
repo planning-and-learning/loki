@@ -26,7 +26,7 @@ jobs:
           prepare: |
             "$PYTHON" -m venv .venv
             .venv/bin/python -m pip install 'scikit-build-core>=1.0.3,<2' 'cmake>=3.21' 'ninja>=1.5' \
-              'nanobind-backend>=1.0' 'pyyggdrasil>=0.5.0,<0.6'
+              'nanobind-backend>=1.0' 'pyyggdrasil>=0.6.0,<0.7'
             PREFIX="$(.venv/bin/python -c 'import pyyggdrasil; print(pyyggdrasil.native_prefix())')"
             cmake -S . -B build/peachycheck -G Ninja -DCMAKE_MAKE_PROGRAM="$PWD/.venv/bin/ninja" \
                   -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
