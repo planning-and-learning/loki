@@ -203,7 +203,7 @@ TEST(LokiSemanticTranslator, LiftedParameterAvoidsFreeVariablesWhenRenaming)
     ASSERT_EQ(action.get_parameters().size(), 3);
     auto names = std::vector<std::string> {};
     for (auto parameter : action.get_parameters())
-        names.push_back(std::string(parameter.get_variable().get_name()));
+        names.emplace_back(parameter.get_variable().get_name());
     // All parameters distinct, and the renamed binder did not capture the free ?p_0.
     EXPECT_EQ(names.size(), std::size_t { 3 });
     std::sort(names.begin(), names.end());

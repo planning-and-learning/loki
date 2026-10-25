@@ -17,6 +17,7 @@ file(
 
 nanobind_add_module(
     _pypddl
+    NB_SUPPRESS_WARNINGS
     src/module.cpp
     ${PYPDDL_FORMALISM_SOURCES}
     BACKEND_MODULE nanobind_backend

@@ -181,10 +181,10 @@ if __name__ == "__main__":
         f"domain: {domain.get_name()}, actions={len(domain.get_actions())}, predicates={len(domain.get_predicates())}"
     )
     print(
-        f"task: {one_ball.get_name()}, objects={len(one_ball.get_objects())}, "
-        f"init={len(one_ball.get_initial_literals())}"
+        f"task: {one_ball.get_name()}, objects={len(one_ball.get_objects())},",
+        f"init={len(one_ball.get_initial_literals())}",
     )
     print(
-        f"task: {two_ball.get_name()}, objects={len(two_ball.get_objects())}, "
-        f"init={len(two_ball.get_initial_literals())}"
+        f"task: {two_ball.get_name()}, objects={len(two_ball.get_objects())},",
+        f"init={len(two_ball.get_initial_literals())}",
     )

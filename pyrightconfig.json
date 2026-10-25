@@ -17,6 +17,9 @@
     "build",
     "dist",
     "**/__pycache__",
+    // The source tree's __init__.py files re-export the compiled extension, whose stubs exist only in
+    // the installed package (.venv), so here its names have unknown types; the installed copy is checked
+    // through every import of the package.
     "python/src/**/__init__.py"
   ],
   "reportMissingImports": "error",
@@ -38,5 +41,11 @@
   "reportAssertAlwaysTrue": "error",
   "reportUnreachable": "error",
   "reportInvalidTypeVarUse": "error",
-  "reportInvalidTypeForm": "error"
+  "reportInvalidTypeForm": "error",
+  "reportUninitializedInstanceVariable": "error",
+  "reportImplicitStringConcatenation": "error",
+  "reportDeprecated": "error",
+  "reportImportCycles": "error",
+  "reportPropertyTypeMismatch": "error",
+  "reportCallInDefaultInitializer": "error"
 }

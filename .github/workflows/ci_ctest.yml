@@ -45,9 +45,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake
 
+      # Every compiler warning fails the build here, so none goes unnoticed.
       - name: Configure and Build Loki
         run: |
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
                 -DLOKI_BUILD_TESTS=ON \
                 -DCMAKE_INSTALL_LIBDIR=lib \
                 -DPython3_EXECUTABLE="$(python -c 'import sys; print(sys.executable)')" \

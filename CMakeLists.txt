@@ -49,7 +49,8 @@ if(MSVC)
     string(APPEND CMAKE_EXE_LINKER_FLAGS " /IGNORE:4006,4044,4075")
 else()
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-    add_compile_options(-Wall -Wextra)
+    # Shadowed names hide the variable a statement meant; CI turns every warning into an error.
+    add_compile_options(-Wall -Wextra -Wshadow)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         # GCC 13+ flags views returned from temporary views; views never refer to the temporary.
         add_compile_options(-Wno-dangling-reference)

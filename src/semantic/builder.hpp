@@ -157,7 +157,7 @@ private:
     formalism::FunctionSkeletonView total_cost_function();
     formalism::FunctionTermView total_cost_term();
     bool writes_total_cost(formalism::EffectView effect);
-    formalism::ActionView add_unit_cost(formalism::ActionView action);
+    formalism::ActionView add_unit_cost(formalism::ActionView view);
     bool has_total_cost_initial_value(const std::vector<formalism::InitialFunctionValueView>& values);
     void complete_action_costs(const ast::Task& task,
                                std::vector<formalism::InitialFunctionValueView>& initial_function_values,

@@ -394,9 +394,9 @@ TEST(LokiSemanticDiagnostics, TypedSemanticErrorOwnsItsSourceAfterParserDestruct
         {
             auto parser = semantic::Parser(source, semantic::ParserOptions { .strict = true, .add_action_costs = false });
         }
-        catch (const semantic::UndefinedPredicateError& error)
+        catch (const semantic::UndefinedPredicateError& caught)
         {
-            return error;
+            return caught;
         }
         throw std::logic_error("Expected UndefinedPredicateError");
     }();
