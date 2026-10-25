@@ -11,17 +11,19 @@
 # analyzer (clang-analyzer-*), concurrency, include cycles, redundant expressions, external linkage
 # of file-local functions, discarded results, nested namespace syntax, C-style casts, declarations
 # whose parameter names differ from the definition, non-inline definitions in headers (ODR), ignored
-# C return values, virtual members of templates that other compilers instantiate, dead code (unused
-# declarations and parameters, redundant declarations and casts, member functions that could be
-# const) and the modern forms that rule out a defect class (override, nullptr, make_unique, deleted
-# and defaulted members, misleading identifiers and indentation). Not misc-const-correctness: in
-# templates it reports variables as never modified that an overload chosen at instantiation does
-# modify (hash_combine's seed, fold-expression counters); following it made hash_combine recurse
-# forever.
+# C return values, dead code (unused declarations and parameters, redundant declarations and casts,
+# member functions that could be const) and the modern forms that rule out a defect class (override,
+# nullptr, make_unique, deleted and defaulted members, misleading identifiers and indentation). Not
+# misc-const-correctness: in templates it reports variables as never modified that an overload
+# chosen at instantiation does modify (hash_combine's seed, fold-expression counters); following it
+# made hash_combine recurse forever.
 # Not google-explicit-constructor: the standard library's own idioms need implicit conversions
 # that it forbids, with no option to allow them: proxy references convert to their value (as
 # std::vector<bool>::reference does, and iterator concepts require it), and views of mutable
 # elements convert to views of const ones (as std::span does).
+# Not portability-template-virtual-member-function: it warns that other compilers (MSVC)
+# instantiate unused virtual members of class templates; the libraries build only with GCC and
+# Clang (Linux and macOS), which instantiate only what is used, so no build can check a fix.
 # tests/ and the X3 grammar folders turn off more in their own files, each with its reason.
 Checks: >
   -*,
@@ -40,7 +42,6 @@ Checks: >
   readability-inconsistent-declaration-parameter-name,
   misc-definitions-in-headers,
   cert-err33-c,
-  portability-template-virtual-member-function,
   misc-unused-using-decls,
   misc-unused-alias-decls,
   misc-unused-parameters,
