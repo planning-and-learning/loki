@@ -5,6 +5,10 @@
 #   (CMakeLists.txt) defines _GLIBCXX_ASSERTIONS, so operator[] of std::vector, std::array and
 #   std::span asserts its index there, at no cost in Release;
 # - easily-swappable-parameters: a heuristic without a clear fix;
+# - chained-comparison: GCC's -Wall (-Wparentheses) already rejects a < b < c on built-in
+#   types in the Linux CI build, where warnings are errors, so the check adds only overloaded
+#   operators, and here those are Boost.Spirit X3's expectation chains (a > b > c), which are
+#   not comparisons;
 # - crtp-constructor-accessibility: private mixin constructors break inheriting constructors
 #   (using Base::Base) and aggregate initialization of derived types.
 # From the other families, the checks that find defects rather than enforce a style: the static
@@ -24,7 +28,7 @@
 # Not portability-template-virtual-member-function: it warns that other compilers (MSVC)
 # instantiate unused virtual members of class templates; the libraries build only with GCC and
 # Clang (Linux and macOS), which instantiate only what is used, so no build can check a fix.
-# tests/ and the X3 grammar folders turn off more in their own files, each with its reason.
+# tests/ turns off more in their own files, each with its reason.
 Checks: >
   -*,
   bugprone-*,
@@ -70,7 +74,8 @@ Checks: >
   hicpp-multiway-paths-covered,
   -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
   -bugprone-easily-swappable-parameters,
-  -bugprone-crtp-constructor-accessibility
+  -bugprone-crtp-constructor-accessibility,
+  -bugprone-chained-comparison
 HeaderFilterRegex: '.*/(include/loki|tests|profiling|python/src|exe)/.*'
 ExcludeHeaderFilterRegex: '.*/(dependencies-install|dependencies-build|build|site-packages|_deps)/.*'
 CheckOptions:

@@ -1,5 +1,0 @@
-# The Boost.Spirit X3 grammar: `a > b > c` chains X3's expectation operator, not
-# comparisons.
-InheritParentConfig: true
-Checks: >
-  -bugprone-chained-comparison
