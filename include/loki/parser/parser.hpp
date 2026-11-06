@@ -19,6 +19,8 @@
 #define LOKI_PARSER_PARSER_HPP_
 
 #include "loki/ast/ast.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include "loki/parser/config.hpp"
 #include "loki/parser/error_handler.hpp"
 
@@ -91,8 +93,8 @@ struct FileClass : ErrorHandlerBase
 
 using identifier_type = boost::spirit::x3::rule<IdentifierClass, ast::Identifier>;
 using type_expression_type = boost::spirit::x3::rule<TypeExpressionClass, ast::TypeExpression>;
-using typed_name_list_type = boost::spirit::x3::rule<TypedNameListClass, std::vector<ast::TypedGroup>>;
-using typed_variable_list_type = boost::spirit::x3::rule<TypedVariableListClass, std::vector<ast::TypedGroup>>;
+using typed_name_list_type = boost::spirit::x3::rule<TypedNameListClass, urd::Store<urd::sequence<ast::TypedGroup>>>;
+using typed_variable_list_type = boost::spirit::x3::rule<TypedVariableListClass, urd::Store<urd::sequence<ast::TypedGroup>>>;
 using term_type = boost::spirit::x3::rule<TermClass, ast::Term>;
 using atom_type = boost::spirit::x3::rule<AtomClass, ast::Atom>;
 using literal_type = boost::spirit::x3::rule<LiteralClass, ast::Literal>;

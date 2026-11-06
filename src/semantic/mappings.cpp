@@ -16,6 +16,8 @@
  */
 
 #include "mappings.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include "ast_mappings.hpp"
 #include "diagnostics.hpp"
@@ -84,7 +86,7 @@ formalism::RequirementKind requirement_kind(const ast::Requirement& node, const 
     diagnostics.throw_at(node.name, UnsupportedRequirementError(name));
 }
 
-std::vector<formalism::RequirementKind> requirement_capabilities(formalism::RequirementKind kind)
+urd::Store<urd::sequence<formalism::RequirementKind>> requirement_capabilities(formalism::RequirementKind kind)
 {
     using enum formalism::RequirementKind;
     if (kind == QuantifiedPreconditions)
@@ -105,7 +107,7 @@ std::vector<formalism::RequirementKind> requirement_capabilities(formalism::Requ
     return { kind };
 }
 
-std::vector<formalism::RequirementKind> requirement_capabilities(const ast::Requirement& node, const DiagnosticContext& diagnostics)
+urd::Store<urd::sequence<formalism::RequirementKind>> requirement_capabilities(const ast::Requirement& node, const DiagnosticContext& diagnostics)
 { return requirement_capabilities(requirement_kind(node, diagnostics)); }
 
 std::string requirement_name(formalism::RequirementKind kind)

@@ -23,8 +23,12 @@
 
 #include <limits>
 #include <string>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
-#include <yggdrasil/containers/unordered_set.hpp>
 
 namespace loki::semantic::detail
 {
@@ -37,12 +41,12 @@ public:
     {
     }
 
-    void compile_conditional_effect_actions(formalism::EntityListView<formalism::Action> actions, ygg::IndexList<formalism::Action>& result);
+    void compile_conditional_effect_actions(formalism::EntityListView<formalism::Action> actions, urd::flat_vector<urd::index<formalism::Action>>& result);
 };
 
 template<typename Derived>
 void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_actions(formalism::EntityListView<formalism::Action> actions,
-                                                                                      ygg::IndexList<formalism::Action>& result)
+                                                                                      urd::flat_vector<urd::index<formalism::Action>>& result)
 {
     struct ConditionalEffect
     {
@@ -52,17 +56,17 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
     };
 
     result.clear();
-    auto seen = ygg::UnorderedSet<formalism::ActionView> {};
+    auto seen = urd::Store<urd::set<formalism::ActionView>> {};
 
     for (auto action : actions)
     {
-        const auto& data = action.get_data();
-        auto unconditional = ygg::IndexList<formalism::Effect<>> {};
-        auto conditional = std::vector<ConditionalEffect> {};
+        const auto& data = action.data();
+        auto unconditional = formalism::EffectList {};
+        auto conditional = urd::Store<urd::sequence<ConditionalEffect>> {};
 
         if (const auto effect_view = action.get_effect())
         {
-            auto effects = std::vector<formalism::EffectView> { effect_view.value() };
+            auto effects = urd::Store<urd::sequence<formalism::EffectView>> { effect_view.value() };
             if (const auto effect_and = this->self().template as_effect<formalism::Effect<formalism::AndTag>>(effect_view.value()))
             {
                 effects.clear();
@@ -75,7 +79,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 if (const auto effect_when = this->self().template as_effect<formalism::Effect<formalism::WhenTag>>(effect))
                     conditional.push_back({ *effect_when, effect_when->get_condition(), effect_when->get_effect() });
                 else
-                    unconditional.push_back(effect.get_index());
+                    unconditional.push_back(as_index(effect));
             }
         }
 
@@ -93,11 +97,11 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
         auto effect_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
         for (auto mask = size_t { 0 }; mask < num_variants; ++mask)
         {
-            condition_data->clear();
+            urd::clear_members(*condition_data);
             if (const auto precondition = action.get_precondition())
                 this->self().append_conjunct(*condition_data, *precondition);
 
-            effect_data->clear();
+            urd::clear_members(*effect_data);
             for (auto effect : unconditional)
                 effect_data->effects.push_back(effect);
             for (auto i = size_t { 0 }; i < conditional.size(); ++i)
@@ -106,7 +110,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 if (selected)
                 {
                     this->self().append_conjunct(*condition_data, conditional[i].condition);
-                    effect_data->effects.push_back(conditional[i].effect.get_index());
+                    effect_data->effects.push_back(as_index(conditional[i].effect));
                 }
                 else
                 {
@@ -114,23 +118,23 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 }
             }
 
-            auto precondition = cista::optional<ygg::Index<formalism::Condition<>>> {};
+            auto precondition = cista::optional<formalism::ConditionVariant> {};
             if (condition_data->conditions.size() == 1)
                 precondition = condition_data->conditions.front();
             else if (!condition_data->conditions.empty())
                 precondition = as_index(this->self().make_conjunction(*condition_data));
 
-            auto effect = cista::optional<ygg::Index<formalism::Effect<>>> {};
+            auto effect = cista::optional<formalism::EffectVariant> {};
             if (effect_data->effects.size() == 1)
                 effect = effect_data->effects.front();
             else if (!effect_data->effects.empty())
             {
-                effect = this->self().wrap_effect(formalism::insert(this->copy_context().storage->repository, *effect_data).first).get_index();
+                effect = formalism::insert(this->copy_context().storage->repository, *effect_data).first.index();
             }
 
-            auto name = std::string(data.name) + "_" + std::to_string(action.get_index().get_value());
+            auto name = std::string(data.name) + "_" + std::to_string(action.index().value);
             for (const auto& item : conditional)
-                name += "_" + std::to_string(item.when.get_index().get_value());
+                name += "_" + std::to_string(item.when.index().value);
             name += "_" + std::to_string(mask);
 
             auto action_data = formalism::checkout<formalism::Action>(this->copy_context().builder);

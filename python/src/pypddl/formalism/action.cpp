@@ -16,10 +16,12 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/action_view.hpp>
-#include <loki/formalism/condition_view.hpp>
-#include <loki/formalism/effect_view.hpp>
 #include <loki/formalism/parameter_view.hpp>
 
 namespace nb = nanobind;
@@ -30,42 +32,42 @@ namespace loki::formalism
 void bind_action(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Action>>(m, "ActionIndex");
+    urd::python::bind_index<urd::index<formalism::Action>>(m, "ActionIndex");
 
     {
-        using V = Data<formalism::Action>;
-        bind_data<V>(m, "ActionData")
+        using V = urd::data<formalism::Action>;
+        urd::python::bind_data<V>(m, "ActionData")
             .def(nb::init<std::string,
-                          ygg::IndexList<formalism::Parameter>,
-                          cista::optional<ygg::Index<formalism::Condition<>>>,
-                          cista::optional<ygg::Index<formalism::Effect<>>>>(),
+                          urd::flat_vector<urd::index<formalism::Parameter>>,
+                          cista::optional<formalism::ConditionVariant>,
+                          cista::optional<formalism::EffectVariant>>(),
                  "name"_a,
-                 "parameters"_a = ygg::IndexList<formalism::Parameter> {},
-                 "precondition"_a.none() = cista::optional<ygg::Index<formalism::Condition<>>> {},
-                 "effect"_a.none() = cista::optional<ygg::Index<formalism::Effect<>>> {})
+                 "parameters"_a = urd::flat_vector<urd::index<formalism::Parameter>> {},
+                 "precondition"_a.none() = cista::optional<formalism::ConditionVariant> {},
+                 "effect"_a.none() = cista::optional<formalism::EffectVariant> {})
             .def(nb::init<std::string,
                           std::string,
-                          ygg::IndexList<formalism::Parameter>,
+                          urd::flat_vector<urd::index<formalism::Parameter>>,
                           ygg::uint_t,
-                          cista::optional<ygg::Index<formalism::Condition<>>>,
-                          cista::optional<ygg::Index<formalism::Effect<>>>>(),
+                          cista::optional<formalism::ConditionVariant>,
+                          cista::optional<formalism::EffectVariant>>(),
                  "name"_a,
                  "original_name"_a,
                  "parameters"_a,
                  "original_arity"_a,
-                 "precondition"_a.none() = cista::optional<ygg::Index<formalism::Condition<>>> {},
-                 "effect"_a.none() = cista::optional<ygg::Index<formalism::Effect<>>> {})
-            .def(nb::init<const std::string&,
-                          const std::vector<formalism::ParameterView>&,
+                 "precondition"_a.none() = cista::optional<formalism::ConditionVariant> {},
+                 "effect"_a.none() = cista::optional<formalism::EffectVariant> {})
+            .def(urd::python::init_from_views<const std::string&,
+                          const urd::Store<urd::sequence<formalism::ParameterView>>&,
                           const std::optional<formalism::ConditionView>&,
                           const std::optional<formalism::EffectView>&>(),
                  "name"_a,
-                 "parameters"_a = std::vector<formalism::ParameterView> {},
+                 "parameters"_a = urd::Store<urd::sequence<formalism::ParameterView>> {},
                  "precondition"_a = std::optional<formalism::ConditionView> {},
                  "effect"_a = std::optional<formalism::EffectView> {})
-            .def(nb::init<const std::string&,
+            .def(urd::python::init_from_views<const std::string&,
                           const std::string&,
-                          const std::vector<formalism::ParameterView>&,
+                          const urd::Store<urd::sequence<formalism::ParameterView>>&,
                           ygg::uint_t,
                           const std::optional<formalism::ConditionView>&,
                           const std::optional<formalism::EffectView>&>(),
@@ -86,7 +88,7 @@ void bind_action(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::ActionView;
         auto cls = nb::class_<V>(m, "Action");
-        cls.def("get_index", &V::get_index)
+        cls.def("get_index", &V::index)
             .def("get_name", &V::get_name)
             .def("get_original_name", &V::get_original_name)
             .def("get_parameters", &V::get_parameters)
@@ -95,8 +97,8 @@ void bind_action(nb::module_& m, RepositoryBinding& repository)
             .def("get_precondition", &V::get_precondition, nb::keep_alive<0, 1>())
             .def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Action>(repository);

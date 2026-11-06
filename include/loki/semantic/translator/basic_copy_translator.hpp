@@ -19,6 +19,8 @@
 #define LOKI_SEMANTIC_TRANSLATOR_BASIC_COPY_TRANSLATOR_HPP_
 
 #include "loki/semantic/translator/copy_translator_component.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 namespace loki::semantic::detail
 {
@@ -32,17 +34,17 @@ public:
     void increment_quantifications(formalism::EntityListView<formalism::Parameter> parameters);
 
     template<typename T>
-    void copy_list(formalism::EntityListView<T> source, ygg::IndexList<T>& result);
+    void copy_list(formalism::EntityListView<T> source, urd::flat_vector<urd::index<T>>& result);
 
-    std::vector<formalism::ParameterView> copy_parameter_views(formalism::EntityListView<formalism::Parameter> source);
+    urd::Store<urd::sequence<formalism::ParameterView>> copy_parameter_views(formalism::EntityListView<formalism::Parameter> source);
 
-    void enter_scope(const std::vector<formalism::ParameterView>& parameters);
+    void enter_scope(const urd::Store<urd::sequence<formalism::ParameterView>>& parameters);
 
     void leave_scope();
 
-    void append_generated_domain_objects(ygg::Data<formalism::Domain>& data);
+    void append_generated_domain_objects(urd::data<formalism::Domain>& data);
 
-    void set_requirements(const std::vector<formalism::RequirementKind>& kinds, ygg::IndexList<formalism::Requirement>& result);
+    void set_requirements(const urd::Store<urd::sequence<formalism::RequirementKind>>& kinds, urd::flat_vector<urd::index<formalism::Requirement>>& result);
 
     formalism::RequirementView copy(formalism::RequirementView source);
 
@@ -87,34 +89,35 @@ void BasicCopyTranslator<Derived>::increment_quantifications(formalism::EntityLi
     for (auto parameter : parameters)
     {
         const auto variable = parameter.get_variable();
-        if (auto it = this->copy_context().num_quantifications.find(variable); it != this->copy_context().num_quantifications.end())
-            ++it->second;
+        auto& counts = this->copy_context().num_quantifications;
+        if (counts.contains(variable))
+            ++counts.at(variable);
         else
-            this->copy_context().num_quantifications.emplace(variable, 0);
+            counts.emplace(variable, 0);
     }
 }
 
 template<typename Derived>
 template<typename T>
-void BasicCopyTranslator<Derived>::copy_list(formalism::EntityListView<T> source, ygg::IndexList<T>& result)
+void BasicCopyTranslator<Derived>::copy_list(formalism::EntityListView<T> source, urd::flat_vector<urd::index<T>>& result)
 {
     for (auto view : source)
         result.push_back(as_index(this->self().copy(view)));
 }
 
 template<typename Derived>
-std::vector<formalism::ParameterView> BasicCopyTranslator<Derived>::copy_parameter_views(formalism::EntityListView<formalism::Parameter> source)
+urd::Store<urd::sequence<formalism::ParameterView>> BasicCopyTranslator<Derived>::copy_parameter_views(formalism::EntityListView<formalism::Parameter> source)
 {
-    auto result = std::vector<formalism::ParameterView> {};
+    auto result = urd::Store<urd::sequence<formalism::ParameterView>> {};
     for (auto parameter : source)
         result.push_back(this->self().copy(parameter));
     return result;
 }
 
 template<typename Derived>
-void BasicCopyTranslator<Derived>::enter_scope(const std::vector<formalism::ParameterView>& parameters)
+void BasicCopyTranslator<Derived>::enter_scope(const urd::Store<urd::sequence<formalism::ParameterView>>& parameters)
 {
-    auto variables = std::vector<formalism::VariableView> {};
+    auto variables = urd::Store<urd::sequence<formalism::VariableView>> {};
     for (auto parameter : parameters)
         variables.push_back(parameter.get_variable());
     this->copy_context().active_parameters.push_back(parameters);
@@ -129,26 +132,26 @@ void BasicCopyTranslator<Derived>::leave_scope()
 }
 
 template<typename Derived>
-void BasicCopyTranslator<Derived>::append_generated_domain_objects(ygg::Data<formalism::Domain>& data)
+void BasicCopyTranslator<Derived>::append_generated_domain_objects(urd::data<formalism::Domain>& data)
 {
     if (this->copy_context().generated_predicates.empty() && this->copy_context().generated_axioms.empty())
         return;
 
     for (auto predicate : this->copy_context().generated_predicates)
-        data.predicates.push_back(predicate.get_index());
+        data.predicates.push_back(predicate.index());
     for (auto axiom : this->copy_context().generated_axioms)
-        data.axioms.push_back(axiom.get_index());
+        data.axioms.push_back(axiom.index());
 }
 
 template<typename Derived>
-void BasicCopyTranslator<Derived>::set_requirements(const std::vector<formalism::RequirementKind>& kinds, ygg::IndexList<formalism::Requirement>& result)
+void BasicCopyTranslator<Derived>::set_requirements(const urd::Store<urd::sequence<formalism::RequirementKind>>& kinds, urd::flat_vector<urd::index<formalism::Requirement>>& result)
 {
     result.clear();
     auto data = formalism::checkout<formalism::Requirement>(this->copy_context().builder);
     for (const auto kind : kinds)
     {
         data->kind = kind;
-        result.push_back(formalism::insert(this->copy_context().storage->repository, *data).first.get_index());
+        result.push_back(formalism::insert(this->copy_context().storage->repository, *data).first.index());
     }
 }
 
@@ -183,7 +186,7 @@ formalism::ObjectView BasicCopyTranslator<Derived>::copy(formalism::ObjectView s
 {
     if (auto mapped = find_mapped(this->copy_context().storage->objects, source))
         return *mapped;
-    auto source_types = std::vector<formalism::TypeView> {};
+    auto source_types = urd::Store<urd::sequence<formalism::TypeView>> {};
     for (auto type : source.get_types())
         source_types.push_back(type);
     auto data = formalism::checkout<formalism::Object>(this->copy_context().builder);
@@ -266,12 +269,7 @@ formalism::FunctionSkeletonView BasicCopyTranslator<Derived>::copy(formalism::Fu
 template<typename Derived>
 formalism::TermView BasicCopyTranslator<Derived>::copy(formalism::TermView source)
 {
-    auto value = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Term>::Variant
-                            { return ygg::Data<formalism::Term>::Variant(as_index(this->self().copy(arg))); },
-                            source.get_variant());
-    auto data = formalism::checkout<formalism::Term>(this->copy_context().builder);
-    data->variant = std::move(value);
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
+    return std::visit([&](const auto& arg) -> formalism::TermView { return this->self().copy(arg); }, source);
 }
 
 template<typename Derived>
@@ -281,7 +279,7 @@ formalism::AtomView BasicCopyTranslator<Derived>::copy(formalism::AtomView sourc
     auto data = formalism::checkout<formalism::Atom>(this->copy_context().builder);
     data->predicate = predicate;
     for (auto term : source.get_terms())
-        data->terms.push_back(as_index(this->self().copy(term)));
+        data->terms.push_back(urd::to_stored(this->self().copy(term)));
     return formalism::insert(this->copy_context().storage->repository, *data).first;
 }
 
@@ -315,7 +313,7 @@ formalism::FunctionTermView BasicCopyTranslator<Derived>::copy(formalism::Functi
     auto data = formalism::checkout<formalism::FunctionTerm>(this->copy_context().builder);
     data->function = function;
     for (auto term : source.get_terms())
-        data->terms.push_back(as_index(this->self().copy(term)));
+        data->terms.push_back(urd::to_stored(this->self().copy(term)));
     return formalism::insert(this->copy_context().storage->repository, *data).first;
 }
 
@@ -323,7 +321,7 @@ template<typename Derived>
 formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>>
 BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source)
 {
-    const auto& data = source.get_data();
+    const auto& data = source.data();
     const auto expression = as_index(this->self().copy(source.get_expression()));
     auto result = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(this->copy_context().builder);
     result->op = data.op;
@@ -335,7 +333,7 @@ template<typename Derived>
 formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>
 BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source)
 {
-    const auto& data = source.get_data();
+    const auto& data = source.data();
     const auto left = as_index(this->self().copy(source.get_left()));
     const auto right = as_index(this->self().copy(source.get_right()));
     auto result = formalism::checkout<formalism::FunctionExpression<formalism::BinaryTag>>(this->copy_context().builder);
@@ -362,12 +360,7 @@ formalism::FunctionExpressionView BasicCopyTranslator<Derived>::copy(formalism::
     if (this->copy_context().phase == TranslationPhase::NormalizeArithmeticExpressions)
         return this->self().normalize_arithmetic_expression(source);
 
-    auto value = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::FunctionExpression<>>::Variant
-                            { return ygg::Data<formalism::FunctionExpression<>>::Variant(as_index(this->self().copy(arg))); },
-                            source.get_variant());
-    auto data = formalism::checkout<formalism::FunctionExpression<>>(this->copy_context().builder);
-    data->variant = std::move(value);
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
+    return std::visit([&](const auto& arg) -> formalism::FunctionExpressionView { return this->self().copy(arg); }, source);
 }
 
 }  // namespace loki::semantic::detail

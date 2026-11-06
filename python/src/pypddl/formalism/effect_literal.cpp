@@ -16,6 +16,7 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/effect_literal_view.hpp>
 #include <loki/formalism/literal_view.hpp>
@@ -28,23 +29,23 @@ namespace loki::formalism
 void bind_effect_literal(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Effect<formalism::LiteralTag>>>(m, "EffectLiteralIndex");
+    urd::python::bind_index<urd::index<formalism::Effect<formalism::LiteralTag>>>(m, "EffectLiteralIndex");
 
     {
-        using V = Data<formalism::Effect<formalism::LiteralTag>>;
-        bind_data<V>(m, "EffectLiteralData")
-            .def(nb::init<ygg::Index<formalism::Literal>>(), "literal"_a)
-            .def(nb::init<formalism::LiteralView>(), "literal"_a)
+        using V = urd::data<formalism::Effect<formalism::LiteralTag>>;
+        urd::python::bind_data<V>(m, "EffectLiteralData")
+            .def(nb::init<urd::index<formalism::Literal>>(), "literal"_a)
+            .def(urd::python::init_from_views<formalism::LiteralView>(), "literal"_a)
             .def_rw("literal", &V::literal);
     }
 
     {
         using V = formalism::EntityView<formalism::Effect<formalism::LiteralTag>>;
         auto cls = nb::class_<V>(m, "EffectLiteral");
-        cls.def("get_index", &V::get_index).def("get_literal", &V::get_literal, nb::keep_alive<0, 1>());
+        cls.def("get_index", &V::index).def("get_literal", &V::get_literal, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Effect<formalism::LiteralTag>>(repository);

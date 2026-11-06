@@ -7,7 +7,7 @@ find_package(
 find_package(nanobind CONFIG REQUIRED PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
 message(STATUS "Found nanobind: ${nanobind_DIR} (found version ${nanobind_VERSION})")
 
-yggdrasil_python_package_init(PYPDDL pypddl)
+brokkr_python_package_init(PYPDDL pypddl)
 
 file(
     GLOB PYPDDL_FORMALISM_SOURCES
@@ -26,7 +26,7 @@ nanobind_add_module(
 target_link_libraries(_pypddl PRIVATE loki::parsers)
 target_include_directories(_pypddl PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-yggdrasil_python_module_rpaths(PYPDDL _pypddl)
+brokkr_python_module_rpaths(PYPDDL _pypddl)
 
 install(TARGETS _pypddl DESTINATION "pypddl" COMPONENT pypddl)
 
@@ -34,7 +34,7 @@ set_property(
     TARGET parsers PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
 )
-yggdrasil_install_native_export(
+brokkr_install_native_export(
     PKG_UPPER PYPDDL
     PACKAGE pypddl
     CONFIG_NAME loki
@@ -45,10 +45,9 @@ yggdrasil_install_native_export(
     HEADER_DIRS "${CMAKE_SOURCE_DIR}/include/loki"
     CONFIG_TEMPLATE "${CMAKE_SOURCE_DIR}/Config.cmake.in"
     VERSION_FILE "${CMAKE_BINARY_DIR}/lokiConfigVersion.cmake"
-    CMAKE_SOURCE_DIRECTORY "${CMAKE_SOURCE_DIR}/cmake"
 )
 
-yggdrasil_install_runtime_path_fixup(PYPDDL pypddl)
+brokkr_install_runtime_path_fixup(PYPDDL pypddl)
 
 set(PYPDDL_BUILD_TREE_PACKAGE_DIR "${CMAKE_CURRENT_BINARY_DIR}/pypddl")
 file(
@@ -65,7 +64,7 @@ install(
     COMPONENT pypddl
 )
 
-yggdrasil_install_python_files(
+brokkr_install_python_files(
     pypddl "${CMAKE_CURRENT_SOURCE_DIR}/src"
     FILES
         pypddl/__init__.py
@@ -129,12 +128,12 @@ if(LOKI_BUILD_TESTS)
     )
 endif()
 
-yggdrasil_install_provider_env(
+brokkr_install_provider_env(
     PYPDDL pypddl
-    PREFIXES "${YGGDRASIL_NATIVE_PREFIX}"
+    PREFIXES "${YGGDRASIL_NATIVE_PREFIX}" "${URD_NATIVE_PREFIX}"
 )
 
-yggdrasil_install_python_stubs(
+brokkr_install_python_stubs(
     PYPDDL pypddl
     MODULE pypddl._pypddl
     PRIVATE_MODULE _pypddl

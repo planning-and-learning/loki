@@ -27,16 +27,19 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <yggdrasil/containers/associative_containers.hpp>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/store.hpp>
 
 namespace loki::tests
 {
 namespace
 {
 
-void collect_effect_binder_names(formalism::EffectView effect, ygg::UnorderedSet<std::string>& names)
+void collect_effect_binder_names(formalism::EffectView effect, urd::Store<urd::set<std::string>>& names)
 {
-    ygg::visit(
+    std::visit(
         [&](const auto& node)
         {
             using Node = std::decay_t<decltype(node)>;
@@ -62,7 +65,7 @@ void collect_effect_binder_names(formalism::EffectView effect, ygg::UnorderedSet
                     collect_effect_binder_names(alternative.get_effect(), names);
             }
         },
-        effect.get_variant());
+        effect);
 }
 
 // NNF, no quantifiers, no disjunction: the shape every translated precondition,
@@ -78,16 +81,16 @@ void expect_flat_condition(formalism::ConditionView condition, const std::string
 template<typename Children>
 void expect_distinct_children(const Children& children, const std::string& what)
 {
-    auto seen = ygg::UnorderedSet<std::uint64_t> {};
+    auto seen = urd::Store<urd::set<std::string>> {};
     for (auto child : children)
-        EXPECT_TRUE(seen.insert(child.get_index().get_value()).second) << what << ": duplicate child in canonical list";
+        EXPECT_TRUE(seen.insert(formalism::format::to_string(child)).second) << what << ": duplicate child in canonical list";
 }
 
 // Effect normal form: no and-in-and, merged whens with disjunction-free conditions,
 // distributed foralls, aggregated numeric effects per target.
 void expect_effect_normal_form(formalism::EffectView effect, bool top_level, const std::string& what)
 {
-    ygg::visit(
+    std::visit(
         [&](const auto& node)
         {
             using Node = std::decay_t<decltype(node)>;
@@ -95,10 +98,10 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
             {
                 EXPECT_TRUE(top_level) << what << ": nested effect conjunction";
                 expect_distinct_children(node.get_effects(), what);
-                auto numeric_targets = ygg::UnorderedSet<std::string> {};
+                auto numeric_targets = urd::Store<urd::set<std::string>> {};
                 for (auto child : node.get_effects())
                 {
-                    ygg::visit(
+                    std::visit(
                         [&](const auto& grandchild)
                         {
                             using Grandchild = std::decay_t<decltype(grandchild)>;
@@ -106,11 +109,11 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
                             {
                                 auto key = std::string(grandchild.get_function().get_function().get_name());
                                 for (auto term : grandchild.get_function().get_terms())
-                                    key += "," + std::to_string(term.get_index().get_value());
+                                    key += "," + formalism::format::to_string(term);
                                 EXPECT_TRUE(numeric_targets.insert(key).second) << what << ": unaggregated numeric effects on target " << key;
                             }
                         },
-                        child.get_variant());
+                        child);
                     expect_effect_normal_form(child, false, what);
                 }
             }
@@ -118,12 +121,12 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
             {
                 EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::OrTag>>(node.get_condition()), 0) << what << ": disjunctive when-condition";
                 EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(node.get_effect()), 0) << what << ": nested when";
-                EXPECT_FALSE(node.get_effect().get_variant().template is<ygg::Index<formalism::Effect<formalism::AndTag>>>())
+                EXPECT_FALSE(std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::AndTag>>>(node.get_effect()))
                     << what << ": conjunctive when-body";
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
             {
-                EXPECT_FALSE(node.get_effect().get_variant().template is<ygg::Index<formalism::Effect<formalism::AndTag>>>())
+                EXPECT_FALSE(std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::AndTag>>>(node.get_effect()))
                     << what << ": undistributed universal effect";
                 expect_effect_normal_form(node.get_effect(), false, what);
             }
@@ -138,7 +141,7 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
                     expect_effect_normal_form(alternative.get_effect(), false, what);
             }
         },
-        effect.get_variant());
+        effect);
 }
 
 template<typename AxiomRange>
@@ -155,7 +158,7 @@ void expect_axiom_invariants(const AxiomRange& axioms, const std::string& what)
 
 void expect_domain_invariants(formalism::DomainView domain)
 {
-    auto predicate_names = ygg::UnorderedSet<std::string> {};
+    auto predicate_names = urd::Store<urd::set<std::string>> {};
     for (auto predicate : domain.get_predicates())
         EXPECT_TRUE(predicate_names.insert(std::string(predicate.get_name())).second) << "duplicate domain predicate name " << predicate.get_name();
 
@@ -163,7 +166,7 @@ void expect_domain_invariants(formalism::DomainView domain)
     {
         const auto what = "action " + std::string(action.get_name());
 
-        auto parameter_names = ygg::UnorderedSet<std::string> {};
+        auto parameter_names = urd::Store<urd::set<std::string>> {};
         for (auto parameter : action.get_parameters())
             EXPECT_TRUE(parameter_names.insert(std::string(parameter.get_variable().get_name())).second) << what << ": duplicate parameter";
 
@@ -173,7 +176,7 @@ void expect_domain_invariants(formalism::DomainView domain)
         if (const auto effect = action.get_effect())
         {
             expect_effect_normal_form(effect.value(), true, what + ": effect");
-            auto binder_names = ygg::UnorderedSet<std::string> {};
+            auto binder_names = urd::Store<urd::set<std::string>> {};
             collect_effect_binder_names(effect.value(), binder_names);
             for (const auto& name : binder_names)
                 EXPECT_FALSE(parameter_names.contains(name)) << what << ": effect binder " << name << " shadows an action parameter";
@@ -191,14 +194,14 @@ void expect_task_invariants(formalism::DomainView translated_domain, formalism::
 {
     EXPECT_EQ(task.get_domain().get_name(), translated_domain.get_name());
 
-    auto object_names = ygg::UnorderedSet<std::string> {};
+    auto object_names = urd::Store<urd::set<std::string>> {};
     for (auto object : task.get_objects())
         EXPECT_TRUE(object_names.insert(std::string(object.get_name())).second) << "duplicate task object name " << object.get_name();
-    auto domain_predicate_names = ygg::UnorderedSet<std::string> {};
+    auto domain_predicate_names = urd::Store<urd::set<std::string>> {};
     for (auto predicate : translated_domain.get_predicates())
         domain_predicate_names.insert(std::string(predicate.get_name()));
 
-    auto task_predicate_names = ygg::UnorderedSet<std::string> {};
+    auto task_predicate_names = urd::Store<urd::set<std::string>> {};
     for (auto predicate : task.get_predicates())
     {
         const auto name = std::string(predicate.get_name());
@@ -294,7 +297,7 @@ TEST(LokiSemanticInvariantSuite, TranslatorOptionCombinationsKeepInvariants)
                     const auto task_translation = semantic::translate(*task, domain_translation, options);
                     const auto translated_task = task_translation.get_translated_task();
 
-                    EXPECT_EQ(&translated_task.get_domain().get_context().get_root(), &translated_domain.get_context().get_root());
+                    EXPECT_EQ(&translated_task.get_domain().context().get_root(), &translated_domain.context().get_root());
                     expect_task_invariants(translated_domain, translated_task);
 
                     if (materialize_equality)

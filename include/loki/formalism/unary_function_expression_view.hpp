@@ -20,26 +20,21 @@
 
 #include "loki/formalism/unary_function_expression_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>> C>
-class View<ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>, C> :
-    public ygg::IndexViewBase<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>, C>::IndexViewBase;
-
-    auto get_operator() const noexcept { return this->get_data().op; }
-    auto get_expression() const noexcept { return ygg::make_view(this->get_data().expression, this->get_context()); }
+    auto get_operator() const noexcept { return self().data().op; }
+    auto get_expression() const noexcept { return self().template get<&urd::record_of<V>::expression>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

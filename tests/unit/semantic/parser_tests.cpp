@@ -16,6 +16,8 @@
  */
 
 #include "../benchmark_utils.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <cstddef>
 #include <gtest/gtest.h>
@@ -120,14 +122,14 @@ TEST(LokiSemanticParser, PreservesComplementaryLiteralsInConjunctions)
     const auto action = parser.get_domain().get_actions()[0];
     ASSERT_TRUE(action.get_precondition().has_value());
     auto conjuncts = std::size_t { 0 };
-    ygg::visit(
+    std::visit(
         [&](const auto& node)
         {
             using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
                 conjuncts = node.get_conditions().size();
         },
-        action.get_precondition().value().get_variant());
+        action.get_precondition().value());
     // A complementary literal pair must not be canonicalized away.
     EXPECT_EQ(conjuncts, 3);
 }
@@ -179,13 +181,13 @@ TEST(LokiSemanticParser, ParsesAndTranslatesDistinctTasksAfterOneDomain)
         return false;
     };
 
-    EXPECT_NE(first_translated.get_context().get_index(), translation.get_translated_domain().get_context().get_index());
-    EXPECT_NE(second_translated.get_context().get_index(), translation.get_translated_domain().get_context().get_index());
-    EXPECT_EQ(&first_translated.get_domain().get_context().get_root(), &translation.get_translated_domain().get_context().get_root());
-    EXPECT_EQ(&second_translated.get_domain().get_context().get_root(), &translation.get_translated_domain().get_context().get_root());
+    EXPECT_NE(first_translated.context().get_index(), translation.get_translated_domain().context().get_index());
+    EXPECT_NE(second_translated.context().get_index(), translation.get_translated_domain().context().get_index());
+    EXPECT_EQ(&first_translated.get_domain().context().get_root(), &translation.get_translated_domain().context().get_root());
+    EXPECT_EQ(&second_translated.get_domain().context().get_root(), &translation.get_translated_domain().context().get_root());
     EXPECT_TRUE(has_object(first_translated, "a"));
     EXPECT_TRUE(has_object(second_translated, "b"));
-    EXPECT_NE(&first_translated.get_context(), &second_translated.get_context());
+    EXPECT_NE(&first_translated.context(), &second_translated.context());
     EXPECT_NE(std::string(first_translated.get_name()), std::string(second_translated.get_name()));
 }
 
@@ -240,14 +242,14 @@ TEST(LokiSemanticParser, FlattensTypedGroupsAndInterleavedDeclarations)
     for (const auto action : domain.get_actions())
         if (action.get_name() == "first")
         {
-            auto parameters = std::vector<std::pair<std::string, std::string>> {};
+            auto parameters = urd::Store<urd::sequence<std::pair<std::string, std::string>>> {};
             for (const auto parameter : action.get_parameters())
             {
                 ASSERT_EQ(parameter.get_types().size(), 1);
                 parameters.emplace_back(std::string(parameter.get_variable().get_name()), std::string(parameter.get_types()[0].get_name()));
             }
             const auto expected =
-                std::vector<std::pair<std::string, std::string>> { { "?x", "child" }, { "?y", "child" }, { "?z", "parent" }, { "?tail", "object" } };
+                urd::Store<urd::sequence<std::pair<std::string, std::string>>> { { "?x", "child" }, { "?y", "child" }, { "?z", "parent" }, { "?tail", "object" } };
             EXPECT_EQ(parameters, expected);
         }
     auto found_grouped_axiom = false;

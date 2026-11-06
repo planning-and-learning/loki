@@ -4,9 +4,9 @@
 
 #include <concepts>
 
-using Index = ygg::Index<loki::formalism::Effect<loki::formalism::NumericTag>>;
-using Data = ygg::Data<loki::formalism::Effect<loki::formalism::NumericTag>>;
-using View = ygg::View<Index, loki::formalism::Repository>;
+using Index = urd::index<loki::formalism::Effect<loki::formalism::NumericTag>>;
+using Data = urd::data<loki::formalism::Effect<loki::formalism::NumericTag>>;
+using View = urd::view<loki::formalism::Effect<loki::formalism::NumericTag>, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
@@ -18,11 +18,10 @@ static_assert(requires(Data& data) {
     data.op;
     data.function;
     data.expression;
-    data.clear();
     { data == data } -> std::same_as<bool>;
 });
 static_assert(requires(const View& view) {
-    view.get_index();
+    view.index();
     view.get_operator();
     view.get_function();
     view.get_expression();

@@ -4,9 +4,9 @@
 
 #include <concepts>
 
-using Index = ygg::Index<loki::formalism::Atom>;
-using Data = ygg::Data<loki::formalism::Atom>;
-using View = ygg::View<Index, loki::formalism::Repository>;
+using Index = urd::index<loki::formalism::Atom>;
+using Data = urd::data<loki::formalism::Atom>;
+using View = urd::view<loki::formalism::Atom, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
@@ -17,11 +17,10 @@ static_assert(requires(Data& data) {
     data.index;
     data.predicate;
     data.terms;
-    data.clear();
     { data == data } -> std::same_as<bool>;
 });
 static_assert(requires(const View& view) {
-    view.get_index();
+    view.index();
     view.get_predicate();
     view.get_terms();
     { view == view } -> std::same_as<bool>;

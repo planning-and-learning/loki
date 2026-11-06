@@ -20,34 +20,30 @@
 
 #include "loki/formalism/task_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Task, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Task> C>
-class View<ygg::Index<::loki::formalism::Task>, C> : public ygg::IndexViewBase<::loki::formalism::Task, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Task, C>::IndexViewBase;
-
-    const auto& get_name() const noexcept { return this->get_data().name; }
-    auto get_domain() const noexcept { return ygg::make_view(this->get_data().domain, this->get_context()); }
-    auto get_requirements() const noexcept { return ygg::make_view(this->get_data().requirements, this->get_context()); }
-    auto get_types() const noexcept { return ygg::make_view(this->get_data().types, this->get_context()); }
-    auto get_predicates() const noexcept { return ygg::make_view(this->get_data().predicates, this->get_context()); }
-    auto get_objects() const noexcept { return ygg::make_view(this->get_data().objects, this->get_context()); }
-    auto get_initial_literals() const noexcept { return ygg::make_view(this->get_data().initial_literals, this->get_context()); }
-    auto get_initial_function_values() const noexcept { return ygg::make_view(this->get_data().initial_function_values, this->get_context()); }
-    auto get_goal() const noexcept { return ygg::make_view(this->get_data().goal, this->get_context()); }
-    auto get_metric() const noexcept { return ygg::make_view(this->get_data().metric, this->get_context()); }
-    auto get_axioms() const noexcept { return ygg::make_view(this->get_data().axioms, this->get_context()); }
+    const auto& get_name() const noexcept { return self().data().name; }
+    auto get_domain() const noexcept { return self().template get<&urd::record_of<V>::domain>(); }
+    auto get_requirements() const noexcept { return self().template get<&urd::record_of<V>::requirements>(); }
+    auto get_types() const noexcept { return self().template get<&urd::record_of<V>::types>(); }
+    auto get_predicates() const noexcept { return self().template get<&urd::record_of<V>::predicates>(); }
+    auto get_objects() const noexcept { return self().template get<&urd::record_of<V>::objects>(); }
+    auto get_initial_literals() const noexcept { return self().template get<&urd::record_of<V>::initial_literals>(); }
+    auto get_initial_function_values() const noexcept { return self().template get<&urd::record_of<V>::initial_function_values>(); }
+    auto get_goal() const noexcept { return self().template get<&urd::record_of<V>::goal>(); }
+    auto get_metric() const noexcept { return self().template get<&urd::record_of<V>::metric>(); }
+    auto get_axioms() const noexcept { return self().template get<&urd::record_of<V>::axioms>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

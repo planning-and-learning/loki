@@ -27,24 +27,22 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Variable>
+struct data<::loki::formalism::Variable>
 {
-    ygg::Index<::loki::formalism::Variable> index;
+    urd::index<::loki::formalism::Variable> index;
     ::cista::offset::string name;
 
-    Data() = default;
-    Data(::cista::offset::string name_) : index(), name(std::move(name_)) {}
+    data() = default;
+    data(::cista::offset::string name_) : index(), name(std::move(name_)) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::name> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::name> {}; }
 };
 
 }

@@ -16,9 +16,12 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/effect_and_view.hpp>
-#include <loki/formalism/effect_view.hpp>
 
 namespace nb = nanobind;
 
@@ -28,23 +31,23 @@ namespace loki::formalism
 void bind_effect_and(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Effect<formalism::AndTag>>>(m, "EffectAndIndex");
+    urd::python::bind_index<urd::index<formalism::Effect<formalism::AndTag>>>(m, "EffectAndIndex");
 
     {
-        using V = Data<formalism::Effect<formalism::AndTag>>;
-        bind_data<V>(m, "EffectAndData")
-            .def(nb::init<ygg::IndexList<formalism::Effect<>>>(), "effects"_a)
-            .def(nb::init<const std::vector<formalism::EffectView>&>(), "effects"_a)
+        using V = urd::data<formalism::Effect<formalism::AndTag>>;
+        urd::python::bind_data<V>(m, "EffectAndData")
+            .def(nb::init<formalism::EffectList>(), "effects"_a)
+            .def(urd::python::init_from_views<const urd::Store<urd::sequence<formalism::EffectView>>&>(), "effects"_a)
             .def_rw("effects", &V::effects);
     }
 
     {
         using V = formalism::EntityView<formalism::Effect<formalism::AndTag>>;
         auto cls = nb::class_<V>(m, "EffectAnd");
-        cls.def("get_index", &V::get_index).def("get_effects", &V::get_effects);
+        cls.def("get_index", &V::index).def("get_effects", &V::get_effects);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Effect<formalism::AndTag>>(repository);

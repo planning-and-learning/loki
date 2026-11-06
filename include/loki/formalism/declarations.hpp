@@ -20,14 +20,16 @@
 
 #include "loki/formalism/enums.hpp"
 
+#include <cista/containers/variant.h>
+#include <cista/containers/vector.h>
 #include <concepts>
 #include <cstdint>
 #include <memory>
 #include <tuple>
-#include <yggdrasil/core/type_list.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <variant>
+#include <boost/mp11.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
-#include <yggdrasil/semantics/comparison.hpp>
 
 namespace ygg::formalism
 {
@@ -80,9 +82,6 @@ struct Predicate
 struct FunctionSkeleton
 {
 };
-struct Term
-{
-};
 struct Atom
 {
 };
@@ -95,6 +94,10 @@ struct FunctionTerm
 struct EffectProbabilisticAlternative
 {
 };
+
+/// A term: a variable or an object. Stored as it is, not interned.
+using Term = ::cista::offset::variant<urd::index<Variable>, urd::index<Object>>;
+using TermList = ::cista::offset::vector<Term>;
 
 // Shared tags
 struct LiteralTag
@@ -152,29 +155,36 @@ struct MultiTag
 {
 };
 
-using FunctionExpressionTags = ygg::TypeList<NumberTag, UnaryTag, BinaryTag, MultiTag>;
-using ConditionTags = ygg::TypeList<LiteralTag, AndTag, OrTag, NotTag, ImplyTag, ExistsTag, ForallTag, NumericConstraintTag>;
-using EffectTags = ygg::TypeList<LiteralTag, AndTag, NumericTag, ForallTag, WhenTag, OneOfTag, ProbabilisticTag>;
+using FunctionExpressionTags = boost::mp11::mp_list<NumberTag, UnaryTag, BinaryTag, MultiTag>;
+using ConditionTags = boost::mp11::mp_list<LiteralTag, AndTag, OrTag, NotTag, ImplyTag, ExistsTag, ForallTag, NumericConstraintTag>;
+using EffectTags = boost::mp11::mp_list<LiteralTag, AndTag, NumericTag, ForallTag, WhenTag, OneOfTag, ProbabilisticTag>;
 
-/// Tag void is the type-erased record holding one of the family's concrete records.
-template<typename Tag = void>
-    requires(std::is_void_v<Tag> || ygg::InTypeList<Tag, FunctionExpressionTags>)
+template<typename Tag>
+    requires boost::mp11::mp_contains<FunctionExpressionTags, Tag>::value
 struct FunctionExpression
 {
 };
-template<typename Tag = void>
-    requires(std::is_void_v<Tag> || ygg::InTypeList<Tag, ConditionTags>)
+template<typename Tag>
+    requires boost::mp11::mp_contains<ConditionTags, Tag>::value
 struct Condition
 {
 };
-template<typename Tag = void>
-    requires(std::is_void_v<Tag> || ygg::InTypeList<Tag, EffectTags>)
+template<typename Tag>
+    requires boost::mp11::mp_contains<EffectTags, Tag>::value
 struct Effect
 {
 };
 
-using FunctionExpressionTypes = ygg::ConcatTypeListsT<ygg::TypeList<FunctionExpression<NumberTag>, FunctionTerm>,
-                                                      ygg::MapTypeListT<FunctionExpression, ygg::TypeList<UnaryTag, BinaryTag, MultiTag>>>;
+using FunctionExpressionTypes = boost::mp11::mp_append<boost::mp11::mp_list<FunctionExpression<NumberTag>, FunctionTerm>,
+                                                      boost::mp11::mp_transform<FunctionExpression, boost::mp11::mp_list<UnaryTag, BinaryTag, MultiTag>>>;
+
+/// A function expression, condition or effect: one of the family's records. Stored as it is, not interned.
+using FunctionExpressionVariant = urd::index_variant<FunctionExpressionTypes>;
+using FunctionExpressionList = ::cista::offset::vector<FunctionExpressionVariant>;
+using ConditionVariant = urd::index_variant<boost::mp11::mp_transform<Condition, ConditionTags>>;
+using ConditionList = ::cista::offset::vector<ConditionVariant>;
+using EffectVariant = urd::index_variant<boost::mp11::mp_transform<Effect, EffectTags>>;
+using EffectList = ::cista::offset::vector<EffectVariant>;
 
 struct Action
 {
@@ -196,12 +206,10 @@ struct Task
 };
 
 using SymbolRepositoryTypes =
-    ygg::ConcatTypeListsT<ygg::TypeList<Requirement, Type, Object, Variable, Parameter, Predicate, FunctionSkeleton, Term, Atom, Literal>,
+    boost::mp11::mp_append<boost::mp11::mp_list<Requirement, Type, Object, Variable, Parameter, Predicate, FunctionSkeleton, Atom, Literal>,
                           FunctionExpressionTypes,
-                          ygg::TypeList<FunctionExpression<>>,
-                          ygg::MapTypeListT<Condition, ConditionTags>,
-                          ygg::TypeList<Condition<>,
-                                        Effect<LiteralTag>,
+                          boost::mp11::mp_transform<Condition, ConditionTags>,
+                          boost::mp11::mp_list<Effect<LiteralTag>,
                                         Effect<AndTag>,
                                         Effect<NumericTag>,
                                         Effect<ForallTag>,
@@ -209,16 +217,15 @@ using SymbolRepositoryTypes =
                                         Effect<OneOfTag>,
                                         EffectProbabilisticAlternative,
                                         Effect<ProbabilisticTag>,
-                                        Effect<>,
                                         Action,
                                         Axiom,
                                         Metric,
                                         InitialFunctionValue,
                                         Domain,
                                         Task>>;
-using RelationRepositoryTypes = ygg::TypeList<Atom>;
+using RelationRepositoryTypes = boost::mp11::mp_list<Atom>;
 
-using SymbolRepository = ygg::ApplyTypeListT<::ygg::formalism::SymbolRepository, SymbolRepositoryTypes>;
+using SymbolRepository = boost::mp11::mp_apply<::ygg::formalism::SymbolRepository, SymbolRepositoryTypes>;
 
 using RelationRepository = ::ygg::formalism::RelationRepository<ObjectTag, Atom>;
 
@@ -228,10 +235,10 @@ using RepositoryFactory = ::ygg::formalism::RepositoryFactory<SymbolRepository, 
 using RepositoryFactoryPtr = std::shared_ptr<RepositoryFactory>;
 
 template<typename T>
-using EntityView = ygg::View<ygg::Index<T>, Repository>;
+using EntityView = urd::view<T, Repository>;
 
 template<typename T>
-using EntityListView = ygg::View<ygg::IndexList<T>, Repository>;
+using EntityListView = urd::resolved_range<urd::flat_vector<urd::index<T>>, Repository>;
 
 using RequirementView = EntityView<Requirement>;
 using TypeView = EntityView<Type>;
@@ -240,14 +247,20 @@ using VariableView = EntityView<Variable>;
 using ParameterView = EntityView<Parameter>;
 using PredicateView = EntityView<Predicate>;
 using FunctionSkeletonView = EntityView<FunctionSkeleton>;
-using TermView = EntityView<Term>;
+/// A term read through the repository: its variable's or its object's view.
+using TermView = std::variant<VariableView, ObjectView>;
+using TermListView = urd::resolved_range<TermList, Repository>;
 using AtomView = EntityView<Atom>;
 using LiteralView = EntityView<Literal>;
 using FunctionTermView = EntityView<FunctionTerm>;
-using FunctionExpressionView = EntityView<FunctionExpression<>>;
-using ConditionView = EntityView<Condition<>>;
+/// A function expression, condition or effect read through the repository: the view of the record it holds.
+using FunctionExpressionView = boost::mp11::mp_apply<std::variant, boost::mp11::mp_transform<EntityView, FunctionExpressionTypes>>;
+using FunctionExpressionListView = urd::resolved_range<FunctionExpressionList, Repository>;
+using ConditionView = boost::mp11::mp_apply<std::variant, boost::mp11::mp_transform<EntityView, boost::mp11::mp_transform<Condition, ConditionTags>>>;
+using ConditionListView = urd::resolved_range<ConditionList, Repository>;
 using EffectProbabilisticAlternativeView = EntityView<EffectProbabilisticAlternative>;
-using EffectView = EntityView<Effect<>>;
+using EffectView = boost::mp11::mp_apply<std::variant, boost::mp11::mp_transform<EntityView, boost::mp11::mp_transform<Effect, EffectTags>>>;
+using EffectListView = urd::resolved_range<EffectList, Repository>;
 using ActionView = EntityView<Action>;
 using AxiomView = EntityView<Axiom>;
 using MetricView = EntityView<Metric>;

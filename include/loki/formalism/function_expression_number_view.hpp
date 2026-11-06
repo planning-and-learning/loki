@@ -20,25 +20,20 @@
 
 #include "loki/formalism/function_expression_number_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>> C>
-class View<ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>, C> :
-    public ygg::IndexViewBase<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>, C>::IndexViewBase;
-
-    auto get_value() const noexcept { return this->get_data().value; }
+    auto get_value() const noexcept { return self().data().value; }
 };
-
-}
+}  // namespace urd
 
 #endif

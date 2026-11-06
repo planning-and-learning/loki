@@ -16,6 +16,7 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/variable_view.hpp>
 
@@ -27,20 +28,20 @@ namespace loki::formalism
 void bind_variable(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Variable>>(m, "VariableIndex");
+    urd::python::bind_index<urd::index<formalism::Variable>>(m, "VariableIndex");
 
     {
-        using V = Data<formalism::Variable>;
-        bind_data<V>(m, "VariableData").def(nb::init<cista::offset::string>(), "name"_a).def_rw("name", &V::name);
+        using V = urd::data<formalism::Variable>;
+        urd::python::bind_data<V>(m, "VariableData").def(nb::init<cista::offset::string>(), "name"_a).def_rw("name", &V::name);
     }
 
     {
         using V = formalism::VariableView;
         auto cls = nb::class_<V>(m, "Variable");
-        cls.def("get_index", &V::get_index).def("get_name", &V::get_name);
+        cls.def("get_index", &V::index).def("get_name", &V::get_name);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Variable>(repository);

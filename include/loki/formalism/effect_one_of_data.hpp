@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_EFFECT_ONE_OF_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <optional>
 #include <string>
@@ -26,27 +28,22 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Effect<::loki::formalism::OneOfTag>>
+struct data<::loki::formalism::Effect<::loki::formalism::OneOfTag>>
 {
-    ygg::Index<::loki::formalism::Effect<::loki::formalism::OneOfTag>> index;
-    ygg::IndexList<::loki::formalism::Effect<>> effects;
+    urd::index<::loki::formalism::Effect<::loki::formalism::OneOfTag>> index;
+    ::loki::formalism::EffectList effects;
 
-    Data() = default;
-    Data(ygg::IndexList<::loki::formalism::Effect<>> effects_) : index(), effects(std::move(effects_)) {}
-    template<typename C>
-    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C>>& effects_) : index(), effects()
-    { set(effects_, effects); }
+    data() = default;
+    data(::loki::formalism::EffectList effects_) : index(), effects(std::move(effects_)) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::effects> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::effects> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::effects> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::effects> {}; }
 };
 
 }

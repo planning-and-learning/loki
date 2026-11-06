@@ -54,7 +54,7 @@ CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpressio
     if (auto mapped = find_mapped(m_storage->unary_expressions, source))
         return *mapped;
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(m_builder);
-    data->op = source.get_data().op;
+    data->op = source.data().op;
     data->expression = as_index(copy(source.get_expression()));
     auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->unary_expressions, source, out);
@@ -67,7 +67,7 @@ CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpressio
     if (auto mapped = find_mapped(m_storage->binary_expressions, source))
         return *mapped;
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::BinaryTag>>(m_builder);
-    data->op = source.get_data().op;
+    data->op = source.data().op;
     data->left = as_index(copy(source.get_left()));
     data->right = as_index(copy(source.get_right()));
     auto out = formalism::insert(m_storage->repository, *data).first;
@@ -90,14 +90,7 @@ CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpressio
 
 formalism::FunctionExpressionView CanonicalCopyTranslator::copy(formalism::FunctionExpressionView source)
 {
-    if (auto mapped = find_mapped(m_storage->function_expressions, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::FunctionExpression<>>(m_builder);
-    data->variant =
-        ygg::visit([&](const auto& arg) -> ygg::Data<formalism::FunctionExpression<>>::Variant { return as_index(copy(arg)); }, source.get_variant());
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->function_expressions, source, out);
-    return out;
+    return std::visit([&](const auto& arg) -> formalism::FunctionExpressionView { return copy(arg); }, source);
 }
 
 formalism::EntityView<formalism::Condition<formalism::LiteralTag>>
@@ -193,7 +186,7 @@ CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formali
     if (auto mapped = find_mapped(m_storage->condition_numeric_constraints, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Condition<formalism::NumericConstraintTag>>(m_builder);
-    data->comparator = source.get_data().comparator;
+    data->comparator = source.data().comparator;
     data->left = as_index(copy(source.get_left()));
     data->right = as_index(copy(source.get_right()));
     auto out = formalism::insert(m_storage->repository, *data).first;
@@ -203,13 +196,7 @@ CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formali
 
 formalism::ConditionView CanonicalCopyTranslator::copy(formalism::ConditionView source)
 {
-    if (auto mapped = find_mapped(m_storage->conditions, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Condition<>>(m_builder);
-    data->variant = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Condition<>>::Variant { return as_index(copy(arg)); }, source.get_variant());
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->conditions, source, out);
-    return out;
+    return std::visit([&](const auto& arg) -> formalism::ConditionView { return copy(arg); }, source);
 }
 
 }  // namespace loki::semantic::detail

@@ -26,24 +26,22 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Requirement>
+struct data<::loki::formalism::Requirement>
 {
-    ygg::Index<::loki::formalism::Requirement> index;
+    urd::index<::loki::formalism::Requirement> index;
     ::loki::formalism::RequirementKind kind {};
 
-    Data() = default;
-    Data(::loki::formalism::RequirementKind kind_) : index(), kind(kind_) {}
+    data() = default;
+    data(::loki::formalism::RequirementKind kind_) : index(), kind(kind_) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::kind> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::kind> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::kind> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::kind> {}; }
 };
 
 }

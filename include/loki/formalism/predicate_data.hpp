@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_PREDICATE_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <cista/containers/string.h>
 #include <optional>
@@ -27,36 +29,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Predicate>
+struct data<::loki::formalism::Predicate>
 {
-    ygg::Index<::loki::formalism::Predicate> index;
+    urd::index<::loki::formalism::Predicate> index;
     ::cista::offset::string name;
-    ygg::IndexList<::loki::formalism::Parameter> parameters;
+    urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
 
-    Data() = default;
-    Data(::cista::offset::string name_, ygg::IndexList<::loki::formalism::Parameter> parameters_ = {}) :
+    data() = default;
+    data(::cista::offset::string name_, urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_ = {}) :
         index(),
         name(std::move(name_)),
         parameters(std::move(parameters_))
     {
     }
-    template<typename C>
-    Data(const std::string& name_, const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_ = {}) :
-        index(),
-        name(name_),
-        parameters()
-    { set(parameters_, parameters); }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::parameters> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::name, &Data::parameters> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name, &data::parameters> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::name, &data::parameters> {}; }
 };
 
 }

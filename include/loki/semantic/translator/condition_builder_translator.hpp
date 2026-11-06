@@ -29,55 +29,27 @@ class ConditionBuilderTranslator : public CopyTranslatorComponent<Derived, Condi
 public:
     explicit ConditionBuilderTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, ConditionBuilderTranslator<Derived>>(context) {}
 
-    formalism::ConditionView wrap_condition(ygg::Data<formalism::Condition<>>::Variant value);
-    template<typename T>
-    formalism::ConditionView wrap_condition(formalism::EntityView<T> value);
-    template<typename T>
-    formalism::ConditionView wrap_condition(ygg::Index<T> value);
     [[nodiscard]] std::optional<formalism::EntityView<formalism::Condition<formalism::OrTag>>> as_or(formalism::ConditionView condition) const;
     formalism::ConditionView flatten_condition(formalism::ConditionView condition);
-    void append_conjunct(ygg::Data<formalism::Condition<formalism::AndTag>>& data, formalism::ConditionView condition);
-    void append_disjunct(ygg::Data<formalism::Condition<formalism::OrTag>>& data, formalism::ConditionView condition);
-    formalism::ConditionView make_conjunction(ygg::Data<formalism::Condition<formalism::AndTag>>& data);
-    formalism::ConditionView make_disjunction(ygg::Data<formalism::Condition<formalism::OrTag>>& data);
+    void append_conjunct(urd::data<formalism::Condition<formalism::AndTag>>& data, formalism::ConditionView condition);
+    void append_disjunct(urd::data<formalism::Condition<formalism::OrTag>>& data, formalism::ConditionView condition);
+    formalism::ConditionView make_conjunction(urd::data<formalism::Condition<formalism::AndTag>>& data);
+    formalism::ConditionView make_disjunction(urd::data<formalism::Condition<formalism::OrTag>>& data);
 };
-
-template<typename Derived>
-formalism::ConditionView ConditionBuilderTranslator<Derived>::wrap_condition(ygg::Data<formalism::Condition<>>::Variant value)
-{
-    auto data = formalism::checkout<formalism::Condition<>>(this->copy_context().builder);
-    data->variant = std::move(value);
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
-}
-
-template<typename Derived>
-template<typename T>
-formalism::ConditionView ConditionBuilderTranslator<Derived>::wrap_condition(formalism::EntityView<T> value)
-{
-    auto data = formalism::checkout<formalism::Condition<>>(this->copy_context().builder);
-    data->variant = ygg::Data<formalism::Condition<>>::Variant(value.get_index());
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
-}
-
-template<typename Derived>
-template<typename T>
-formalism::ConditionView ConditionBuilderTranslator<Derived>::wrap_condition(ygg::Index<T> value)
-{ return this->self().wrap_condition(ygg::Data<formalism::Condition<>>::Variant(value)); }
 
 template<typename Derived>
 std::optional<formalism::EntityView<formalism::Condition<formalism::OrTag>>>
 ConditionBuilderTranslator<Derived>::as_or(formalism::ConditionView condition) const
 {
-    const auto variant = condition.get_variant();
-    if (variant.template is<ygg::Index<formalism::Condition<formalism::OrTag>>>())
-        return variant.template get<ygg::Index<formalism::Condition<formalism::OrTag>>>();
+    if (std::holds_alternative<formalism::EntityView<formalism::Condition<formalism::OrTag>>>(condition))
+        return std::get<formalism::EntityView<formalism::Condition<formalism::OrTag>>>(condition);
     return std::nullopt;
 }
 
 template<typename Derived>
 formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(formalism::ConditionView condition)
 {
-    return ygg::visit(
+    return std::visit(
         [&]<typename Node>(const Node& node) -> formalism::ConditionView
         {
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
@@ -86,22 +58,22 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                 for (auto child : node.get_conditions())
                 {
                     const auto flat = this->self().flatten_condition(child);
-                    ygg::visit(
+                    std::visit(
                         [&]<typename FlatNode>(const FlatNode& flat_node)
                         {
                             if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
                             {
                                 for (auto part : flat_node.get_conditions())
-                                    data->conditions.push_back(part.get_index());
+                                    data->conditions.push_back(as_index(part));
                             }
                             else
                             {
-                                data->conditions.push_back(flat.get_index());
+                                data->conditions.push_back(as_index(flat));
                             }
                         },
-                        flat.get_variant());
+                        flat);
                 }
-                return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first);
+                return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
             {
@@ -109,89 +81,89 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                 for (auto child : node.get_conditions())
                 {
                     const auto flat = this->self().flatten_condition(child);
-                    ygg::visit(
+                    std::visit(
                         [&]<typename FlatNode>(const FlatNode& flat_node)
                         {
                             if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
                             {
                                 for (auto part : flat_node.get_conditions())
-                                    data->conditions.push_back(part.get_index());
+                                    data->conditions.push_back(as_index(part));
                             }
                             else
                             {
-                                data->conditions.push_back(flat.get_index());
+                                data->conditions.push_back(as_index(flat));
                             }
                         },
-                        flat.get_variant());
+                        flat);
                 }
-                return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first);
+                return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>)
             {
                 const auto flat = this->self().flatten_condition(node.get_condition());
-                return ygg::visit(
+                return std::visit(
                     [&]<typename FlatNode>(const FlatNode& flat_node) -> formalism::ConditionView
                     {
                         if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>)
                         {
                             auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
                             for (auto parameter : node.get_parameters())
-                                data->parameters.push_back(parameter.get_index());
+                                data->parameters.push_back(parameter.index());
                             for (auto parameter : flat_node.get_parameters())
-                                data->parameters.push_back(parameter.get_index());
-                            data->condition = flat_node.get_condition().get_index();
-                            return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first);
+                                data->parameters.push_back(parameter.index());
+                            data->condition = as_index(flat_node.get_condition());
+                            return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
                         }
                         else
                         {
                             auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
                             for (auto parameter : node.get_parameters())
-                                data->parameters.push_back(parameter.get_index());
-                            data->condition = flat.get_index();
-                            return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first);
+                                data->parameters.push_back(parameter.index());
+                            data->condition = as_index(flat);
+                            return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
                         }
                     },
-                    flat.get_variant());
+                    flat);
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
             {
                 const auto flat = this->self().flatten_condition(node.get_condition());
-                return ygg::visit(
+                return std::visit(
                     [&]<typename FlatNode>(const FlatNode& flat_node) -> formalism::ConditionView
                     {
                         if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
                         {
                             auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
                             for (auto parameter : node.get_parameters())
-                                data->parameters.push_back(parameter.get_index());
+                                data->parameters.push_back(parameter.index());
                             for (auto parameter : flat_node.get_parameters())
-                                data->parameters.push_back(parameter.get_index());
-                            data->condition = flat_node.get_condition().get_index();
-                            return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first);
+                                data->parameters.push_back(parameter.index());
+                            data->condition = as_index(flat_node.get_condition());
+                            return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
                         }
                         else
                         {
                             auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
                             for (auto parameter : node.get_parameters())
-                                data->parameters.push_back(parameter.get_index());
-                            data->condition = flat.get_index();
-                            return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first);
+                                data->parameters.push_back(parameter.index());
+                            data->condition = as_index(flat);
+                            return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
                         }
                     },
-                    flat.get_variant());
+                    flat);
             }
             else
             {
                 return condition;
             }
         },
-        condition.get_variant());
+        condition);
 }
 
 template<typename Derived>
-void ConditionBuilderTranslator<Derived>::append_conjunct(ygg::Data<formalism::Condition<formalism::AndTag>>& data, formalism::ConditionView condition)
+void ConditionBuilderTranslator<Derived>::append_conjunct(urd::data<formalism::Condition<formalism::AndTag>>& data, formalism::ConditionView condition)
 {
-    ygg::visit(
+    std::visit(
         [&]<typename Node>(const Node& node)
         {
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
@@ -201,16 +173,16 @@ void ConditionBuilderTranslator<Derived>::append_conjunct(ygg::Data<formalism::C
             }
             else
             {
-                data.conditions.push_back(this->self().flatten_condition(condition).get_index());
+                data.conditions.push_back(as_index(this->self().flatten_condition(condition)));
             }
         },
-        condition.get_variant());
+        condition);
 }
 
 template<typename Derived>
-void ConditionBuilderTranslator<Derived>::append_disjunct(ygg::Data<formalism::Condition<formalism::OrTag>>& data, formalism::ConditionView condition)
+void ConditionBuilderTranslator<Derived>::append_disjunct(urd::data<formalism::Condition<formalism::OrTag>>& data, formalism::ConditionView condition)
 {
-    ygg::visit(
+    std::visit(
         [&]<typename Node>(const Node& node)
         {
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
@@ -220,19 +192,19 @@ void ConditionBuilderTranslator<Derived>::append_disjunct(ygg::Data<formalism::C
             }
             else
             {
-                data.conditions.push_back(this->self().flatten_condition(condition).get_index());
+                data.conditions.push_back(as_index(this->self().flatten_condition(condition)));
             }
         },
-        condition.get_variant());
+        condition);
 }
 
 template<typename Derived>
-formalism::ConditionView ConditionBuilderTranslator<Derived>::make_conjunction(ygg::Data<formalism::Condition<formalism::AndTag>>& data)
-{ return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, data).first); }
+formalism::ConditionView ConditionBuilderTranslator<Derived>::make_conjunction(urd::data<formalism::Condition<formalism::AndTag>>& data)
+{ return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, data).first); }
 
 template<typename Derived>
-formalism::ConditionView ConditionBuilderTranslator<Derived>::make_disjunction(ygg::Data<formalism::Condition<formalism::OrTag>>& data)
-{ return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, data).first); }
+formalism::ConditionView ConditionBuilderTranslator<Derived>::make_disjunction(urd::data<formalism::Condition<formalism::OrTag>>& data)
+{ return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, data).first); }
 
 }  // namespace loki::semantic::detail
 

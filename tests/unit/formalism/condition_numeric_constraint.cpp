@@ -4,9 +4,9 @@
 
 #include <concepts>
 
-using Index = ygg::Index<loki::formalism::Condition<loki::formalism::NumericConstraintTag>>;
-using Data = ygg::Data<loki::formalism::Condition<loki::formalism::NumericConstraintTag>>;
-using View = ygg::View<Index, loki::formalism::Repository>;
+using Index = urd::index<loki::formalism::Condition<loki::formalism::NumericConstraintTag>>;
+using Data = urd::data<loki::formalism::Condition<loki::formalism::NumericConstraintTag>>;
+using View = urd::view<loki::formalism::Condition<loki::formalism::NumericConstraintTag>, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
@@ -18,11 +18,10 @@ static_assert(requires(Data& data) {
     data.comparator;
     data.left;
     data.right;
-    data.clear();
     { data == data } -> std::same_as<bool>;
 });
 static_assert(requires(const View& view) {
-    view.get_index();
+    view.index();
     view.get_comparator();
     view.get_left();
     view.get_right();

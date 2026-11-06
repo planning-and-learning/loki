@@ -19,9 +19,11 @@
 #define LOKI_SEMANTIC_TRANSLATOR_CONDITION_ANALYSIS_TRANSLATOR_HPP_
 
 #include "loki/semantic/translator/copy_translator_component.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <algorithm>
-#include <yggdrasil/semantics/comparators.hpp>
+#include <urd/elements/less.hpp>
 
 namespace loki::semantic::detail
 {
@@ -32,76 +34,67 @@ class ConditionAnalysisTranslator : public CopyTranslatorComponent<Derived, Cond
 public:
     explicit ConditionAnalysisTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, ConditionAnalysisTranslator<Derived>>(context) {}
 
-    formalism::TermView term_from_variable(formalism::VariableView variable);
     void
-    collect_free_variables(formalism::TermView term, ygg::UnorderedSet<formalism::VariableView>& bound, ygg::UnorderedSet<formalism::VariableView>& free) const;
+    collect_free_variables(formalism::TermView term, urd::Store<urd::set<formalism::VariableView>>& bound, urd::Store<urd::set<formalism::VariableView>>& free) const;
     void
-    collect_free_variables(formalism::AtomView atom, ygg::UnorderedSet<formalism::VariableView>& bound, ygg::UnorderedSet<formalism::VariableView>& free) const;
+    collect_free_variables(formalism::AtomView atom, urd::Store<urd::set<formalism::VariableView>>& bound, urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::LiteralView literal,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::FunctionTermView term,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>,
-                                ygg::UnorderedSet<formalism::VariableView>&,
-                                ygg::UnorderedSet<formalism::VariableView>&) const;
+                                urd::Store<urd::set<formalism::VariableView>>&,
+                                urd::Store<urd::set<formalism::VariableView>>&) const;
     void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> expression,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> expression,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> expression,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::FunctionExpressionView expression,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::ConditionView condition,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> node,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> node,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NotTag>> node,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> node,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::AndTag>> node,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::OrTag>> node,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
     void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ForallTag>> node,
-                                ygg::UnorderedSet<formalism::VariableView>& bound,
-                                ygg::UnorderedSet<formalism::VariableView>& free) const;
-    [[nodiscard]] std::vector<std::pair<formalism::ParameterView, formalism::VariableView>> free_parameters_in_scope(formalism::ConditionView condition) const;
+                                urd::Store<urd::set<formalism::VariableView>>& bound,
+                                urd::Store<urd::set<formalism::VariableView>>& free) const;
+    [[nodiscard]] urd::Store<urd::sequence<std::pair<formalism::ParameterView, formalism::VariableView>>> free_parameters_in_scope(formalism::ConditionView condition) const;
 };
 
 template<typename Derived>
-formalism::TermView ConditionAnalysisTranslator<Derived>::term_from_variable(formalism::VariableView variable)
-{
-    auto data = formalism::checkout<formalism::Term>(this->copy_context().builder);
-    data->variant = ygg::Data<formalism::Term>::Variant(variable.get_index());
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
-}
-
-template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::TermView term,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
-    ygg::visit(
+    std::visit(
         [&]<typename Value>(const Value& value)
         {
             if constexpr (std::is_same_v<Value, formalism::VariableView>)
@@ -110,13 +103,13 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ter
                     free.insert(value);
             }
         },
-        term.get_variant());
+        term);
 }
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::AtomView atom,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
     for (auto term : atom.get_terms())
         this->self().collect_free_variables(term, bound, free);
@@ -124,14 +117,14 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ato
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::LiteralView literal,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 { this->self().collect_free_variables(literal.get_atom(), bound, free); }
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::FunctionTermView term,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
     for (auto argument : term.get_terms())
         this->self().collect_free_variables(argument, bound, free);
@@ -139,21 +132,21 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Fun
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>,
-                                                                  ygg::UnorderedSet<formalism::VariableView>&,
-                                                                  ygg::UnorderedSet<formalism::VariableView>&) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>&,
+                                                                  urd::Store<urd::set<formalism::VariableView>>&) const
 {
 }
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> expression,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 { this->self().collect_free_variables(expression.get_expression(), bound, free); }
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> expression,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
     this->self().collect_free_variables(expression.get_left(), bound, free);
     this->self().collect_free_variables(expression.get_right(), bound, free);
@@ -161,8 +154,8 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ent
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> expression,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
     for (auto part : expression.get_args())
         this->self().collect_free_variables(part, bound, free);
@@ -170,30 +163,30 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ent
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::FunctionExpressionView expression,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
-    ygg::visit([&](const auto& node) { this->self().collect_free_variables(node, bound, free); }, expression.get_variant());
+    std::visit([&](const auto& node) { this->self().collect_free_variables(node, bound, free); }, expression);
 }
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::ConditionView condition,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
-    ygg::visit([&](const auto& node) { this->self().collect_free_variables(node, bound, free); }, condition.get_variant());
+    std::visit([&](const auto& node) { this->self().collect_free_variables(node, bound, free); }, condition);
 }
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> node,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 { this->self().collect_free_variables(node.get_literal(), bound, free); }
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> node,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
     this->self().collect_free_variables(node.get_left(), bound, free);
     this->self().collect_free_variables(node.get_right(), bound, free);
@@ -201,14 +194,14 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ent
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NotTag>> node,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 { this->self().collect_free_variables(node.get_condition(), bound, free); }
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> node,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
     this->self().collect_free_variables(node.get_left(), bound, free);
     this->self().collect_free_variables(node.get_right(), bound, free);
@@ -216,8 +209,8 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ent
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::AndTag>> node,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
     for (auto condition : node.get_conditions())
         this->self().collect_free_variables(condition, bound, free);
@@ -225,8 +218,8 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ent
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::OrTag>> node,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
     for (auto condition : node.get_conditions())
         this->self().collect_free_variables(condition, bound, free);
@@ -234,8 +227,8 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ent
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
     for (auto parameter : node.get_parameters())
         bound.insert(parameter.get_variable());
@@ -246,8 +239,8 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ent
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ForallTag>> node,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& bound,
-                                                                  ygg::UnorderedSet<formalism::VariableView>& free) const
+                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
+                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
 {
     for (auto parameter : node.get_parameters())
         bound.insert(parameter.get_variable());
@@ -257,14 +250,14 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ent
 }
 
 template<typename Derived>
-std::vector<std::pair<formalism::ParameterView, formalism::VariableView>>
+urd::Store<urd::sequence<std::pair<formalism::ParameterView, formalism::VariableView>>>
 ConditionAnalysisTranslator<Derived>::free_parameters_in_scope(formalism::ConditionView condition) const
 {
-    auto bound = ygg::UnorderedSet<formalism::VariableView> {};
-    auto free = ygg::UnorderedSet<formalism::VariableView> {};
+    auto bound = urd::Store<urd::set<formalism::VariableView>> {};
+    auto free = urd::Store<urd::set<formalism::VariableView>> {};
     this->self().collect_free_variables(condition, bound, free);
 
-    auto result = std::vector<std::pair<formalism::ParameterView, formalism::VariableView>> {};
+    auto result = urd::Store<urd::sequence<std::pair<formalism::ParameterView, formalism::VariableView>>> {};
     for (size_t scope_index = 0; scope_index < this->copy_context().active_parameters.size(); ++scope_index)
     {
         const auto& parameters = this->copy_context().active_parameters[scope_index];

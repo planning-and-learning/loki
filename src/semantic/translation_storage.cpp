@@ -16,6 +16,8 @@
  */
 
 #include "loki/formalism/repository.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include "loki/semantic/translator/canonical_copy_translator.hpp"
 #include "loki/semantic/translator/common.hpp"
 
@@ -45,7 +47,7 @@ static formalism::TypeView copy_type_view_for_metadata(TranslationStorage& targe
     auto data = formalism::checkout<formalism::Type>(builder);
     data->name = source.get_name();
     for (auto base : source.get_bases())
-        data->bases.push_back(copy_type_view_for_metadata(target, builder, base).get_index());
+        data->bases.push_back(copy_type_view_for_metadata(target, builder, base).index());
 
     auto out = formalism::insert(target.repository, *data).first;
     remember(target.types, source, out);
@@ -65,7 +67,7 @@ static void remap_object_type_metadata(TranslationStorage& target,
         if (object_it == object_map.end())
             continue;
 
-        auto remapped = std::vector<formalism::TypeView> {};
+        auto remapped = urd::Store<urd::sequence<formalism::TypeView>> {};
         for (auto type : type_views)
         {
             if (auto type_it = type_map.find(type); type_it != type_map.end())
@@ -99,7 +101,6 @@ std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::Domai
     compose_map(canonical->parameters, middle->parameters, canonical->parameters);
     compose_map(canonical->predicates, middle->predicates, canonical->predicates);
     compose_map(canonical->functions, middle->functions, canonical->functions);
-    compose_map(canonical->terms, middle->terms, canonical->terms);
     compose_map(canonical->atoms, middle->atoms, canonical->atoms);
     compose_map(canonical->literals, middle->literals, canonical->literals);
     compose_map(canonical->numbers, middle->numbers, canonical->numbers);
@@ -107,7 +108,6 @@ std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::Domai
     compose_map(canonical->unary_expressions, middle->unary_expressions, canonical->unary_expressions);
     compose_map(canonical->binary_expressions, middle->binary_expressions, canonical->binary_expressions);
     compose_map(canonical->multi_expressions, middle->multi_expressions, canonical->multi_expressions);
-    compose_map(canonical->function_expressions, middle->function_expressions, canonical->function_expressions);
     compose_map(canonical->condition_literals, middle->condition_literals, canonical->condition_literals);
     compose_map(canonical->condition_ands, middle->condition_ands, canonical->condition_ands);
     compose_map(canonical->condition_ors, middle->condition_ors, canonical->condition_ors);
@@ -116,7 +116,6 @@ std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::Domai
     compose_map(canonical->condition_exists, middle->condition_exists, canonical->condition_exists);
     compose_map(canonical->condition_foralls, middle->condition_foralls, canonical->condition_foralls);
     compose_map(canonical->condition_numeric_constraints, middle->condition_numeric_constraints, canonical->condition_numeric_constraints);
-    compose_map(canonical->conditions, middle->conditions, canonical->conditions);
     compose_map(canonical->effect_literals, middle->effect_literals, canonical->effect_literals);
     compose_map(canonical->effect_ands, middle->effect_ands, canonical->effect_ands);
     compose_map(canonical->effect_numerics, middle->effect_numerics, canonical->effect_numerics);
@@ -125,7 +124,6 @@ std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::Domai
     compose_map(canonical->effect_one_ofs, middle->effect_one_ofs, canonical->effect_one_ofs);
     compose_map(canonical->effect_probabilistic_alternatives, middle->effect_probabilistic_alternatives, canonical->effect_probabilistic_alternatives);
     compose_map(canonical->effect_probabilistics, middle->effect_probabilistics, canonical->effect_probabilistics);
-    compose_map(canonical->effects, middle->effects, canonical->effects);
     compose_map(canonical->actions, middle->actions, canonical->actions);
     compose_map(canonical->axioms, middle->axioms, canonical->axioms);
     compose_map(canonical->metrics, middle->metrics, canonical->metrics);
@@ -152,7 +150,6 @@ void compose_storage_maps_from_previous(TranslationStorage& target, const Transl
     compose_map(target.parameters, previous.parameters, target.parameters);
     compose_map(target.predicates, previous.predicates, target.predicates);
     compose_map(target.functions, previous.functions, target.functions);
-    compose_map(target.terms, previous.terms, target.terms);
     compose_map(target.atoms, previous.atoms, target.atoms);
     compose_map(target.literals, previous.literals, target.literals);
     compose_map(target.numbers, previous.numbers, target.numbers);
@@ -160,7 +157,6 @@ void compose_storage_maps_from_previous(TranslationStorage& target, const Transl
     compose_map(target.unary_expressions, previous.unary_expressions, target.unary_expressions);
     compose_map(target.binary_expressions, previous.binary_expressions, target.binary_expressions);
     compose_map(target.multi_expressions, previous.multi_expressions, target.multi_expressions);
-    compose_map(target.function_expressions, previous.function_expressions, target.function_expressions);
     compose_map(target.condition_literals, previous.condition_literals, target.condition_literals);
     compose_map(target.condition_ands, previous.condition_ands, target.condition_ands);
     compose_map(target.condition_ors, previous.condition_ors, target.condition_ors);
@@ -169,7 +165,6 @@ void compose_storage_maps_from_previous(TranslationStorage& target, const Transl
     compose_map(target.condition_exists, previous.condition_exists, target.condition_exists);
     compose_map(target.condition_foralls, previous.condition_foralls, target.condition_foralls);
     compose_map(target.condition_numeric_constraints, previous.condition_numeric_constraints, target.condition_numeric_constraints);
-    compose_map(target.conditions, previous.conditions, target.conditions);
     compose_map(target.effect_literals, previous.effect_literals, target.effect_literals);
     compose_map(target.effect_ands, previous.effect_ands, target.effect_ands);
     compose_map(target.effect_numerics, previous.effect_numerics, target.effect_numerics);
@@ -178,7 +173,6 @@ void compose_storage_maps_from_previous(TranslationStorage& target, const Transl
     compose_map(target.effect_one_ofs, previous.effect_one_ofs, target.effect_one_ofs);
     compose_map(target.effect_probabilistic_alternatives, previous.effect_probabilistic_alternatives, target.effect_probabilistic_alternatives);
     compose_map(target.effect_probabilistics, previous.effect_probabilistics, target.effect_probabilistics);
-    compose_map(target.effects, previous.effects, target.effects);
     compose_map(target.actions, previous.actions, target.actions);
     compose_map(target.axioms, previous.axioms, target.axioms);
     compose_map(target.metrics, previous.metrics, target.metrics);
@@ -224,7 +218,7 @@ std::shared_ptr<TranslationStorage> canonicalize_problem_storage(formalism::Task
 {
     auto canonical = std::make_shared<TranslationStorage>(middle->repository.get_index(), domain);
     inherit_domain_identity_mappings(*canonical, *domain);
-    if (middle->translated().get_index() == domain->translated().get_index())
+    if (middle->translated().index() == domain->translated().index())
         remember(canonical->domains, middle->translated(), domain->translated());
     auto context = CanonicalCopyTranslator(canonical);
     copy(middle_task, context);

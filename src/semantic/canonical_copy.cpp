@@ -33,14 +33,14 @@ std::pair<formalism::DomainView, bool> CanonicalCopyTranslator::copy(formalism::
         m_storage->translated_domain = *mapped;
         return { *mapped, false };
     }
-    if (&domain.get_context() == &m_storage->repository)
+    if (&domain.context() == &m_storage->repository)
     {
         m_storage->translated_domain = domain;
         remember(m_storage->domains, domain, domain);
         return { domain, false };
     }
     auto data = formalism::checkout<formalism::Domain>(m_builder);
-    data->name = domain.get_data().name;
+    data->name = domain.data().name;
     copy_list(domain.get_requirements(), data->requirements);
     copy_list(domain.get_types(), data->types);
     copy_list(domain.get_constants(), data->constants);
@@ -58,14 +58,14 @@ std::pair<formalism::TaskView, bool> CanonicalCopyTranslator::copy(formalism::Ta
 {
     if (auto mapped = find_mapped(m_storage->tasks, task))
         return { *mapped, false };
-    if (&task.get_context() == &m_storage->repository)
+    if (&task.context() == &m_storage->repository)
     {
         remember(m_storage->tasks, task, task);
         return { task, false };
     }
     auto data = formalism::checkout<formalism::Task>(m_builder);
-    data->name = task.get_data().name;
-    data->domain = m_storage->translated_domain ? m_storage->translated().get_index() : copy(task.get_domain()).first.get_index();
+    data->name = task.data().name;
+    data->domain = m_storage->translated_domain ? m_storage->translated().index() : copy(task.get_domain()).first.index();
     copy_list(task.get_requirements(), data->requirements);
     copy_list(task.get_objects(), data->objects);
     copy_list(task.get_initial_literals(), data->initial_literals);
@@ -111,7 +111,7 @@ CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism:
     if (auto mapped = find_mapped(m_storage->effect_numerics, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Effect<formalism::NumericTag>>(m_builder);
-    data->op = source.get_data().op;
+    data->op = source.data().op;
     data->function = as_index(copy(source.get_function()));
     data->expression = as_index(copy(source.get_expression()));
     auto out = formalism::insert(m_storage->repository, *data).first;
@@ -161,7 +161,7 @@ formalism::EffectProbabilisticAlternativeView CanonicalCopyTranslator::copy(form
     if (auto mapped = find_mapped(m_storage->effect_probabilistic_alternatives, source))
         return *mapped;
     auto data = formalism::checkout<formalism::EffectProbabilisticAlternative>(m_builder);
-    data->probability = source.get_data().probability;
+    data->probability = source.data().probability;
     data->effect = as_index(copy(source.get_effect()));
     auto out = formalism::insert(m_storage->repository, *data).first;
     remember(m_storage->effect_probabilistic_alternatives, source, out);
@@ -182,20 +182,14 @@ CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism:
 
 formalism::EffectView CanonicalCopyTranslator::copy(formalism::EffectView source)
 {
-    if (auto mapped = find_mapped(m_storage->effects, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Effect<>>(m_builder);
-    data->variant = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Effect<>>::Variant { return as_index(copy(arg)); }, source.get_variant());
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->effects, source, out);
-    return out;
+    return std::visit([&](const auto& arg) -> formalism::EffectView { return copy(arg); }, source);
 }
 
 formalism::ActionView CanonicalCopyTranslator::copy(formalism::ActionView source)
 {
     if (auto mapped = find_mapped(m_storage->actions, source))
         return *mapped;
-    const auto& data = source.get_data();
+    const auto& data = source.data();
     auto out_data = formalism::checkout<formalism::Action>(m_builder);
     out_data->name = data.name;
     out_data->original_name = data.original_name;
@@ -216,7 +210,7 @@ formalism::AxiomView CanonicalCopyTranslator::copy(formalism::AxiomView source)
         return *mapped;
     auto data = formalism::checkout<formalism::Axiom>(m_builder);
     copy_list(source.get_parameters(), data->parameters);
-    data->original_arity = source.get_data().original_arity;
+    data->original_arity = source.data().original_arity;
     data->head = as_index(copy(source.get_head()));
     data->condition = as_index(copy(source.get_condition()));
     auto out = formalism::insert(m_storage->repository, *data).first;

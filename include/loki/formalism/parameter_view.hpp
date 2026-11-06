@@ -20,25 +20,21 @@
 
 #include "loki/formalism/parameter_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Parameter, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Parameter> C>
-class View<ygg::Index<::loki::formalism::Parameter>, C> : public ygg::IndexViewBase<::loki::formalism::Parameter, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Parameter, C>::IndexViewBase;
-
-    auto get_variable() const noexcept { return ygg::make_view(this->get_data().variable, this->get_context()); }
-    auto get_types() const noexcept { return ygg::make_view(this->get_data().types, this->get_context()); }
+    auto get_variable() const noexcept { return self().template get<&urd::record_of<V>::variable>(); }
+    auto get_types() const noexcept { return self().template get<&urd::record_of<V>::types>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

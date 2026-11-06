@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_EFFECT_PROBABILISTIC_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <optional>
 #include <string>
@@ -26,27 +28,22 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>>
+struct data<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>>
 {
-    ygg::Index<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>> index;
-    ygg::IndexList<::loki::formalism::EffectProbabilisticAlternative> alternatives;
+    urd::index<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>> index;
+    urd::flat_vector<urd::index<::loki::formalism::EffectProbabilisticAlternative>> alternatives;
 
-    Data() = default;
-    Data(ygg::IndexList<::loki::formalism::EffectProbabilisticAlternative> alternatives_) : index(), alternatives(std::move(alternatives_)) {}
-    template<typename C>
-    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::EffectProbabilisticAlternative>, C>>& alternatives_) : index(), alternatives()
-    { set(alternatives_, alternatives); }
+    data() = default;
+    data(urd::flat_vector<urd::index<::loki::formalism::EffectProbabilisticAlternative>> alternatives_) : index(), alternatives(std::move(alternatives_)) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::alternatives> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::alternatives> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::alternatives> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::alternatives> {}; }
 };
 
 }

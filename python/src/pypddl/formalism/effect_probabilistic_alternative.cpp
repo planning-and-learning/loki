@@ -16,9 +16,9 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/effect_probabilistic_alternative_view.hpp>
-#include <loki/formalism/effect_view.hpp>
 
 namespace nb = nanobind;
 
@@ -28,13 +28,13 @@ namespace loki::formalism
 void bind_effect_probabilistic_alternative(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::EffectProbabilisticAlternative>>(m, "EffectProbabilisticAlternativeIndex");
+    urd::python::bind_index<urd::index<formalism::EffectProbabilisticAlternative>>(m, "EffectProbabilisticAlternativeIndex");
 
     {
-        using V = Data<formalism::EffectProbabilisticAlternative>;
-        bind_data<V>(m, "EffectProbabilisticAlternativeData")
-            .def(nb::init<double, ygg::Index<formalism::Effect<>>>(), "probability"_a, "effect"_a)
-            .def(nb::init<double, formalism::EffectView>(), "probability"_a, "effect"_a)
+        using V = urd::data<formalism::EffectProbabilisticAlternative>;
+        urd::python::bind_data<V>(m, "EffectProbabilisticAlternativeData")
+            .def(nb::init<double, formalism::EffectVariant>(), "probability"_a, "effect"_a)
+            .def(urd::python::init_from_views<double, formalism::EffectView>(), "probability"_a, "effect"_a)
             .def_rw("probability", &V::probability)
             .def_rw("effect", &V::effect);
     }
@@ -42,10 +42,10 @@ void bind_effect_probabilistic_alternative(nb::module_& m, RepositoryBinding& re
     {
         using V = formalism::EffectProbabilisticAlternativeView;
         auto cls = nb::class_<V>(m, "EffectProbabilisticAlternative");
-        cls.def("get_index", &V::get_index).def("get_probability", &V::get_probability).def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
+        cls.def("get_index", &V::index).def("get_probability", &V::get_probability).def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::EffectProbabilisticAlternative>(repository);

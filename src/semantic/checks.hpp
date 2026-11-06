@@ -33,8 +33,12 @@
 #include <boost/optional.hpp>
 #include <cstddef>
 #include <string>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
-#include <yggdrasil/containers/associative_containers.hpp>
 
 namespace loki::semantic
 {
@@ -43,9 +47,9 @@ namespace loki::semantic
 inline formalism::VariableView lookup_variable(const ParseContext& parse_context, const DiagnosticContext& diagnostics, const ast::Identifier& identifier)
 {
     const auto name = key(identifier.text);
-    for (auto it = parse_context.variable_scopes.rbegin(); it != parse_context.variable_scopes.rend(); ++it)
-        if (auto found = it->find(name); found != it->end())
-            return found->second;
+    // The innermost binding: inner scopes shadow outer ones.
+    if (const auto found = parse_context.variable_scopes.find(name); found != parse_context.variable_scopes.end())
+        return found->second;
     diagnostics.throw_at(identifier, UndefinedVariableError(identifier.text));
 }
 
@@ -77,7 +81,7 @@ struct SemanticChecks
         return false;
     }
 
-    void reject_unused_requirements(const std::vector<ast::Requirement>& nodes) const
+    void reject_unused_requirements(const urd::Store<urd::sequence<ast::Requirement>>& nodes) const
     {
         if (!options->strict)
             return;
@@ -110,7 +114,7 @@ struct SemanticChecks
     template<typename Node>
     void check_argument_types(const std::string& name,
                               formalism::EntityListView<formalism::Parameter> parameters,
-                              const std::vector<ast::Term>& terms,
+                              const urd::Store<urd::sequence<ast::Term>>& terms,
                               const Node& node) const
     {
         if (!options->strict)
@@ -124,7 +128,7 @@ struct SemanticChecks
     }
 
     template<typename Error, typename Node>
-    void ensure_new(ygg::UnorderedSet<std::string>& names, std::string name, const Node& node) const
+    void ensure_new(urd::Store<urd::set<std::string>>& names, std::string name, const Node& node) const
     {
         if (!names.insert(name).second)
             diagnostics->throw_at(node, Error(name));
@@ -137,11 +141,11 @@ struct SemanticChecks
             diagnostics->throw_at(node, ArityMismatchError(name, expected, actual));
     }
 
-    [[nodiscard]] std::vector<formalism::TypeView> term_types(const ast::Term& term) const
+    [[nodiscard]] urd::Store<urd::sequence<formalism::TypeView>> term_types(const ast::Term& term) const
     {
         if (!term.variable)
         {
-            auto result = std::vector<formalism::TypeView> {};
+            auto result = urd::Store<urd::sequence<formalism::TypeView>> {};
             for (auto type : lookup_object(*domain_context, *parse_context, *diagnostics, term.name).get_types())
                 result.push_back(type);
             return result;
@@ -151,10 +155,10 @@ struct SemanticChecks
         {
             return it->second;
         }
-        return std::vector<formalism::TypeView> { domain_context->types.at("object") };
+        return urd::Store<urd::sequence<formalism::TypeView>> { domain_context->types.at("object") };
     }
 
-    [[nodiscard]] bool types_compatible(const std::vector<formalism::TypeView>& actual_types, formalism::EntityListView<formalism::Type> expected_types) const
+    [[nodiscard]] bool types_compatible(const urd::Store<urd::sequence<formalism::TypeView>>& actual_types, formalism::EntityListView<formalism::Type> expected_types) const
     {
         if (expected_types.empty() || actual_types.empty())
             return true;
@@ -167,11 +171,11 @@ struct SemanticChecks
 
     [[nodiscard]] bool is_subtype(formalism::TypeView actual, formalism::TypeView expected) const
     {
-        auto seen = ygg::UnorderedSet<formalism::TypeView> {};
+        auto seen = urd::Store<urd::set<formalism::TypeView>> {};
         return is_subtype(actual, expected, seen);
     }
 
-    [[nodiscard]] bool is_subtype(formalism::TypeView actual, formalism::TypeView expected, ygg::UnorderedSet<formalism::TypeView>& seen) const
+    [[nodiscard]] bool is_subtype(formalism::TypeView actual, formalism::TypeView expected, urd::Store<urd::set<formalism::TypeView>>& seen) const
     {
         if (actual == expected)
             return true;

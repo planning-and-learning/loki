@@ -20,26 +20,22 @@
 
 #include "loki/formalism/predicate_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Predicate, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Predicate> C>
-class View<ygg::Index<::loki::formalism::Predicate>, C> : public ygg::IndexViewBase<::loki::formalism::Predicate, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Predicate, C>::IndexViewBase;
-
-    const auto& get_name() const noexcept { return this->get_data().name; }
-    auto get_parameters() const noexcept { return ygg::make_view(this->get_data().parameters, this->get_context()); }
-    auto get_arity() const noexcept { return this->get_data().parameters.size(); }
+    const auto& get_name() const noexcept { return self().data().name; }
+    auto get_parameters() const noexcept { return self().template get<&urd::record_of<V>::parameters>(); }
+    auto get_arity() const noexcept { return self().data().parameters.size(); }
 };
-
-}
+}  // namespace urd
 
 #endif

@@ -69,7 +69,7 @@ formalism::BinaryComparator ToNegationNormalFormTranslator<Derived>::negate_comp
 template<typename Derived>
 formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_condition(formalism::ConditionView source)
 {
-    return ygg::visit([&](const auto& arg) { return this->self().negate_condition_node(arg); }, source.get_variant());
+    return std::visit([&](const auto& arg) { return this->self().negate_condition_node(arg); }, source);
 }
 
 template<typename Derived>
@@ -83,8 +83,8 @@ ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::Entity
     literal_data->m_polarity = !literal.get_polarity();
     const auto negated_literal = formalism::insert(this->copy_context().storage->repository, *literal_data).first;
     auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
-    condition_data->literal = negated_literal.get_index();
-    return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
+    condition_data->literal = negated_literal.index();
+    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
 }
 
 template<typename Derived>
@@ -129,9 +129,9 @@ ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::Entity
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
-        data->parameters.push_back(parameter.get_index());
+        data->parameters.push_back(parameter.index());
     data->condition = condition;
-    return this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first));
+    return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
 }
 
 template<typename Derived>
@@ -145,16 +145,16 @@ ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::Entity
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
-        data->parameters.push_back(parameter.get_index());
+        data->parameters.push_back(parameter.index());
     data->condition = condition;
-    return this->self().flatten_condition(this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *data).first));
+    return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
 }
 
 template<typename Derived>
 formalism::ConditionView
 ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source)
 {
-    const auto& data = source.get_data();
+    const auto& data = source.data();
     const auto comparator = this->self().negate_comparator(data.comparator);
     const auto left = as_index(this->self().copy(source.get_left()));
     const auto right = as_index(this->self().copy(source.get_right()));
@@ -162,7 +162,7 @@ ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::Entity
     result->comparator = comparator;
     result->left = left;
     result->right = right;
-    return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *result).first);
+    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
 }
 
 template<typename Derived>
@@ -181,7 +181,7 @@ formalism::ConditionView ToNegationNormalFormTranslator<Derived>::copy_condition
 template<typename Derived>
 template<typename T>
 formalism::ConditionView ToNegationNormalFormTranslator<Derived>::copy_condition_node(formalism::EntityView<T> source)
-{ return this->self().wrap_condition(this->self().copy(source)); }
+{ return formalism::ConditionView(this->self().copy(source)); }
 
 }  // namespace loki::semantic::detail
 

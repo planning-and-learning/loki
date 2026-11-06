@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_ATOM_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <optional>
 #include <string>
@@ -26,40 +28,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Atom>
+struct data<::loki::formalism::Atom>
 {
-    ygg::Index<::loki::formalism::Atom> index;
-    ygg::Index<::loki::formalism::Predicate> predicate;
-    ygg::IndexList<::loki::formalism::Term> terms;
+    urd::index<::loki::formalism::Atom> index;
+    urd::index<::loki::formalism::Predicate> predicate;
+    ::loki::formalism::TermList terms;
 
-    Data() = default;
-    Data(ygg::Index<::loki::formalism::Predicate> predicate_, ygg::IndexList<::loki::formalism::Term> terms_ = {}) :
+    data() = default;
+    data(urd::index<::loki::formalism::Predicate> predicate_, ::loki::formalism::TermList terms_ = {}) :
         index(),
         predicate(predicate_),
         terms(std::move(terms_))
     {
     }
-    template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::Predicate>, C> predicate_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Term>, C>>& terms_ = {}) :
-        index(),
-        predicate(),
-        terms()
-    {
-        set(predicate_, predicate);
-        set(terms_, terms);
-    }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::predicate, &Data::terms> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::predicate, &Data::terms> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::predicate, &data::terms> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::predicate, &data::terms> {}; }
 };
 
 }

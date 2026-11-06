@@ -26,7 +26,7 @@
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 #include <yggdrasil/python/bindings.hpp>
-#include <yggdrasil/python/owner.hpp>
+#include <urd/python/owner.hpp>
 #include <yggdrasil/python/type_casters.hpp>
 
 namespace loki::formalism
@@ -34,30 +34,12 @@ namespace loki::formalism
 
 using RepositoryBinding = nanobind::class_<Repository>;
 
-template<typename T>
-using Data = ygg::Data<T>;
 
 template<typename T>
 void bind_insert(RepositoryBinding& repository)
 {
     namespace nb = nanobind;
-    const auto retain_owner = ygg::python::make_owner_retainer();
-    repository.def(
-        "insert",
-        [retain_owner](nb::typed<nb::handle, Repository> owner, Data<T> data) -> nb::typed<nb::tuple, EntityView<T>, bool>
-        {
-            return nb::borrow<nb::typed<nb::tuple, EntityView<T>, bool>>(
-                ygg::python::cast_with_owner(formalism::insert(nb::cast<Repository&>(owner), data), owner, retain_owner));
-        },
-        nb::arg("data"));
-}
-
-template<typename V>
-auto bind_data(nanobind::module_& m, const char* name)
-{
-    auto cls = nanobind::class_<V>(m, name);
-    ygg::add_comparison(cls);
-    return cls;
+    repository.def("insert", [](Repository& self, urd::data<T> data) { return formalism::insert(self, data); }, nb::arg("data"));
 }
 
 void bind_formalism(nanobind::module_& m);
@@ -69,7 +51,6 @@ void bind_variable(nanobind::module_& m, RepositoryBinding& repository);
 void bind_parameter(nanobind::module_& m, RepositoryBinding& repository);
 void bind_predicate(nanobind::module_& m, RepositoryBinding& repository);
 void bind_function_skeleton(nanobind::module_& m, RepositoryBinding& repository);
-void bind_term(nanobind::module_& m, RepositoryBinding& repository);
 void bind_atom(nanobind::module_& m, RepositoryBinding& repository);
 void bind_literal(nanobind::module_& m, RepositoryBinding& repository);
 void bind_function_expression_number(nanobind::module_& m, RepositoryBinding& repository);
@@ -77,7 +58,6 @@ void bind_function_term(nanobind::module_& m, RepositoryBinding& repository);
 void bind_unary_function_expression(nanobind::module_& m, RepositoryBinding& repository);
 void bind_binary_function_expression(nanobind::module_& m, RepositoryBinding& repository);
 void bind_multi_function_expression(nanobind::module_& m, RepositoryBinding& repository);
-void bind_function_expression(nanobind::module_& m, RepositoryBinding& repository);
 void bind_condition_literal(nanobind::module_& m, RepositoryBinding& repository);
 void bind_condition_and(nanobind::module_& m, RepositoryBinding& repository);
 void bind_condition_or(nanobind::module_& m, RepositoryBinding& repository);
@@ -86,7 +66,6 @@ void bind_condition_imply(nanobind::module_& m, RepositoryBinding& repository);
 void bind_condition_exists(nanobind::module_& m, RepositoryBinding& repository);
 void bind_condition_forall(nanobind::module_& m, RepositoryBinding& repository);
 void bind_condition_numeric_constraint(nanobind::module_& m, RepositoryBinding& repository);
-void bind_condition(nanobind::module_& m, RepositoryBinding& repository);
 void bind_effect_literal(nanobind::module_& m, RepositoryBinding& repository);
 void bind_effect_and(nanobind::module_& m, RepositoryBinding& repository);
 void bind_effect_numeric(nanobind::module_& m, RepositoryBinding& repository);
@@ -95,7 +74,6 @@ void bind_effect_when(nanobind::module_& m, RepositoryBinding& repository);
 void bind_effect_one_of(nanobind::module_& m, RepositoryBinding& repository);
 void bind_effect_probabilistic_alternative(nanobind::module_& m, RepositoryBinding& repository);
 void bind_effect_probabilistic(nanobind::module_& m, RepositoryBinding& repository);
-void bind_effect(nanobind::module_& m, RepositoryBinding& repository);
 void bind_action(nanobind::module_& m, RepositoryBinding& repository);
 void bind_axiom(nanobind::module_& m, RepositoryBinding& repository);
 void bind_metric(nanobind::module_& m, RepositoryBinding& repository);

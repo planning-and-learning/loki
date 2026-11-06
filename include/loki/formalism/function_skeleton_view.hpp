@@ -20,27 +20,23 @@
 
 #include "loki/formalism/function_skeleton_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::FunctionSkeleton, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::FunctionSkeleton> C>
-class View<ygg::Index<::loki::formalism::FunctionSkeleton>, C> : public ygg::IndexViewBase<::loki::formalism::FunctionSkeleton, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::FunctionSkeleton, C>::IndexViewBase;
-
-    const auto& get_name() const noexcept { return this->get_data().name; }
-    auto get_parameters() const noexcept { return ygg::make_view(this->get_data().parameters, this->get_context()); }
-    auto get_arity() const noexcept { return this->get_data().parameters.size(); }
-    auto get_type() const noexcept { return ygg::make_view(this->get_data().type, this->get_context()); }
+    const auto& get_name() const noexcept { return self().data().name; }
+    auto get_parameters() const noexcept { return self().template get<&urd::record_of<V>::parameters>(); }
+    auto get_arity() const noexcept { return self().data().parameters.size(); }
+    auto get_type() const noexcept { return self().template get<&urd::record_of<V>::type>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

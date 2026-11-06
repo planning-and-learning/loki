@@ -19,6 +19,8 @@
 #define LOKI_AST_AST_HPP_
 
 #include <boost/optional.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <string>
@@ -41,7 +43,7 @@ struct TypeReference : boost::spirit::x3::position_tagged
 
 struct EitherType : boost::spirit::x3::position_tagged
 {
-    std::vector<TypeExpressionPtr> alternatives;
+    urd::Store<urd::sequence<TypeExpressionPtr>> alternatives;
 };
 
 struct TypeExpression : boost::spirit::x3::position_tagged, boost::spirit::x3::variant<TypeReference, EitherType>
@@ -52,7 +54,7 @@ struct TypeExpression : boost::spirit::x3::position_tagged, boost::spirit::x3::v
 
 struct TypedGroup : boost::spirit::x3::position_tagged
 {
-    std::vector<Identifier> names;
+    urd::Store<urd::sequence<Identifier>> names;
     boost::optional<TypeExpression> type;
 };
 
@@ -70,7 +72,7 @@ struct Term : boost::spirit::x3::position_tagged
 struct Atom : boost::spirit::x3::position_tagged
 {
     Identifier predicate;
-    std::vector<Term> terms;
+    urd::Store<urd::sequence<Term>> terms;
 };
 
 struct Literal : boost::spirit::x3::position_tagged
@@ -82,7 +84,7 @@ struct Literal : boost::spirit::x3::position_tagged
 struct FunctionTerm : boost::spirit::x3::position_tagged
 {
     Identifier function;
-    std::vector<Term> terms;
+    urd::Store<urd::sequence<Term>> terms;
 };
 
 struct FunctionExpression;
@@ -114,7 +116,7 @@ struct FunctionExpressionBinary : boost::spirit::x3::position_tagged
 struct FunctionExpressionMulti : boost::spirit::x3::position_tagged
 {
     std::string op;
-    std::vector<FunctionExpressionPtr> expressions;
+    urd::Store<urd::sequence<FunctionExpressionPtr>> expressions;
 };
 
 struct FunctionExpression :
@@ -135,12 +137,12 @@ struct ConditionLiteral : boost::spirit::x3::position_tagged
 
 struct ConditionAnd : boost::spirit::x3::position_tagged
 {
-    std::vector<ConditionPtr> conditions;
+    urd::Store<urd::sequence<ConditionPtr>> conditions;
 };
 
 struct ConditionOr : boost::spirit::x3::position_tagged
 {
-    std::vector<ConditionPtr> conditions;
+    urd::Store<urd::sequence<ConditionPtr>> conditions;
 };
 
 struct ConditionNot : boost::spirit::x3::position_tagged
@@ -156,13 +158,13 @@ struct ConditionImply : boost::spirit::x3::position_tagged
 
 struct ConditionExists : boost::spirit::x3::position_tagged
 {
-    std::vector<TypedGroup> parameters;
+    urd::Store<urd::sequence<TypedGroup>> parameters;
     ConditionPtr condition;
 };
 
 struct ConditionForall : boost::spirit::x3::position_tagged
 {
-    std::vector<TypedGroup> parameters;
+    urd::Store<urd::sequence<TypedGroup>> parameters;
     ConditionPtr condition;
 };
 
@@ -192,7 +194,7 @@ struct EffectLiteral : boost::spirit::x3::position_tagged
 
 struct EffectAnd : boost::spirit::x3::position_tagged
 {
-    std::vector<EffectPtr> effects;
+    urd::Store<urd::sequence<EffectPtr>> effects;
 };
 
 struct EffectNumeric : boost::spirit::x3::position_tagged
@@ -204,7 +206,7 @@ struct EffectNumeric : boost::spirit::x3::position_tagged
 
 struct EffectForall : boost::spirit::x3::position_tagged
 {
-    std::vector<TypedGroup> parameters;
+    urd::Store<urd::sequence<TypedGroup>> parameters;
     EffectPtr effect;
 };
 
@@ -216,7 +218,7 @@ struct EffectWhen : boost::spirit::x3::position_tagged
 
 struct EffectOneOf : boost::spirit::x3::position_tagged
 {
-    std::vector<EffectPtr> effects;
+    urd::Store<urd::sequence<EffectPtr>> effects;
 };
 
 struct ProbabilisticEffectAlternative : boost::spirit::x3::position_tagged
@@ -227,7 +229,7 @@ struct ProbabilisticEffectAlternative : boost::spirit::x3::position_tagged
 
 struct EffectProbabilistic : boost::spirit::x3::position_tagged
 {
-    std::vector<ProbabilisticEffectAlternative> alternatives;
+    urd::Store<urd::sequence<ProbabilisticEffectAlternative>> alternatives;
 };
 
 struct Effect :
@@ -241,20 +243,20 @@ struct Effect :
 struct PredicateDeclaration : boost::spirit::x3::position_tagged
 {
     Identifier name;
-    std::vector<TypedGroup> parameters;
+    urd::Store<urd::sequence<TypedGroup>> parameters;
 };
 
 struct FunctionDeclaration : boost::spirit::x3::position_tagged
 {
     Identifier name;
-    std::vector<TypedGroup> parameters;
+    urd::Store<urd::sequence<TypedGroup>> parameters;
     boost::optional<TypeExpression> type;
 };
 
 struct Action : boost::spirit::x3::position_tagged
 {
     Identifier name;
-    std::vector<TypedGroup> parameters;
+    urd::Store<urd::sequence<TypedGroup>> parameters;
     boost::optional<Condition> precondition;
     boost::optional<Effect> effect;
 };
@@ -288,26 +290,26 @@ using DomainDeclaration = boost::spirit::x3::variant<Axiom, Action>;
 struct Domain : boost::spirit::x3::position_tagged
 {
     Identifier name;
-    std::vector<Requirement> requirements;
-    std::vector<TypedGroup> types;
-    std::vector<TypedGroup> constants;
-    std::vector<PredicateDeclaration> predicates;
-    std::vector<FunctionDeclaration> functions;
-    std::vector<DomainDeclaration> declarations;
+    urd::Store<urd::sequence<Requirement>> requirements;
+    urd::Store<urd::sequence<TypedGroup>> types;
+    urd::Store<urd::sequence<TypedGroup>> constants;
+    urd::Store<urd::sequence<PredicateDeclaration>> predicates;
+    urd::Store<urd::sequence<FunctionDeclaration>> functions;
+    urd::Store<urd::sequence<DomainDeclaration>> declarations;
 };
 
 struct Task : boost::spirit::x3::position_tagged
 {
     Identifier name;
     Identifier domain_name;
-    std::vector<Requirement> requirements;
-    std::vector<TypedGroup> types;                 ///< Extends the domain's types; not standard PDDL.
-    std::vector<PredicateDeclaration> predicates;  ///< Extends the domain's predicates; not standard PDDL.
-    std::vector<TypedGroup> objects;
-    std::vector<InitialElement> initial;
+    urd::Store<urd::sequence<Requirement>> requirements;
+    urd::Store<urd::sequence<TypedGroup>> types;                 ///< Extends the domain's types; not standard PDDL.
+    urd::Store<urd::sequence<PredicateDeclaration>> predicates;  ///< Extends the domain's predicates; not standard PDDL.
+    urd::Store<urd::sequence<TypedGroup>> objects;
+    urd::Store<urd::sequence<InitialElement>> initial;
     boost::optional<Condition> goal;
     boost::optional<Metric> metric;
-    std::vector<Axiom> axioms;
+    urd::Store<urd::sequence<Axiom>> axioms;
 };
 
 using File = boost::spirit::x3::variant<Domain, Task>;

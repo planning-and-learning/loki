@@ -16,6 +16,8 @@
  */
 
 #include "../benchmark_utils.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -65,12 +67,12 @@ NegativeSuiteCase parse_case(const boost::json::object& object, const std::files
     return result;
 }
 
-std::vector<NegativeSuiteCase> load_cases()
+urd::Store<urd::sequence<NegativeSuiteCase>> load_cases()
 {
     const auto suite_value = ygg::common::load_json_file(ygg::common::root_path() / "tests/fixtures/negative_suite.json");
     const auto& suite = ygg::common::as_object(suite_value, "suite");
     const auto base = ygg::common::suite_prefix_path(suite);
-    auto result = std::vector<NegativeSuiteCase> {};
+    auto result = urd::Store<urd::sequence<NegativeSuiteCase>> {};
     for (const auto& case_value : ygg::common::as_array(suite, "cases", "suite"))
         result.push_back(parse_case(ygg::common::as_object(case_value, "case"), base));
     return result;

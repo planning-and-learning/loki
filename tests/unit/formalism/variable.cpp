@@ -5,9 +5,9 @@
 #include <concepts>
 #include <gtest/gtest.h>
 
-using Index = ygg::Index<loki::formalism::Variable>;
-using Data = ygg::Data<loki::formalism::Variable>;
-using View = ygg::View<Index, loki::formalism::Repository>;
+using Index = urd::index<loki::formalism::Variable>;
+using Data = urd::data<loki::formalism::Variable>;
+using View = urd::view<loki::formalism::Variable, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
@@ -17,11 +17,10 @@ static_assert(std::same_as<View, loki::formalism::VariableView>);
 static_assert(requires(Data& data) {
     data.index;
     data.name;
-    data.clear();
     { data == data } -> std::same_as<bool>;
 });
 static_assert(requires(const View& view) {
-    view.get_index();
+    view.index();
     view.get_name();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
@@ -44,7 +43,7 @@ TEST(LokiTests, VariableViewIdentityUsesRepositoryIndex)
     ASSERT_TRUE(second_created);
     ASSERT_TRUE(equivalent_created);
     EXPECT_NE(first, second);
-    EXPECT_NE(ygg::Hash<View> {}(first), ygg::Hash<View> {}(second));
+    EXPECT_NE(urd::Hash<View> {}(first), urd::Hash<View> {}(second));
     EXPECT_EQ(first, equivalent);
-    EXPECT_EQ(ygg::Hash<View> {}(first), ygg::Hash<View> {}(equivalent));
+    EXPECT_EQ(urd::Hash<View> {}(first), urd::Hash<View> {}(equivalent));
 }

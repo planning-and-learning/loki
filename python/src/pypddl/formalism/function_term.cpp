@@ -16,10 +16,13 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/function_skeleton_view.hpp>
 #include <loki/formalism/function_term_view.hpp>
-#include <loki/formalism/term_view.hpp>
 
 namespace nb = nanobind;
 
@@ -29,17 +32,17 @@ namespace loki::formalism
 void bind_function_term(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::FunctionTerm>>(m, "FunctionTermIndex");
+    urd::python::bind_index<urd::index<formalism::FunctionTerm>>(m, "FunctionTermIndex");
 
     {
-        using V = Data<formalism::FunctionTerm>;
-        bind_data<V>(m, "FunctionTermData")
-            .def(nb::init<ygg::Index<formalism::FunctionSkeleton>, ygg::IndexList<formalism::Term>>(),
+        using V = urd::data<formalism::FunctionTerm>;
+        urd::python::bind_data<V>(m, "FunctionTermData")
+            .def(nb::init<urd::index<formalism::FunctionSkeleton>, formalism::TermList>(),
                  "function"_a,
-                 "terms"_a = ygg::IndexList<formalism::Term> {})
-            .def(nb::init<formalism::FunctionSkeletonView, const std::vector<formalism::TermView>&>(),
+                 "terms"_a = formalism::TermList {})
+            .def(urd::python::init_from_views<formalism::FunctionSkeletonView, const urd::Store<urd::sequence<formalism::TermView>>&>(),
                  "function"_a,
-                 "terms"_a = std::vector<formalism::TermView> {})
+                 "terms"_a = urd::Store<urd::sequence<formalism::TermView>> {})
             .def_rw("function", &V::function)
             .def_rw("terms", &V::terms);
     }
@@ -47,10 +50,10 @@ void bind_function_term(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::FunctionTermView;
         auto cls = nb::class_<V>(m, "FunctionTerm");
-        cls.def("get_index", &V::get_index).def("get_function", &V::get_function, nb::keep_alive<0, 1>()).def("get_terms", &V::get_terms);
+        cls.def("get_index", &V::index).def("get_function", &V::get_function, nb::keep_alive<0, 1>()).def("get_terms", &V::get_terms);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::FunctionTerm>(repository);

@@ -24,7 +24,10 @@
 
 #include <algorithm>
 #include <limits>
-#include <yggdrasil/containers/unordered_set.hpp>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/store.hpp>
 
 namespace loki::semantic::detail
 {
@@ -36,9 +39,9 @@ public:
     explicit CopyTranslatorFacade(CopyContext& context) : CopyTranslatorComponent<Derived, CopyTranslatorFacade<Derived>>(context) {}
 
     template<typename T>
-    void push_unique(ygg::IndexList<T>& list, ygg::UnorderedSet<formalism::EntityView<T>>& seen, formalism::EntityView<T> value);
+    void push_unique(urd::flat_vector<urd::index<T>>& list, urd::Store<urd::set<formalism::EntityView<T>>>& seen, formalism::EntityView<T> value);
 
-    [[nodiscard]] ygg::UnorderedSet<std::string> used_predicate_names() const;
+    [[nodiscard]] urd::Store<urd::set<std::string>> used_predicate_names() const;
 
     std::string next_generated_predicate_name(std::string_view prefix);
 
@@ -49,14 +52,14 @@ public:
 
 template<typename Derived>
 template<typename T>
-void CopyTranslatorFacade<Derived>::push_unique(ygg::IndexList<T>& list, ygg::UnorderedSet<formalism::EntityView<T>>& seen, formalism::EntityView<T> value)
+void CopyTranslatorFacade<Derived>::push_unique(urd::flat_vector<urd::index<T>>& list, urd::Store<urd::set<formalism::EntityView<T>>>& seen, formalism::EntityView<T> value)
 {
     if (seen.insert(value).second)
-        list.push_back(value.get_index());
+        list.push_back(value.index());
 }
 
 template<typename Derived>
-ygg::UnorderedSet<std::string> CopyTranslatorFacade<Derived>::used_predicate_names() const
+urd::Store<urd::set<std::string>> CopyTranslatorFacade<Derived>::used_predicate_names() const
 {
     auto names = this->copy_context().used_predicate_names;
     if (this->copy_context().storage->translated_domain)
@@ -88,7 +91,7 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
     if (auto mapped = find_mapped(this->copy_context().storage->domains, domain))
         return { *mapped, false };
     auto data = formalism::checkout<formalism::Domain>(this->copy_context().builder);
-    data->name = domain.get_data().name;
+    data->name = domain.data().name;
     this->self().template copy_list<formalism::Requirement>(domain.get_requirements(), data->requirements);
     this->self().template copy_list<formalism::Type>(domain.get_types(), data->types);
     this->self().template copy_list<formalism::Object>(domain.get_constants(), data->constants);
@@ -140,8 +143,8 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     if (auto mapped = find_mapped(this->copy_context().storage->tasks, task))
         return { *mapped, false };
     auto data = formalism::checkout<formalism::Task>(this->copy_context().builder);
-    data->name = task.get_data().name;
-    data->domain = this->copy_context().storage->translated().get_index();
+    data->name = task.data().name;
+    data->domain = this->copy_context().storage->translated().index();
     this->self().template copy_list<formalism::Requirement>(task.get_requirements(), data->requirements);
     this->self().template copy_list<formalism::Object>(task.get_objects(), data->objects);
     this->self().template copy_list<formalism::Literal>(task.get_initial_literals(), data->initial_literals);
@@ -189,19 +192,19 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             if (this->copy_context().phase == TranslationPhase::SimplifyGoal && data->goal)
                 data->goal = as_index(this->self().simplify_goal_condition(copied_task.get_goal().value()));
 
-            auto existing_predicates = ygg::UnorderedSet<formalism::PredicateView> {};
+            auto existing_predicates = urd::Store<urd::set<formalism::PredicateView>> {};
             for (auto predicate : copied_task.get_predicates())
                 existing_predicates.insert(predicate);
             for (auto predicate : this->copy_context().generated_predicates)
                 if (existing_predicates.insert(predicate).second)
-                    data->predicates.push_back(predicate.get_index());
+                    data->predicates.push_back(predicate.index());
 
-            auto existing_axioms = ygg::UnorderedSet<formalism::AxiomView> {};
+            auto existing_axioms = urd::Store<urd::set<formalism::AxiomView>> {};
             for (auto axiom : copied_task.get_axioms())
                 existing_axioms.insert(axiom);
             for (auto axiom : this->copy_context().generated_axioms)
                 if (existing_axioms.insert(axiom).second)
-                    data->axioms.push_back(axiom.get_index());
+                    data->axioms.push_back(axiom.index());
             break;
         }
         case TranslationPhase::SplitDisjunctiveConditions:

@@ -20,25 +20,21 @@
 
 #include "loki/formalism/metric_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Metric, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Metric> C>
-class View<ygg::Index<::loki::formalism::Metric>, C> : public ygg::IndexViewBase<::loki::formalism::Metric, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Metric, C>::IndexViewBase;
-
-    auto get_optimization_direction() const noexcept { return this->get_data().optimization_direction; }
-    auto get_expression() const noexcept { return ygg::make_view(this->get_data().expression, this->get_context()); }
+    auto get_optimization_direction() const noexcept { return self().data().optimization_direction; }
+    auto get_expression() const noexcept { return self().template get<&urd::record_of<V>::expression>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

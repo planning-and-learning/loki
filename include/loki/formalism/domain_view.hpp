@@ -20,31 +20,27 @@
 
 #include "loki/formalism/domain_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Domain, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Domain> C>
-class View<ygg::Index<::loki::formalism::Domain>, C> : public ygg::IndexViewBase<::loki::formalism::Domain, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Domain, C>::IndexViewBase;
-
-    const auto& get_name() const noexcept { return this->get_data().name; }
-    auto get_requirements() const noexcept { return ygg::make_view(this->get_data().requirements, this->get_context()); }
-    auto get_types() const noexcept { return ygg::make_view(this->get_data().types, this->get_context()); }
-    auto get_constants() const noexcept { return ygg::make_view(this->get_data().constants, this->get_context()); }
-    auto get_predicates() const noexcept { return ygg::make_view(this->get_data().predicates, this->get_context()); }
-    auto get_functions() const noexcept { return ygg::make_view(this->get_data().functions, this->get_context()); }
-    auto get_actions() const noexcept { return ygg::make_view(this->get_data().actions, this->get_context()); }
-    auto get_axioms() const noexcept { return ygg::make_view(this->get_data().axioms, this->get_context()); }
+    const auto& get_name() const noexcept { return self().data().name; }
+    auto get_requirements() const noexcept { return self().template get<&urd::record_of<V>::requirements>(); }
+    auto get_types() const noexcept { return self().template get<&urd::record_of<V>::types>(); }
+    auto get_constants() const noexcept { return self().template get<&urd::record_of<V>::constants>(); }
+    auto get_predicates() const noexcept { return self().template get<&urd::record_of<V>::predicates>(); }
+    auto get_functions() const noexcept { return self().template get<&urd::record_of<V>::functions>(); }
+    auto get_actions() const noexcept { return self().template get<&urd::record_of<V>::actions>(); }
+    auto get_axioms() const noexcept { return self().template get<&urd::record_of<V>::axioms>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

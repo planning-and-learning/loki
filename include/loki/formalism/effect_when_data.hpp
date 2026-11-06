@@ -26,39 +26,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
+struct data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
 {
-    ygg::Index<::loki::formalism::Effect<::loki::formalism::WhenTag>> index;
-    ygg::Index<::loki::formalism::Condition<>> condition;
-    ygg::Index<::loki::formalism::Effect<>> effect;
+    urd::index<::loki::formalism::Effect<::loki::formalism::WhenTag>> index;
+    ::loki::formalism::ConditionVariant condition;
+    ::loki::formalism::EffectVariant effect;
 
-    Data() = default;
-    Data(ygg::Index<::loki::formalism::Condition<>> condition_, ygg::Index<::loki::formalism::Effect<>> effect_) :
+    data() = default;
+    data(::loki::formalism::ConditionVariant condition_, ::loki::formalism::EffectVariant effect_) :
         index(),
         condition(condition_),
         effect(effect_)
     {
     }
-    template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> condition_, ::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C> effect_) :
-        index(),
-        condition(),
-        effect()
-    {
-        set(condition_, condition);
-        set(effect_, effect);
-    }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::condition, &Data::effect> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::condition, &Data::effect> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::condition, &data::effect> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::condition, &data::effect> {}; }
 };
 
 }

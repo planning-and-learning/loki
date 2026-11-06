@@ -16,9 +16,9 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/effect_numeric_view.hpp>
-#include <loki/formalism/function_expression_view.hpp>
 #include <loki/formalism/function_term_view.hpp>
 
 namespace nb = nanobind;
@@ -29,16 +29,16 @@ namespace loki::formalism
 void bind_effect_numeric(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Effect<formalism::NumericTag>>>(m, "EffectNumericIndex");
+    urd::python::bind_index<urd::index<formalism::Effect<formalism::NumericTag>>>(m, "EffectNumericIndex");
 
     {
-        using V = Data<formalism::Effect<formalism::NumericTag>>;
-        bind_data<V>(m, "EffectNumericData")
-            .def(nb::init<formalism::NumericEffectOperator, ygg::Index<formalism::FunctionTerm>, ygg::Index<formalism::FunctionExpression<>>>(),
+        using V = urd::data<formalism::Effect<formalism::NumericTag>>;
+        urd::python::bind_data<V>(m, "EffectNumericData")
+            .def(nb::init<formalism::NumericEffectOperator, urd::index<formalism::FunctionTerm>, formalism::FunctionExpressionVariant>(),
                  "operator"_a,
                  "function"_a,
                  "expression"_a)
-            .def(nb::init<formalism::NumericEffectOperator, formalism::FunctionTermView, formalism::FunctionExpressionView>(),
+            .def(urd::python::init_from_views<formalism::NumericEffectOperator, formalism::FunctionTermView, formalism::FunctionExpressionView>(),
                  "operator"_a,
                  "function"_a,
                  "expression"_a)
@@ -50,13 +50,13 @@ void bind_effect_numeric(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::EntityView<formalism::Effect<formalism::NumericTag>>;
         auto cls = nb::class_<V>(m, "EffectNumeric");
-        cls.def("get_index", &V::get_index)
+        cls.def("get_index", &V::index)
             .def("get_operator", &V::get_operator)
             .def("get_function", &V::get_function, nb::keep_alive<0, 1>())
             .def("get_expression", &V::get_expression, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Effect<formalism::NumericTag>>(repository);

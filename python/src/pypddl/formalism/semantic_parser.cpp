@@ -16,6 +16,7 @@
  */
 
 #include "module.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <filesystem>
 #include <loki/formalism/domain_view.hpp>

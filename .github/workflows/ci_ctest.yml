@@ -61,6 +61,7 @@ jobs:
         working-directory: build_${{ matrix.build_type }}/tests/unit
         run: |
           NATIVE_LIB_DIR="$(python -c 'import pyyggdrasil; print(pyyggdrasil.native_prefix() / "lib")')"
+          NATIVE_LIB_DIR="${NATIVE_LIB_DIR}:$(python -c 'import pyurd; print(pyurd.native_prefix() / "lib")')"
           export DYLD_LIBRARY_PATH="${NATIVE_LIB_DIR}:$PWD/../../src:${DYLD_LIBRARY_PATH:-}"
           export LD_LIBRARY_PATH="${NATIVE_LIB_DIR}:$PWD/../../src:${LD_LIBRARY_PATH:-}"
           GTEST_OUTPUT=xml:test-results/ GTEST_COLOR=1 ctest -V

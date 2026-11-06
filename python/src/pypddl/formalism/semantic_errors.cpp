@@ -16,6 +16,7 @@
  */
 
 #include "module.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/semantic/errors.hpp>
 #include <yggdrasil/python/diagnostics.hpp>

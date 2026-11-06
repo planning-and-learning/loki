@@ -19,6 +19,8 @@
 #define LOKI_PARSER_DIAGNOSTIC_HPP_
 
 #include <string>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
 #include <yggdrasil/diagnostics/x3.hpp>
 
@@ -26,7 +28,7 @@ namespace loki::parser
 {
 using Iterator = std::string::const_iterator;
 using Position = boost::spirit::x3::position_tagged;
-using PositionList = std::vector<Position>;
+using PositionList = urd::Store<urd::sequence<Position>>;
 
 using ygg::diagnostics::ErrorHandler;
 using ygg::diagnostics::format_error_at;

@@ -19,6 +19,8 @@
 #define LOKI_TESTS_BENCHMARK_UTILS_HPP_
 
 #include <filesystem>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <fstream>
 #include <optional>
 #include <sstream>
@@ -38,12 +40,12 @@ struct SuiteCase
     std::optional<std::filesystem::path> task_file;
 };
 
-inline std::vector<SuiteCase> load_suite_cases(const std::filesystem::path& suite_json, const std::optional<std::filesystem::path>& prefix = std::nullopt)
+inline urd::Store<urd::sequence<SuiteCase>> load_suite_cases(const std::filesystem::path& suite_json, const std::optional<std::filesystem::path>& prefix = std::nullopt)
 {
     const auto suite_value = ygg::common::load_json_file(suite_json);
     const auto& suite = ygg::common::as_object(suite_value, "suite");
     const auto base = prefix ? *prefix : ygg::common::suite_prefix_path(suite);
-    auto result = std::vector<SuiteCase> {};
+    auto result = urd::Store<urd::sequence<SuiteCase>> {};
     for (const auto& case_value : ygg::common::as_array(suite, "cases", "suite"))
     {
         const auto& object = ygg::common::as_object(case_value, "case");
@@ -57,13 +59,13 @@ inline std::vector<SuiteCase> load_suite_cases(const std::filesystem::path& suit
     return result;
 }
 
-inline std::vector<SuiteCase> benchmark_suite_cases()
+inline urd::Store<urd::sequence<SuiteCase>> benchmark_suite_cases()
 { return load_suite_cases(ygg::common::root_path() / "tests/fixtures/parser_counts_suite.json", std::filesystem::path(BENCHMARKS_DIR)); }
 
-inline std::vector<SuiteCase> fixture_suite_cases() { return load_suite_cases(ygg::common::root_path() / "tests/fixtures/suite.json"); }
+inline urd::Store<urd::sequence<SuiteCase>> fixture_suite_cases() { return load_suite_cases(ygg::common::root_path() / "tests/fixtures/suite.json"); }
 
 // Benchmark cases plus the loki mini-corpus: the exhaustive input set for positive invariants.
-inline std::vector<SuiteCase> all_positive_cases()
+inline urd::Store<urd::sequence<SuiteCase>> all_positive_cases()
 {
     auto result = benchmark_suite_cases();
     auto fixtures = fixture_suite_cases();

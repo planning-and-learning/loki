@@ -16,6 +16,7 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/repository.hpp>
 #include <nanobind/stl/shared_ptr.h>
@@ -93,7 +94,6 @@ void bind_formalism(nb::module_& m)
     bind_parameter(m, repository);
     bind_predicate(m, repository);
     bind_function_skeleton(m, repository);
-    bind_term(m, repository);
     bind_atom(m, repository);
     bind_literal(m, repository);
     bind_function_expression_number(m, repository);
@@ -101,7 +101,6 @@ void bind_formalism(nb::module_& m)
     bind_unary_function_expression(m, repository);
     bind_binary_function_expression(m, repository);
     bind_multi_function_expression(m, repository);
-    bind_function_expression(m, repository);
     bind_condition_literal(m, repository);
     bind_condition_and(m, repository);
     bind_condition_or(m, repository);
@@ -110,7 +109,6 @@ void bind_formalism(nb::module_& m)
     bind_condition_exists(m, repository);
     bind_condition_forall(m, repository);
     bind_condition_numeric_constraint(m, repository);
-    bind_condition(m, repository);
     bind_effect_literal(m, repository);
     bind_effect_and(m, repository);
     bind_effect_numeric(m, repository);
@@ -119,7 +117,6 @@ void bind_formalism(nb::module_& m)
     bind_effect_one_of(m, repository);
     bind_effect_probabilistic_alternative(m, repository);
     bind_effect_probabilistic(m, repository);
-    bind_effect(m, repository);
     bind_action(m, repository);
     bind_axiom(m, repository);
     bind_metric(m, repository);

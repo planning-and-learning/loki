@@ -19,6 +19,8 @@
 #define LOKI_SEMANTIC_MAPPINGS_HPP_
 
 #include "loki/formalism/enums.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <cista/containers/string.h>
 #include <string>
@@ -34,7 +36,7 @@ std::string key(std::string text);
 cista::offset::string to_cista(const std::string& text);
 
 // PDDL name <-> enum mappings.
-std::vector<formalism::RequirementKind> requirement_capabilities(formalism::RequirementKind kind);
+urd::Store<urd::sequence<formalism::RequirementKind>> requirement_capabilities(formalism::RequirementKind kind);
 std::string requirement_name(formalism::RequirementKind kind);
 formalism::BinaryArithmeticOperator binary_operator(std::string op);
 formalism::MultiArithmeticOperator multi_operator(std::string op);

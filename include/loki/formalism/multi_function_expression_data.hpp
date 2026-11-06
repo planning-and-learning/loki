@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_MULTI_FUNCTION_EXPRESSION_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <optional>
 #include <string>
@@ -26,36 +28,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>
+struct data<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>
 {
-    ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>> index;
+    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>> index;
     ::loki::formalism::MultiArithmeticOperator op {};
-    ygg::IndexList<::loki::formalism::FunctionExpression<>> args;
+    ::loki::formalism::FunctionExpressionList args;
 
-    Data() = default;
-    Data(::loki::formalism::MultiArithmeticOperator op_, ygg::IndexList<::loki::formalism::FunctionExpression<>> args_) :
+    data() = default;
+    data(::loki::formalism::MultiArithmeticOperator op_, ::loki::formalism::FunctionExpressionList args_) :
         index(),
         op(op_),
         args(std::move(args_))
     {
     }
-    template<typename C>
-    Data(::loki::formalism::MultiArithmeticOperator op_, const std::vector<::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C>>& args_) :
-        index(),
-        op(op_),
-        args()
-    { set(args_, args); }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::args> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::args> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::op, &data::args> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::op, &data::args> {}; }
 };
 
 }

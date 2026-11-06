@@ -16,6 +16,10 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/parameter_view.hpp>
 #include <loki/formalism/type_view.hpp>
@@ -29,13 +33,13 @@ namespace loki::formalism
 void bind_parameter(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Parameter>>(m, "ParameterIndex");
+    urd::python::bind_index<urd::index<formalism::Parameter>>(m, "ParameterIndex");
 
     {
-        using V = Data<formalism::Parameter>;
-        bind_data<V>(m, "ParameterData")
-            .def(nb::init<ygg::Index<formalism::Variable>, ygg::IndexList<formalism::Type>>(), "variable"_a, "types"_a = ygg::IndexList<formalism::Type> {})
-            .def(nb::init<formalism::VariableView, const std::vector<formalism::TypeView>&>(), "variable"_a, "types"_a = std::vector<formalism::TypeView> {})
+        using V = urd::data<formalism::Parameter>;
+        urd::python::bind_data<V>(m, "ParameterData")
+            .def(nb::init<urd::index<formalism::Variable>, urd::flat_vector<urd::index<formalism::Type>>>(), "variable"_a, "types"_a = urd::flat_vector<urd::index<formalism::Type>> {})
+            .def(urd::python::init_from_views<formalism::VariableView, const urd::Store<urd::sequence<formalism::TypeView>>&>(), "variable"_a, "types"_a = urd::Store<urd::sequence<formalism::TypeView>> {})
             .def_rw("variable", &V::variable)
             .def_rw("types", &V::types);
     }
@@ -43,10 +47,10 @@ void bind_parameter(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::ParameterView;
         auto cls = nb::class_<V>(m, "Parameter");
-        cls.def("get_index", &V::get_index).def("get_variable", &V::get_variable, nb::keep_alive<0, 1>()).def("get_types", &V::get_types);
+        cls.def("get_index", &V::index).def("get_variable", &V::get_variable, nb::keep_alive<0, 1>()).def("get_types", &V::get_types);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Parameter>(repository);

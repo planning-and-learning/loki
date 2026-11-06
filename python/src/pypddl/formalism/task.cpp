@@ -16,9 +16,12 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/axiom_view.hpp>
-#include <loki/formalism/condition_view.hpp>
 #include <loki/formalism/domain_view.hpp>
 #include <loki/formalism/initial_function_value_view.hpp>
 #include <loki/formalism/literal_view.hpp>
@@ -36,55 +39,55 @@ namespace loki::formalism
 void bind_task(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Task>>(m, "TaskIndex");
+    urd::python::bind_index<urd::index<formalism::Task>>(m, "TaskIndex");
 
     {
-        using V = Data<formalism::Task>;
-        bind_data<V>(m, "TaskData")
+        using V = urd::data<formalism::Task>;
+        urd::python::bind_data<V>(m, "TaskData")
             .def(nb::init<std::string,
-                          ygg::Index<formalism::Domain>,
-                          ygg::IndexList<formalism::Requirement>,
-                          ygg::IndexList<formalism::Type>,
-                          ygg::IndexList<formalism::Predicate>,
-                          ygg::IndexList<formalism::Object>,
-                          ygg::IndexList<formalism::Literal>,
-                          ygg::IndexList<formalism::InitialFunctionValue>,
-                          cista::optional<ygg::Index<formalism::Condition<>>>,
-                          cista::optional<ygg::Index<formalism::Metric>>,
-                          ygg::IndexList<formalism::Axiom>>(),
+                          urd::index<formalism::Domain>,
+                          urd::flat_vector<urd::index<formalism::Requirement>>,
+                          urd::flat_vector<urd::index<formalism::Type>>,
+                          urd::flat_vector<urd::index<formalism::Predicate>>,
+                          urd::flat_vector<urd::index<formalism::Object>>,
+                          urd::flat_vector<urd::index<formalism::Literal>>,
+                          urd::flat_vector<urd::index<formalism::InitialFunctionValue>>,
+                          cista::optional<formalism::ConditionVariant>,
+                          cista::optional<urd::index<formalism::Metric>>,
+                          urd::flat_vector<urd::index<formalism::Axiom>>>(),
                  "name"_a,
                  "domain"_a,
-                 "requirements"_a = ygg::IndexList<formalism::Requirement> {},
-                 "types"_a = ygg::IndexList<formalism::Type> {},
-                 "predicates"_a = ygg::IndexList<formalism::Predicate> {},
-                 "objects"_a = ygg::IndexList<formalism::Object> {},
-                 "initial_literals"_a = ygg::IndexList<formalism::Literal> {},
-                 "initial_function_values"_a = ygg::IndexList<formalism::InitialFunctionValue> {},
-                 "goal"_a.none() = cista::optional<ygg::Index<formalism::Condition<>>> {},
-                 "metric"_a.none() = cista::optional<ygg::Index<formalism::Metric>> {},
-                 "axioms"_a = ygg::IndexList<formalism::Axiom> {})
-            .def(nb::init<const std::string&,
+                 "requirements"_a = urd::flat_vector<urd::index<formalism::Requirement>> {},
+                 "types"_a = urd::flat_vector<urd::index<formalism::Type>> {},
+                 "predicates"_a = urd::flat_vector<urd::index<formalism::Predicate>> {},
+                 "objects"_a = urd::flat_vector<urd::index<formalism::Object>> {},
+                 "initial_literals"_a = urd::flat_vector<urd::index<formalism::Literal>> {},
+                 "initial_function_values"_a = urd::flat_vector<urd::index<formalism::InitialFunctionValue>> {},
+                 "goal"_a.none() = cista::optional<formalism::ConditionVariant> {},
+                 "metric"_a.none() = cista::optional<urd::index<formalism::Metric>> {},
+                 "axioms"_a = urd::flat_vector<urd::index<formalism::Axiom>> {})
+            .def(urd::python::init_from_views<const std::string&,
                           formalism::DomainView,
-                          const std::vector<formalism::RequirementView>&,
-                          const std::vector<formalism::TypeView>&,
-                          const std::vector<formalism::PredicateView>&,
-                          const std::vector<formalism::ObjectView>&,
-                          const std::vector<formalism::LiteralView>&,
-                          const std::vector<formalism::InitialFunctionValueView>&,
+                          const urd::Store<urd::sequence<formalism::RequirementView>>&,
+                          const urd::Store<urd::sequence<formalism::TypeView>>&,
+                          const urd::Store<urd::sequence<formalism::PredicateView>>&,
+                          const urd::Store<urd::sequence<formalism::ObjectView>>&,
+                          const urd::Store<urd::sequence<formalism::LiteralView>>&,
+                          const urd::Store<urd::sequence<formalism::InitialFunctionValueView>>&,
                           const std::optional<formalism::ConditionView>&,
                           const std::optional<formalism::MetricView>&,
-                          const std::vector<formalism::AxiomView>&>(),
+                          const urd::Store<urd::sequence<formalism::AxiomView>>&>(),
                  "name"_a,
                  "domain"_a,
-                 "requirements"_a = std::vector<formalism::RequirementView> {},
-                 "types"_a = std::vector<formalism::TypeView> {},
-                 "predicates"_a = std::vector<formalism::PredicateView> {},
-                 "objects"_a = std::vector<formalism::ObjectView> {},
-                 "initial_literals"_a = std::vector<formalism::LiteralView> {},
-                 "initial_function_values"_a = std::vector<formalism::InitialFunctionValueView> {},
+                 "requirements"_a = urd::Store<urd::sequence<formalism::RequirementView>> {},
+                 "types"_a = urd::Store<urd::sequence<formalism::TypeView>> {},
+                 "predicates"_a = urd::Store<urd::sequence<formalism::PredicateView>> {},
+                 "objects"_a = urd::Store<urd::sequence<formalism::ObjectView>> {},
+                 "initial_literals"_a = urd::Store<urd::sequence<formalism::LiteralView>> {},
+                 "initial_function_values"_a = urd::Store<urd::sequence<formalism::InitialFunctionValueView>> {},
                  "goal"_a = std::optional<formalism::ConditionView> {},
                  "metric"_a = std::optional<formalism::MetricView> {},
-                 "axioms"_a = std::vector<formalism::AxiomView> {})
+                 "axioms"_a = urd::Store<urd::sequence<formalism::AxiomView>> {})
             .def_rw("name", &V::name)
             .def_rw("domain", &V::domain)
             .def_rw("requirements", &V::requirements)
@@ -101,7 +104,7 @@ void bind_task(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::TaskView;
         auto cls = nb::class_<V>(m, "Task");
-        cls.def("get_index", &V::get_index)
+        cls.def("get_index", &V::index)
             .def("get_name", &V::get_name)
             .def("get_domain", &V::get_domain, nb::keep_alive<0, 1>())
             .def("get_requirements", &V::get_requirements)
@@ -114,8 +117,8 @@ void bind_task(nb::module_& m, RepositoryBinding& repository)
             .def("get_metric", &V::get_metric, nb::keep_alive<0, 1>())
             .def("get_axioms", &V::get_axioms);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Task>(repository);

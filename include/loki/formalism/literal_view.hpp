@@ -20,25 +20,21 @@
 
 #include "loki/formalism/literal_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Literal, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Literal> C>
-class View<ygg::Index<::loki::formalism::Literal>, C> : public ygg::IndexViewBase<::loki::formalism::Literal, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Literal, C>::IndexViewBase;
-
-    [[nodiscard]] bool get_polarity() const noexcept { return this->get_data().m_polarity; }
-    auto get_atom() const noexcept { return ygg::make_view(this->get_data().atom, this->get_context()); }
+    [[nodiscard]] bool get_polarity() const noexcept { return self().data().m_polarity; }
+    auto get_atom() const noexcept { return self().template get<&urd::record_of<V>::atom>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

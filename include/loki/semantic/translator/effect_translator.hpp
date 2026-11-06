@@ -73,7 +73,7 @@ template<typename Derived>
 formalism::EntityView<formalism::Effect<formalism::NumericTag>>
 EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source)
 {
-    const auto& data = source.get_data();
+    const auto& data = source.data();
     const auto function = as_index(this->self().copy(source.get_function()));
     const auto expression = as_index(this->self().copy(source.get_expression()));
     auto result = formalism::checkout<formalism::Effect<formalism::NumericTag>>(this->copy_context().builder);
@@ -97,16 +97,16 @@ EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalis
         this->self().type_conditions_for_parameters(source.get_parameters(), *condition_data);
         const auto condition = this->self().make_conjunction(*condition_data);
         auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
-        data->condition = condition.get_index();
+        data->condition = as_index(condition);
         data->effect = effect;
-        effect = this->self().wrap_effect(formalism::insert(this->copy_context().storage->repository, *data).first).get_index();
+        effect = formalism::insert(this->copy_context().storage->repository, *data).first.index();
     }
     auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
     if (this->self().compiles_typing_now())
         this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
     else
         for (auto parameter : parameter_views)
-            data->parameters.push_back(parameter.get_index());
+            data->parameters.push_back(parameter.index());
     data->effect = effect;
     const auto out = formalism::insert(this->copy_context().storage->repository, *data).first;
     this->self().leave_scope();
@@ -140,7 +140,7 @@ EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalis
 template<typename Derived>
 formalism::EffectProbabilisticAlternativeView EffectTranslator<Derived>::copy(formalism::EffectProbabilisticAlternativeView source)
 {
-    const auto& data = source.get_data();
+    const auto& data = source.data();
     const auto effect = as_index(this->self().copy(source.get_effect()));
     auto result = formalism::checkout<formalism::EffectProbabilisticAlternative>(this->copy_context().builder);
     result->probability = data.probability;
@@ -164,7 +164,7 @@ formalism::EffectView EffectTranslator<Derived>::copy(formalism::EffectView sour
     if (this->copy_context().phase == TranslationPhase::SplitDisjunctiveConditions)
     {
         auto split = std::optional<formalism::EffectView> {};
-        ygg::visit(
+        std::visit(
             [&]<typename Node>(const Node& arg)
             {
                 if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
@@ -177,33 +177,28 @@ formalism::EffectView EffectTranslator<Derived>::copy(formalism::EffectView sour
                         for (auto part : condition_or->get_conditions())
                         {
                             auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
-                            when_data->condition = part.get_index();
+                            when_data->condition = as_index(part);
                             when_data->effect = effect;
                             const auto when = formalism::insert(this->copy_context().storage->repository, *when_data).first;
-                            data->effects.push_back(this->self().wrap_effect(when).get_index());
+                            data->effects.push_back(when.index());
                         }
-                        split = this->self().wrap_effect(formalism::insert(this->copy_context().storage->repository, *data).first);
+                        split = formalism::EffectView(formalism::insert(this->copy_context().storage->repository, *data).first);
                     }
                     else
                     {
                         auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
-                        data->condition = condition.get_index();
+                        data->condition = as_index(condition);
                         data->effect = effect;
-                        split = this->self().wrap_effect(formalism::insert(this->copy_context().storage->repository, *data).first);
+                        split = formalism::EffectView(formalism::insert(this->copy_context().storage->repository, *data).first);
                     }
                 }
             },
-            source.get_variant());
+            source);
         if (split)
             return *split;
     }
 
-    auto value = ygg::visit([&](const auto& arg) -> ygg::Data<formalism::Effect<>>::Variant
-                            { return ygg::Data<formalism::Effect<>>::Variant(as_index(this->self().copy(arg))); },
-                            source.get_variant());
-    auto data = formalism::checkout<formalism::Effect<>>(this->copy_context().builder);
-    data->variant = std::move(value);
-    auto copied = formalism::insert(this->copy_context().storage->repository, *data).first;
+    const auto copied = std::visit([&](const auto& arg) -> formalism::EffectView { return this->self().copy(arg); }, source);
     if (this->copy_context().phase == TranslationPhase::ToEffectNormalForm)
         return this->self().normalize_effect(copied);
     return copied;

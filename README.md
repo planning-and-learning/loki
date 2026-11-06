@@ -52,15 +52,16 @@ Install Loki's native dependency providers into the active Python environment,
 then configure CMake with their native prefixes:
 
 ```console
-python -m pip install 'pyyggdrasil>=0.6.0,<0.7' 'pypddl-datasets>=0.0.17,<0.1'
+python -m pip install 'pyyggdrasil>=0.6.0,<0.7' 'pybrokkr>=0.1,<0.2' 'pypddl-datasets>=0.0.17,<0.1'
 
 cmake -S . -B build
 ```
 
-CMake discovers the installed `pyyggdrasil` automatically through
-`cmake/bootstrap_pyyggdrasil.cmake` (which locates the package and adds its
-native prefix to `CMAKE_PREFIX_PATH`, after which `find_package(yggdrasil)`
-provides the shared helper functions) and links against the
+CMake discovers the installed provider packages automatically: it finds the
+build helpers of [brokkr](https://github.com/verdog-ai/brokkr) (`pybrokkr`,
+installed with the package), whose `brokkr_find_python_native_prefix` adds
+`pyyggdrasil`'s native prefix to `CMAKE_PREFIX_PATH`; `find_package(yggdrasil)`
+then resolves the rest of the chain and links against the
 `yggdrasil::yggdrasil` target. To point at a different prefix explicitly:
 
 ```console

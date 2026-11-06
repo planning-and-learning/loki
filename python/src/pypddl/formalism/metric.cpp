@@ -16,8 +16,8 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
-#include <loki/formalism/function_expression_view.hpp>
 #include <loki/formalism/metric_view.hpp>
 
 namespace nb = nanobind;
@@ -28,13 +28,13 @@ namespace loki::formalism
 void bind_metric(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Metric>>(m, "MetricIndex");
+    urd::python::bind_index<urd::index<formalism::Metric>>(m, "MetricIndex");
 
     {
-        using V = Data<formalism::Metric>;
-        bind_data<V>(m, "MetricData")
-            .def(nb::init<formalism::OptimizationDirection, ygg::Index<formalism::FunctionExpression<>>>(), "optimization_direction"_a, "expression"_a)
-            .def(nb::init<formalism::OptimizationDirection, formalism::FunctionExpressionView>(), "optimization_direction"_a, "expression"_a)
+        using V = urd::data<formalism::Metric>;
+        urd::python::bind_data<V>(m, "MetricData")
+            .def(nb::init<formalism::OptimizationDirection, formalism::FunctionExpressionVariant>(), "optimization_direction"_a, "expression"_a)
+            .def(urd::python::init_from_views<formalism::OptimizationDirection, formalism::FunctionExpressionView>(), "optimization_direction"_a, "expression"_a)
             .def_rw("optimization_direction", &V::optimization_direction)
             .def_rw("expression", &V::expression);
     }
@@ -42,12 +42,12 @@ void bind_metric(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::MetricView;
         auto cls = nb::class_<V>(m, "Metric");
-        cls.def("get_index", &V::get_index)
+        cls.def("get_index", &V::index)
             .def("get_optimization_direction", &V::get_optimization_direction)
             .def("get_expression", &V::get_expression, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Metric>(repository);

@@ -20,30 +20,26 @@
 
 #include "loki/formalism/action_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Action, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Action> C>
-class View<ygg::Index<::loki::formalism::Action>, C> : public ygg::IndexViewBase<::loki::formalism::Action, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Action, C>::IndexViewBase;
-
-    const auto& get_name() const noexcept { return this->get_data().name; }
-    const auto& get_original_name() const noexcept { return this->get_data().original_name; }
-    auto get_parameters() const noexcept { return ygg::make_view(this->get_data().parameters, this->get_context()); }
-    auto get_arity() const noexcept { return this->get_data().parameters.size(); }
-    auto get_original_arity() const noexcept { return this->get_data().original_arity; }
-    auto get_precondition() const noexcept { return ygg::make_view(this->get_data().precondition, this->get_context()); }
-    auto get_effect() const noexcept { return ygg::make_view(this->get_data().effect, this->get_context()); }
+    const auto& get_name() const noexcept { return self().data().name; }
+    const auto& get_original_name() const noexcept { return self().data().original_name; }
+    auto get_parameters() const noexcept { return self().template get<&urd::record_of<V>::parameters>(); }
+    auto get_arity() const noexcept { return self().data().parameters.size(); }
+    auto get_original_arity() const noexcept { return self().data().original_arity; }
+    auto get_precondition() const noexcept { return self().template get<&urd::record_of<V>::precondition>(); }
+    auto get_effect() const noexcept { return self().template get<&urd::record_of<V>::effect>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

@@ -4,9 +4,9 @@
 
 #include <concepts>
 
-using Index = ygg::Index<loki::formalism::Task>;
-using Data = ygg::Data<loki::formalism::Task>;
-using View = ygg::View<Index, loki::formalism::Repository>;
+using Index = urd::index<loki::formalism::Task>;
+using Data = urd::data<loki::formalism::Task>;
+using View = urd::view<loki::formalism::Task, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
@@ -26,11 +26,10 @@ static_assert(requires(Data& data) {
     data.goal;
     data.metric;
     data.axioms;
-    data.clear();
     { data == data } -> std::same_as<bool>;
 });
 static_assert(requires(const View& view) {
-    view.get_index();
+    view.index();
     view.get_name();
     view.get_domain();
     view.get_requirements();

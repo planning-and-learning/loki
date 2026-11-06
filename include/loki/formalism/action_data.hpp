@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_ACTION_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <cista/containers/optional.h>
 #include <cista/containers/string.h>
@@ -28,28 +30,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
+#include <yggdrasil/core/config.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Action>
+struct data<::loki::formalism::Action>
 {
-    ygg::Index<::loki::formalism::Action> index;
+    urd::index<::loki::formalism::Action> index;
     ::cista::offset::string name;
     ::cista::offset::string original_name;
-    ygg::IndexList<::loki::formalism::Parameter> parameters;
+    urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
     ygg::uint_t original_arity = 0;
-    ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> precondition;
-    ::cista::optional<ygg::Index<::loki::formalism::Effect<>>> effect;
+    ::cista::optional<::loki::formalism::ConditionVariant> precondition;
+    ::cista::optional<::loki::formalism::EffectVariant> effect;
 
-    Data() = default;
-    Data(::cista::offset::string name_,
-         ygg::IndexList<::loki::formalism::Parameter> parameters_,
-         ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> precondition_,
-         ::cista::optional<ygg::Index<::loki::formalism::Effect<>>> effect_) :
+    data() = default;
+    data(::cista::offset::string name_,
+         urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
+         ::cista::optional<::loki::formalism::ConditionVariant> precondition_,
+         ::cista::optional<::loki::formalism::EffectVariant> effect_) :
         index(),
         name(std::move(name_)),
         original_name(name),
@@ -59,11 +61,11 @@ struct Data<::loki::formalism::Action>
         effect(std::move(effect_))
     {
     }
-    Data(::cista::offset::string name_,
-         ygg::IndexList<::loki::formalism::Parameter> parameters_,
+    data(::cista::offset::string name_,
+         urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
          ygg::uint_t original_arity_,
-         ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> precondition_,
-         ::cista::optional<ygg::Index<::loki::formalism::Effect<>>> effect_) :
+         ::cista::optional<::loki::formalism::ConditionVariant> precondition_,
+         ::cista::optional<::loki::formalism::EffectVariant> effect_) :
         index(),
         name(std::move(name_)),
         original_name(name),
@@ -73,12 +75,12 @@ struct Data<::loki::formalism::Action>
         effect(std::move(effect_))
     {
     }
-    Data(::cista::offset::string name_,
+    data(::cista::offset::string name_,
          ::cista::offset::string original_name_,
-         ygg::IndexList<::loki::formalism::Parameter> parameters_,
+         urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
          ygg::uint_t original_arity_,
-         ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> precondition_,
-         ::cista::optional<ygg::Index<::loki::formalism::Effect<>>> effect_) :
+         ::cista::optional<::loki::formalism::ConditionVariant> precondition_,
+         ::cista::optional<::loki::formalism::EffectVariant> effect_) :
         index(),
         name(std::move(name_)),
         original_name(std::move(original_name_)),
@@ -88,39 +90,11 @@ struct Data<::loki::formalism::Action>
         effect(std::move(effect_))
     {
     }
-    template<typename C>
-    Data(const std::string& name_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C>>& precondition_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C>>& effect_) :
-        Data(name_, name_, parameters_, parameters_.size(), precondition_, effect_)
-    {
-    }
-    template<typename C>
-    Data(const std::string& name_,
-         const std::string& original_name_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
-         ygg::uint_t original_arity_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C>>& precondition_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C>>& effect_) :
-        index(),
-        name(name_),
-        original_name(original_name_),
-        parameters(),
-        original_arity(original_arity_),
-        precondition(),
-        effect()
-    {
-        set(parameters_, parameters);
-        set(precondition_, precondition);
-        set(effect_, effect);
-    }
 
     static constexpr auto cista_members() noexcept
-    { return ygg::Members<&Data::index, &Data::name, &Data::original_name, &Data::parameters, &Data::original_arity, &Data::precondition, &Data::effect> {}; }
+    { return urd::Members<&data::index, &data::name, &data::original_name, &data::parameters, &data::original_arity, &data::precondition, &data::effect> {}; }
     static constexpr auto identifying_members() noexcept
-    { return ygg::Members<&Data::original_name, &Data::parameters, &Data::original_arity, &Data::precondition, &Data::effect> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    { return urd::Members<&data::original_name, &data::parameters, &data::original_arity, &data::precondition, &data::effect> {}; }
 };
 
 }

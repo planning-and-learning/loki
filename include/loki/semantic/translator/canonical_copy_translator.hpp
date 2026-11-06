@@ -40,8 +40,8 @@ private:
     formalism::Builder m_builder;
     std::shared_ptr<TranslationStorage> m_storage;
 
-    template<typename T>
-    void copy_list(formalism::EntityListView<T> source, ygg::IndexList<T>& target);
+    template<typename Range, typename List>
+    void copy_list(const Range& source, List& target);
 
     formalism::RequirementView copy(formalism::RequirementView source);
     formalism::TypeView copy(formalism::TypeView source);
@@ -91,11 +91,11 @@ private:
 inline auto copy(formalism::DomainView source, CanonicalCopyTranslator& context) { return context.copy(source); }
 inline auto copy(formalism::TaskView source, CanonicalCopyTranslator& context) { return context.copy(source); }
 
-template<typename T>
-void CanonicalCopyTranslator::copy_list(formalism::EntityListView<T> source, ygg::IndexList<T>& target)
+template<typename Range, typename List>
+void CanonicalCopyTranslator::copy_list(const Range& source, List& target)
 {
     for (auto view : source)
-        target.push_back(copy(view).get_index());
+        target.push_back(urd::to_stored(copy(view)));
 }
 
 }  // namespace loki::semantic::detail

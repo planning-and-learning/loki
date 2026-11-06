@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_TYPE_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <cista/containers/string.h>
 #include <optional>
@@ -27,28 +29,23 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Type>
+struct data<::loki::formalism::Type>
 {
-    ygg::Index<::loki::formalism::Type> index;
+    urd::index<::loki::formalism::Type> index;
     ::cista::offset::string name;
-    ygg::IndexList<::loki::formalism::Type> bases;
+    urd::flat_vector<urd::index<::loki::formalism::Type>> bases;
 
-    Data() = default;
-    Data(::cista::offset::string name_, ygg::IndexList<::loki::formalism::Type> bases_ = {}) : index(), name(std::move(name_)), bases(std::move(bases_)) {}
-    template<typename C>
-    Data(const std::string& name_, const std::vector<::ygg::View<ygg::Index<::loki::formalism::Type>, C>>& bases_ = {}) : index(), name(name_), bases()
-    { set(bases_, bases); }
+    data() = default;
+    data(::cista::offset::string name_, urd::flat_vector<urd::index<::loki::formalism::Type>> bases_ = {}) : index(), name(std::move(name_)), bases(std::move(bases_)) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::name, &Data::bases> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::name, &Data::bases> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name, &data::bases> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::name, &data::bases> {}; }
 };
 
 }

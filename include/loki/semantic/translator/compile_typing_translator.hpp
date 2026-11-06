@@ -19,6 +19,8 @@
 #define LOKI_SEMANTIC_TRANSLATOR_COMPILE_TYPING_TRANSLATOR_HPP_
 
 #include "loki/semantic/translator/copy_translator_component.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 namespace loki::semantic::detail
 {
@@ -30,18 +32,18 @@ public:
     explicit CompileTypingTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, CompileTypingTranslator<Derived>>(context) {}
 
     [[nodiscard]] bool compiles_typing_now() const noexcept;
-    std::vector<formalism::TypeView> collect_type_hierarchy(formalism::TypeView type);
-    void copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, ygg::IndexList<formalism::Type>& result);
-    void copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters, ygg::IndexList<formalism::Parameter>& result);
+    urd::Store<urd::sequence<formalism::TypeView>> collect_type_hierarchy(formalism::TypeView type);
+    void copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, urd::flat_vector<urd::index<formalism::Type>>& result);
+    void copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters, urd::flat_vector<urd::index<formalism::Parameter>>& result);
     formalism::PredicateView type_predicate(formalism::TypeView type);
-    formalism::LiteralView type_literal(formalism::TypeView type, ygg::Index<formalism::Term> term);
+    formalism::LiteralView type_literal(formalism::TypeView type, formalism::TermView term);
     formalism::ConditionView type_condition(formalism::TypeView type, formalism::VariableView variable);
-    void type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters, ygg::Data<formalism::Condition<formalism::AndTag>>& data);
+    void type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters, urd::data<formalism::Condition<formalism::AndTag>>& data);
     void prepend_type_conditions(std::optional<formalism::ConditionView>& condition, formalism::EntityListView<formalism::Parameter> parameters);
     void prepend_type_conditions(formalism::ConditionView& condition, formalism::EntityListView<formalism::Parameter> parameters);
-    void compile_typing_to_domain(ygg::Data<formalism::Domain>& data, formalism::DomainView domain);
-    void add_type_literals_for_object(ygg::IndexList<formalism::Literal>& literals, formalism::ObjectView object);
-    void initialize_type_literals(ygg::Data<formalism::Task>& data, formalism::TaskView task);
+    void compile_typing_to_domain(urd::data<formalism::Domain>& data, formalism::DomainView domain);
+    void add_type_literals_for_object(urd::flat_vector<urd::index<formalism::Literal>>& literals, formalism::ObjectView object);
+    void initialize_type_literals(urd::data<formalism::Task>& data, formalism::TaskView task);
 };
 
 template<typename Derived>
@@ -49,10 +51,10 @@ bool CompileTypingTranslator<Derived>::compiles_typing_now() const noexcept
 { return this->copy_context().compile_typing && this->copy_context().phase == TranslationPhase::CompileTyping; }
 
 template<typename Derived>
-std::vector<formalism::TypeView> CompileTypingTranslator<Derived>::collect_type_hierarchy(formalism::TypeView type)
+urd::Store<urd::sequence<formalism::TypeView>> CompileTypingTranslator<Derived>::collect_type_hierarchy(formalism::TypeView type)
 {
-    auto result = std::vector<formalism::TypeView> {};
-    auto seen = ygg::UnorderedSet<formalism::TypeView> {};
+    auto result = urd::Store<urd::sequence<formalism::TypeView>> {};
+    auto seen = urd::Store<urd::set<formalism::TypeView>> {};
     auto visit = [&](auto&& self, formalism::TypeView current) -> void
     {
         if (!seen.insert(current).second)
@@ -66,9 +68,9 @@ std::vector<formalism::TypeView> CompileTypingTranslator<Derived>::collect_type_
 }
 
 template<typename Derived>
-void CompileTypingTranslator<Derived>::copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, ygg::IndexList<formalism::Type>& result)
+void CompileTypingTranslator<Derived>::copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, urd::flat_vector<urd::index<formalism::Type>>& result)
 {
-    auto seen = ygg::UnorderedSet<formalism::TypeView> {};
+    auto seen = urd::Store<urd::set<formalism::TypeView>> {};
     for (auto type : types)
     {
         for (auto collected : this->self().collect_type_hierarchy(type))
@@ -81,14 +83,14 @@ void CompileTypingTranslator<Derived>::copy_type_hierarchy(formalism::EntityList
 
 template<typename Derived>
 void CompileTypingTranslator<Derived>::copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters,
-                                                                     ygg::IndexList<formalism::Parameter>& result)
+                                                                     urd::flat_vector<urd::index<formalism::Parameter>>& result)
 {
     for (auto parameter : parameters)
     {
         const auto variable = as_index(this->self().copy(parameter.get_variable()));
         auto data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
         data->variable = variable;
-        result.push_back(formalism::insert(this->copy_context().storage->repository, *data).first.get_index());
+        result.push_back(formalism::insert(this->copy_context().storage->repository, *data).first.index());
     }
 }
 
@@ -109,10 +111,10 @@ formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formal
             }
     auto variable_data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
     variable_data->name = cista::offset::string("?arg");
-    parameter_data->variable = formalism::insert(this->copy_context().storage->repository, *variable_data).first.get_index();
+    parameter_data->variable = formalism::insert(this->copy_context().storage->repository, *variable_data).first.index();
     auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
     predicate_data->name = type.get_name();
-    predicate_data->parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first.get_index());
+    predicate_data->parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first.index());
     auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first;
     this->copy_context().type_predicates.emplace(type, predicate);
     this->copy_context().used_predicate_names.insert(std::string(type.get_name()));
@@ -120,13 +122,13 @@ formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formal
 }
 
 template<typename Derived>
-formalism::LiteralView CompileTypingTranslator<Derived>::type_literal(formalism::TypeView type, ygg::Index<formalism::Term> term)
+formalism::LiteralView CompileTypingTranslator<Derived>::type_literal(formalism::TypeView type, formalism::TermView term)
 {
     const auto predicate = as_index(this->self().type_predicate(type));
     auto atom_data = formalism::checkout<formalism::Atom>(this->copy_context().builder);
     atom_data->predicate = predicate;
-    atom_data->terms.push_back(term);
-    const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.get_index();
+    atom_data->terms.push_back(urd::to_stored(term));
+    const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
     literal_data->m_polarity = true;
@@ -136,19 +138,15 @@ formalism::LiteralView CompileTypingTranslator<Derived>::type_literal(formalism:
 template<typename Derived>
 formalism::ConditionView CompileTypingTranslator<Derived>::type_condition(formalism::TypeView type, formalism::VariableView variable)
 {
-    const auto copied_variable = as_index(this->self().copy(variable));
-    auto term_data = formalism::checkout<formalism::Term>(this->copy_context().builder);
-    term_data->variant = ygg::Data<formalism::Term>::Variant(copied_variable);
-    const auto term = formalism::insert(this->copy_context().storage->repository, *term_data).first.get_index();
-    const auto literal = as_index(this->self().type_literal(type, term));
+    const auto literal = as_index(this->self().type_literal(type, this->self().copy(variable)));
     auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
     condition_data->literal = literal;
-    return this->self().wrap_condition(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
+    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
 }
 
 template<typename Derived>
 void CompileTypingTranslator<Derived>::type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters,
-                                                                      ygg::Data<formalism::Condition<formalism::AndTag>>& data)
+                                                                      urd::data<formalism::Condition<formalism::AndTag>>& data)
 {
     auto add_conditions = [&](auto&& self, formalism::TypeView type, formalism::VariableView variable) -> void
     {
@@ -183,9 +181,9 @@ void CompileTypingTranslator<Derived>::prepend_type_conditions(formalism::Condit
 }
 
 template<typename Derived>
-void CompileTypingTranslator<Derived>::compile_typing_to_domain(ygg::Data<formalism::Domain>& data, formalism::DomainView domain)
+void CompileTypingTranslator<Derived>::compile_typing_to_domain(urd::data<formalism::Domain>& data, formalism::DomainView domain)
 {
-    auto existing = ygg::UnorderedSet<formalism::PredicateView> {};
+    auto existing = urd::Store<urd::set<formalism::PredicateView>> {};
     for (auto predicate : domain.get_predicates())
         existing.insert(predicate);
 
@@ -193,7 +191,7 @@ void CompileTypingTranslator<Derived>::compile_typing_to_domain(ygg::Data<formal
     {
         const auto predicate = this->self().type_predicate(type);
         if (existing.insert(predicate).second)
-            data.predicates.push_back(predicate.get_index());
+            data.predicates.push_back(predicate.index());
         for (auto base : type.get_bases())
             self(self, base);
     };
@@ -209,15 +207,12 @@ void CompileTypingTranslator<Derived>::compile_typing_to_domain(ygg::Data<formal
 }
 
 template<typename Derived>
-void CompileTypingTranslator<Derived>::add_type_literals_for_object(ygg::IndexList<formalism::Literal>& literals, formalism::ObjectView object)
+void CompileTypingTranslator<Derived>::add_type_literals_for_object(urd::flat_vector<urd::index<formalism::Literal>>& literals, formalism::ObjectView object)
 {
     const auto copied_object = this->self().copy(object);
-    auto term_data = formalism::checkout<formalism::Term>(this->copy_context().builder);
-    term_data->variant = ygg::Data<formalism::Term>::Variant(copied_object.get_index());
-    const auto term = formalism::insert(this->copy_context().storage->repository, *term_data).first.get_index();
     auto add_literal = [&](auto&& self, formalism::TypeView type) -> void
     {
-        literals.push_back(as_index(this->self().type_literal(type, term)));
+        literals.push_back(as_index(this->self().type_literal(type, copied_object)));
         for (auto base : type.get_bases())
             self(self, base);
     };
@@ -238,7 +233,7 @@ void CompileTypingTranslator<Derived>::add_type_literals_for_object(ygg::IndexLi
 }
 
 template<typename Derived>
-void CompileTypingTranslator<Derived>::initialize_type_literals(ygg::Data<formalism::Task>& data, formalism::TaskView task)
+void CompileTypingTranslator<Derived>::initialize_type_literals(urd::data<formalism::Task>& data, formalism::TaskView task)
 {
     for (auto object : this->copy_context().storage->translated().get_constants())
         this->self().add_type_literals_for_object(data.initial_literals, object);
@@ -246,9 +241,9 @@ void CompileTypingTranslator<Derived>::initialize_type_literals(ygg::Data<formal
         this->self().add_type_literals_for_object(data.initial_literals, object);
 
     // The task's own types need type predicates; a reparsed translation may declare them already.
-    auto existing = ygg::UnorderedSet<ygg::Index<formalism::Predicate>>(data.predicates.begin(), data.predicates.end());
+    auto existing = urd::Store<urd::set<urd::index<formalism::Predicate>>>(data.predicates.begin(), data.predicates.end());
     for (auto type : task.get_types())
-        if (const auto predicate = this->self().type_predicate(type).get_index(); existing.insert(predicate).second)
+        if (const auto predicate = this->self().type_predicate(type).index(); existing.insert(predicate).second)
             data.predicates.push_back(predicate);
     if (this->self().compiles_typing_now())
         data.types.clear();

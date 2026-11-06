@@ -1,7 +1,19 @@
 cmake_minimum_required(VERSION 3.21)
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/read_project_version.cmake")
-loki_read_project_version(LOKI_PROJECT_VERSION "${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml")
+# brokkr (pybrokkr): build helpers, found through scikit-build-core in wheel builds, else asked of the Python that has it.
+find_package(brokkr QUIET)
+if(NOT brokkr_FOUND)
+    if(Python_EXECUTABLE)
+        set(_brokkr_python "${Python_EXECUTABLE}")
+    else()
+        find_program(_brokkr_python NAMES python3 python REQUIRED)
+    endif()
+    execute_process(COMMAND "${_brokkr_python}" -m pybrokkr --cmake-dir
+                    OUTPUT_VARIABLE _brokkr_dir OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+    set(brokkr_DIR "${_brokkr_dir}" CACHE PATH "The directory holding brokkrConfig.cmake" FORCE)
+    find_package(brokkr REQUIRED)
+endif()
+brokkr_read_project_version(LOKI_PROJECT_VERSION "${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml")
 
 project(loki VERSION "${LOKI_PROJECT_VERSION}" LANGUAGES C CXX)
 
@@ -107,7 +119,8 @@ endif()
 
 set(LOKI_YGGDRASIL_REQUIRED_VERSION 0.6.0)
 
-include("${PROJECT_SOURCE_DIR}/cmake/bootstrap_pyyggdrasil.cmake")
+brokkr_find_python_native_prefix(pyurd URD_NATIVE_PREFIX)
+brokkr_find_python_native_prefix(pyyggdrasil YGGDRASIL_NATIVE_PREFIX)
 
 find_package(
     yggdrasil ${LOKI_YGGDRASIL_REQUIRED_VERSION}
@@ -119,8 +132,10 @@ if(yggdrasil_FOUND)
     message(STATUS "Found yggdrasil: ${yggdrasil_DIR} (found version ${yggdrasil_VERSION})")
 endif()
 
-yggdrasil_register_native_dependency_prefix("${YGGDRASIL_NATIVE_PREFIX}")
-yggdrasil_register_python_native_runtime_prefix("pyyggdrasil" "${YGGDRASIL_NATIVE_PREFIX}")
+brokkr_register_native_dependency_prefix("${YGGDRASIL_NATIVE_PREFIX}")
+brokkr_register_native_dependency_prefix("${URD_NATIVE_PREFIX}")
+brokkr_register_python_native_runtime_prefix("pyyggdrasil" "${YGGDRASIL_NATIVE_PREFIX}")
+brokkr_register_python_native_runtime_prefix("pyurd" "${URD_NATIVE_PREFIX}")
 
 # Find Boost headers only according to https://cmake.org/cmake/help/latest/module/FindBoost.html
 find_package(Boost 1.74.0 REQUIRED PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
@@ -196,11 +211,7 @@ if(NOT LOKI_BUILD_PYPDDL)
         COMPONENT loki
     )
 
-    install(
-        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cmake/"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/loki/cmake"
-        COMPONENT loki
-    )
+    brokkr_install_locator(DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/loki/cmake" COMPONENT loki)
 endif()
 
 include(CMakePackageConfigHelpers)

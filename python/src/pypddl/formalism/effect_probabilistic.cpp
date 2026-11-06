@@ -16,6 +16,10 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/effect_probabilistic_alternative_view.hpp>
 #include <loki/formalism/effect_probabilistic_view.hpp>
@@ -28,23 +32,23 @@ namespace loki::formalism
 void bind_effect_probabilistic(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Effect<formalism::ProbabilisticTag>>>(m, "EffectProbabilisticIndex");
+    urd::python::bind_index<urd::index<formalism::Effect<formalism::ProbabilisticTag>>>(m, "EffectProbabilisticIndex");
 
     {
-        using V = Data<formalism::Effect<formalism::ProbabilisticTag>>;
-        bind_data<V>(m, "EffectProbabilisticData")
-            .def(nb::init<ygg::IndexList<formalism::EffectProbabilisticAlternative>>(), "alternatives"_a)
-            .def(nb::init<const std::vector<formalism::EffectProbabilisticAlternativeView>&>(), "alternatives"_a)
+        using V = urd::data<formalism::Effect<formalism::ProbabilisticTag>>;
+        urd::python::bind_data<V>(m, "EffectProbabilisticData")
+            .def(nb::init<urd::flat_vector<urd::index<formalism::EffectProbabilisticAlternative>>>(), "alternatives"_a)
+            .def(urd::python::init_from_views<const urd::Store<urd::sequence<formalism::EffectProbabilisticAlternativeView>>&>(), "alternatives"_a)
             .def_rw("alternatives", &V::alternatives);
     }
 
     {
         using V = formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>;
         auto cls = nb::class_<V>(m, "EffectProbabilistic");
-        cls.def("get_index", &V::get_index).def("get_alternatives", &V::get_alternatives);
+        cls.def("get_index", &V::index).def("get_alternatives", &V::get_alternatives);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Effect<formalism::ProbabilisticTag>>(repository);

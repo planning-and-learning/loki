@@ -110,11 +110,9 @@ public:
     using BasicCopyTranslator<CopyTranslator>::set_requirements;
     using ConditionTranslator<CopyTranslator>::copy;
 
-    using ConditionAnalysisTranslator<CopyTranslator>::term_from_variable;
     using ConditionAnalysisTranslator<CopyTranslator>::collect_free_variables;
     using ConditionAnalysisTranslator<CopyTranslator>::free_parameters_in_scope;
 
-    using ConditionBuilderTranslator<CopyTranslator>::wrap_condition;
     using ConditionBuilderTranslator<CopyTranslator>::as_or;
     using ConditionBuilderTranslator<CopyTranslator>::flatten_condition;
     using ConditionBuilderTranslator<CopyTranslator>::make_conjunction;
@@ -151,7 +149,6 @@ public:
     using MaterializeEqualityTranslator<CopyTranslator>::add_equality_predicate_to_domain;
     using MaterializeEqualityTranslator<CopyTranslator>::materialize_equality;
 
-    using ToEffectNormalFormTranslator<CopyTranslator>::wrap_effect;
     using ToEffectNormalFormTranslator<CopyTranslator>::as_effect;
     using ToEffectNormalFormTranslator<CopyTranslator>::normalize_effect;
     using ToEffectNormalFormTranslator<CopyTranslator>::normalize_effect_node;

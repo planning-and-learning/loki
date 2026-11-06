@@ -26,39 +26,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::InitialFunctionValue>
+struct data<::loki::formalism::InitialFunctionValue>
 {
-    ygg::Index<::loki::formalism::InitialFunctionValue> index;
-    ygg::Index<::loki::formalism::FunctionTerm> function;
-    ygg::Index<::loki::formalism::FunctionExpression<>> value;
+    urd::index<::loki::formalism::InitialFunctionValue> index;
+    urd::index<::loki::formalism::FunctionTerm> function;
+    ::loki::formalism::FunctionExpressionVariant value;
 
-    Data() = default;
-    Data(ygg::Index<::loki::formalism::FunctionTerm> function_, ygg::Index<::loki::formalism::FunctionExpression<>> value_) :
+    data() = default;
+    data(urd::index<::loki::formalism::FunctionTerm> function_, ::loki::formalism::FunctionExpressionVariant value_) :
         index(),
         function(function_),
         value(value_)
     {
     }
-    template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::FunctionTerm>, C> function_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> value_) :
-        index(),
-        function(),
-        value()
-    {
-        set(function_, function);
-        set(value_, value);
-    }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::function, &Data::value> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::function, &Data::value> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::function, &data::value> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::function, &data::value> {}; }
 };
 
 }

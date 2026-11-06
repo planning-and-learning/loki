@@ -22,6 +22,7 @@
 
 #include <fmt/format.h>
 #include <string>
+#include <yggdrasil/core/config.hpp>
 
 #if !YGG_ENABLE_FMT_FORMATTERS
 #error "loki requires yggdrasil's fmt formatters (YGG_ENABLE_FMT_FORMATTERS=1)."
@@ -77,12 +78,12 @@ namespace fmt
 {
 
 template<typename T>
-struct formatter<ygg::View<ygg::Index<T>, loki::formalism::Repository>, char>
+struct formatter<urd::view<T, loki::formalism::Repository>, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template<typename FormatContext>
-    auto format(const ygg::View<ygg::Index<T>, loki::formalism::Repository>& value, FormatContext& ctx) const
+    auto format(const urd::view<T, loki::formalism::Repository>& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), "{}", loki::formalism::format::to_string(value)); }
 };
 

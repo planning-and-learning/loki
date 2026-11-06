@@ -118,8 +118,8 @@ ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<fo
         this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
     else
         for (auto parameter : parameter_views)
-            data->parameters.push_back(parameter.get_index());
-    data->condition = typed_condition.get_index();
+            data->parameters.push_back(parameter.index());
+    data->condition = as_index(typed_condition);
     return formalism::insert(this->copy_context().storage->repository, *data).first;
 }
 
@@ -140,8 +140,8 @@ ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<fo
         this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
     else
         for (auto parameter : parameter_views)
-            data->parameters.push_back(parameter.get_index());
-    data->condition = typed_condition.get_index();
+            data->parameters.push_back(parameter.index());
+    data->condition = as_index(typed_condition);
     return formalism::insert(this->copy_context().storage->repository, *data).first;
 }
 
@@ -149,7 +149,7 @@ template<typename Derived>
 formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>
 ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source)
 {
-    const auto& data = source.get_data();
+    const auto& data = source.data();
     const auto left = as_index(this->self().copy(source.get_left()));
     const auto right = as_index(this->self().copy(source.get_right()));
     auto result = formalism::checkout<formalism::Condition<formalism::NumericConstraintTag>>(this->copy_context().builder);
@@ -165,17 +165,17 @@ formalism::ConditionView ConditionTranslator<Derived>::copy(formalism::Condition
     switch (this->copy_context().phase)
     {
         case TranslationPhase::ToNegationNormalForm:
-            return this->self().flatten_condition(ygg::visit([&](const auto& arg) { return this->self().copy_condition_node(arg); }, source.get_variant()));
+            return this->self().flatten_condition(std::visit([&](const auto& arg) { return this->self().copy_condition_node(arg); }, source));
         case TranslationPhase::RemoveUniversalQuantifiers:
             return this->self().remove_universal_quantifiers(source);
         case TranslationPhase::ToDisjunctiveNormalForm:
         {
-            const auto copied = ygg::visit([&](const auto& arg) { return this->self().wrap_condition(this->self().copy(arg)); }, source.get_variant());
+            const auto copied = std::visit([&](const auto& arg) { return formalism::ConditionView(this->self().copy(arg)); }, source);
             return this->self().flatten_condition(this->self().to_dnf(copied));
         }
         default:
             return this->self().flatten_condition(
-                ygg::visit([&](const auto& arg) { return this->self().wrap_condition(this->self().copy(arg)); }, source.get_variant()));
+                std::visit([&](const auto& arg) { return formalism::ConditionView(this->self().copy(arg)); }, source));
     }
 }
 

@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_CONDITION_OR_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <optional>
 #include <string>
@@ -26,27 +28,22 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Condition<::loki::formalism::OrTag>>
+struct data<::loki::formalism::Condition<::loki::formalism::OrTag>>
 {
-    ygg::Index<::loki::formalism::Condition<::loki::formalism::OrTag>> index;
-    ygg::IndexList<::loki::formalism::Condition<>> conditions;
+    urd::index<::loki::formalism::Condition<::loki::formalism::OrTag>> index;
+    ::loki::formalism::ConditionList conditions;
 
-    Data() = default;
-    Data(ygg::IndexList<::loki::formalism::Condition<>> conditions_) : index(), conditions(std::move(conditions_)) {}
-    template<typename C>
-    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C>>& conditions_) : index(), conditions()
-    { set(conditions_, conditions); }
+    data() = default;
+    data(::loki::formalism::ConditionList conditions_) : index(), conditions(std::move(conditions_)) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::conditions> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::conditions> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::conditions> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::conditions> {}; }
 };
 
 }

@@ -19,10 +19,7 @@
 #define LOKI_SEMANTIC_BUILDER_HPP_
 
 #include "loki/ast/ast_fwd.hpp"
-#include "loki/formalism/condition_data.hpp"
 #include "loki/formalism/declarations.hpp"
-#include "loki/formalism/effect_data.hpp"
-#include "loki/formalism/function_expression_data.hpp"
 #include "loki/formalism/repository.hpp"
 #include "loki/semantic/options.hpp"
 
@@ -31,9 +28,14 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <urd/repr/maps/std_map.hpp>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
-#include <yggdrasil/containers/associative_containers.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 
 namespace loki::semantic
 {
@@ -84,10 +86,10 @@ private:
     SemanticChecks checks() const;
 
     template<typename T>
-    static void append_indices(const std::vector<formalism::EntityView<T>>& views, ygg::IndexList<T>& indices);
+    static void append_indices(const urd::Store<urd::sequence<formalism::EntityView<T>>>& views, urd::flat_vector<urd::index<T>>& indices);
 
     template<typename T>
-    static cista::optional<ygg::Index<T>> to_optional_index(const std::optional<formalism::EntityView<T>>& view);
+    static cista::optional<urd::index<T>> to_optional_index(const std::optional<formalism::EntityView<T>>& view);
 
     // Symbol lookup with auto-declaration in non-strict mode.
     formalism::PredicateView predicate(const ast::Identifier& identifier, size_t arity);
@@ -95,18 +97,18 @@ private:
     formalism::FunctionSkeletonView function(const ast::Identifier& identifier, size_t arity);
 
     // Domain and task sections.
-    std::vector<formalism::RequirementView> parse_requirements(const std::vector<ast::Requirement>& nodes);
-    std::vector<formalism::TypeView> parse_type_hierarchy(const std::vector<ast::TypedGroup>& groups);
-    std::optional<formalism::TypeView> union_type(const std::vector<std::string>& alternatives, const ast::Identifier& identifier);
-    std::vector<formalism::TypeView> parse_type_expression(const ast::TypeExpression& type);
-    std::vector<formalism::TypeView> parse_type_expression_node(const ast::TypeReference& node);
-    std::vector<formalism::TypeView> parse_type_expression_node(const ast::EitherType& node);
-    std::vector<formalism::ObjectView> parse_objects(const std::vector<ast::TypedGroup>& groups,
-                                                     ygg::UnorderedMap<std::string, formalism::ObjectView>& table,
-                                                     ygg::UnorderedSet<std::string>& declared_objects);
-    std::vector<formalism::ParameterView> parse_parameters(const std::vector<ast::TypedGroup>& groups);
-    std::vector<formalism::PredicateView> parse_predicates(const std::vector<ast::PredicateDeclaration>& nodes);
-    std::vector<formalism::FunctionSkeletonView> parse_functions(const std::vector<ast::FunctionDeclaration>& nodes);
+    urd::Store<urd::sequence<formalism::RequirementView>> parse_requirements(const urd::Store<urd::sequence<ast::Requirement>>& nodes);
+    urd::Store<urd::sequence<formalism::TypeView>> parse_type_hierarchy(const urd::Store<urd::sequence<ast::TypedGroup>>& groups);
+    std::optional<formalism::TypeView> union_type(const urd::Store<urd::sequence<std::string>>& alternatives, const ast::Identifier& identifier);
+    urd::Store<urd::sequence<formalism::TypeView>> parse_type_expression(const ast::TypeExpression& type);
+    urd::Store<urd::sequence<formalism::TypeView>> parse_type_expression_node(const ast::TypeReference& node);
+    urd::Store<urd::sequence<formalism::TypeView>> parse_type_expression_node(const ast::EitherType& node);
+    urd::Store<urd::sequence<formalism::ObjectView>> parse_objects(const urd::Store<urd::sequence<ast::TypedGroup>>& groups,
+                                                     urd::Store<urd::map<std::string, formalism::ObjectView>>& table,
+                                                     urd::Store<urd::set<std::string>>& declared_objects);
+    urd::Store<urd::sequence<formalism::ParameterView>> parse_parameters(const urd::Store<urd::sequence<ast::TypedGroup>>& groups);
+    urd::Store<urd::sequence<formalism::PredicateView>> parse_predicates(const urd::Store<urd::sequence<ast::PredicateDeclaration>>& nodes);
+    urd::Store<urd::sequence<formalism::FunctionSkeletonView>> parse_functions(const urd::Store<urd::sequence<ast::FunctionDeclaration>>& nodes);
 
     // Terms, atoms, and literals.
     formalism::TermView parse_term(const ast::Term& node);
@@ -115,7 +117,6 @@ private:
 
     // Conditions.
     formalism::ConditionView parse_condition(const ast::Condition& condition);
-    formalism::ConditionView wrap_condition(ygg::Data<formalism::Condition<>>::Variant value);
     formalism::ConditionView parse_condition_node(const ast::ConditionLiteral& node);
     formalism::ConditionView parse_condition_node(const ast::ConditionAnd& node);
     formalism::ConditionView parse_condition_node(const ast::ConditionOr& node);
@@ -128,7 +129,6 @@ private:
     // Numeric expressions.
     formalism::FunctionTermView parse_function_term(const ast::FunctionTerm& node);
     formalism::FunctionExpressionView parse_function_expression(const ast::FunctionExpression& expression);
-    formalism::FunctionExpressionView wrap_function_expression(ygg::Data<formalism::FunctionExpression<>>::Variant value);
     formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionNumber& node);
     formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionFunction& node);
     formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionUnary& node);
@@ -137,7 +137,6 @@ private:
 
     // Effects and top-level constructs.
     formalism::EffectView parse_effect(const ast::Effect& effect);
-    formalism::EffectView wrap_effect(ygg::Data<formalism::Effect<>>::Variant value);
     formalism::EffectView parse_effect_node(const ast::EffectLiteral& node);
     formalism::EffectView parse_effect_node(const ast::EffectAnd& node);
     formalism::EffectView parse_effect_node(const ast::EffectNumeric& node);
@@ -147,10 +146,10 @@ private:
     formalism::EffectView parse_effect_node(const ast::EffectProbabilistic& node);
     formalism::ActionView parse_action(const ast::Action& node);
     formalism::AxiomView parse_axiom(const ast::Axiom& node);
-    void parse_initial_element(const ast::Literal& literal, std::vector<formalism::LiteralView>& literals, std::vector<formalism::InitialFunctionValueView>&);
+    void parse_initial_element(const ast::Literal& literal, urd::Store<urd::sequence<formalism::LiteralView>>& literals, urd::Store<urd::sequence<formalism::InitialFunctionValueView>>&);
     void parse_initial_element(const ast::InitialFunctionValue& value,
-                               std::vector<formalism::LiteralView>&,
-                               std::vector<formalism::InitialFunctionValueView>& values);
+                               urd::Store<urd::sequence<formalism::LiteralView>>&,
+                               urd::Store<urd::sequence<formalism::InitialFunctionValueView>>& values);
     formalism::MetricView parse_metric(const ast::Metric& node);
 
     // Action-costs completion.
@@ -158,23 +157,23 @@ private:
     formalism::FunctionTermView total_cost_term();
     bool writes_total_cost(formalism::EffectView effect);
     formalism::ActionView add_unit_cost(formalism::ActionView view);
-    bool has_total_cost_initial_value(const std::vector<formalism::InitialFunctionValueView>& values);
+    bool has_total_cost_initial_value(const urd::Store<urd::sequence<formalism::InitialFunctionValueView>>& values);
     void complete_action_costs(const ast::Task& task,
-                               std::vector<formalism::InitialFunctionValueView>& initial_function_values,
+                               urd::Store<urd::sequence<formalism::InitialFunctionValueView>>& initial_function_values,
                                std::optional<formalism::MetricView>& metric);
 };
 
 template<typename T>
-void AstBuilder::append_indices(const std::vector<formalism::EntityView<T>>& views, ygg::IndexList<T>& indices)
+void AstBuilder::append_indices(const urd::Store<urd::sequence<formalism::EntityView<T>>>& views, urd::flat_vector<urd::index<T>>& indices)
 {
     indices.reserve(indices.size() + views.size());
     for (const auto view : views)
-        indices.push_back(view.get_index());
+        indices.push_back(view.index());
 }
 
 template<typename T>
-cista::optional<ygg::Index<T>> AstBuilder::to_optional_index(const std::optional<formalism::EntityView<T>>& view)
-{ return view ? cista::optional<ygg::Index<T>> { view->get_index() } : cista::optional<ygg::Index<T>> {}; }
+cista::optional<urd::index<T>> AstBuilder::to_optional_index(const std::optional<formalism::EntityView<T>>& view)
+{ return view ? cista::optional<urd::index<T>> { view->index() } : cista::optional<urd::index<T>> {}; }
 
 }  // namespace loki::semantic
 

@@ -16,6 +16,8 @@
  */
 
 #include "../benchmark_utils.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -140,7 +142,7 @@ struct ParserCountExpectation
     std::string name;
     std::filesystem::path domain_file;
     std::filesystem::path task_file;
-    std::vector<ConfigurationExpectation> configurations;
+    urd::Store<urd::sequence<ConfigurationExpectation>> configurations;
 };
 
 void expect_counts(formalism::DomainView domain, formalism::TaskView task, const ConfigurationExpectation& expected)
@@ -208,12 +210,12 @@ ConfigurationExpectation parse_configuration(const boost::json::object& configur
                                                         ygg::common::as_bool(task, "has_metric", "case.configuration.task") } };
 }
 
-std::vector<ParserCountExpectation> load_expectations()
+urd::Store<urd::sequence<ParserCountExpectation>> load_expectations()
 {
     const auto suite_value = ygg::common::load_json_file(ygg::common::root_path() / "tests/fixtures/parser_counts_suite.json");
     const auto& suite = ygg::common::as_object(suite_value, "suite");
     const auto benchmark_root = std::filesystem::path(std::string(BENCHMARKS_DIR));
-    auto result = std::vector<ParserCountExpectation> {};
+    auto result = urd::Store<urd::sequence<ParserCountExpectation>> {};
     for (const auto& case_value : ygg::common::as_array(suite, "cases", "suite"))
     {
         const auto& object = ygg::common::as_object(case_value, "case");

@@ -16,9 +16,8 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
-#include <loki/formalism/condition_view.hpp>
-#include <loki/formalism/effect_view.hpp>
 #include <loki/formalism/effect_when_view.hpp>
 
 namespace nb = nanobind;
@@ -29,13 +28,13 @@ namespace loki::formalism
 void bind_effect_when(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Effect<formalism::WhenTag>>>(m, "EffectWhenIndex");
+    urd::python::bind_index<urd::index<formalism::Effect<formalism::WhenTag>>>(m, "EffectWhenIndex");
 
     {
-        using V = Data<formalism::Effect<formalism::WhenTag>>;
-        bind_data<V>(m, "EffectWhenData")
-            .def(nb::init<ygg::Index<formalism::Condition<>>, ygg::Index<formalism::Effect<>>>(), "condition"_a, "effect"_a)
-            .def(nb::init<formalism::ConditionView, formalism::EffectView>(), "condition"_a, "effect"_a)
+        using V = urd::data<formalism::Effect<formalism::WhenTag>>;
+        urd::python::bind_data<V>(m, "EffectWhenData")
+            .def(nb::init<formalism::ConditionVariant, formalism::EffectVariant>(), "condition"_a, "effect"_a)
+            .def(urd::python::init_from_views<formalism::ConditionView, formalism::EffectView>(), "condition"_a, "effect"_a)
             .def_rw("condition", &V::condition)
             .def_rw("effect", &V::effect);
     }
@@ -43,12 +42,12 @@ void bind_effect_when(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::EntityView<formalism::Effect<formalism::WhenTag>>;
         auto cls = nb::class_<V>(m, "EffectWhen");
-        cls.def("get_index", &V::get_index)
+        cls.def("get_index", &V::index)
             .def("get_condition", &V::get_condition, nb::keep_alive<0, 1>())
             .def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Effect<formalism::WhenTag>>(repository);

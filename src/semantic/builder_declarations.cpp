@@ -16,6 +16,10 @@
  */
 
 #include "ast_mappings.hpp"
+#include <urd/repr/maps/std_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include "builder.hpp"
 #include "checks.hpp"
 #include "context.hpp"
@@ -41,7 +45,7 @@ namespace loki::semantic
 namespace
 {
 
-void collect_type_names(const ast::TypeExpression& expression, std::vector<std::string>& names)
+void collect_type_names(const ast::TypeExpression& expression, urd::Store<urd::sequence<std::string>>& names)
 {
     boost::apply_visitor(
         [&]<typename Node>(const Node& node)
@@ -57,9 +61,9 @@ void collect_type_names(const ast::TypeExpression& expression, std::vector<std::
 
 /// The sorted alternatives of a type expression that denotes a union of two or more types.
 /// A union containing object is object, so it needs no type of its own.
-std::optional<std::vector<std::string>> union_alternatives(const ast::TypeExpression& expression)
+std::optional<urd::Store<urd::sequence<std::string>>> union_alternatives(const ast::TypeExpression& expression)
 {
-    auto names = std::vector<std::string> {};
+    auto names = urd::Store<urd::sequence<std::string>> {};
     collect_type_names(expression, names);
     std::sort(names.begin(), names.end());
     names.erase(std::unique(names.begin(), names.end()), names.end());
@@ -68,7 +72,7 @@ std::optional<std::vector<std::string>> union_alternatives(const ast::TypeExpres
     return names;
 }
 
-std::string union_type_name(const std::vector<std::string>& alternatives)
+std::string union_type_name(const urd::Store<urd::sequence<std::string>>& alternatives)
 {
     auto name = std::string("either");
     for (const auto& alternative : alternatives)
@@ -78,7 +82,7 @@ std::string union_type_name(const std::vector<std::string>& alternatives)
 
 }
 
-std::optional<formalism::TypeView> AstBuilder::union_type(const std::vector<std::string>& alternatives, const ast::Identifier& identifier)
+std::optional<formalism::TypeView> AstBuilder::union_type(const urd::Store<urd::sequence<std::string>>& alternatives, const ast::Identifier& identifier)
 {
     if (const auto it = m_domain_context.union_type_names.find(alternatives); it != m_domain_context.union_type_names.end())
         return m_domain_context.types.at(it->second);
@@ -91,15 +95,15 @@ std::optional<formalism::TypeView> AstBuilder::union_type(const std::vector<std:
     return std::nullopt;
 }
 
-std::vector<formalism::TypeView> AstBuilder::parse_type_hierarchy(const std::vector<ast::TypedGroup>& groups)
+urd::Store<urd::sequence<formalism::TypeView>> AstBuilder::parse_type_hierarchy(const urd::Store<urd::sequence<ast::TypedGroup>>& groups)
 {
     if (!groups.empty())
         checks().require_requirement(formalism::RequirementKind::Typing, groups.front().names.front());
 
     // Declares types on top of the known ones: object and number for a domain, the domain's types for a task. A variable of type
     // (either a b) ranges over the objects of a or b, so the union becomes a type that is a base of a and b.
-    auto declarations = ygg::UnorderedMap<std::string, std::pair<const ast::Identifier*, const ast::TypedGroup*>> {};
-    auto declaration_order = std::vector<std::string> {};
+    auto declarations = urd::Store<urd::map<std::string, std::pair<const ast::Identifier*, const ast::TypedGroup*>>> {};
+    auto declaration_order = urd::Store<urd::sequence<std::string>> {};
     for (const auto& group : groups)
         for (const auto& identifier : group.names)
         {
@@ -109,8 +113,8 @@ std::vector<formalism::TypeView> AstBuilder::parse_type_hierarchy(const std::vec
             declaration_order.push_back(name);
         }
 
-    auto result = std::vector<formalism::TypeView> {};
-    auto union_bases = std::map<std::string, std::vector<formalism::TypeView>> {};
+    auto result = urd::Store<urd::sequence<formalism::TypeView>> {};
+    auto union_bases = urd::Store<urd::map<std::string, urd::Store<urd::sequence<formalism::TypeView>>>, urd::sorted, urd::stable_refs> {};
     for (const auto& alternatives : m_parse_context.union_types)
     {
         const auto over_known_types =
@@ -129,12 +133,12 @@ std::vector<formalism::TypeView> AstBuilder::parse_type_hierarchy(const std::vec
             union_bases[alternative].push_back(type);
     }
 
-    auto resolving = ygg::UnorderedSet<std::string> {};
+    auto resolving = urd::Store<urd::set<std::string>> {};
     auto resolve = std::function<formalism::TypeView(const std::string&, const ast::Identifier*)> {};
-    auto resolve_expression = std::function<void(const ast::TypeExpression&, std::vector<formalism::TypeView>&)> {};
+    auto resolve_expression = std::function<void(const ast::TypeExpression&, urd::Store<urd::sequence<formalism::TypeView>>&)> {};
 
     // A type may inherit from another type declared later in the same :types section.
-    resolve_expression = [&](const ast::TypeExpression& expression, std::vector<formalism::TypeView>& out)
+    resolve_expression = [&](const ast::TypeExpression& expression, urd::Store<urd::sequence<formalism::TypeView>>& out)
     {
         boost::apply_visitor(
             [&]<typename Node>(const Node& node)
@@ -159,7 +163,7 @@ std::vector<formalism::TypeView> AstBuilder::parse_type_hierarchy(const std::vec
         if (!resolving.insert(name).second)
             m_diagnostics.throw_at(*declaration->second.first, SemanticError("Cyclic type hierarchy involving " + name));
 
-        auto bases = std::vector<formalism::TypeView> {};
+        auto bases = urd::Store<urd::sequence<formalism::TypeView>> {};
         if (declaration != declarations.end() && declaration->second.second->type)
             resolve_expression(*declaration->second.second->type, bases);
         if (bases.empty())
@@ -219,22 +223,22 @@ formalism::PredicateView AstBuilder::equality_predicate(const ast::Identifier& i
 
     auto variable_data = formalism::checkout<formalism::Variable>(m_builder);
     variable_data->name = cista::offset::string("?lhs");
-    const auto left = formalism::insert(repo(), *variable_data).first.get_index();
-    variable_data->clear();
+    const auto left = formalism::insert(repo(), *variable_data).first.index();
+    urd::clear_members(*variable_data);
     variable_data->name = cista::offset::string("?rhs");
-    const auto right = formalism::insert(repo(), *variable_data).first.get_index();
+    const auto right = formalism::insert(repo(), *variable_data).first.index();
     auto parameter_data = formalism::checkout<formalism::Parameter>(m_builder);
     parameter_data->variable = left;
-    parameter_data->types.push_back(m_domain_context.object_type.get_index());
+    parameter_data->types.push_back(m_domain_context.object_type.index());
     const auto left_parameter = formalism::insert(repo(), *parameter_data).first;
-    parameter_data->clear();
+    urd::clear_members(*parameter_data);
     parameter_data->variable = right;
-    parameter_data->types.push_back(m_domain_context.object_type.get_index());
+    parameter_data->types.push_back(m_domain_context.object_type.index());
     const auto right_parameter = formalism::insert(repo(), *parameter_data).first;
     auto predicate_data = formalism::checkout<formalism::Predicate>(m_builder);
     predicate_data->name = cista::offset::string("=");
-    predicate_data->parameters.push_back(left_parameter.get_index());
-    predicate_data->parameters.push_back(right_parameter.get_index());
+    predicate_data->parameters.push_back(left_parameter.index());
+    predicate_data->parameters.push_back(right_parameter.index());
     auto view = formalism::insert(repo(), *predicate_data).first;
     m_domain_context.predicates.emplace(name, view);
     return view;
@@ -253,15 +257,15 @@ formalism::FunctionSkeletonView AstBuilder::function(const ast::Identifier& iden
         m_diagnostics.throw_at(identifier, UndefinedFunctionError(name));
     auto data = formalism::checkout<formalism::FunctionSkeleton>(m_builder);
     data->name = to_cista(name);
-    data->type = m_domain_context.number_type.get_index();
+    data->type = m_domain_context.number_type.index();
     auto view = formalism::insert(repo(), *data).first;
     m_domain_context.functions.emplace(name, view);
     return view;
 }
 
-std::vector<formalism::RequirementView> AstBuilder::parse_requirements(const std::vector<ast::Requirement>& nodes)
+urd::Store<urd::sequence<formalism::RequirementView>> AstBuilder::parse_requirements(const urd::Store<urd::sequence<ast::Requirement>>& nodes)
 {
-    auto result = std::vector<formalism::RequirementView> {};
+    auto result = urd::Store<urd::sequence<formalism::RequirementView>> {};
     auto data = formalism::checkout<formalism::Requirement>(m_builder);
     for (const auto& node : nodes)
     {
@@ -277,21 +281,21 @@ std::vector<formalism::RequirementView> AstBuilder::parse_requirements(const std
             m_parse_context.active_numeric_fluents = true;
         for (const auto capability : requirement_capabilities(node, m_diagnostics))
             m_parse_context.active_requirements.insert(capability);
-        data->clear();
+        urd::clear_members(*data);
         data->kind = kind;
         result.push_back(formalism::insert(repo(), *data).first);
     }
     return result;
 }
 
-std::vector<formalism::TypeView> AstBuilder::parse_type_expression(const ast::TypeExpression& type)
+urd::Store<urd::sequence<formalism::TypeView>> AstBuilder::parse_type_expression(const ast::TypeExpression& type)
 {
     return boost::apply_visitor([&](const auto& node) { return parse_type_expression_node(node); }, type);
 }
 
-std::vector<formalism::TypeView> AstBuilder::parse_type_expression_node(const ast::TypeReference& node)
+urd::Store<urd::sequence<formalism::TypeView>> AstBuilder::parse_type_expression_node(const ast::TypeReference& node)
 {
-    auto result = std::vector<formalism::TypeView> {};
+    auto result = urd::Store<urd::sequence<formalism::TypeView>> {};
     auto k = key(node.name.text);
     if (auto it = m_domain_context.types.find(k); it != m_domain_context.types.end())
         result.push_back(it->second);
@@ -299,7 +303,7 @@ std::vector<formalism::TypeView> AstBuilder::parse_type_expression_node(const as
         m_diagnostics.throw_at(node.name, UndefinedTypeError(k));
     else
     {
-        auto bases = std::vector<formalism::TypeView> {};
+        auto bases = urd::Store<urd::sequence<formalism::TypeView>> {};
         if (k != "object" && k != "number")
             bases.push_back(m_domain_context.object_type);
         result.push_back(intern_type(m_domain_context, m_builder, repo(), k, bases));
@@ -307,9 +311,9 @@ std::vector<formalism::TypeView> AstBuilder::parse_type_expression_node(const as
     return result;
 }
 
-std::vector<formalism::TypeView> AstBuilder::parse_type_expression_node(const ast::EitherType& node)
+urd::Store<urd::sequence<formalism::TypeView>> AstBuilder::parse_type_expression_node(const ast::EitherType& node)
 {
-    auto result = std::vector<formalism::TypeView> {};
+    auto result = urd::Store<urd::sequence<formalism::TypeView>> {};
     for (const auto& alternative : node.alternatives)
     {
         auto part = parse_type_expression(alternative.get());
@@ -318,18 +322,18 @@ std::vector<formalism::TypeView> AstBuilder::parse_type_expression_node(const as
     return result;
 }
 
-std::vector<formalism::ObjectView> AstBuilder::parse_objects(const std::vector<ast::TypedGroup>& groups,
-                                                             ygg::UnorderedMap<std::string, formalism::ObjectView>& table,
-                                                             ygg::UnorderedSet<std::string>& declared_objects)
+urd::Store<urd::sequence<formalism::ObjectView>> AstBuilder::parse_objects(const urd::Store<urd::sequence<ast::TypedGroup>>& groups,
+                                                             urd::Store<urd::map<std::string, formalism::ObjectView>>& table,
+                                                             urd::Store<urd::set<std::string>>& declared_objects)
 {
-    auto result = std::vector<formalism::ObjectView> {};
+    auto result = urd::Store<urd::sequence<formalism::ObjectView>> {};
     for (const auto& group : groups)
         for (const auto& identifier : group.names)
         {
             const auto name = key(identifier.text);
             checks().ensure_new<DuplicateObjectError>(declared_objects, name, identifier);
             checks().require_typing_if_needed(group.type, identifier);
-            auto types = group.type ? parse_type_expression(*group.type) : std::vector<formalism::TypeView> { m_domain_context.object_type };
+            auto types = group.type ? parse_type_expression(*group.type) : urd::Store<urd::sequence<formalism::TypeView>> { m_domain_context.object_type };
             auto data = formalism::checkout<formalism::Object>(m_builder);
             data->name = to_cista(name);
             append_indices(types, data->types);
@@ -340,41 +344,40 @@ std::vector<formalism::ObjectView> AstBuilder::parse_objects(const std::vector<a
     return result;
 }
 
-std::vector<formalism::ParameterView> AstBuilder::parse_parameters(const std::vector<ast::TypedGroup>& groups)
+urd::Store<urd::sequence<formalism::ParameterView>> AstBuilder::parse_parameters(const urd::Store<urd::sequence<ast::TypedGroup>>& groups)
 {
-    auto result = std::vector<formalism::ParameterView> {};
+    auto result = urd::Store<urd::sequence<formalism::ParameterView>> {};
     for (const auto& group : groups)
         for (const auto& identifier : group.names)
         {
             const auto name = key(identifier.text);
-            if (!m_parse_context.variable_scopes.empty() && m_parse_context.variable_scopes.back().contains(name))
+            if (m_parse_context.variable_scopes.depth() > 0 && m_parse_context.variable_scopes.bound_in_scope(name))
                 m_diagnostics.throw_at(identifier, DuplicateVariableError(name));
             auto variable_data = formalism::checkout<formalism::Variable>(m_builder);
             variable_data->name = to_cista(name);
             auto variable = formalism::insert(repo(), *variable_data).first;
-            if (!m_parse_context.variable_scopes.empty())
-                m_parse_context.variable_scopes.back().emplace(name, variable);
+            if (m_parse_context.variable_scopes.depth() > 0)
+                m_parse_context.variable_scopes.insert_or_assign(name, variable);  // shadows an outer binding
             checks().require_typing_if_needed(group.type, identifier);
-            auto types = group.type ? parse_type_expression(*group.type) : std::vector<formalism::TypeView> { m_domain_context.object_type };
+            auto types = group.type ? parse_type_expression(*group.type) : urd::Store<urd::sequence<formalism::TypeView>> { m_domain_context.object_type };
             auto parameter_data = formalism::checkout<formalism::Parameter>(m_builder);
-            parameter_data->variable = variable.get_index();
+            parameter_data->variable = variable.index();
             // The parameter gets the union type once it exists. Until then it keeps the alternatives, which the type checks treat
             // as their union, so a build without the union type checks the same as the build with it.
             const auto alternatives = group.type ? union_alternatives(*group.type) : std::nullopt;
             if (const auto union_view = alternatives ? union_type(*alternatives, identifier) : std::nullopt)
-                parameter_data->types.push_back(union_view->get_index());
+                parameter_data->types.push_back(union_view->index());
             else
                 append_indices(types, parameter_data->types);
-            if (auto [it, inserted] = m_parse_context.variable_types.emplace(variable, types); !inserted)
-                it->second = std::move(types);
+            m_parse_context.variable_types.insert_or_assign(variable, std::move(types));
             result.push_back(formalism::insert(repo(), *parameter_data).first);
         }
     return result;
 }
 
-std::vector<formalism::PredicateView> AstBuilder::parse_predicates(const std::vector<ast::PredicateDeclaration>& nodes)
+urd::Store<urd::sequence<formalism::PredicateView>> AstBuilder::parse_predicates(const urd::Store<urd::sequence<ast::PredicateDeclaration>>& nodes)
 {
-    auto result = std::vector<formalism::PredicateView> {};
+    auto result = urd::Store<urd::sequence<formalism::PredicateView>> {};
     for (const auto& node : nodes)
     {
         auto scope = VariableScope(m_parse_context);
@@ -391,9 +394,9 @@ std::vector<formalism::PredicateView> AstBuilder::parse_predicates(const std::ve
     return result;
 }
 
-std::vector<formalism::FunctionSkeletonView> AstBuilder::parse_functions(const std::vector<ast::FunctionDeclaration>& nodes)
+urd::Store<urd::sequence<formalism::FunctionSkeletonView>> AstBuilder::parse_functions(const urd::Store<urd::sequence<ast::FunctionDeclaration>>& nodes)
 {
-    auto result = std::vector<formalism::FunctionSkeletonView> {};
+    auto result = urd::Store<urd::sequence<formalism::FunctionSkeletonView>> {};
     for (const auto& node : nodes)
     {
         auto scope = VariableScope(m_parse_context);
@@ -405,7 +408,7 @@ std::vector<formalism::FunctionSkeletonView> AstBuilder::parse_functions(const s
             checks().require_requirement(formalism::RequirementKind::NumericFluents, node.name);
         checks().ensure_new<DuplicateFunctionError>(m_domain_context.declared_functions, name, node.name);
         checks().require_typing_if_needed(node.type, node.name);
-        auto type = node.type ? parse_type_expression(*node.type).front().get_index() : m_domain_context.number_type.get_index();
+        auto type = node.type ? parse_type_expression(*node.type).front().index() : m_domain_context.number_type.index();
         auto data = formalism::checkout<formalism::FunctionSkeleton>(m_builder);
         data->name = to_cista(name);
         append_indices(parameters, data->parameters);

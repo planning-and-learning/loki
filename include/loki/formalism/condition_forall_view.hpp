@@ -20,26 +20,21 @@
 
 #include "loki/formalism/condition_forall_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Condition<::loki::formalism::ForallTag>, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Condition<::loki::formalism::ForallTag>> C>
-class View<ygg::Index<::loki::formalism::Condition<::loki::formalism::ForallTag>>, C> :
-    public ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ForallTag>, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ForallTag>, C>::IndexViewBase;
-
-    auto get_parameters() const noexcept { return ygg::make_view(this->get_data().parameters, this->get_context()); }
-    auto get_condition() const noexcept { return ygg::make_view(this->get_data().condition, this->get_context()); }
+    auto get_parameters() const noexcept { return self().template get<&urd::record_of<V>::parameters>(); }
+    auto get_condition() const noexcept { return self().template get<&urd::record_of<V>::condition>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

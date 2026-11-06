@@ -26,36 +26,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
+struct data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
 {
-    ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>> index;
+    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>> index;
     ::loki::formalism::UnaryArithmeticOperator op {};
-    ygg::Index<::loki::formalism::FunctionExpression<>> expression;
+    ::loki::formalism::FunctionExpressionVariant expression;
 
-    Data() = default;
-    Data(::loki::formalism::UnaryArithmeticOperator op_, ygg::Index<::loki::formalism::FunctionExpression<>> expression_) :
+    data() = default;
+    data(::loki::formalism::UnaryArithmeticOperator op_, ::loki::formalism::FunctionExpressionVariant expression_) :
         index(),
         op(op_),
         expression(expression_)
     {
     }
-    template<typename C>
-    Data(::loki::formalism::UnaryArithmeticOperator op_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> expression_) :
-        index(),
-        op(op_),
-        expression()
-    { set(expression_, expression); }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::expression> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::expression> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::op, &data::expression> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::op, &data::expression> {}; }
 };
 
 }

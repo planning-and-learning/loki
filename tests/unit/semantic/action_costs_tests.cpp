@@ -35,7 +35,7 @@ TEST(LokiSemanticActionCosts, AddsActionCostsDefaultsInPermissiveMode)
 
     ASSERT_TRUE(parsed_task.get_metric().has_value());
     EXPECT_EQ(parsed_task.get_metric().value().get_optimization_direction(), formalism::OptimizationDirection::Minimize);
-    ygg::visit(
+    std::visit(
         [](const auto expression)
         {
             using Expression = std::decay_t<decltype(expression)>;
@@ -46,13 +46,13 @@ TEST(LokiSemanticActionCosts, AddsActionCostsDefaultsInPermissiveMode)
                 EXPECT_EQ(expression.get_terms().size(), 0);
             }
         },
-        parsed_task.get_metric().value().get_expression().get_variant());
+        parsed_task.get_metric().value().get_expression());
 
     ASSERT_EQ(parsed_task.get_initial_function_values().size(), 1);
     const auto initial_value = parsed_task.get_initial_function_values()[0];
     EXPECT_EQ(initial_value.get_function().get_function().get_name(), "total-cost");
     EXPECT_EQ(initial_value.get_function().get_terms().size(), 0);
-    ygg::visit(
+    std::visit(
         [](const auto expression)
         {
             using Expression = std::decay_t<decltype(expression)>;
@@ -62,7 +62,7 @@ TEST(LokiSemanticActionCosts, AddsActionCostsDefaultsInPermissiveMode)
                 EXPECT_EQ(expression.get_value(), 0.0);
             }
         },
-        initial_value.get_value().get_variant());
+        initial_value.get_value());
 }
 
 TEST(LokiSemanticActionCosts, AddActionCostsOptionInjectsUnitCosts)

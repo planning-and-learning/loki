@@ -16,10 +16,13 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/atom_view.hpp>
 #include <loki/formalism/predicate_view.hpp>
-#include <loki/formalism/term_view.hpp>
 
 namespace nb = nanobind;
 
@@ -29,13 +32,13 @@ namespace loki::formalism
 void bind_atom(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Atom>>(m, "AtomIndex");
+    urd::python::bind_index<urd::index<formalism::Atom>>(m, "AtomIndex");
 
     {
-        using V = Data<formalism::Atom>;
-        bind_data<V>(m, "AtomData")
-            .def(nb::init<ygg::Index<formalism::Predicate>, ygg::IndexList<formalism::Term>>(), "predicate"_a, "terms"_a = ygg::IndexList<formalism::Term> {})
-            .def(nb::init<formalism::PredicateView, const std::vector<formalism::TermView>&>(), "predicate"_a, "terms"_a = std::vector<formalism::TermView> {})
+        using V = urd::data<formalism::Atom>;
+        urd::python::bind_data<V>(m, "AtomData")
+            .def(nb::init<urd::index<formalism::Predicate>, formalism::TermList>(), "predicate"_a, "terms"_a = formalism::TermList {})
+            .def(urd::python::init_from_views<formalism::PredicateView, const urd::Store<urd::sequence<formalism::TermView>>&>(), "predicate"_a, "terms"_a = urd::Store<urd::sequence<formalism::TermView>> {})
             .def_rw("predicate", &V::predicate)
             .def_rw("terms", &V::terms);
     }
@@ -43,10 +46,10 @@ void bind_atom(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::AtomView;
         auto cls = nb::class_<V>(m, "Atom");
-        cls.def("get_index", &V::get_index).def("get_predicate", &V::get_predicate, nb::keep_alive<0, 1>()).def("get_terms", &V::get_terms);
+        cls.def("get_index", &V::index).def("get_predicate", &V::get_predicate, nb::keep_alive<0, 1>()).def("get_terms", &V::get_terms);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Atom>(repository);

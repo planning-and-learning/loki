@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_AXIOM_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <optional>
 #include <string>
@@ -26,25 +28,25 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
+#include <yggdrasil/core/config.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Axiom>
+struct data<::loki::formalism::Axiom>
 {
-    ygg::Index<::loki::formalism::Axiom> index;
-    ygg::IndexList<::loki::formalism::Parameter> parameters;
+    urd::index<::loki::formalism::Axiom> index;
+    urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
     ygg::uint_t original_arity = 0;
-    ygg::Index<::loki::formalism::Literal> head;
-    ygg::Index<::loki::formalism::Condition<>> condition;
+    urd::index<::loki::formalism::Literal> head;
+    ::loki::formalism::ConditionVariant condition;
 
-    Data() = default;
-    Data(ygg::IndexList<::loki::formalism::Parameter> parameters_,
-         ygg::Index<::loki::formalism::Literal> head_,
-         ygg::Index<::loki::formalism::Condition<>> condition_) :
+    data() = default;
+    data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
+         urd::index<::loki::formalism::Literal> head_,
+         ::loki::formalism::ConditionVariant condition_) :
         index(),
         parameters(std::move(parameters_)),
         original_arity(parameters.size()),
@@ -52,10 +54,10 @@ struct Data<::loki::formalism::Axiom>
         condition(condition_)
     {
     }
-    Data(ygg::IndexList<::loki::formalism::Parameter> parameters_,
+    data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
          ygg::uint_t original_arity_,
-         ygg::Index<::loki::formalism::Literal> head_,
-         ygg::Index<::loki::formalism::Condition<>> condition_) :
+         urd::index<::loki::formalism::Literal> head_,
+         ::loki::formalism::ConditionVariant condition_) :
         index(),
         parameters(std::move(parameters_)),
         original_arity(original_arity_),
@@ -63,40 +65,10 @@ struct Data<::loki::formalism::Axiom>
         condition(condition_)
     {
     }
-    template<typename C>
-    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
-         ::ygg::View<ygg::Index<::loki::formalism::Literal>, C> head_,
-         ::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> condition_) :
-        index(),
-        parameters(),
-        original_arity(parameters_.size()),
-        head(),
-        condition()
-    {
-        set(parameters_, parameters);
-        set(head_, head);
-        set(condition_, condition);
-    }
-    template<typename C>
-    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
-         ygg::uint_t original_arity_,
-         ::ygg::View<ygg::Index<::loki::formalism::Literal>, C> head_,
-         ::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> condition_) :
-        index(),
-        parameters(),
-        original_arity(original_arity_),
-        head(),
-        condition()
-    {
-        set(parameters_, parameters);
-        set(head_, head);
-        set(condition_, condition);
-    }
 
     static constexpr auto cista_members() noexcept
-    { return ygg::Members<&Data::index, &Data::parameters, &Data::original_arity, &Data::head, &Data::condition> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::parameters, &Data::original_arity, &Data::head, &Data::condition> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    { return urd::Members<&data::index, &data::parameters, &data::original_arity, &data::head, &data::condition> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::parameters, &data::original_arity, &data::head, &data::condition> {}; }
 };
 
 }

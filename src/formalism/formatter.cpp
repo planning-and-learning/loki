@@ -28,8 +28,13 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <urd/repr/maps/std_map.hpp>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
-#include <yggdrasil/containers/associative_containers.hpp>
 #include <yggdrasil/formatting/cista_formatters.hpp>
 #include <yggdrasil/io/iostream.hpp>
 
@@ -90,7 +95,7 @@ std::string to_string(FunctionSkeletonView value)
 std::string to_string(TermView value)
 {
     auto result = std::string {};
-    visit([&](const auto& node) { result = to_string(node); }, value.get_variant());
+    visit([&](const auto& node) { result = to_string(node); }, value);
     return result;
 }
 
@@ -110,7 +115,7 @@ std::string to_string(FunctionTermView value) { return fmt::format("({}{})", val
 std::string to_string(EntityView<FunctionExpression<UnaryTag>> value) { return fmt::format("(- {})", to_string(value.get_expression())); }
 
 std::string to_string(EntityView<FunctionExpression<BinaryTag>> value)
-{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().op), to_string(value.get_left()), to_string(value.get_right())); }
+{ return fmt::format("({} {} {})", loki::formalism::to_string(value.data().op), to_string(value.get_left()), to_string(value.get_right())); }
 
 std::string to_string(EntityView<FunctionExpression<MultiTag>> value)
 { return fmt::format("({}{})", loki::formalism::to_string(value.get_operator()), detail::spaced(value.get_args())); }
@@ -118,7 +123,7 @@ std::string to_string(EntityView<FunctionExpression<MultiTag>> value)
 std::string to_string(FunctionExpressionView value)
 {
     auto result = std::string {};
-    visit([&](const auto& node) { result = to_string(node); }, value.get_variant());
+    visit([&](const auto& node) { result = to_string(node); }, value);
     return result;
 }
 
@@ -137,9 +142,9 @@ namespace detail
 
 // Materializes element strings so fmt::join never needs the guarded view formatters.
 template<typename Range>
-static inline std::vector<std::string> to_strings(const Range& range)
+static inline urd::Store<urd::sequence<std::string>> to_strings(const Range& range)
 {
-    auto result = std::vector<std::string> {};
+    auto result = urd::Store<urd::sequence<std::string>> {};
     for (auto element : range)
         result.push_back(to_string(element));
     return result;
@@ -154,12 +159,12 @@ std::string to_string(EntityView<Condition<ForallTag>> value)
 { return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_condition())); }
 
 std::string to_string(EntityView<Condition<NumericConstraintTag>> value)
-{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().comparator), to_string(value.get_left()), to_string(value.get_right())); }
+{ return fmt::format("({} {} {})", loki::formalism::to_string(value.data().comparator), to_string(value.get_left()), to_string(value.get_right())); }
 
 std::string to_string(ConditionView value)
 {
     auto result = std::string {};
-    visit([&](const auto& node) { result = to_string(node); }, value.get_variant());
+    visit([&](const auto& node) { result = to_string(node); }, value);
     return result;
 }
 
@@ -168,7 +173,7 @@ std::string to_string(EntityView<Effect<LiteralTag>> value) { return to_string(v
 std::string to_string(EntityView<Effect<AndTag>> value) { return fmt::format("(and{})", detail::spaced(value.get_effects())); }
 
 std::string to_string(EntityView<Effect<NumericTag>> value)
-{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_data().op), to_string(value.get_function()), to_string(value.get_expression())); }
+{ return fmt::format("({} {} {})", loki::formalism::to_string(value.data().op), to_string(value.get_function()), to_string(value.get_expression())); }
 
 std::string to_string(EntityView<Effect<ForallTag>> value)
 { return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_effect())); }
@@ -178,14 +183,14 @@ std::string to_string(EntityView<Effect<WhenTag>> value)
 
 std::string to_string(EntityView<Effect<OneOfTag>> value) { return fmt::format("(oneof{})", detail::spaced(value.get_effects())); }
 
-std::string to_string(EffectProbabilisticAlternativeView value) { return fmt::format("{} {}", value.get_data().probability, to_string(value.get_effect())); }
+std::string to_string(EffectProbabilisticAlternativeView value) { return fmt::format("{} {}", value.data().probability, to_string(value.get_effect())); }
 
 std::string to_string(EntityView<Effect<ProbabilisticTag>> value) { return fmt::format("(probabilistic{})", detail::spaced(value.get_alternatives())); }
 
 std::string to_string(EffectView value)
 {
     auto result = std::string {};
-    visit([&](const auto& node) { result = to_string(node); }, value.get_variant());
+    visit([&](const auto& node) { result = to_string(node); }, value);
     return result;
 }
 
@@ -200,7 +205,7 @@ std::string to_string(ActionView value)
 
 std::string to_string(AxiomView value)
 {
-    auto head_variables = ygg::UnorderedSet<VariableView> {};
+    auto head_variables = urd::Store<urd::set<VariableView>> {};
     for (auto term : value.get_head().get_atom().get_terms())
     {
         visit(
@@ -209,10 +214,10 @@ std::string to_string(AxiomView value)
                 if constexpr (std::same_as<T, VariableView>)
                     head_variables.insert(node);
             },
-            term.get_variant());
+            term);
     }
 
-    auto existential_parameters = std::vector<ParameterView> {};
+    auto existential_parameters = urd::Store<urd::sequence<ParameterView>> {};
     for (auto parameter : value.get_parameters())
     {
         if (!head_variables.contains(parameter.get_variable()))
@@ -220,7 +225,7 @@ std::string to_string(AxiomView value)
     }
 
     // The head declares the types of its variables, as in (:derived (p ?x - t) ...).
-    auto parameters = ygg::UnorderedMap<VariableView, ParameterView> {};
+    auto parameters = urd::Store<urd::map<VariableView, ParameterView>> {};
     for (auto parameter : value.get_parameters())
         parameters.emplace(parameter.get_variable(), parameter);
     auto head = fmt::format("({}", value.get_head().get_atom().get_predicate().get_name());
@@ -234,7 +239,7 @@ std::string to_string(AxiomView value)
                     if (const auto it = parameters.find(node); it != parameters.end())
                         text = to_string(it->second);
             },
-            term.get_variant());
+            term);
         head += " " + text;
     }
     auto result = fmt::format("(:derived {}) ", head);

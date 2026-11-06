@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_FUNCTION_TERM_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <optional>
 #include <string>
@@ -26,40 +28,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::FunctionTerm>
+struct data<::loki::formalism::FunctionTerm>
 {
-    ygg::Index<::loki::formalism::FunctionTerm> index;
-    ygg::Index<::loki::formalism::FunctionSkeleton> function;
-    ygg::IndexList<::loki::formalism::Term> terms;
+    urd::index<::loki::formalism::FunctionTerm> index;
+    urd::index<::loki::formalism::FunctionSkeleton> function;
+    ::loki::formalism::TermList terms;
 
-    Data() = default;
-    Data(ygg::Index<::loki::formalism::FunctionSkeleton> function_, ygg::IndexList<::loki::formalism::Term> terms_ = {}) :
+    data() = default;
+    data(urd::index<::loki::formalism::FunctionSkeleton> function_, ::loki::formalism::TermList terms_ = {}) :
         index(),
         function(function_),
         terms(std::move(terms_))
     {
     }
-    template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::FunctionSkeleton>, C> function_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Term>, C>>& terms_ = {}) :
-        index(),
-        function(),
-        terms()
-    {
-        set(function_, function);
-        set(terms_, terms);
-    }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::function, &Data::terms> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::function, &Data::terms> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::function, &data::terms> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::function, &data::terms> {}; }
 };
 
 }

@@ -16,8 +16,11 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
-#include <loki/formalism/function_expression_view.hpp>
 #include <loki/formalism/multi_function_expression_view.hpp>
 #include <ranges>
 
@@ -29,15 +32,15 @@ namespace loki::formalism
 void bind_multi_function_expression(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::FunctionExpression<formalism::MultiTag>>>(m, "MultiFunctionExpressionIndex");
+    urd::python::bind_index<urd::index<formalism::FunctionExpression<formalism::MultiTag>>>(m, "MultiFunctionExpressionIndex");
 
     {
-        using V = Data<formalism::FunctionExpression<formalism::MultiTag>>;
-        bind_data<V>(m, "MultiFunctionExpressionData")
-            .def(nb::init<formalism::MultiArithmeticOperator, ygg::IndexList<formalism::FunctionExpression<>>>(), "operator"_a, "args"_a)
-            .def(nb::init<formalism::MultiArithmeticOperator, const std::vector<formalism::FunctionExpressionView>&>(),
+        using V = urd::data<formalism::FunctionExpression<formalism::MultiTag>>;
+        urd::python::bind_data<V>(m, "MultiFunctionExpressionData")
+            .def(nb::init<formalism::MultiArithmeticOperator, formalism::FunctionExpressionList>(), "operator"_a, "args"_a)
+            .def(urd::python::init_from_views<formalism::MultiArithmeticOperator, const urd::Store<urd::sequence<formalism::FunctionExpressionView>>&>(),
                  "operator"_a,
-                 "args"_a = std::vector<formalism::FunctionExpressionView> {})
+                 "args"_a = urd::Store<urd::sequence<formalism::FunctionExpressionView>> {})
             .def_rw("operator", &V::op)
             .def_rw("args", &V::args);
     }
@@ -46,7 +49,7 @@ void bind_multi_function_expression(nb::module_& m, RepositoryBinding& repositor
         using V = formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>;
         const auto attach_owner = nb::cpp_function([](nb::object child, const nb::object&) { return child; }, nb::keep_alive<0, 2>());
         auto cls = nb::class_<V>(m, "MultiFunctionExpression");
-        cls.def("get_index", &V::get_index)
+        cls.def("get_index", &V::index)
             .def("get_operator", &V::get_operator)
             .def("get_args",
                  [attach_owner](const V& self)
@@ -61,8 +64,8 @@ void bind_multi_function_expression(nb::module_& m, RepositoryBinding& repositor
                      return result;
                  });
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::FunctionExpression<formalism::MultiTag>>(repository);

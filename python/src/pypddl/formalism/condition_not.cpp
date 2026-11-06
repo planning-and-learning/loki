@@ -16,9 +16,9 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/condition_not_view.hpp>
-#include <loki/formalism/condition_view.hpp>
 
 namespace nb = nanobind;
 
@@ -28,23 +28,23 @@ namespace loki::formalism
 void bind_condition_not(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Condition<formalism::NotTag>>>(m, "ConditionNotIndex");
+    urd::python::bind_index<urd::index<formalism::Condition<formalism::NotTag>>>(m, "ConditionNotIndex");
 
     {
-        using V = Data<formalism::Condition<formalism::NotTag>>;
-        bind_data<V>(m, "ConditionNotData")
-            .def(nb::init<ygg::Index<formalism::Condition<>>>(), "condition"_a)
-            .def(nb::init<formalism::ConditionView>(), "condition"_a)
+        using V = urd::data<formalism::Condition<formalism::NotTag>>;
+        urd::python::bind_data<V>(m, "ConditionNotData")
+            .def(nb::init<formalism::ConditionVariant>(), "condition"_a)
+            .def(urd::python::init_from_views<formalism::ConditionView>(), "condition"_a)
             .def_rw("condition", &V::condition);
     }
 
     {
         using V = formalism::EntityView<formalism::Condition<formalism::NotTag>>;
         auto cls = nb::class_<V>(m, "ConditionNot");
-        cls.def("get_index", &V::get_index).def("get_condition", &V::get_condition, nb::keep_alive<0, 1>());
+        cls.def("get_index", &V::index).def("get_condition", &V::get_condition, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Condition<formalism::NotTag>>(repository);

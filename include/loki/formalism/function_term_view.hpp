@@ -20,25 +20,21 @@
 
 #include "loki/formalism/function_term_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::FunctionTerm, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::FunctionTerm> C>
-class View<ygg::Index<::loki::formalism::FunctionTerm>, C> : public ygg::IndexViewBase<::loki::formalism::FunctionTerm, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::FunctionTerm, C>::IndexViewBase;
-
-    auto get_function() const noexcept { return ygg::make_view(this->get_data().function, this->get_context()); }
-    auto get_terms() const noexcept { return ygg::make_view(this->get_data().terms, this->get_context()); }
+    auto get_function() const noexcept { return self().template get<&urd::record_of<V>::function>(); }
+    auto get_terms() const noexcept { return self().template get<&urd::record_of<V>::terms>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

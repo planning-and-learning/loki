@@ -16,6 +16,7 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/function_expression_number_view.hpp>
 
@@ -27,20 +28,20 @@ namespace loki::formalism
 void bind_function_expression_number(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::FunctionExpression<formalism::NumberTag>>>(m, "FunctionExpressionNumberIndex");
+    urd::python::bind_index<urd::index<formalism::FunctionExpression<formalism::NumberTag>>>(m, "FunctionExpressionNumberIndex");
 
     {
-        using V = Data<formalism::FunctionExpression<formalism::NumberTag>>;
-        bind_data<V>(m, "FunctionExpressionNumberData").def(nb::init<double>(), "value"_a).def_rw("value", &V::value);
+        using V = urd::data<formalism::FunctionExpression<formalism::NumberTag>>;
+        urd::python::bind_data<V>(m, "FunctionExpressionNumberData").def(nb::init<double>(), "value"_a).def_rw("value", &V::value);
     }
 
     {
         using V = formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>;
         auto cls = nb::class_<V>(m, "FunctionExpressionNumber");
-        cls.def("get_index", &V::get_index).def("get_value", &V::get_value);
+        cls.def("get_index", &V::index).def("get_value", &V::get_value);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::FunctionExpression<formalism::NumberTag>>(repository);

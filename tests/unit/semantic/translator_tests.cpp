@@ -33,9 +33,13 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <utility>
 #include <vector>
-#include <yggdrasil/containers/associative_containers.hpp>
 
 namespace loki::tests
 {
@@ -44,13 +48,13 @@ namespace
 
 std::optional<std::string> conjunct_variable(formalism::ConditionView condition, std::string_view predicate_name, std::size_t term_index)
 {
-    if (!condition.get_variant().is<ygg::Index<formalism::Condition<formalism::AndTag>>>())
+    if (!std::holds_alternative<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(condition))
         return std::nullopt;
 
-    for (auto child : condition.get_variant().get<ygg::Index<formalism::Condition<formalism::AndTag>>>().get_conditions())
+    for (auto child : std::get<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(condition).get_conditions())
     {
         auto result = std::optional<std::string> {};
-        ygg::visit(
+        std::visit(
             [&](const auto& node)
             {
                 using Node = std::decay_t<decltype(node)>;
@@ -61,7 +65,7 @@ std::optional<std::string> conjunct_variable(formalism::ConditionView condition,
                         result = variable_term_name(atom.get_terms()[term_index]);
                 }
             },
-            child.get_variant());
+            child);
         if (result)
             return result;
     }
@@ -76,19 +80,9 @@ formalism::EntityView<T> intern(formalism::Repository& repository, formalism::Bu
     return formalism::insert(repository, *data).first;
 }
 
-template<typename T>
-formalism::FunctionExpressionView wrap_expression(formalism::Repository& repository, formalism::Builder& builder, T node)
-{
-    return intern<formalism::FunctionExpression<>>(repository,
-                                                   builder,
-                                                   [&](auto& data) { data.variant = ygg::Data<formalism::FunctionExpression<>>::Variant(node.get_index()); });
-}
-
 formalism::FunctionExpressionView number_expression(formalism::Repository& repository, formalism::Builder& builder, double value)
 {
-    return wrap_expression(repository,
-                           builder,
-                           intern<formalism::FunctionExpression<formalism::NumberTag>>(repository, builder, [&](auto& data) { data.value = value; }));
+    return intern<formalism::FunctionExpression<formalism::NumberTag>>(repository, builder, [&](auto& data) { data.value = value; });
 }
 
 formalism::FunctionExpressionView binary_expression(formalism::Repository& repository,
@@ -97,16 +91,14 @@ formalism::FunctionExpressionView binary_expression(formalism::Repository& repos
                                                     formalism::FunctionExpressionView left,
                                                     formalism::FunctionExpressionView right)
 {
-    return wrap_expression(repository,
-                           builder,
-                           intern<formalism::FunctionExpression<formalism::BinaryTag>>(repository,
+    return intern<formalism::FunctionExpression<formalism::BinaryTag>>(repository,
                                                                                        builder,
                                                                                        [&](auto& data)
                                                                                        {
                                                                                            data.op = op;
-                                                                                           data.left = left.get_index();
-                                                                                           data.right = right.get_index();
-                                                                                       }));
+                                                                                           data.left = formalism::as_index(left);
+                                                                                           data.right = formalism::as_index(right);
+                                                                                       });
 }
 
 formalism::FunctionExpressionView multi_expression(formalism::Repository& repository,
@@ -114,21 +106,19 @@ formalism::FunctionExpressionView multi_expression(formalism::Repository& reposi
                                                    formalism::MultiArithmeticOperator op,
                                                    std::initializer_list<formalism::FunctionExpressionView> expressions)
 {
-    return wrap_expression(repository,
-                           builder,
-                           intern<formalism::FunctionExpression<formalism::MultiTag>>(repository,
+    return intern<formalism::FunctionExpression<formalism::MultiTag>>(repository,
                                                                                       builder,
                                                                                       [&](auto& data)
                                                                                       {
                                                                                           data.op = op;
                                                                                           for (const auto expression : expressions)
-                                                                                              data.args.push_back(expression.get_index());
-                                                                                      }));
+                                                                                              data.args.push_back(formalism::as_index(expression));
+                                                                                      });
 }
 
 bool contains_binary_add_or_multiply(formalism::FunctionExpressionView expression)
 {
-    return ygg::visit(
+    return std::visit(
         [](const auto& node) -> bool
         {
             using Node = std::decay_t<decltype(node)>;
@@ -150,7 +140,7 @@ bool contains_binary_add_or_multiply(formalism::FunctionExpressionView expressio
             }
             return false;
         },
-        expression.get_variant());
+        expression);
 }
 
 }  // namespace
@@ -201,7 +191,7 @@ TEST(LokiSemanticTranslator, LiftedParameterAvoidsFreeVariablesWhenRenaming)
     const auto action = translation.get_translated_domain().get_actions()[0];
 
     ASSERT_EQ(action.get_parameters().size(), 3);
-    auto names = std::vector<std::string> {};
+    auto names = urd::Store<urd::sequence<std::string>> {};
     for (auto parameter : action.get_parameters())
         names.emplace_back(parameter.get_variable().get_name());
     // All parameters distinct, and the renamed binder did not capture the free ?p_0.
@@ -255,7 +245,7 @@ TEST(LokiSemanticTranslator, GeneratesFreshAxiomsForIdenticalUniversalConditions
     const auto translated_domain = translation.get_translated_domain();
 
     auto generated_predicates = std::size_t {};
-    auto generated_parameter_types = ygg::UnorderedSet<std::string> {};
+    auto generated_parameter_types = urd::Store<urd::set<std::string>> {};
     for (auto predicate : translated_domain.get_predicates())
     {
         if (!std::string(predicate.get_name()).starts_with("loki-universal-"))
@@ -450,7 +440,7 @@ TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
                                                        [&](auto& data)
                                                        {
                                                            data.name = "child";
-                                                           data.bases.push_back(original_base.get_index());
+                                                           data.bases.push_back(original_base.index());
                                                        });
     const auto middle_base = intern<formalism::Type>(previous.repository, builder, [](auto& data) { data.name = "parent"; });
     const auto middle_type = intern<formalism::Type>(previous.repository,
@@ -458,7 +448,7 @@ TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
                                                      [&](auto& data)
                                                      {
                                                          data.name = "child";
-                                                         data.bases.push_back(middle_base.get_index());
+                                                         data.bases.push_back(middle_base.index());
                                                      });
     const auto final_base = intern<formalism::Type>(target.repository, builder, [](auto& data) { data.name = "parent"; });
     const auto object = [&](formalism::Repository& repository, const char* name)
@@ -475,8 +465,8 @@ TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
     previous.objects.emplace(original_object, middle_object);
     previous.objects.emplace(original_removed, middle_removed);
     target.objects.emplace(middle_object, final_object);
-    previous.object_type_views.emplace(middle_object, std::vector { middle_type });
-    previous.object_type_views.emplace(middle_removed, std::vector { middle_base });
+    previous.object_type_views.emplace(middle_object, decltype(previous.object_type_views)::mapped_type { middle_type });
+    previous.object_type_views.emplace(middle_removed, decltype(previous.object_type_views)::mapped_type { middle_base });
 
     // The child type exists only in metadata; its final mapping must be created before composition.
     semantic::detail::compose_storage_maps_from_previous(target, previous);
@@ -488,12 +478,12 @@ TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
     ASSERT_EQ(target.types.size(), 2);
     EXPECT_EQ(target.types.at(original_base), final_base);
     const auto final_type = target.types.at(original_type);
-    EXPECT_EQ(final_type.get_context().get_index(), target.repository.get_index());
+    EXPECT_EQ(final_type.context().get_index(), target.repository.get_index());
     EXPECT_EQ(std::string(final_type.get_name()), "child");
     ASSERT_EQ(final_type.get_bases().size(), 1);
     EXPECT_EQ(final_type.get_bases().front(), final_base);
     ASSERT_EQ(target.object_type_views.size(), 1);
-    EXPECT_EQ(target.object_type_views.at(final_object), std::vector { final_type });
+    EXPECT_EQ(target.object_type_views.at(final_object), decltype(target.object_type_views)::mapped_type { final_type });
     EXPECT_EQ(previous.objects.at(original_object), middle_object);
     EXPECT_EQ(previous.types.at(original_type), middle_type);
 }
@@ -508,7 +498,7 @@ TEST(LokiSemanticTranslator, TranslationStorageRetainsParent)
 
     parent.reset();
     ASSERT_FALSE(lifetime.expired());
-    EXPECT_EQ(std::string(ygg::make_view(object.get_index(), child->repository).get_name()), "inherited");
+    EXPECT_EQ(std::string(child->repository.view(object.index()).get_name()), "inherited");
 
     child.reset();
     EXPECT_TRUE(lifetime.expired());
@@ -573,7 +563,7 @@ TEST(LokiSemanticTranslator, InitializesEqualityForConstantsAndTaskObjects)
 
     EXPECT_TRUE(has_equality_predicate(translated.get_domain()));
     EXPECT_EQ(count_equality_literals(translated.get_initial_literals()), count_unique_object_names(translation.get_translated_domain(), translated));
-    EXPECT_EQ(&translated.get_domain().get_context().get_root(), &translation.get_translated_domain().get_context().get_root());
+    EXPECT_EQ(&translated.get_domain().context().get_root(), &translation.get_translated_domain().context().get_root());
 }
 
 TEST(LokiSemanticTranslator, SkipsEqualityInitializationWhenDisabled)
@@ -712,8 +702,8 @@ TEST(LokiSemanticTranslator, FlattensDeepArithmeticBeforeMaterializing)
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::NormalizeArithmeticExpressions);
     const auto normalized = translator.copy(source);
 
-    ASSERT_TRUE(normalized.get_variant().is<ygg::Index<formalism::FunctionExpression<formalism::MultiTag>>>());
-    const auto multi = normalized.get_variant().get<ygg::Index<formalism::FunctionExpression<formalism::MultiTag>>>();
+    ASSERT_TRUE(std::holds_alternative<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized));
+    const auto multi = std::get<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized);
     EXPECT_EQ(multi.get_args().size(), operand_count);
     EXPECT_EQ(storage->repository.size<formalism::FunctionExpression<formalism::MultiTag>>(), 1);
 }
@@ -772,10 +762,10 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
     { return intern<formalism::Predicate>(repository, builder, [&](auto& data) { data.name = cista::offset::string(name); }); };
     const auto p_predicate = make_predicate("p");
     const auto q_predicate = make_predicate("q");
-    const auto p = p_predicate.get_index();
-    const auto q = q_predicate.get_index();
+    const auto p = p_predicate.index();
+    const auto q = q_predicate.index();
     const auto make_atom = [&](auto predicate)
-    { return intern<formalism::Atom>(repository, builder, [&](auto& data) { data.predicate = predicate; }).get_index(); };
+    { return intern<formalism::Atom>(repository, builder, [&](auto& data) { data.predicate = predicate; }).index(); };
     const auto p_atom = make_atom(p);
     const auto q_atom = make_atom(q);
     const auto make_literal = [&](auto atom)
@@ -787,22 +777,19 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
                                               data.atom = atom;
                                               data.m_polarity = true;
                                           })
-            .get_index();
+            .index();
     };
     const auto p_literal = make_literal(p_atom);
     const auto q_literal = make_literal(q_atom);
     const auto make_condition = [&](auto literal)
     {
-        const auto condition_literal =
-            intern<formalism::Condition<formalism::LiteralTag>>(repository, builder, [&](auto& data) { data.literal = literal; }).get_index();
-        return intern<formalism::Condition<>>(repository,
-                                              builder,
-                                              [&](auto& data) { data.variant = ygg::Data<formalism::Condition<>>::Variant(condition_literal); });
+        return formalism::ConditionView(
+            intern<formalism::Condition<formalism::LiteralTag>>(repository, builder, [&](auto& data) { data.literal = literal; }));
     };
     const auto p_condition_view = make_condition(p_literal);
     const auto q_condition_view = make_condition(q_literal);
-    const auto p_condition = p_condition_view.get_index();
-    const auto q_condition = q_condition_view.get_index();
+    const auto p_condition = formalism::as_index(p_condition_view);
+    const auto q_condition = formalism::as_index(q_condition_view);
 
     const auto first = intern<formalism::Condition<formalism::AndTag>>(repository,
                                                                        builder,

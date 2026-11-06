@@ -26,46 +26,32 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
+struct data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
 {
-    ygg::Index<::loki::formalism::Effect<::loki::formalism::NumericTag>> index;
+    urd::index<::loki::formalism::Effect<::loki::formalism::NumericTag>> index;
     ::loki::formalism::NumericEffectOperator op {};
-    ygg::Index<::loki::formalism::FunctionTerm> function;
-    ygg::Index<::loki::formalism::FunctionExpression<>> expression;
+    urd::index<::loki::formalism::FunctionTerm> function;
+    ::loki::formalism::FunctionExpressionVariant expression;
 
-    Data() = default;
-    Data(::loki::formalism::NumericEffectOperator op_,
-         ygg::Index<::loki::formalism::FunctionTerm> function_,
-         ygg::Index<::loki::formalism::FunctionExpression<>> expression_) :
+    data() = default;
+    data(::loki::formalism::NumericEffectOperator op_,
+         urd::index<::loki::formalism::FunctionTerm> function_,
+         ::loki::formalism::FunctionExpressionVariant expression_) :
         index(),
         op(op_),
         function(function_),
         expression(expression_)
     {
     }
-    template<typename C>
-    Data(::loki::formalism::NumericEffectOperator op_,
-         ::ygg::View<ygg::Index<::loki::formalism::FunctionTerm>, C> function_,
-         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> expression_) :
-        index(),
-        op(op_),
-        function(),
-        expression()
-    {
-        set(function_, function);
-        set(expression_, expression);
-    }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::function, &Data::expression> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::function, &Data::expression> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::op, &data::function, &data::expression> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::op, &data::function, &data::expression> {}; }
 };
 
 }

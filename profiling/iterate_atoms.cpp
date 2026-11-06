@@ -16,6 +16,8 @@
  */
 
 #include "utils.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <benchmark/benchmark.h>
 #include <cmath>
@@ -32,15 +34,15 @@ struct AtomAccessResult
 {
     size_t atom_identifier;
     loki::formalism::PredicateView atom_predicate;
-    std::vector<loki::formalism::TermView> atom_terms;
+    urd::Store<urd::sequence<loki::formalism::TermView>> atom_terms;
 };
 }  // namespace
 
 static AtomAccessResult access_atom_data(loki::formalism::AtomView atom)
 {
-    const auto atom_identifier = atom.get_index().get_value();
+    const auto atom_identifier = atom.index().get_value();
     const auto atom_predicate = atom.get_predicate();
-    auto atom_terms = std::vector<loki::formalism::TermView>();
+    auto atom_terms = urd::Store<urd::sequence<loki::formalism::TermView>>();
     for (const auto& term : atom.get_terms())
     {
         atom_terms.push_back(term);
@@ -92,7 +94,7 @@ static void BM_RandomlyIterateAtoms(benchmark::State& state)
 
     for ([[maybe_unused]] auto _ : state)
     {
-        std::vector<int> indices(atoms.size());
+        urd::Store<urd::sequence<int>> indices(atoms.size());
         std::iota(indices.begin(), indices.end(), 0);
         std::shuffle(indices.begin(), indices.end(), eng);
 

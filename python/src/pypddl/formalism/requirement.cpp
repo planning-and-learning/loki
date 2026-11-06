@@ -16,6 +16,7 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/requirement_view.hpp>
 
@@ -27,20 +28,20 @@ namespace loki::formalism
 void bind_requirement(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Requirement>>(m, "RequirementIndex");
+    urd::python::bind_index<urd::index<formalism::Requirement>>(m, "RequirementIndex");
 
     {
-        using V = Data<formalism::Requirement>;
-        bind_data<V>(m, "RequirementData").def(nb::init<formalism::RequirementKind>(), "kind"_a).def_rw("kind", &V::kind);
+        using V = urd::data<formalism::Requirement>;
+        urd::python::bind_data<V>(m, "RequirementData").def(nb::init<formalism::RequirementKind>(), "kind"_a).def_rw("kind", &V::kind);
     }
 
     {
         using V = formalism::RequirementView;
         auto cls = nb::class_<V>(m, "Requirement");
-        cls.def("get_index", &V::get_index).def("get_kind", &V::get_kind);
+        cls.def("get_index", &V::index).def("get_kind", &V::get_kind);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Requirement>(repository);

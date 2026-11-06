@@ -20,7 +20,11 @@
 
 #include "loki/semantic/translator/copy_translator_component.hpp"
 
-#include <yggdrasil/containers/unordered_set.hpp>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/store.hpp>
+
 
 namespace loki::semantic::detail
 {
@@ -34,19 +38,19 @@ public:
     {
     }
 
-    void split_disjunctive_actions(formalism::EntityListView<formalism::Action> actions, ygg::IndexList<formalism::Action>& result);
-    void split_disjunctive_axioms(formalism::EntityListView<formalism::Axiom> axioms, ygg::IndexList<formalism::Axiom>& result);
+    void split_disjunctive_actions(formalism::EntityListView<formalism::Action> actions, urd::flat_vector<urd::index<formalism::Action>>& result);
+    void split_disjunctive_axioms(formalism::EntityListView<formalism::Axiom> axioms, urd::flat_vector<urd::index<formalism::Axiom>>& result);
 };
 
 template<typename Derived>
 void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(formalism::EntityListView<formalism::Action> actions,
-                                                                              ygg::IndexList<formalism::Action>& result)
+                                                                              urd::flat_vector<urd::index<formalism::Action>>& result)
 {
     result.clear();
-    auto seen = ygg::UnorderedSet<formalism::ActionView> {};
+    auto seen = urd::Store<urd::set<formalism::ActionView>> {};
     for (auto action : actions)
     {
-        const auto& data = action.get_data();
+        const auto& data = action.data();
         if (const auto precondition_view = action.get_precondition())
         {
             const auto precondition = this->self().flatten_condition(precondition_view.value());
@@ -60,7 +64,7 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(fo
                     for (auto parameter : data.parameters)
                         action_data->parameters.push_back(parameter);
                     action_data->original_arity = data.original_arity;
-                    action_data->precondition = part.get_index();
+                    action_data->precondition = as_index(part);
                     action_data->effect = data.effect;
                     this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *action_data).first);
                 }
@@ -73,13 +77,13 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(fo
 
 template<typename Derived>
 void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_axioms(formalism::EntityListView<formalism::Axiom> axioms,
-                                                                             ygg::IndexList<formalism::Axiom>& result)
+                                                                             urd::flat_vector<urd::index<formalism::Axiom>>& result)
 {
     result.clear();
-    auto seen = ygg::UnorderedSet<formalism::AxiomView> {};
+    auto seen = urd::Store<urd::set<formalism::AxiomView>> {};
     for (auto axiom : axioms)
     {
-        const auto& data = axiom.get_data();
+        const auto& data = axiom.data();
         const auto condition = this->self().flatten_condition(axiom.get_condition());
         if (const auto condition_or = this->self().as_or(condition))
         {
@@ -90,7 +94,7 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_axioms(for
                     axiom_data->parameters.push_back(parameter);
                 axiom_data->original_arity = data.original_arity;
                 axiom_data->head = data.head;
-                axiom_data->condition = part.get_index();
+                axiom_data->condition = as_index(part);
                 this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *axiom_data).first);
             }
         }

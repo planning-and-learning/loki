@@ -22,7 +22,11 @@
 #include <set>
 #include <string_view>
 #include <type_traits>
-#include <yggdrasil/containers/unordered_set.hpp>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 namespace loki::semantic::detail
 {
@@ -35,7 +39,7 @@ using enum formalism::RequirementKind;
 /// or marks used, so that the result declares every requirement the reparse demands and none that it would reject as unused.
 struct RequirementCollector
 {
-    std::set<formalism::RequirementKind> requirements;
+    urd::Store<urd::set<formalism::RequirementKind>, urd::sorted, urd::stable_refs> requirements;
 
     template<typename Node, typename Tag>
     static constexpr bool is = std::is_same_v<std::decay_t<Node>, formalism::EntityView<Tag>>;
@@ -82,7 +86,7 @@ struct RequirementCollector
 
     void expression(formalism::FunctionExpressionView expression)
     {
-        ygg::visit(
+        std::visit(
             [&](const auto& node)
             {
                 using Node = decltype(node);
@@ -99,12 +103,12 @@ struct RequirementCollector
                     for (const auto arg : node.get_args())
                         this->expression(arg);
             },
-            expression.get_variant());
+            expression);
     }
 
     void condition(formalism::ConditionView condition)
     {
-        ygg::visit(
+        std::visit(
             [&](const auto& node)
             {
                 using Node = decltype(node);
@@ -147,12 +151,12 @@ struct RequirementCollector
                     expression(node.get_right());
                 }
             },
-            condition.get_variant());
+            condition);
     }
 
     void effect(formalism::EffectView effect)
     {
-        ygg::visit(
+        std::visit(
             [&](const auto& node)
             {
                 using Node = decltype(node);
@@ -193,7 +197,7 @@ struct RequirementCollector
                         this->effect(alternative.get_effect());
                 }
             },
-            effect.get_variant());
+            effect);
     }
 
     void axioms(formalism::EntityListView<formalism::Axiom> axioms)
@@ -204,15 +208,15 @@ struct RequirementCollector
             parameters(axiom.get_parameters());
             condition(axiom.get_condition());
             // The printer writes the parameters that are not in the head as an exists around the condition.
-            auto head_variables = ygg::UnorderedSet<formalism::VariableView> {};
+            auto head_variables = urd::Store<urd::set<formalism::VariableView>> {};
             for (const auto term : axiom.get_head().get_atom().get_terms())
-                ygg::visit(
+                std::visit(
                     [&](const auto& node)
                     {
                         if constexpr (std::is_same_v<std::decay_t<decltype(node)>, formalism::VariableView>)
                             head_variables.insert(node);
                     },
-                    term.get_variant());
+                    term);
             for (const auto parameter : axiom.get_parameters())
                 if (!head_variables.contains(parameter.get_variable()))
                     requirements.insert(ExistentialPreconditions);
@@ -228,7 +232,7 @@ struct RequirementCollector
 
 }  // namespace
 
-std::vector<formalism::RequirementKind> infer_requirements(formalism::DomainView domain)
+urd::Store<urd::sequence<formalism::RequirementKind>> infer_requirements(formalism::DomainView domain)
 {
     auto collector = RequirementCollector {};
     // The strict parser demands :strips of every domain.
@@ -250,7 +254,7 @@ std::vector<formalism::RequirementKind> infer_requirements(formalism::DomainView
     return { collector.requirements.begin(), collector.requirements.end() };
 }
 
-std::vector<formalism::RequirementKind> infer_requirements(formalism::TaskView task, formalism::DomainView domain)
+urd::Store<urd::sequence<formalism::RequirementKind>> infer_requirements(formalism::TaskView task, formalism::DomainView domain)
 {
     auto collector = RequirementCollector {};
     collector.types(task.get_types());

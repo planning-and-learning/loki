@@ -15,6 +15,7 @@ function(add_gtest test_name)
     set(LOKI_TEST_BUILD_RPATH)
     if(YGGDRASIL_NATIVE_PREFIX)
         list(APPEND LOKI_TEST_BUILD_RPATH "${YGGDRASIL_NATIVE_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+        list(APPEND LOKI_TEST_BUILD_RPATH "${URD_NATIVE_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
     endif()
     if(LOKI_TEST_BUILD_RPATH)
         set_target_properties(${test_name} PROPERTIES BUILD_RPATH "${LOKI_TEST_BUILD_RPATH}")
@@ -65,7 +66,6 @@ add_gtest(
     "formalism/atom.cpp"
     "formalism/axiom.cpp"
     "formalism/binary_function_expression.cpp"
-    "formalism/condition.cpp"
     "formalism/condition_and.cpp"
     "formalism/condition_exists.cpp"
     "formalism/condition_forall.cpp"
@@ -75,7 +75,6 @@ add_gtest(
     "formalism/condition_numeric_constraint.cpp"
     "formalism/condition_or.cpp"
     "formalism/domain.cpp"
-    "formalism/effect.cpp"
     "formalism/effect_and.cpp"
     "formalism/effect_forall.cpp"
     "formalism/effect_literal.cpp"
@@ -84,7 +83,6 @@ add_gtest(
     "formalism/effect_probabilistic.cpp"
     "formalism/effect_probabilistic_alternative.cpp"
     "formalism/effect_when.cpp"
-    "formalism/function_expression.cpp"
     "formalism/function_expression_number.cpp"
     "formalism/function_skeleton.cpp"
     "formalism/function_term.cpp"
@@ -97,7 +95,6 @@ add_gtest(
     "formalism/predicate.cpp"
     "formalism/requirement.cpp"
     "formalism/task.cpp"
-    "formalism/term.cpp"
     "formalism/type.cpp"
     "formalism/unary_function_expression.cpp"
     "formalism/variable.cpp"

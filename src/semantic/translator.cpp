@@ -16,6 +16,8 @@
  */
 
 #include "loki/semantic/translator.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include "loki/semantic/errors.hpp"
 #include "loki/semantic/options.hpp"
@@ -42,9 +44,9 @@ struct PhaseStep
 };
 }  // namespace
 
-static const std::vector<PhaseStep>& domain_phase_steps()
+static const urd::Store<urd::sequence<PhaseStep>>& domain_phase_steps()
 {
-    static const auto steps = std::vector<PhaseStep> {
+    static const auto steps = urd::Store<urd::sequence<PhaseStep>> {
         { TranslationPhase::ToNegationNormalForm, "to-negation-normal-form" },
         { TranslationPhase::RenameQuantifiedVariables, "rename-quantified-variables" },
         { TranslationPhase::RemoveUniversalQuantifiers, "remove-universal-quantifiers" },
@@ -66,9 +68,9 @@ static const std::vector<PhaseStep>& domain_phase_steps()
     return steps;
 }
 
-static const std::vector<PhaseStep>& task_phase_steps()
+static const urd::Store<urd::sequence<PhaseStep>>& task_phase_steps()
 {
-    static const auto steps = std::vector<PhaseStep> {
+    static const auto steps = urd::Store<urd::sequence<PhaseStep>> {
         { TranslationPhase::ToNegationNormalForm, "to-negation-normal-form" },
         { TranslationPhase::RenameQuantifiedVariables, "rename-quantified-variables" },
         { TranslationPhase::RemoveUniversalQuantifiers, "remove-universal-quantifiers" },
@@ -151,7 +153,7 @@ ProblemTranslationResult translate(formalism::TaskView task, const DomainTransla
 {
     const auto expected_domain = result.get_original_domain();
     const auto task_domain = task.get_domain();
-    if (task_domain.get_index() != expected_domain.get_index() || &task_domain.get_context().get_root() != &expected_domain.get_context().get_root())
+    if (task_domain.index() != expected_domain.index() || &task_domain.context().get_root() != &expected_domain.context().get_root())
         throw MismatchedDomainError(std::string(expected_domain.get_name()), std::string(task_domain.get_name()));
 
     auto current_task = task;

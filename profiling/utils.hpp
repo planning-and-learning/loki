@@ -19,12 +19,14 @@
 #define LOKI_BENCHMARKS_UTILS_HPP_
 
 #include <loki/loki.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
 
 namespace loki::benchmarks
 {
 
-using AtomList = std::vector<formalism::AtomView>;
+using AtomList = urd::Store<urd::sequence<formalism::AtomView>>;
 
 extern AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repository& repository, formalism::Builder& builder);
 

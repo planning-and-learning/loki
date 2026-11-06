@@ -23,36 +23,28 @@
 
 #include <tuple>
 #include <utility>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Metric>
+struct data<::loki::formalism::Metric>
 {
-    ygg::Index<::loki::formalism::Metric> index;
+    urd::index<::loki::formalism::Metric> index;
     ::loki::formalism::OptimizationDirection optimization_direction = ::loki::formalism::OptimizationDirection::Minimize;
-    ygg::Index<::loki::formalism::FunctionExpression<>> expression;
+    ::loki::formalism::FunctionExpressionVariant expression;
 
-    Data() = default;
-    Data(::loki::formalism::OptimizationDirection optimization_direction_, ygg::Index<::loki::formalism::FunctionExpression<>> expression_) :
+    data() = default;
+    data(::loki::formalism::OptimizationDirection optimization_direction_, ::loki::formalism::FunctionExpressionVariant expression_) :
         index(),
         optimization_direction(optimization_direction_),
         expression(expression_)
     {
     }
-    template<typename C>
-    Data(::loki::formalism::OptimizationDirection optimization_direction_, ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> expression_) :
-        index(),
-        optimization_direction(optimization_direction_),
-        expression()
-    { set(expression_, expression); }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::optimization_direction, &Data::expression> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::optimization_direction, &Data::expression> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::optimization_direction, &data::expression> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::optimization_direction, &data::expression> {}; }
 };
 
 }

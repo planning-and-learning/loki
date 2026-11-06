@@ -26,27 +26,22 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Condition<::loki::formalism::LiteralTag>>
+struct data<::loki::formalism::Condition<::loki::formalism::LiteralTag>>
 {
-    ygg::Index<::loki::formalism::Condition<::loki::formalism::LiteralTag>> index;
-    ygg::Index<::loki::formalism::Literal> literal;
+    urd::index<::loki::formalism::Condition<::loki::formalism::LiteralTag>> index;
+    urd::index<::loki::formalism::Literal> literal;
 
-    Data() = default;
-    Data(ygg::Index<::loki::formalism::Literal> literal_) : index(), literal(literal_) {}
-    template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::Literal>, C> literal_) : index(), literal()
-    { set(literal_, literal); }
+    data() = default;
+    data(urd::index<::loki::formalism::Literal> literal_) : index(), literal(literal_) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::literal> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::literal> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::literal> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::literal> {}; }
 };
 
 }

@@ -29,13 +29,17 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <urd/elements/equal_to.hpp>
+#include <urd/elements/hash.hpp>
+#include <urd/repr/maps/std_map.hpp>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/containers/associative_containers.hpp>
-#include <yggdrasil/core/config.hpp>
-#include <yggdrasil/semantics/equal_to.hpp>
-#include <yggdrasil/semantics/hash.hpp>
+#include <urd/config.hpp>
 
 namespace loki::semantic
 {
@@ -57,9 +61,9 @@ enum class TranslationPhase : std::uint8_t
     InferRequirements,
 };
 
-inline const std::vector<std::string_view>& domain_translation_steps()
+inline const urd::Store<urd::sequence<std::string_view>>& domain_translation_steps()
 {
-    static const auto steps = std::vector<std::string_view> {
+    static const auto steps = urd::Store<urd::sequence<std::string_view>> {
         "to-negation-normal-form",
         "rename-quantified-variables",
         "remove-universal-quantifiers",
@@ -75,9 +79,9 @@ inline const std::vector<std::string_view>& domain_translation_steps()
     return steps;
 }
 
-inline const std::vector<std::string_view>& task_translation_steps()
+inline const urd::Store<urd::sequence<std::string_view>>& task_translation_steps()
 {
-    static const auto steps = std::vector<std::string_view> {
+    static const auto steps = urd::Store<urd::sequence<std::string_view>> {
         "to-negation-normal-form",
         "rename-quantified-variables",
         "remove-universal-quantifiers",
@@ -98,7 +102,7 @@ namespace detail
 {
 
 template<typename T>
-using ViewMap = ygg::UnorderedMap<formalism::EntityView<T>, formalism::EntityView<T>>;
+using ViewMap = urd::Store<urd::map<formalism::EntityView<T>, formalism::EntityView<T>>>;
 
 struct TranslationStorage
 {
@@ -110,7 +114,7 @@ struct TranslationStorage
     /// The translated domain; a problem's translation starts from it, so it is set (asserted in Debug).
     [[nodiscard]] formalism::DomainView translated() const noexcept
     {
-        YGG_ASSUME(translated_domain.has_value());
+        URD_ASSUME(translated_domain.has_value());
         return *translated_domain;
     }
 
@@ -121,7 +125,6 @@ struct TranslationStorage
     ViewMap<formalism::Parameter> parameters;
     ViewMap<formalism::Predicate> predicates;
     ViewMap<formalism::FunctionSkeleton> functions;
-    ViewMap<formalism::Term> terms;
     ViewMap<formalism::Atom> atoms;
     ViewMap<formalism::Literal> literals;
     ViewMap<formalism::FunctionExpression<formalism::NumberTag>> numbers;
@@ -129,7 +132,6 @@ struct TranslationStorage
     ViewMap<formalism::FunctionExpression<formalism::UnaryTag>> unary_expressions;
     ViewMap<formalism::FunctionExpression<formalism::BinaryTag>> binary_expressions;
     ViewMap<formalism::FunctionExpression<formalism::MultiTag>> multi_expressions;
-    ViewMap<formalism::FunctionExpression<>> function_expressions;
     ViewMap<formalism::Condition<formalism::LiteralTag>> condition_literals;
     ViewMap<formalism::Condition<formalism::AndTag>> condition_ands;
     ViewMap<formalism::Condition<formalism::OrTag>> condition_ors;
@@ -138,7 +140,6 @@ struct TranslationStorage
     ViewMap<formalism::Condition<formalism::ExistsTag>> condition_exists;
     ViewMap<formalism::Condition<formalism::ForallTag>> condition_foralls;
     ViewMap<formalism::Condition<formalism::NumericConstraintTag>> condition_numeric_constraints;
-    ViewMap<formalism::Condition<>> conditions;
     ViewMap<formalism::Effect<formalism::LiteralTag>> effect_literals;
     ViewMap<formalism::Effect<formalism::AndTag>> effect_ands;
     ViewMap<formalism::Effect<formalism::NumericTag>> effect_numerics;
@@ -147,14 +148,13 @@ struct TranslationStorage
     ViewMap<formalism::Effect<formalism::OneOfTag>> effect_one_ofs;
     ViewMap<formalism::EffectProbabilisticAlternative> effect_probabilistic_alternatives;
     ViewMap<formalism::Effect<formalism::ProbabilisticTag>> effect_probabilistics;
-    ViewMap<formalism::Effect<>> effects;
     ViewMap<formalism::Action> actions;
     ViewMap<formalism::Axiom> axioms;
     ViewMap<formalism::Metric> metrics;
     ViewMap<formalism::InitialFunctionValue> initial_function_values;
     ViewMap<formalism::Domain> domains;
     ViewMap<formalism::Task> tasks;
-    ygg::UnorderedMap<formalism::ObjectView, std::vector<formalism::TypeView>> object_type_views;
+    urd::Store<urd::map<formalism::ObjectView, urd::Store<urd::sequence<formalism::TypeView>>>> object_type_views;
 
     explicit TranslationStorage(size_t index = 1, std::shared_ptr<const TranslationStorage> parent_ = {}) :
         parent(std::move(parent_)),
@@ -172,12 +172,12 @@ std::shared_ptr<TranslationStorage> canonicalize_problem_storage(formalism::Task
                                                                  const std::shared_ptr<const TranslationStorage>& domain);
 
 template<typename T>
-ygg::Index<T> as_index(ygg::Index<T> index) noexcept
+urd::index<T> as_index(urd::index<T> index) noexcept
 { return index; }
 
 template<typename T>
-ygg::Index<T> as_index(formalism::EntityView<T> view) noexcept
-{ return view.get_index(); }
+urd::index<T> as_index(formalism::EntityView<T> view) noexcept
+{ return view.index(); }
 
 template<typename T>
 std::optional<formalism::EntityView<T>> find_mapped(const ViewMap<T>& map, formalism::EntityView<T> source)

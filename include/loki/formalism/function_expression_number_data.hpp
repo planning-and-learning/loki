@@ -26,24 +26,22 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>
+struct data<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>
 {
-    ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>> index;
+    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>> index;
     double value = 0.0;
 
-    Data() = default;
-    Data(double value_) : index(), value(value_) {}
+    data() = default;
+    data(double value_) : index(), value(value_) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::value> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::value> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::value> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::value> {}; }
 };
 
 }

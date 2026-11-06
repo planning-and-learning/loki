@@ -16,6 +16,8 @@
  */
 
 #include "utils.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <string>
 #include <utility>
@@ -36,7 +38,7 @@ formalism::EntityView<T> intern(formalism::Repository& repository, formalism::Bu
 
 AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repository& repository, formalism::Builder& builder)
 {
-    auto objects = std::vector<formalism::ObjectView> {};
+    auto objects = urd::Store<urd::sequence<formalism::ObjectView>> {};
     objects.reserve(num_objects);
     for (size_t i = 1; i <= num_objects; ++i)
         objects.push_back(intern<formalism::Object>(repository, builder, [&](auto& data) { data.name = "object_" + std::to_string(i); }));
@@ -44,11 +46,11 @@ AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repo
     const auto parameter = [&](const char* name)
     {
         const auto variable = intern<formalism::Variable>(repository, builder, [&](auto& data) { data.name = name; });
-        return intern<formalism::Parameter>(repository, builder, [&](auto& data) { data.variable = variable.get_index(); }).get_index();
+        return intern<formalism::Parameter>(repository, builder, [&](auto& data) { data.variable = variable.index(); }).index();
     };
-    const auto parameters = ygg::IndexList<formalism::Parameter> { parameter("variable_left"), parameter("variable_right") };
+    const auto parameters = urd::flat_vector<urd::index<formalism::Parameter>> { parameter("variable_left"), parameter("variable_right") };
 
-    auto predicates = std::vector<formalism::PredicateView> {};
+    auto predicates = urd::Store<urd::sequence<formalism::PredicateView>> {};
     predicates.reserve(num_predicates);
     for (size_t i = 1; i <= num_predicates; ++i)
         predicates.push_back(intern<formalism::Predicate>(repository,
@@ -61,8 +63,8 @@ AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repo
 
     const auto term = [&](formalism::ObjectView object)
     {
-        return intern<formalism::Term>(repository, builder, [&](auto& data) { data.variant = ygg::Data<formalism::Term>::Variant(object.get_index()); })
-            .get_index();
+        return intern<formalism::Term>(repository, builder, [&](auto& data) { data.variant = urd::data<formalism::Term>::Variant(object.index()); })
+            .index();
     };
     auto atoms = AtomList {};
     atoms.reserve(num_objects * num_objects * num_predicates);
@@ -73,8 +75,8 @@ AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repo
                                                         builder,
                                                         [&](auto& data)
                                                         {
-                                                            data.predicate = predicate.get_index();
-                                                            data.terms = ygg::IndexList<formalism::Term> { term(object_left), term(object_right) };
+                                                            data.predicate = predicate.index();
+                                                            data.terms = urd::flat_vector<urd::index<formalism::Term>> { term(object_left), term(object_right) };
                                                         }));
     return atoms;
 }

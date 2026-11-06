@@ -16,6 +16,7 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/atom_view.hpp>
 #include <loki/formalism/literal_view.hpp>
@@ -28,13 +29,13 @@ namespace loki::formalism
 void bind_literal(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Literal>>(m, "LiteralIndex");
+    urd::python::bind_index<urd::index<formalism::Literal>>(m, "LiteralIndex");
 
     {
-        using V = Data<formalism::Literal>;
-        bind_data<V>(m, "LiteralData")
-            .def(nb::init<ygg::Index<formalism::Atom>, bool>(), "atom"_a, "polarity"_a = true)
-            .def(nb::init<formalism::AtomView, bool>(), "atom"_a, "polarity"_a = true)
+        using V = urd::data<formalism::Literal>;
+        urd::python::bind_data<V>(m, "LiteralData")
+            .def(nb::init<urd::index<formalism::Atom>, bool>(), "atom"_a, "polarity"_a = true)
+            .def(urd::python::init_from_views<formalism::AtomView, bool>(), "atom"_a, "polarity"_a = true)
             .def_rw("atom", &V::atom)
             .def_rw("polarity", &V::m_polarity);
     }
@@ -42,10 +43,10 @@ void bind_literal(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::LiteralView;
         auto cls = nb::class_<V>(m, "Literal");
-        cls.def("get_index", &V::get_index).def("get_atom", &V::get_atom, nb::keep_alive<0, 1>()).def("get_polarity", &V::get_polarity);
+        cls.def("get_index", &V::index).def("get_atom", &V::get_atom, nb::keep_alive<0, 1>()).def("get_polarity", &V::get_polarity);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Literal>(repository);

@@ -19,6 +19,8 @@
 #define LOKI_SEMANTIC_TRANSLATOR_INFER_REQUIREMENTS_HPP_
 
 #include "loki/formalism/repository.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <vector>
 
@@ -26,10 +28,10 @@ namespace loki::semantic::detail
 {
 
 /// The atomic requirements that the strict parser demands for the domain, sorted: exactly those its constructs use, plus :strips.
-std::vector<formalism::RequirementKind> infer_requirements(formalism::DomainView domain);
+urd::Store<urd::sequence<formalism::RequirementKind>> infer_requirements(formalism::DomainView domain);
 
 /// The atomic requirements that the strict parser demands for the task beyond those of `domain`, sorted.
-std::vector<formalism::RequirementKind> infer_requirements(formalism::TaskView task, formalism::DomainView domain);
+urd::Store<urd::sequence<formalism::RequirementKind>> infer_requirements(formalism::TaskView task, formalism::DomainView domain);
 
 }  // namespace loki::semantic::detail
 

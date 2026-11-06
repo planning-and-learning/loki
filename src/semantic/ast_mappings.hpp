@@ -19,6 +19,8 @@
 #define LOKI_SEMANTIC_AST_MAPPINGS_HPP_
 
 #include "loki/ast/ast_fwd.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include "loki/formalism/enums.hpp"
 
 #include <vector>
@@ -30,7 +32,7 @@ struct DiagnosticContext;
 
 // PDDL names in the AST <-> enum mappings, with diagnostics for unknown names.
 formalism::RequirementKind requirement_kind(const ast::Requirement& node, const DiagnosticContext& diagnostics);
-std::vector<formalism::RequirementKind> requirement_capabilities(const ast::Requirement& node, const DiagnosticContext& diagnostics);
+urd::Store<urd::sequence<formalism::RequirementKind>> requirement_capabilities(const ast::Requirement& node, const DiagnosticContext& diagnostics);
 formalism::BinaryComparator comparator(const ast::ConditionNumericConstraint& node, const DiagnosticContext& diagnostics);
 formalism::NumericEffectOperator numeric_effect_operator(const ast::EffectNumeric& node, const DiagnosticContext& diagnostics);
 

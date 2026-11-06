@@ -16,6 +16,10 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/action_view.hpp>
 #include <loki/formalism/axiom_view.hpp>
@@ -34,43 +38,43 @@ namespace loki::formalism
 void bind_domain(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Domain>>(m, "DomainIndex");
+    urd::python::bind_index<urd::index<formalism::Domain>>(m, "DomainIndex");
 
     {
-        using V = Data<formalism::Domain>;
-        bind_data<V>(m, "DomainData")
+        using V = urd::data<formalism::Domain>;
+        urd::python::bind_data<V>(m, "DomainData")
             .def(nb::init<std::string,
-                          ygg::IndexList<formalism::Requirement>,
-                          ygg::IndexList<formalism::Type>,
-                          ygg::IndexList<formalism::Object>,
-                          ygg::IndexList<formalism::Predicate>,
-                          ygg::IndexList<formalism::FunctionSkeleton>,
-                          ygg::IndexList<formalism::Action>,
-                          ygg::IndexList<formalism::Axiom>>(),
+                          urd::flat_vector<urd::index<formalism::Requirement>>,
+                          urd::flat_vector<urd::index<formalism::Type>>,
+                          urd::flat_vector<urd::index<formalism::Object>>,
+                          urd::flat_vector<urd::index<formalism::Predicate>>,
+                          urd::flat_vector<urd::index<formalism::FunctionSkeleton>>,
+                          urd::flat_vector<urd::index<formalism::Action>>,
+                          urd::flat_vector<urd::index<formalism::Axiom>>>(),
                  "name"_a,
-                 "requirements"_a = ygg::IndexList<formalism::Requirement> {},
-                 "types"_a = ygg::IndexList<formalism::Type> {},
-                 "constants"_a = ygg::IndexList<formalism::Object> {},
-                 "predicates"_a = ygg::IndexList<formalism::Predicate> {},
-                 "functions"_a = ygg::IndexList<formalism::FunctionSkeleton> {},
-                 "actions"_a = ygg::IndexList<formalism::Action> {},
-                 "axioms"_a = ygg::IndexList<formalism::Axiom> {})
-            .def(nb::init<const std::string&,
-                          const std::vector<formalism::RequirementView>&,
-                          const std::vector<formalism::TypeView>&,
-                          const std::vector<formalism::ObjectView>&,
-                          const std::vector<formalism::PredicateView>&,
-                          const std::vector<formalism::FunctionSkeletonView>&,
-                          const std::vector<formalism::ActionView>&,
-                          const std::vector<formalism::AxiomView>&>(),
+                 "requirements"_a = urd::flat_vector<urd::index<formalism::Requirement>> {},
+                 "types"_a = urd::flat_vector<urd::index<formalism::Type>> {},
+                 "constants"_a = urd::flat_vector<urd::index<formalism::Object>> {},
+                 "predicates"_a = urd::flat_vector<urd::index<formalism::Predicate>> {},
+                 "functions"_a = urd::flat_vector<urd::index<formalism::FunctionSkeleton>> {},
+                 "actions"_a = urd::flat_vector<urd::index<formalism::Action>> {},
+                 "axioms"_a = urd::flat_vector<urd::index<formalism::Axiom>> {})
+            .def(urd::python::init_from_views<const std::string&,
+                          const urd::Store<urd::sequence<formalism::RequirementView>>&,
+                          const urd::Store<urd::sequence<formalism::TypeView>>&,
+                          const urd::Store<urd::sequence<formalism::ObjectView>>&,
+                          const urd::Store<urd::sequence<formalism::PredicateView>>&,
+                          const urd::Store<urd::sequence<formalism::FunctionSkeletonView>>&,
+                          const urd::Store<urd::sequence<formalism::ActionView>>&,
+                          const urd::Store<urd::sequence<formalism::AxiomView>>&>(),
                  "name"_a,
-                 "requirements"_a = std::vector<formalism::RequirementView> {},
-                 "types"_a = std::vector<formalism::TypeView> {},
-                 "constants"_a = std::vector<formalism::ObjectView> {},
-                 "predicates"_a = std::vector<formalism::PredicateView> {},
-                 "functions"_a = std::vector<formalism::FunctionSkeletonView> {},
-                 "actions"_a = std::vector<formalism::ActionView> {},
-                 "axioms"_a = std::vector<formalism::AxiomView> {})
+                 "requirements"_a = urd::Store<urd::sequence<formalism::RequirementView>> {},
+                 "types"_a = urd::Store<urd::sequence<formalism::TypeView>> {},
+                 "constants"_a = urd::Store<urd::sequence<formalism::ObjectView>> {},
+                 "predicates"_a = urd::Store<urd::sequence<formalism::PredicateView>> {},
+                 "functions"_a = urd::Store<urd::sequence<formalism::FunctionSkeletonView>> {},
+                 "actions"_a = urd::Store<urd::sequence<formalism::ActionView>> {},
+                 "axioms"_a = urd::Store<urd::sequence<formalism::AxiomView>> {})
             .def_rw("name", &V::name)
             .def_rw("requirements", &V::requirements)
             .def_rw("types", &V::types)
@@ -84,7 +88,7 @@ void bind_domain(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::DomainView;
         auto cls = nb::class_<V>(m, "Domain");
-        cls.def("get_index", &V::get_index)
+        cls.def("get_index", &V::index)
             .def("get_name", &V::get_name)
             .def("get_requirements", &V::get_requirements)
             .def("get_types", &V::get_types)
@@ -94,8 +98,8 @@ void bind_domain(nb::module_& m, RepositoryBinding& repository)
             .def("get_actions", &V::get_actions)
             .def("get_axioms", &V::get_axioms);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Domain>(repository);

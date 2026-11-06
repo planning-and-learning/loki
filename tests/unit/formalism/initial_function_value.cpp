@@ -4,9 +4,9 @@
 
 #include <concepts>
 
-using Index = ygg::Index<loki::formalism::InitialFunctionValue>;
-using Data = ygg::Data<loki::formalism::InitialFunctionValue>;
-using View = ygg::View<Index, loki::formalism::Repository>;
+using Index = urd::index<loki::formalism::InitialFunctionValue>;
+using Data = urd::data<loki::formalism::InitialFunctionValue>;
+using View = urd::view<loki::formalism::InitialFunctionValue, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
@@ -17,11 +17,10 @@ static_assert(requires(Data& data) {
     data.index;
     data.function;
     data.value;
-    data.clear();
     { data == data } -> std::same_as<bool>;
 });
 static_assert(requires(const View& view) {
-    view.get_index();
+    view.index();
     view.get_function();
     view.get_value();
     { view == view } -> std::same_as<bool>;

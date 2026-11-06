@@ -16,6 +16,7 @@
  */
 
 #include "module.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 namespace nb = nanobind;
 

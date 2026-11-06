@@ -26,28 +26,23 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Literal>
+struct data<::loki::formalism::Literal>
 {
-    ygg::Index<::loki::formalism::Literal> index;
-    ygg::Index<::loki::formalism::Atom> atom;
+    urd::index<::loki::formalism::Literal> index;
+    urd::index<::loki::formalism::Atom> atom;
     bool m_polarity = true;
 
-    Data() = default;
-    Data(ygg::Index<::loki::formalism::Atom> atom_, bool polarity_ = true) : index(), atom(atom_), m_polarity(polarity_) {}
-    template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::Atom>, C> atom_, bool polarity_ = true) : index(), atom(), m_polarity(polarity_)
-    { set(atom_, atom); }
+    data() = default;
+    data(urd::index<::loki::formalism::Atom> atom_, bool polarity_ = true) : index(), atom(atom_), m_polarity(polarity_) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::atom, &Data::m_polarity> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::atom, &Data::m_polarity> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::atom, &data::m_polarity> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::atom, &data::m_polarity> {}; }
 };
 
 }

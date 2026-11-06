@@ -26,7 +26,6 @@ template class ygg::formalism::BasicSymbolRepository<loki::formalism::Variable>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Parameter>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Predicate>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionSkeleton>;
-template class ygg::formalism::BasicSymbolRepository<loki::formalism::Term>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Atom>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Literal>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionExpression<loki::formalism::NumberTag>>;
@@ -34,7 +33,6 @@ template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionTe
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionExpression<loki::formalism::UnaryTag>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionExpression<loki::formalism::BinaryTag>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>;
-template class ygg::formalism::BasicSymbolRepository<loki::formalism::FunctionExpression<>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::LiteralTag>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::AndTag>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::OrTag>>;
@@ -43,7 +41,6 @@ template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::ExistsTag>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::ForallTag>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<loki::formalism::NumericConstraintTag>>;
-template class ygg::formalism::BasicSymbolRepository<loki::formalism::Condition<>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::LiteralTag>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::AndTag>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::NumericTag>>;
@@ -52,7 +49,6 @@ template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<lok
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::OneOfTag>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::EffectProbabilisticAlternative>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<loki::formalism::ProbabilisticTag>>;
-template class ygg::formalism::BasicSymbolRepository<loki::formalism::Effect<>>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Action>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Axiom>;
 template class ygg::formalism::BasicSymbolRepository<loki::formalism::Metric>;

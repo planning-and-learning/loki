@@ -6,25 +6,24 @@
 #include <gtest/gtest.h>
 #include <utility>
 
-using Index = ygg::Index<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>;
-using Data = ygg::Data<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>;
-using View = ygg::View<Index, loki::formalism::Repository>;
+using Index = urd::index<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>;
+using Data = urd::data<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>;
+using View = urd::view<loki::formalism::FunctionExpression<loki::formalism::MultiTag>, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
 static_assert(std::totally_ordered<Data>);
 static_assert(std::totally_ordered<View>);
 static_assert(std::same_as<View, loki::formalism::EntityView<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>>);
-static_assert(std::constructible_from<Data, loki::formalism::MultiArithmeticOperator, ygg::IndexList<loki::formalism::FunctionExpression<>>>);
+static_assert(std::constructible_from<Data, loki::formalism::MultiArithmeticOperator, loki::formalism::FunctionExpressionList>);
 static_assert(requires(Data& data) {
     data.index;
     data.op;
     data.args;
-    data.clear();
     { data == data } -> std::same_as<bool>;
 });
 static_assert(requires(const View& view) {
-    view.get_index();
+    view.index();
     view.get_operator();
     view.get_args();
     { view == view } -> std::same_as<bool>;
@@ -52,13 +51,7 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
 {
     auto repository = loki::formalism::Repository(0);
     auto builder = loki::formalism::Builder {};
-    const auto wrap = [&](auto node)
-    {
-        return intern<loki::formalism::FunctionExpression<>>(repository,
-                                                             builder,
-                                                             [&](auto& data)
-                                                             { data.variant = ygg::Data<loki::formalism::FunctionExpression<>>::Variant(node.get_index()); });
-    };
+    const auto wrap = [](auto node) { return loki::formalism::FunctionExpressionView(node); };
     const auto make_number = [&](double value)
     { return intern<loki::formalism::FunctionExpression<loki::formalism::NumberTag>>(repository, builder, [&](auto& data) { data.value = value; }); };
     const auto one = wrap(make_number(1.0));
@@ -69,16 +62,16 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
                                                                                                      {
                                                                                                          data.op =
                                                                                                              loki::formalism::BinaryArithmeticOperator::Add;
-                                                                                                         data.left = one.get_index();
-                                                                                                         data.right = two.get_index();
+                                                                                                         data.left = loki::formalism::as_index(one);
+                                                                                                         data.right = loki::formalism::as_index(two);
                                                                                                      }));
     const auto multi = wrap(intern<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>(repository,
                                                                                                    builder,
                                                                                                    [&](auto& data)
                                                                                                    {
                                                                                                        data.op = loki::formalism::MultiArithmeticOperator::Add;
-                                                                                                       data.args.push_back(one.get_index());
-                                                                                                       data.args.push_back(two.get_index());
+                                                                                                       data.args.push_back(loki::formalism::as_index(one));
+                                                                                                       data.args.push_back(loki::formalism::as_index(two));
                                                                                                    }));
     ASSERT_NE(binary, multi);
 
@@ -89,8 +82,8 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
                                                                                       [&](auto& data)
                                                                                       {
                                                                                           data.op = loki::formalism::MultiArithmeticOperator::Mul;
-                                                                                          data.args.push_back(left.get_index());
-                                                                                          data.args.push_back(right.get_index());
+                                                                                          data.args.push_back(loki::formalism::as_index(left));
+                                                                                          data.args.push_back(loki::formalism::as_index(right));
                                                                                       });
     };
     const auto first = make_product(binary, multi);

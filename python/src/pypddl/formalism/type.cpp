@@ -16,6 +16,10 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/type_view.hpp>
 
@@ -27,13 +31,13 @@ namespace loki::formalism
 void bind_type(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Type>>(m, "TypeIndex");
+    urd::python::bind_index<urd::index<formalism::Type>>(m, "TypeIndex");
 
     {
-        using V = Data<formalism::Type>;
-        bind_data<V>(m, "TypeData")
-            .def(nb::init<std::string, ygg::IndexList<formalism::Type>>(), "name"_a, "bases"_a = ygg::IndexList<formalism::Type> {})
-            .def(nb::init<const std::string&, const std::vector<formalism::TypeView>&>(), "name"_a, "bases"_a = std::vector<formalism::TypeView> {})
+        using V = urd::data<formalism::Type>;
+        urd::python::bind_data<V>(m, "TypeData")
+            .def(nb::init<std::string, urd::flat_vector<urd::index<formalism::Type>>>(), "name"_a, "bases"_a = urd::flat_vector<urd::index<formalism::Type>> {})
+            .def(urd::python::init_from_views<const std::string&, const urd::Store<urd::sequence<formalism::TypeView>>&>(), "name"_a, "bases"_a = urd::Store<urd::sequence<formalism::TypeView>> {})
             .def_rw("name", &V::name)
             .def_rw("bases", &V::bases);
     }
@@ -41,10 +45,10 @@ void bind_type(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::TypeView;
         auto cls = nb::class_<V>(m, "Type");
-        cls.def("get_index", &V::get_index).def("get_name", &V::get_name).def("get_bases", &V::get_bases);
+        cls.def("get_index", &V::index).def("get_name", &V::get_name).def("get_bases", &V::get_bases);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Type>(repository);

@@ -26,34 +26,23 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Condition<::loki::formalism::ImplyTag>>
+struct data<::loki::formalism::Condition<::loki::formalism::ImplyTag>>
 {
-    ygg::Index<::loki::formalism::Condition<::loki::formalism::ImplyTag>> index;
-    ygg::Index<::loki::formalism::Condition<>> left;
-    ygg::Index<::loki::formalism::Condition<>> right;
+    urd::index<::loki::formalism::Condition<::loki::formalism::ImplyTag>> index;
+    ::loki::formalism::ConditionVariant left;
+    ::loki::formalism::ConditionVariant right;
 
-    Data() = default;
-    Data(ygg::Index<::loki::formalism::Condition<>> left_, ygg::Index<::loki::formalism::Condition<>> right_) : index(), left(left_), right(right_) {}
-    template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> left_, ::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> right_) :
-        index(),
-        left(),
-        right()
-    {
-        set(left_, left);
-        set(right_, right);
-    }
+    data() = default;
+    data(::loki::formalism::ConditionVariant left_, ::loki::formalism::ConditionVariant right_) : index(), left(left_), right(right_) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::left, &Data::right> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::left, &Data::right> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::left, &data::right> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::left, &data::right> {}; }
 };
 
 }

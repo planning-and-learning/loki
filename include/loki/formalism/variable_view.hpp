@@ -20,24 +20,20 @@
 
 #include "loki/formalism/variable_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Variable, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Variable> C>
-class View<ygg::Index<::loki::formalism::Variable>, C> : public ygg::IndexViewBase<::loki::formalism::Variable, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Variable, C>::IndexViewBase;
-
-    const auto& get_name() const noexcept { return this->get_data().name; }
+    const auto& get_name() const noexcept { return self().data().name; }
 };
-
-}
+}  // namespace urd
 
 #endif

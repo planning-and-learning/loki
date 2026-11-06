@@ -20,25 +20,21 @@
 
 #include "loki/formalism/type_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Type, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Type> C>
-class View<ygg::Index<::loki::formalism::Type>, C> : public ygg::IndexViewBase<::loki::formalism::Type, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Type, C>::IndexViewBase;
-
-    const auto& get_name() const noexcept { return this->get_data().name; }
-    auto get_bases() const noexcept { return ygg::make_view(this->get_data().bases, this->get_context()); }
+    const auto& get_name() const noexcept { return self().data().name; }
+    auto get_bases() const noexcept { return self().template get<&urd::record_of<V>::bases>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

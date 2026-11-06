@@ -10,7 +10,7 @@ from pypddl import formalism as pypddl
 def make_literal(
     repository: pypddl.Repository,
     predicate: pypddl.Predicate,
-    terms: Sequence[pypddl.Term],
+    terms: Sequence[pypddl.Variable | pypddl.Object],
     *,
     positive: bool = True,
 ) -> pypddl.Literal:
@@ -22,38 +22,38 @@ def make_literal(
 def make_condition(
     repository: pypddl.Repository,
     predicate: pypddl.Predicate,
-    terms: Sequence[pypddl.Term],
+    terms: Sequence[pypddl.Variable | pypddl.Object],
     *,
     positive: bool = True,
-) -> pypddl.Condition:
+) -> pypddl.ConditionLiteral:
     """Intern the condition that holds the literal of predicate over terms."""
     literal = make_literal(repository, predicate, terms, positive=positive)
     condition_literal, _ = repository.insert(pypddl.ConditionLiteralData(literal))
-    return repository.insert(pypddl.ConditionData(condition_literal))[0]
+    return condition_literal
 
 
-def make_effect(repository: pypddl.Repository, literal: pypddl.Literal) -> pypddl.Effect:
+def make_effect(repository: pypddl.Repository, literal: pypddl.Literal) -> pypddl.EffectLiteral:
     """Intern the effect that sets literal."""
     effect_literal, _ = repository.insert(pypddl.EffectLiteralData(literal))
-    return repository.insert(pypddl.EffectData(effect_literal))[0]
+    return effect_literal
 
 
 def make_condition_and(
     repository: pypddl.Repository,
-    conditions: Sequence[pypddl.Condition],
-) -> pypddl.Condition:
+    conditions: Sequence[pypddl.ConditionLiteral],
+) -> pypddl.ConditionAnd:
     """Intern the conjunction of conditions."""
     conjunction, _ = repository.insert(pypddl.ConditionAndData(list(conditions)))
-    return repository.insert(pypddl.ConditionData(conjunction))[0]
+    return conjunction
 
 
 def make_effect_and(
     repository: pypddl.Repository,
-    effects: Sequence[pypddl.Effect],
-) -> pypddl.Effect:
+    effects: Sequence[pypddl.EffectLiteral],
+) -> pypddl.EffectAnd:
     """Intern the conjunction of effects."""
     conjunction, _ = repository.insert(pypddl.EffectAndData(list(effects)))
-    return repository.insert(pypddl.EffectData(conjunction))[0]
+    return conjunction
 
 
 def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypddl.Task]:
@@ -77,10 +77,10 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
     free, _ = repository.insert(pypddl.PredicateData("free", [g]))
     carry, _ = repository.insert(pypddl.PredicateData("carry", [b, g]))
 
-    x_term, _ = repository.insert(pypddl.TermData(x.get_variable()))
-    y_term, _ = repository.insert(pypddl.TermData(y.get_variable()))
-    b_term, _ = repository.insert(pypddl.TermData(b.get_variable()))
-    g_term, _ = repository.insert(pypddl.TermData(g.get_variable()))
+    x_term = x.get_variable()
+    y_term = y.get_variable()
+    b_term = b.get_variable()
+    g_term = g.get_variable()
 
     move_pre = make_condition(repository, at_robby, [x_term])
     move_eff = make_effect_and(
@@ -144,19 +144,19 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
         right, _ = repository.insert(pypddl.ObjectData("right", [gripper_t]))
         ball_objects = [repository.insert(pypddl.ObjectData(ball, [ball_t]))[0] for ball in balls]
 
-        rooma_term, _ = repository.insert(pypddl.TermData(rooma))
-        roomb_term, _ = repository.insert(pypddl.TermData(roomb))
-        left_term, _ = repository.insert(pypddl.TermData(left))
-        right_term, _ = repository.insert(pypddl.TermData(right))
+        rooma_term = rooma
+        roomb_term = roomb
+        left_term = left
+        right_term = right
 
         initial_literals = [
             make_literal(repository, at_robby, [rooma_term]),
             make_literal(repository, free, [left_term]),
             make_literal(repository, free, [right_term]),
         ]
-        goals: list[pypddl.Condition] = []
+        goals: list[pypddl.ConditionLiteral] = []
         for ball in ball_objects:
-            ball_term, _ = repository.insert(pypddl.TermData(ball))
+            ball_term = ball
             initial_literals.append(make_literal(repository, at, [ball_term, rooma_term]))
             goals.append(make_condition(repository, at, [ball_term, roomb_term]))
 

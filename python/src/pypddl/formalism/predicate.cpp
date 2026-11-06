@@ -16,6 +16,10 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/parameter_view.hpp>
 #include <loki/formalism/predicate_view.hpp>
@@ -28,15 +32,15 @@ namespace loki::formalism
 void bind_predicate(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Predicate>>(m, "PredicateIndex");
+    urd::python::bind_index<urd::index<formalism::Predicate>>(m, "PredicateIndex");
 
     {
-        using V = Data<formalism::Predicate>;
-        bind_data<V>(m, "PredicateData")
-            .def(nb::init<std::string, ygg::IndexList<formalism::Parameter>>(), "name"_a, "parameters"_a = ygg::IndexList<formalism::Parameter> {})
-            .def(nb::init<const std::string&, const std::vector<formalism::ParameterView>&>(),
+        using V = urd::data<formalism::Predicate>;
+        urd::python::bind_data<V>(m, "PredicateData")
+            .def(nb::init<std::string, urd::flat_vector<urd::index<formalism::Parameter>>>(), "name"_a, "parameters"_a = urd::flat_vector<urd::index<formalism::Parameter>> {})
+            .def(urd::python::init_from_views<const std::string&, const urd::Store<urd::sequence<formalism::ParameterView>>&>(),
                  "name"_a,
-                 "parameters"_a = std::vector<formalism::ParameterView> {})
+                 "parameters"_a = urd::Store<urd::sequence<formalism::ParameterView>> {})
             .def_rw("name", &V::name)
             .def_rw("parameters", &V::parameters);
     }
@@ -44,10 +48,10 @@ void bind_predicate(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::PredicateView;
         auto cls = nb::class_<V>(m, "Predicate");
-        cls.def("get_index", &V::get_index).def("get_name", &V::get_name).def("get_parameters", &V::get_parameters).def("get_arity", &V::get_arity);
+        cls.def("get_index", &V::index).def("get_name", &V::get_name).def("get_parameters", &V::get_parameters).def("get_arity", &V::get_arity);
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Predicate>(repository);

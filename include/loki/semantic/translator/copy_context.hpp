@@ -21,29 +21,35 @@
 #include "loki/formalism/repository.hpp"
 #include "loki/semantic/translator/common.hpp"
 
-#include <yggdrasil/containers/unordered_set.hpp>
+#include <urd/repr/maps/std_map.hpp>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+
 
 namespace loki::semantic::detail
 {
 
 using ScopedFreeParameter = std::pair<formalism::ParameterView, formalism::VariableView>;
-using GeneratedUniversalConditionKey = std::pair<std::vector<ScopedFreeParameter>, formalism::ConditionView>;
+using GeneratedUniversalConditionKey = std::pair<urd::Store<urd::sequence<ScopedFreeParameter>>, formalism::ConditionView>;
 
 struct CopyContext
 {
     formalism::Builder builder;
     std::shared_ptr<TranslationStorage> storage;
-    ygg::UnorderedMap<formalism::VariableView, size_t> num_quantifications;
-    std::vector<std::vector<formalism::ParameterView>> active_parameters;
-    std::vector<std::vector<formalism::VariableView>> active_parameter_variables;
-    std::vector<ygg::UnorderedMap<formalism::VariableView, formalism::VariableView>> variable_bindings;
-    ygg::UnorderedSet<std::string> renamed_variable_names;
-    ygg::UnorderedSet<std::string> used_predicate_names;
-    std::vector<formalism::PredicateView> generated_predicates;
-    std::vector<formalism::AxiomView> generated_axioms;
-    ygg::UnorderedMap<GeneratedUniversalConditionKey, formalism::ConditionView> generated_universal_conditions;
+    urd::Store<urd::map<formalism::VariableView, size_t>> num_quantifications;
+    urd::Store<urd::sequence<urd::Store<urd::sequence<formalism::ParameterView>>>> active_parameters;
+    urd::Store<urd::sequence<urd::Store<urd::sequence<formalism::VariableView>>>> active_parameter_variables;
+    urd::Store<urd::sequence<urd::Store<urd::map<formalism::VariableView, formalism::VariableView>>>> variable_bindings;
+    urd::Store<urd::set<std::string>> renamed_variable_names;
+    urd::Store<urd::set<std::string>> used_predicate_names;
+    urd::Store<urd::sequence<formalism::PredicateView>> generated_predicates;
+    urd::Store<urd::sequence<formalism::AxiomView>> generated_axioms;
+    urd::Store<urd::map<GeneratedUniversalConditionKey, formalism::ConditionView>> generated_universal_conditions;
     size_t num_generated_axioms = 0;
-    ygg::UnorderedMap<formalism::TypeView, formalism::PredicateView> type_predicates;
+    urd::Store<urd::map<formalism::TypeView, formalism::PredicateView>> type_predicates;
     bool compile_typing = true;
     bool renaming_enabled = true;
     TranslationPhase phase = TranslationPhase::ToNegationNormalForm;

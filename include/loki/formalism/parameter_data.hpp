@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_PARAMETER_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <optional>
 #include <string>
@@ -26,40 +28,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Parameter>
+struct data<::loki::formalism::Parameter>
 {
-    ygg::Index<::loki::formalism::Parameter> index;
-    ygg::Index<::loki::formalism::Variable> variable;
-    ygg::IndexList<::loki::formalism::Type> types;
+    urd::index<::loki::formalism::Parameter> index;
+    urd::index<::loki::formalism::Variable> variable;
+    urd::flat_vector<urd::index<::loki::formalism::Type>> types;
 
-    Data() = default;
-    Data(ygg::Index<::loki::formalism::Variable> variable_, ygg::IndexList<::loki::formalism::Type> types_ = {}) :
+    data() = default;
+    data(urd::index<::loki::formalism::Variable> variable_, urd::flat_vector<urd::index<::loki::formalism::Type>> types_ = {}) :
         index(),
         variable(variable_),
         types(std::move(types_))
     {
     }
-    template<typename C>
-    Data(::ygg::View<ygg::Index<::loki::formalism::Variable>, C> variable_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Type>, C>>& types_ = {}) :
-        index(),
-        variable(),
-        types()
-    {
-        set(variable_, variable);
-        set(types_, types);
-    }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::variable, &Data::types> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::variable, &Data::types> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::variable, &data::types> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::variable, &data::types> {}; }
 };
 
 }

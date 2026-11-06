@@ -54,7 +54,7 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
 
     if (auto mapped = find_mapped(this->copy_context().storage->actions, source))
         return *mapped;
-    const auto& data = source.get_data();
+    const auto& data = source.data();
     this->copy_context().num_quantifications.clear();
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
@@ -74,7 +74,7 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
     }
     if (this->copy_context().phase == TranslationPhase::CompileTyping)
         this->self().prepend_type_conditions(precondition, source.get_parameters());
-    auto effect = cista::optional<ygg::Index<formalism::Effect<>>> {};
+    auto effect = cista::optional<formalism::EffectVariant> {};
     if (const auto effect_view = source.get_effect())
         effect = as_index(this->self().copy(effect_view.value()));
     auto result = formalism::checkout<formalism::Action>(this->copy_context().builder);
@@ -84,10 +84,10 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
         this->self().copy_parameters_without_types(source.get_parameters(), result->parameters);
     else
         for (auto parameter : parameter_views)
-            result->parameters.push_back(parameter.get_index());
+            result->parameters.push_back(parameter.index());
     result->original_arity = data.original_arity;
     if (precondition)
-        result->precondition = precondition->get_index();
+        result->precondition = as_index(*precondition);
     result->effect = effect;
     auto out = formalism::insert(this->copy_context().storage->repository, *result).first;
     this->self().leave_scope();
@@ -111,7 +111,7 @@ formalism::AxiomView TopLevelTranslator<Derived>::copy(formalism::AxiomView sour
 
     if (auto mapped = find_mapped(this->copy_context().storage->axioms, source))
         return *mapped;
-    const auto& data = source.get_data();
+    const auto& data = source.data();
     this->copy_context().num_quantifications.clear();
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
@@ -127,10 +127,10 @@ formalism::AxiomView TopLevelTranslator<Derived>::copy(formalism::AxiomView sour
         this->self().copy_parameters_without_types(source.get_parameters(), result->parameters);
     else
         for (auto parameter : parameter_views)
-            result->parameters.push_back(parameter.get_index());
+            result->parameters.push_back(parameter.index());
     result->original_arity = data.original_arity;
     result->head = head;
-    result->condition = copied_condition.get_index();
+    result->condition = as_index(copied_condition);
     auto out = formalism::insert(this->copy_context().storage->repository, *result).first;
     this->self().leave_scope();
     remember(this->copy_context().storage->axioms, source, out);

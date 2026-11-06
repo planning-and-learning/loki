@@ -16,9 +16,9 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/binary_function_expression_view.hpp>
-#include <loki/formalism/function_expression_view.hpp>
 
 namespace nb = nanobind;
 
@@ -28,16 +28,16 @@ namespace loki::formalism
 void bind_binary_function_expression(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::FunctionExpression<formalism::BinaryTag>>>(m, "BinaryFunctionExpressionIndex");
+    urd::python::bind_index<urd::index<formalism::FunctionExpression<formalism::BinaryTag>>>(m, "BinaryFunctionExpressionIndex");
 
     {
-        using V = Data<formalism::FunctionExpression<formalism::BinaryTag>>;
-        bind_data<V>(m, "BinaryFunctionExpressionData")
-            .def(nb::init<formalism::BinaryArithmeticOperator, ygg::Index<formalism::FunctionExpression<>>, ygg::Index<formalism::FunctionExpression<>>>(),
+        using V = urd::data<formalism::FunctionExpression<formalism::BinaryTag>>;
+        urd::python::bind_data<V>(m, "BinaryFunctionExpressionData")
+            .def(nb::init<formalism::BinaryArithmeticOperator, formalism::FunctionExpressionVariant, formalism::FunctionExpressionVariant>(),
                  "operator"_a,
                  "left"_a,
                  "right"_a)
-            .def(nb::init<formalism::BinaryArithmeticOperator, formalism::FunctionExpressionView, formalism::FunctionExpressionView>(),
+            .def(urd::python::init_from_views<formalism::BinaryArithmeticOperator, formalism::FunctionExpressionView, formalism::FunctionExpressionView>(),
                  "operator"_a,
                  "left"_a,
                  "right"_a)
@@ -49,13 +49,13 @@ void bind_binary_function_expression(nb::module_& m, RepositoryBinding& reposito
     {
         using V = formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>;
         auto cls = nb::class_<V>(m, "BinaryFunctionExpression");
-        cls.def("get_index", &V::get_index)
+        cls.def("get_index", &V::index)
             .def("get_operator", &V::get_operator)
             .def("get_left", &V::get_left, nb::keep_alive<0, 1>())
             .def("get_right", &V::get_right, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::FunctionExpression<formalism::BinaryTag>>(repository);

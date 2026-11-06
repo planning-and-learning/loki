@@ -43,26 +43,26 @@ static_assert(!CanonicalCopyRoot<formalism::TypeView>);
 TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
 {
     auto source = formalism::Repository(101);
-    auto type_data = ygg::Data<formalism::Type>(cista::offset::string("type"));
+    auto type_data = urd::data<formalism::Type>(cista::offset::string("type"));
     const auto type = formalism::insert(source, type_data).first;
-    auto domain_data = ygg::Data<formalism::Domain>();
+    auto domain_data = urd::data<formalism::Domain>();
     domain_data.name = "domain";
-    domain_data.types.push_back(type.get_index());
+    domain_data.types.push_back(type.index());
     const auto domain = formalism::insert(source, domain_data).first;
-    auto task_data = ygg::Data<formalism::Task>();
+    auto task_data = urd::data<formalism::Task>();
     task_data.name = "task";
-    task_data.domain = domain.get_index();
+    task_data.domain = domain.index();
     const auto task = formalism::insert(source, task_data).first;
 
     auto destination = std::make_shared<semantic::detail::TranslationStorage>(102);
-    auto occupied_data = ygg::Data<formalism::Type>(cista::offset::string("occupied"));
+    auto occupied_data = urd::data<formalism::Type>(cista::offset::string("occupied"));
     static_cast<void>(formalism::insert(destination->repository, occupied_data));
     auto context = semantic::detail::CanonicalCopyTranslator(destination);
     const auto [copied_domain, domain_inserted] = semantic::detail::copy(domain, context);
     EXPECT_TRUE(domain_inserted);
-    EXPECT_EQ(&copied_domain.get_context(), &destination->repository);
+    EXPECT_EQ(&copied_domain.context(), &destination->repository);
     ASSERT_EQ(copied_domain.get_types().size(), 1);
-    EXPECT_NE(copied_domain.get_types()[0].get_index(), type.get_index());
+    EXPECT_NE(copied_domain.get_types()[0].index(), type.index());
     EXPECT_EQ(std::string_view(copied_domain.get_types()[0].get_name()), "type");
     const auto [copied_task, task_inserted] = semantic::detail::copy(task, context);
     EXPECT_TRUE(task_inserted);
@@ -151,8 +151,8 @@ TEST(LokiTests, ExistentialConditionalEffectBecomesUniversalEffect)
     EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::ForallTag>>(action.get_effect().value()), std::size_t { 1 });
     EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(action.get_effect().value()), std::size_t { 1 });
 
-    const auto effect_forall = action.get_effect().value().get_variant().get<ygg::Index<formalism::Effect<formalism::ForallTag>>>();
-    const auto effect_when = effect_forall.get_effect().get_variant().get<ygg::Index<formalism::Effect<formalism::WhenTag>>>();
+    const auto effect_forall = effect_node<formalism::ForallTag>(action.get_effect().value());
+    const auto effect_when = std::get<formalism::EntityView<formalism::Effect<formalism::WhenTag>>>(effect_forall.get_effect());
     EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::ExistsTag>>(effect_when.get_condition()), std::size_t { 0 });
 }
 
@@ -167,17 +167,17 @@ TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
     const auto action = domain.get_actions().front();
     ASSERT_TRUE(action.get_precondition().has_value());
 
-    const auto condition_or = action.get_precondition().value().get_variant().get<ygg::Index<formalism::Condition<formalism::OrTag>>>();
+    const auto condition_or = std::get<formalism::EntityView<formalism::Condition<formalism::OrTag>>>(action.get_precondition().value());
     ASSERT_EQ(condition_or.get_conditions().size(), std::size_t { 2 });
     for (auto condition : condition_or.get_conditions())
     {
-        ygg::visit(
+        std::visit(
             [](const auto& node)
             {
                 using Node = std::decay_t<decltype(node)>;
                 EXPECT_TRUE((std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>) );
             },
-            condition.get_variant());
+            condition);
     }
 }
 
@@ -267,15 +267,15 @@ TEST(LokiTests, RenameQuantifiedVariablesSeparatesNestedBinders)
     EXPECT_EQ(variable_name(action.get_parameters().front()), "?x");
 
     ASSERT_TRUE(action.get_precondition().has_value());
-    const auto exists = action.get_precondition().value().get_variant().get<ygg::Index<formalism::Condition<formalism::ExistsTag>>>();
+    const auto exists = std::get<formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>(action.get_precondition().value());
     ASSERT_EQ(exists.get_parameters().size(), std::size_t { 1 });
     EXPECT_EQ(variable_name(exists.get_parameters().front()), "?x_0");
 
-    const auto conjunction = exists.get_condition().get_variant().get<ygg::Index<formalism::Condition<formalism::AndTag>>>();
+    const auto conjunction = std::get<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(exists.get_condition());
     auto checked_forall = false;
     for (auto child : conjunction.get_conditions())
     {
-        ygg::visit(
+        std::visit(
             [&](const auto& node)
             {
                 using Node = std::decay_t<decltype(node)>;
@@ -286,12 +286,12 @@ TEST(LokiTests, RenameQuantifiedVariablesSeparatesNestedBinders)
                     EXPECT_EQ(variable_name(node.get_parameters().front()), "?x_1");
                 }
             },
-            child.get_variant());
+            child);
     }
     EXPECT_TRUE(checked_forall);
 
     ASSERT_TRUE(action.get_effect().has_value());
-    const auto effect_forall = action.get_effect().value().get_variant().get<ygg::Index<formalism::Effect<formalism::ForallTag>>>();
+    const auto effect_forall = effect_node<formalism::ForallTag>(action.get_effect().value());
     ASSERT_EQ(effect_forall.get_parameters().size(), std::size_t { 1 });
     EXPECT_EQ(variable_name(effect_forall.get_parameters().front()), "?x_2");
 }

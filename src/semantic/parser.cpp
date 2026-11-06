@@ -16,6 +16,9 @@
  */
 
 #include "loki/semantic/parser.hpp"
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include "builder.hpp"
 #include "context.hpp"
@@ -62,7 +65,7 @@ private:
     ParserOptions m_options;
     DiagnosticContext m_diagnostics;
     DomainContext m_domain_context;
-    std::vector<std::shared_ptr<detail::TranslationStorage>> m_task_storages;
+    urd::Store<urd::sequence<std::shared_ptr<detail::TranslationStorage>>> m_task_storages;
 
     formalism::Repository& repo() noexcept;
     [[nodiscard]] const formalism::Repository& repo() const noexcept;
@@ -134,7 +137,7 @@ formalism::TaskView Parser::Impl::parse_task_source(std::string source, const st
 formalism::DomainView Parser::Impl::parse_domain_ast(const ast::Domain& domain)
 {
     // Builds a second time only if variables use (either ...) types, now with their union types known.
-    auto union_types = std::set<std::vector<std::string>> {};
+    auto union_types = urd::Store<urd::set<urd::Store<urd::sequence<std::string>>>, urd::sorted, urd::stable_refs> {};
     auto build = [&]
     {
         reset_domain();
@@ -166,7 +169,7 @@ formalism::TaskView Parser::Impl::parse_task_ast(const ast::Task& task)
 {
     const auto domain_storage = m_domain_context.storage;
     // The task reuses the domain's union types and builds a second time only if its own variables use new ones.
-    auto union_types = std::set<std::vector<std::string>> {};
+    auto union_types = urd::Store<urd::set<urd::Store<urd::sequence<std::string>>>, urd::sorted, urd::stable_refs> {};
     auto parse_storage = std::shared_ptr<detail::TranslationStorage> {};
     auto build = [&]
     {

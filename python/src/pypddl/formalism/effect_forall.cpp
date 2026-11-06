@@ -16,9 +16,12 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/effect_forall_view.hpp>
-#include <loki/formalism/effect_view.hpp>
 #include <loki/formalism/parameter_view.hpp>
 
 namespace nb = nanobind;
@@ -29,13 +32,13 @@ namespace loki::formalism
 void bind_effect_forall(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::Effect<formalism::ForallTag>>>(m, "EffectForallIndex");
+    urd::python::bind_index<urd::index<formalism::Effect<formalism::ForallTag>>>(m, "EffectForallIndex");
 
     {
-        using V = Data<formalism::Effect<formalism::ForallTag>>;
-        bind_data<V>(m, "EffectForallData")
-            .def(nb::init<ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Effect<>>>(), "parameters"_a, "effect"_a)
-            .def(nb::init<const std::vector<formalism::ParameterView>&, formalism::EffectView>(), "parameters"_a, "effect"_a)
+        using V = urd::data<formalism::Effect<formalism::ForallTag>>;
+        urd::python::bind_data<V>(m, "EffectForallData")
+            .def(nb::init<urd::flat_vector<urd::index<formalism::Parameter>>, formalism::EffectVariant>(), "parameters"_a, "effect"_a)
+            .def(urd::python::init_from_views<const urd::Store<urd::sequence<formalism::ParameterView>>&, formalism::EffectView>(), "parameters"_a, "effect"_a)
             .def_rw("parameters", &V::parameters)
             .def_rw("effect", &V::effect);
     }
@@ -43,10 +46,10 @@ void bind_effect_forall(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::EntityView<formalism::Effect<formalism::ForallTag>>;
         auto cls = nb::class_<V>(m, "EffectForall");
-        cls.def("get_index", &V::get_index).def("get_parameters", &V::get_parameters).def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
+        cls.def("get_index", &V::index).def("get_parameters", &V::get_parameters).def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::Effect<formalism::ForallTag>>(repository);

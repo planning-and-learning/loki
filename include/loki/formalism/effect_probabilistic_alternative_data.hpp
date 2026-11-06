@@ -26,28 +26,23 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::EffectProbabilisticAlternative>
+struct data<::loki::formalism::EffectProbabilisticAlternative>
 {
-    ygg::Index<::loki::formalism::EffectProbabilisticAlternative> index;
+    urd::index<::loki::formalism::EffectProbabilisticAlternative> index;
     double probability = 0.0;
-    ygg::Index<::loki::formalism::Effect<>> effect;
+    ::loki::formalism::EffectVariant effect;
 
-    Data() = default;
-    Data(double probability_, ygg::Index<::loki::formalism::Effect<>> effect_) : index(), probability(probability_), effect(effect_) {}
-    template<typename C>
-    Data(double probability_, ::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C> effect_) : index(), probability(probability_), effect()
-    { set(effect_, effect); }
+    data() = default;
+    data(double probability_, ::loki::formalism::EffectVariant effect_) : index(), probability(probability_), effect(effect_) {}
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::probability, &Data::effect> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::probability, &Data::effect> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::probability, &data::effect> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::probability, &data::effect> {}; }
 };
 
 }

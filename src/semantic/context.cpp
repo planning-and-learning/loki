@@ -16,6 +16,8 @@
  */
 
 #include "context.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include "loki/formalism/repository.hpp"
 #include "loki/semantic/translator/common.hpp"
@@ -59,7 +61,7 @@ formalism::TypeView intern_type(DomainContext& domain_context,
                                 formalism::Builder& builder,
                                 formalism::Repository& repository,
                                 const std::string& name,
-                                const std::vector<formalism::TypeView>& bases)
+                                const urd::Store<urd::sequence<formalism::TypeView>>& bases)
 {
     auto k = key(name);
     if (auto it = domain_context.types.find(k); it != domain_context.types.end() && bases.empty())
@@ -68,10 +70,9 @@ formalism::TypeView intern_type(DomainContext& domain_context,
     data->name = to_cista(k);
     data->bases.reserve(bases.size());
     for (const auto base : bases)
-        data->bases.push_back(base.get_index());
+        data->bases.push_back(base.index());
     auto view = formalism::insert(repository, *data).first;
-    if (auto [it, inserted] = domain_context.types.emplace(k, view); !inserted)
-        it->second = view;
+    domain_context.types.insert_or_assign(k, view);
     return view;
 }
 
@@ -95,8 +96,7 @@ void rebuild_domain_symbols(DomainContext& domain_context, formalism::Repository
 
     auto remember_type = [&](auto&& self, formalism::TypeView type) -> void
     {
-        if (auto [it, inserted] = domain_context.types.emplace(std::string(type.get_name()), type); !inserted)
-            it->second = type;
+        domain_context.types.insert_or_assign(std::string(type.get_name()), type);
         domain_context.declared_types.insert(std::string(type.get_name()));
         for (auto base : type.get_bases())
             self(self, base);

@@ -16,6 +16,8 @@
  */
 
 #include "builder.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include "ast_mappings.hpp"
 #include "checks.hpp"
@@ -32,9 +34,9 @@
 namespace loki::semantic
 {
 
-AstBuilder::VariableScope::VariableScope(ParseContext& context) : m_context(context) { m_context.variable_scopes.emplace_back(); }
+AstBuilder::VariableScope::VariableScope(ParseContext& context) : m_context(context) { m_context.variable_scopes.push_scope(); }
 
-AstBuilder::VariableScope::~VariableScope() { m_context.variable_scopes.pop_back(); }
+AstBuilder::VariableScope::~VariableScope() { m_context.variable_scopes.pop_scope(); }
 
 AstBuilder::AstBuilder(const ParserOptions& options,
                        const DiagnosticContext& diagnostics,
@@ -69,7 +71,7 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
         auto data = formalism::checkout<formalism::Requirement>(m_builder);
         data->kind = formalism::RequirementKind::ActionCosts;
         const auto requirement = formalism::insert(repo(), *data).first;
-        if (std::none_of(requirements.begin(), requirements.end(), [&](const auto value) { return value.get_index() == requirement.get_index(); }))
+        if (std::none_of(requirements.begin(), requirements.end(), [&](const auto value) { return value.index() == requirement.index(); }))
             requirements.push_back(requirement);
     }
     m_domain_context.requirement_kinds = m_parse_context.active_requirements;
@@ -86,14 +88,14 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
         m_domain_context.declared_functions.insert("total-cost");
         functions.push_back(total_cost_function());
     }
-    auto axioms = std::vector<formalism::AxiomView> {};
+    auto axioms = urd::Store<urd::sequence<formalism::AxiomView>> {};
     for (const auto& declaration : domain.declarations)
         if (const auto* axiom = boost::get<ast::Axiom>(&declaration))
         {
             checks().require_requirement(formalism::RequirementKind::DerivedPredicates, *axiom);
             axioms.push_back(parse_axiom(*axiom));
         }
-    auto actions = std::vector<formalism::ActionView> {};
+    auto actions = urd::Store<urd::sequence<formalism::ActionView>> {};
     for (const auto& declaration : domain.declarations)
         if (const auto* action = boost::get<ast::Action>(&declaration))
             actions.push_back(parse_action(*action));
@@ -105,7 +107,7 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
     types.clear();
     for (const auto& [_, type] : m_domain_context.types)
         types.push_back(type);
-    std::sort(types.begin(), types.end(), [](auto lhs, auto rhs) { return lhs.get_index() < rhs.get_index(); });
+    std::sort(types.begin(), types.end(), [](auto lhs, auto rhs) { return lhs.index() < rhs.index(); });
 
     auto data = formalism::checkout<formalism::Domain>(m_builder);
     data->name = to_cista(domain.name.text);
@@ -139,8 +141,8 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
     auto types = parse_type_hierarchy(task.types);
     auto predicates = parse_predicates(task.predicates);
     auto objects = parse_objects(task.objects, m_parse_context.task_objects, m_parse_context.declared_objects);
-    auto initial_literals = std::vector<formalism::LiteralView> {};
-    auto initial_function_values = std::vector<formalism::InitialFunctionValueView> {};
+    auto initial_literals = urd::Store<urd::sequence<formalism::LiteralView>> {};
+    auto initial_function_values = urd::Store<urd::sequence<formalism::InitialFunctionValueView>> {};
     for (const auto& element : task.initial)
         boost::apply_visitor([&](const auto& node) { parse_initial_element(node, initial_literals, initial_function_values); }, element);
 
@@ -153,7 +155,7 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
         metric = parse_metric(*task.metric);
     complete_action_costs(task, initial_function_values, metric);
 
-    auto axioms = std::vector<formalism::AxiomView> {};
+    auto axioms = urd::Store<urd::sequence<formalism::AxiomView>> {};
     for (const auto& axiom : task.axioms)
     {
         checks().require_requirement(formalism::RequirementKind::DerivedPredicates, axiom);
@@ -163,14 +165,15 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
 
     auto data = formalism::checkout<formalism::Task>(m_builder);
     data->name = to_cista(task.name.text);
-    data->domain = m_domain_context.get_domain().get_index();
+    data->domain = m_domain_context.get_domain().index();
     append_indices(requirements, data->requirements);
     append_indices(types, data->types);
     append_indices(predicates, data->predicates);
     append_indices(objects, data->objects);
     append_indices(initial_literals, data->initial_literals);
     append_indices(initial_function_values, data->initial_function_values);
-    data->goal = to_optional_index(goal);
+    if (goal)
+        data->goal = formalism::as_index(*goal);
     data->metric = to_optional_index(metric);
     append_indices(axioms, data->axioms);
     return formalism::insert(repo(), *data).first;

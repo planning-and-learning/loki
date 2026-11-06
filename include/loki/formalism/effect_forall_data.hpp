@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_EFFECT_FORALL_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <optional>
 #include <string>
@@ -26,40 +28,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Effect<::loki::formalism::ForallTag>>
+struct data<::loki::formalism::Effect<::loki::formalism::ForallTag>>
 {
-    ygg::Index<::loki::formalism::Effect<::loki::formalism::ForallTag>> index;
-    ygg::IndexList<::loki::formalism::Parameter> parameters;
-    ygg::Index<::loki::formalism::Effect<>> effect;
+    urd::index<::loki::formalism::Effect<::loki::formalism::ForallTag>> index;
+    urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
+    ::loki::formalism::EffectVariant effect;
 
-    Data() = default;
-    Data(ygg::IndexList<::loki::formalism::Parameter> parameters_, ygg::Index<::loki::formalism::Effect<>> effect_) :
+    data() = default;
+    data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_, ::loki::formalism::EffectVariant effect_) :
         index(),
         parameters(std::move(parameters_)),
         effect(effect_)
     {
     }
-    template<typename C>
-    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
-         ::ygg::View<ygg::Index<::loki::formalism::Effect<>>, C> effect_) :
-        index(),
-        parameters(),
-        effect()
-    {
-        set(parameters_, parameters);
-        set(effect_, effect);
-    }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::parameters, &Data::effect> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::parameters, &Data::effect> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::parameters, &data::effect> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::parameters, &data::effect> {}; }
 };
 
 }

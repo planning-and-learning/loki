@@ -20,26 +20,21 @@
 
 #include "loki/formalism/condition_imply_data.hpp"
 
-#include <yggdrasil/containers/optional.hpp>
-#include <yggdrasil/containers/variant.hpp>
-#include <yggdrasil/containers/vector.hpp>
-#include <yggdrasil/core/types.hpp>
+#include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg
+namespace urd
 {
+template<typename V>
+struct view_mixin<::loki::formalism::Condition<::loki::formalism::ImplyTag>, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
-template<ygg::formalism::SymbolContextFor<::loki::formalism::Condition<::loki::formalism::ImplyTag>> C>
-class View<ygg::Index<::loki::formalism::Condition<::loki::formalism::ImplyTag>>, C> :
-    public ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ImplyTag>, C>
-{
 public:
-    using ygg::IndexViewBase<::loki::formalism::Condition<::loki::formalism::ImplyTag>, C>::IndexViewBase;
-
-    auto get_left() const noexcept { return ygg::make_view(this->get_data().left, this->get_context()); }
-    auto get_right() const noexcept { return ygg::make_view(this->get_data().right, this->get_context()); }
+    auto get_left() const noexcept { return self().template get<&urd::record_of<V>::left>(); }
+    auto get_right() const noexcept { return self().template get<&urd::record_of<V>::right>(); }
 };
-
-}
+}  // namespace urd
 
 #endif

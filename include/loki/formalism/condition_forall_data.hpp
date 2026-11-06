@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_CONDITION_FORALL_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <optional>
 #include <string>
@@ -26,40 +28,28 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Condition<::loki::formalism::ForallTag>>
+struct data<::loki::formalism::Condition<::loki::formalism::ForallTag>>
 {
-    ygg::Index<::loki::formalism::Condition<::loki::formalism::ForallTag>> index;
-    ygg::IndexList<::loki::formalism::Parameter> parameters;
-    ygg::Index<::loki::formalism::Condition<>> condition;
+    urd::index<::loki::formalism::Condition<::loki::formalism::ForallTag>> index;
+    urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
+    ::loki::formalism::ConditionVariant condition;
 
-    Data() = default;
-    Data(ygg::IndexList<::loki::formalism::Parameter> parameters_, ygg::Index<::loki::formalism::Condition<>> condition_) :
+    data() = default;
+    data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_, ::loki::formalism::ConditionVariant condition_) :
         index(),
         parameters(std::move(parameters_)),
         condition(condition_)
     {
     }
-    template<typename C>
-    Data(const std::vector<::ygg::View<ygg::Index<::loki::formalism::Parameter>, C>>& parameters_,
-         ::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C> condition_) :
-        index(),
-        parameters(),
-        condition()
-    {
-        set(parameters_, parameters);
-        set(condition_, condition);
-    }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::parameters, &Data::condition> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::parameters, &Data::condition> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::parameters, &data::condition> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::parameters, &data::condition> {}; }
 };
 
 }

@@ -16,6 +16,10 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <urd/python/sequences/sequence.hpp>
 
 #include <loki/formalism/function_skeleton_view.hpp>
 #include <loki/formalism/parameter_view.hpp>
@@ -29,13 +33,13 @@ namespace loki::formalism
 void bind_function_skeleton(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::FunctionSkeleton>>(m, "FunctionSkeletonIndex");
+    urd::python::bind_index<urd::index<formalism::FunctionSkeleton>>(m, "FunctionSkeletonIndex");
 
     {
-        using V = Data<formalism::FunctionSkeleton>;
-        bind_data<V>(m, "FunctionSkeletonData")
-            .def(nb::init<std::string, ygg::IndexList<formalism::Parameter>, ygg::Index<formalism::Type>>(), "name"_a, "parameters"_a, "type"_a)
-            .def(nb::init<const std::string&, const std::vector<formalism::ParameterView>&, formalism::TypeView>(), "name"_a, "parameters"_a, "type"_a)
+        using V = urd::data<formalism::FunctionSkeleton>;
+        urd::python::bind_data<V>(m, "FunctionSkeletonData")
+            .def(nb::init<std::string, urd::flat_vector<urd::index<formalism::Parameter>>, urd::index<formalism::Type>>(), "name"_a, "parameters"_a, "type"_a)
+            .def(urd::python::init_from_views<const std::string&, const urd::Store<urd::sequence<formalism::ParameterView>>&, formalism::TypeView>(), "name"_a, "parameters"_a, "type"_a)
             .def_rw("name", &V::name)
             .def_rw("parameters", &V::parameters)
             .def_rw("type", &V::type);
@@ -44,14 +48,14 @@ void bind_function_skeleton(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::FunctionSkeletonView;
         auto cls = nb::class_<V>(m, "FunctionSkeleton");
-        cls.def("get_index", &V::get_index)
+        cls.def("get_index", &V::index)
             .def("get_name", &V::get_name)
             .def("get_parameters", &V::get_parameters)
             .def("get_arity", &V::get_arity)
             .def("get_type", &V::get_type, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::FunctionSkeleton>(repository);

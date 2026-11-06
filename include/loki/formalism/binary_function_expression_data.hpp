@@ -26,46 +26,32 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
+struct data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
 {
-    ygg::Index<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>> index;
+    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>> index;
     ::loki::formalism::BinaryArithmeticOperator op {};
-    ygg::Index<::loki::formalism::FunctionExpression<>> left;
-    ygg::Index<::loki::formalism::FunctionExpression<>> right;
+    ::loki::formalism::FunctionExpressionVariant left;
+    ::loki::formalism::FunctionExpressionVariant right;
 
-    Data() = default;
-    Data(::loki::formalism::BinaryArithmeticOperator op_,
-         ygg::Index<::loki::formalism::FunctionExpression<>> left_,
-         ygg::Index<::loki::formalism::FunctionExpression<>> right_) :
+    data() = default;
+    data(::loki::formalism::BinaryArithmeticOperator op_,
+         ::loki::formalism::FunctionExpressionVariant left_,
+         ::loki::formalism::FunctionExpressionVariant right_) :
         index(),
         op(op_),
         left(left_),
         right(right_)
     {
     }
-    template<typename C>
-    Data(::loki::formalism::BinaryArithmeticOperator op_,
-         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> left_,
-         ::ygg::View<ygg::Index<::loki::formalism::FunctionExpression<>>, C> right_) :
-        index(),
-        op(op_),
-        left(),
-        right()
-    {
-        set(left_, left);
-        set(right_, right);
-    }
 
-    static constexpr auto cista_members() noexcept { return ygg::Members<&Data::index, &Data::op, &Data::left, &Data::right> {}; }
-    static constexpr auto identifying_members() noexcept { return ygg::Members<&Data::op, &Data::left, &Data::right> {}; }
-    void clear() noexcept { ygg::clear_members(*this); }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::op, &data::left, &data::right> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::op, &data::left, &data::right> {}; }
 };
 
 }

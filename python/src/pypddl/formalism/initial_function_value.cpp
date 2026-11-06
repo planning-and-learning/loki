@@ -16,8 +16,8 @@
  */
 
 #include "bindings.hpp"
+#include <yggdrasil/python/type_casters.hpp>
 
-#include <loki/formalism/function_expression_view.hpp>
 #include <loki/formalism/function_term_view.hpp>
 #include <loki/formalism/initial_function_value_view.hpp>
 
@@ -29,13 +29,13 @@ namespace loki::formalism
 void bind_initial_function_value(nb::module_& m, RepositoryBinding& repository)
 {
     using namespace nb::literals;
-    ygg::bind_index<ygg::Index<formalism::InitialFunctionValue>>(m, "InitialFunctionValueIndex");
+    urd::python::bind_index<urd::index<formalism::InitialFunctionValue>>(m, "InitialFunctionValueIndex");
 
     {
-        using V = Data<formalism::InitialFunctionValue>;
-        bind_data<V>(m, "InitialFunctionValueData")
-            .def(nb::init<ygg::Index<formalism::FunctionTerm>, ygg::Index<formalism::FunctionExpression<>>>(), "function"_a, "value"_a)
-            .def(nb::init<formalism::FunctionTermView, formalism::FunctionExpressionView>(), "function"_a, "value"_a)
+        using V = urd::data<formalism::InitialFunctionValue>;
+        urd::python::bind_data<V>(m, "InitialFunctionValueData")
+            .def(nb::init<urd::index<formalism::FunctionTerm>, formalism::FunctionExpressionVariant>(), "function"_a, "value"_a)
+            .def(urd::python::init_from_views<formalism::FunctionTermView, formalism::FunctionExpressionView>(), "function"_a, "value"_a)
             .def_rw("function", &V::function)
             .def_rw("value", &V::value);
     }
@@ -43,12 +43,12 @@ void bind_initial_function_value(nb::module_& m, RepositoryBinding& repository)
     {
         using V = formalism::InitialFunctionValueView;
         auto cls = nb::class_<V>(m, "InitialFunctionValue");
-        cls.def("get_index", &V::get_index)
+        cls.def("get_index", &V::index)
             .def("get_function", &V::get_function, nb::keep_alive<0, 1>())
             .def("get_value", &V::get_value, nb::keep_alive<0, 1>());
         ygg::add_print(cls);
-        ygg::add_comparison(cls);
-        ygg::add_hash(cls);
+        urd::python::add_comparison(cls);
+        urd::python::add_hash(cls);
     }
 
     bind_insert<formalism::InitialFunctionValue>(repository);

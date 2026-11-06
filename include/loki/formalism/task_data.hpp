@@ -19,6 +19,8 @@
 #define LOKI_FORMALISM_TASK_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 #include <cista/containers/optional.h>
 #include <cista/containers/string.h>
@@ -28,40 +30,39 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <yggdrasil/core/types.hpp>
-#include <yggdrasil/core/types_utils.hpp>
+#include <urd/elements/flat.hpp>
 
-namespace ygg
+namespace urd
 {
 
 template<>
-struct Data<::loki::formalism::Task>
+struct data<::loki::formalism::Task>
 {
-    ygg::Index<::loki::formalism::Task> index;
+    urd::index<::loki::formalism::Task> index;
     ::cista::offset::string name;
-    ygg::Index<::loki::formalism::Domain> domain;
-    ygg::IndexList<::loki::formalism::Requirement> requirements;
-    ygg::IndexList<::loki::formalism::Type> types;
-    ygg::IndexList<::loki::formalism::Predicate> predicates;
-    ygg::IndexList<::loki::formalism::Object> objects;
-    ygg::IndexList<::loki::formalism::Literal> initial_literals;
-    ygg::IndexList<::loki::formalism::InitialFunctionValue> initial_function_values;
-    ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> goal;
-    ::cista::optional<ygg::Index<::loki::formalism::Metric>> metric;
-    ygg::IndexList<::loki::formalism::Axiom> axioms;
+    urd::index<::loki::formalism::Domain> domain;
+    urd::flat_vector<urd::index<::loki::formalism::Requirement>> requirements;
+    urd::flat_vector<urd::index<::loki::formalism::Type>> types;
+    urd::flat_vector<urd::index<::loki::formalism::Predicate>> predicates;
+    urd::flat_vector<urd::index<::loki::formalism::Object>> objects;
+    urd::flat_vector<urd::index<::loki::formalism::Literal>> initial_literals;
+    urd::flat_vector<urd::index<::loki::formalism::InitialFunctionValue>> initial_function_values;
+    ::cista::optional<::loki::formalism::ConditionVariant> goal;
+    ::cista::optional<urd::index<::loki::formalism::Metric>> metric;
+    urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms;
 
-    Data() = default;
-    Data(::cista::offset::string name_,
-         ygg::Index<::loki::formalism::Domain> domain_,
-         ygg::IndexList<::loki::formalism::Requirement> requirements_,
-         ygg::IndexList<::loki::formalism::Type> types_,
-         ygg::IndexList<::loki::formalism::Predicate> predicates_,
-         ygg::IndexList<::loki::formalism::Object> objects_,
-         ygg::IndexList<::loki::formalism::Literal> initial_literals_,
-         ygg::IndexList<::loki::formalism::InitialFunctionValue> initial_function_values_,
-         ::cista::optional<ygg::Index<::loki::formalism::Condition<>>> goal_,
-         ::cista::optional<ygg::Index<::loki::formalism::Metric>> metric_,
-         ygg::IndexList<::loki::formalism::Axiom> axioms_) :
+    data() = default;
+    data(::cista::offset::string name_,
+         urd::index<::loki::formalism::Domain> domain_,
+         urd::flat_vector<urd::index<::loki::formalism::Requirement>> requirements_,
+         urd::flat_vector<urd::index<::loki::formalism::Type>> types_,
+         urd::flat_vector<urd::index<::loki::formalism::Predicate>> predicates_,
+         urd::flat_vector<urd::index<::loki::formalism::Object>> objects_,
+         urd::flat_vector<urd::index<::loki::formalism::Literal>> initial_literals_,
+         urd::flat_vector<urd::index<::loki::formalism::InitialFunctionValue>> initial_function_values_,
+         ::cista::optional<::loki::formalism::ConditionVariant> goal_,
+         ::cista::optional<urd::index<::loki::formalism::Metric>> metric_,
+         urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms_) :
         index(),
         name(std::move(name_)),
         domain(domain_),
@@ -76,73 +77,36 @@ struct Data<::loki::formalism::Task>
         axioms(std::move(axioms_))
     {
     }
-    template<typename C>
-    Data(const std::string& name_,
-         ::ygg::View<ygg::Index<::loki::formalism::Domain>, C> domain_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Requirement>, C>>& requirements_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Type>, C>>& types_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Predicate>, C>>& predicates_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Object>, C>>& objects_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Literal>, C>>& initial_literals_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::InitialFunctionValue>, C>>& initial_function_values_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Condition<>>, C>>& goal_,
-         const std::optional<::ygg::View<ygg::Index<::loki::formalism::Metric>, C>>& metric_,
-         const std::vector<::ygg::View<ygg::Index<::loki::formalism::Axiom>, C>>& axioms_) :
-        index(),
-        name(name_),
-        domain(),
-        requirements(),
-        types(),
-        predicates(),
-        objects(),
-        initial_literals(),
-        initial_function_values(),
-        goal(),
-        metric(),
-        axioms()
-    {
-        set(domain_, domain);
-        set(requirements_, requirements);
-        set(types_, types);
-        set(predicates_, predicates);
-        set(objects_, objects);
-        set(initial_literals_, initial_literals);
-        set(initial_function_values_, initial_function_values);
-        set(goal_, goal);
-        set(metric_, metric);
-        set(axioms_, axioms);
-    }
 
     static constexpr auto cista_members() noexcept
     {
-        return ygg::Members<&Data::index,
-                            &Data::name,
-                            &Data::domain,
-                            &Data::requirements,
-                            &Data::types,
-                            &Data::predicates,
-                            &Data::objects,
-                            &Data::initial_literals,
-                            &Data::initial_function_values,
-                            &Data::goal,
-                            &Data::metric,
-                            &Data::axioms> {};
+        return urd::Members<&data::index,
+                            &data::name,
+                            &data::domain,
+                            &data::requirements,
+                            &data::types,
+                            &data::predicates,
+                            &data::objects,
+                            &data::initial_literals,
+                            &data::initial_function_values,
+                            &data::goal,
+                            &data::metric,
+                            &data::axioms> {};
     }
     static constexpr auto identifying_members() noexcept
     {
-        return ygg::Members<&Data::name,
-                            &Data::domain,
-                            &Data::requirements,
-                            &Data::types,
-                            &Data::predicates,
-                            &Data::objects,
-                            &Data::initial_literals,
-                            &Data::initial_function_values,
-                            &Data::goal,
-                            &Data::metric,
-                            &Data::axioms> {};
+        return urd::Members<&data::name,
+                            &data::domain,
+                            &data::requirements,
+                            &data::types,
+                            &data::predicates,
+                            &data::objects,
+                            &data::initial_literals,
+                            &data::initial_function_values,
+                            &data::goal,
+                            &data::metric,
+                            &data::axioms> {};
     }
-    void clear() noexcept { ygg::clear_members(*this); }
 };
 
 }
