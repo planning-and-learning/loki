@@ -20,6 +20,8 @@
 
 #include "loki/semantic/translator/copy_translator_component.hpp"
 
+#include <concepts>
+
 namespace loki::semantic::detail
 {
 
@@ -36,8 +38,11 @@ public:
     formalism::ConditionView remove_universal_quantifiers(formalism::ConditionView condition);
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::AndTag>> source);
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::OrTag>> source);
-    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source);
-    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source);
+    /// A not or an imply: its conditions translated in member order (both sides of an imply can generate
+    /// loki-universal-* names), the record rebuilt.
+    template<typename Tag>
+        requires std::same_as<Tag, formalism::NotTag> || std::same_as<Tag, formalism::ImplyTag>
+    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<Tag>> source);
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source);
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source);
     template<typename T>
@@ -117,27 +122,15 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
 }
 
 template<typename Derived>
-formalism::ConditionView
-RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
+template<typename Tag>
+    requires std::same_as<Tag, formalism::NotTag> || std::same_as<Tag, formalism::ImplyTag>
+formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<Tag>> source)
 {
-    const auto condition = urd::to_stored(this->self().remove_universal_quantifiers(source.get_condition()));
-    auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(this->copy_context().builder);
-    data->condition = condition;
-    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
-}
-
-template<typename Derived>
-formalism::ConditionView
-RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
-{
-    // Sequence the recursions: both sides can generate loki-universal-* names, and argument
-    // evaluation order is unspecified.
-    const auto left = urd::to_stored(this->self().remove_universal_quantifiers(source.get_left()));
-    const auto right = urd::to_stored(this->self().remove_universal_quantifiers(source.get_right()));
-    auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(this->copy_context().builder);
-    data->left = left;
-    data->right = right;
-    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
+    auto data = urd::map_variant_children<formalism::SymbolRepositoryTypes, formalism::Condition<Tag>>(
+        source.data(),
+        source.context(),
+        [&](formalism::ConditionView condition) { return this->self().remove_universal_quantifiers(condition); });
+    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, data).first);
 }
 
 template<typename Derived>

@@ -84,7 +84,7 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
     if (m_parse_context.active_action_costs && !m_domain_context.declared_functions.contains("total-cost"))
     {
         if (m_options.strict && !m_options.add_action_costs)
-            m_diagnostics.throw_at(domain.name, SemanticError("Missing total-cost function for :action-costs"));
+            m_diagnostics.throw_at(domain.name, ygg::diagnostics::SemanticError("Missing total-cost function for :action-costs"));
         m_domain_context.declared_functions.insert("total-cost");
         functions.push_back(total_cost_function());
     }

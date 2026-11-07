@@ -27,9 +27,8 @@ namespace loki::formalism
 
 void bind_semantic_errors(nb::module_& m)
 {
-    auto semantic_error = ygg::bind_diagnostic_exception<semantic::SemanticError>(m, "SemanticError");
+    const nb::object semantic_error = nb::module_::import_("pyyggdrasil.diagnostics").attr("SemanticError");
 
-    ygg::bind_diagnostic_exception<semantic::ParseError>(m, "ParseError", semantic_error.ptr());
     ygg::bind_diagnostic_exception<semantic::MissingDomainError>(m, "MissingDomainError", semantic_error.ptr());
     ygg::bind_diagnostic_exception<semantic::MismatchedDomainError>(m, "MismatchedDomainError", semantic_error.ptr());
 

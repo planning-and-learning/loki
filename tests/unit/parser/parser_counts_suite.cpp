@@ -69,7 +69,7 @@ static_assert(no_semantic_actions(parser::rules::identifier_def,
                                   parser::rules::domain_def,
                                   parser::rules::task_def,
                                   parser::rules::file_def,
-                                  parser::rules::detail::symbol_character,
+                                  ygg::diagnostics::symbol_character,
                                   parser::rules::detail::symbol,
                                   parser::rules::detail::operator_symbol,
                                   parser::rules::detail::variable_identifier_def,
@@ -105,7 +105,7 @@ static_assert(no_semantic_actions(parser::rules::identifier_def,
                                   parser::rules::detail::function_section_def,
                                   parser::rules::detail::object_section_def,
                                   parser::rules::detail::initial_section_def));
-static_assert(!decltype(parser::rules::detail::keyword("keyword").rhs)::has_action);
+static_assert(!decltype(ygg::diagnostics::keyword("keyword").rhs)::has_action);
 
 struct DomainExpectation
 {

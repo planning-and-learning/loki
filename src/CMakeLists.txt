@@ -1,7 +1,6 @@
 add_library(
     parsers SHARED
     formalism/formatter.cpp
-    formalism/repository.cpp
     parser/parser.cpp
     semantic/builder.cpp
     semantic/builder_declarations.cpp

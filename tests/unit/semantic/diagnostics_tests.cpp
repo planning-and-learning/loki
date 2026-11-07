@@ -37,7 +37,7 @@ TEST(LokiSemanticDiagnostics, ReportsSyntaxFailureMessage)
         auto parser = semantic::Parser(ygg::common::read_file(fixture_path("broken-syntax")));
         FAIL() << "Expected parse error";
     }
-    catch (const semantic::ParseError& error)
+    catch (const ygg::diagnostics::ParseError& error)
     {
         const auto message = std::string(error.what());
         EXPECT_NE(message.find("while parsing domain definition"), std::string::npos);
@@ -56,7 +56,7 @@ TEST(LokiSemanticDiagnostics, IncludesFileNameForPathDiagnostics)
         auto parser = semantic::Parser(domain_path);
         FAIL() << "Expected parse error";
     }
-    catch (const semantic::ParseError& error)
+    catch (const ygg::diagnostics::ParseError& error)
     {
         const auto message = std::string(error.what());
         EXPECT_NE(message.find("while parsing domain definition"), std::string::npos);
@@ -88,7 +88,7 @@ TEST(LokiSemanticDiagnostics, MissingClosingParenthesisIncludesContextAndOpening
         auto parser = semantic::Parser(source);
         FAIL() << "Expected parse error";
     }
-    catch (const semantic::ParseError& error)
+    catch (const ygg::diagnostics::ParseError& error)
     {
         const auto& diagnostic = error.diagnostic();
         EXPECT_NE(diagnostic.message.find("while parsing domain definition"), std::string::npos);
@@ -290,7 +290,7 @@ TEST(LokiSemanticDiagnostics, UnexpectedAndTrailingInputPointAtTheOffendingToken
             auto parser = semantic::Parser(source);
             FAIL() << "Expected parse error";
         }
-        catch (const semantic::ParseError& error)
+        catch (const ygg::diagnostics::ParseError& error)
         {
             ASSERT_TRUE(error.diagnostic().location);
             const auto offset = source.find("(:unknown") != std::string::npos ? source.find("(:unknown") : source.find("extra");

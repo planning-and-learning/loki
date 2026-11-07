@@ -170,13 +170,12 @@ formalism::ConditionView
 MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism::ConditionView,
                                                                       formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node)
 {
-    const auto& data = node.data();
-    const auto condition = this->self().move_existentials(node.get_condition());
-    auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
-    for (auto parameter : data.parameters)
-        result->parameters.push_back(parameter);
-    result->condition = urd::to_stored(condition);
-    return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first));
+    // No child types: the parameters are kept as they are, only the condition slot is mapped.
+    auto data = urd::map_variant_children<boost::mp11::mp_list<>, formalism::Condition<formalism::ExistsTag>>(
+        node.data(),
+        node.context(),
+        [&](formalism::ConditionView condition) { return this->self().move_existentials(condition); });
+    return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, data).first));
 }
 
 template<typename Derived>

@@ -181,8 +181,8 @@ TEST(LokiSemanticParser, ParsesAndTranslatesDistinctTasksAfterOneDomain)
         return false;
     };
 
-    EXPECT_NE(first_translated.context().get_index(), translation.get_translated_domain().context().get_index());
-    EXPECT_NE(second_translated.context().get_index(), translation.get_translated_domain().context().get_index());
+    EXPECT_NE(first_translated.context().layer(), translation.get_translated_domain().context().layer());
+    EXPECT_NE(second_translated.context().layer(), translation.get_translated_domain().context().layer());
     EXPECT_EQ(&first_translated.get_domain().context().get_root(), &translation.get_translated_domain().context().get_root());
     EXPECT_EQ(&second_translated.get_domain().context().get_root(), &translation.get_translated_domain().context().get_root());
     EXPECT_TRUE(has_object(first_translated, "a"));
@@ -301,7 +301,7 @@ TEST(LokiSemanticParser, GroupedDuplicatesAndCyclesRetainIdentifierDiagnostics)
         const auto parser = semantic::Parser(cycle, options);
         FAIL() << "Expected grouped type cycle to be rejected";
     }
-    catch (const semantic::SemanticError& error)
+    catch (const ygg::diagnostics::SemanticError& error)
     {
         EXPECT_NE(error.message().find("Cyclic type hierarchy"), std::string::npos);
         ASSERT_TRUE(error.diagnostic().location);

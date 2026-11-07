@@ -15,7 +15,7 @@ struct TypeRepository
 {
     using SymbolTypes = boost::mp11::mp_list<loki::formalism::Type>;
     const Data& operator[](Index) const;
-    [[nodiscard]] size_t get_index() const;
+    [[nodiscard]] std::size_t layer() const;
 };
 struct TypeContext
 {

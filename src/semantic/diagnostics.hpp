@@ -46,7 +46,7 @@ struct DiagnosticContext
         Scope& operator=(Scope&&) = delete;
     };
 
-    static ParseError parse_error(const parser::ErrorHandlerType& error_handler, const std::string& fallback, parser::Iterator position);
+    static ygg::diagnostics::ParseError parse_error(const parser::ErrorHandlerType& error_handler, const std::string& fallback, parser::Iterator position);
 
     template<typename Node, typename Error>
     [[noreturn]] void throw_at(const Node& node, Error error) const

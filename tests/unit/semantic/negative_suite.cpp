@@ -78,12 +78,12 @@ urd::Store<urd::sequence<NegativeSuiteCase>> load_cases()
     return result;
 }
 
-bool matches_error_type(const semantic::SemanticError& error, const std::string& expected_error)
+bool matches_error_type(const ygg::diagnostics::SemanticError& error, const std::string& expected_error)
 {
     if (expected_error == "SemanticError")
         return true;
     if (expected_error == "ParseError")
-        return dynamic_cast<const semantic::ParseError*>(&error) != nullptr;
+        return dynamic_cast<const ygg::diagnostics::ParseError*>(&error) != nullptr;
     if (expected_error == "MissingDomainError")
         return dynamic_cast<const semantic::MissingDomainError*>(&error) != nullptr;
     if (expected_error == "MismatchedDomainError")
@@ -156,7 +156,7 @@ TEST(LokiSemanticNegativeSuite, ReportsExpectedSemanticErrors)
                 parser.parse_task(ygg::common::read_file(item.task_file));
             FAIL() << "Expected semantic error";
         }
-        catch (const semantic::SemanticError& error)
+        catch (const ygg::diagnostics::SemanticError& error)
         {
             const auto message = std::string(error.what());
             if (item.expected_error)

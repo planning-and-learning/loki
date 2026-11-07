@@ -32,22 +32,12 @@
 #include "mappings.hpp"
 
 #include <cassert>
-#include <fstream>
 #include <sstream>
 #include <utility>
+#include <yggdrasil/io/project_path.hpp>
 
 namespace loki::semantic
 {
-
-std::string read_file(const std::filesystem::path& path)
-{
-    std::ifstream in(path);
-    if (!in)
-        throw ParseError("Could not open PDDL file: " + path.string());
-    std::ostringstream out;
-    out << in.rdbuf();
-    return out.str();
-}
 
 // Orchestrates the pipeline: source text -> syntactic AST -> formalism entities
 // (AstBuilder) -> canonicalized storage (CanonicalCopyTranslator).
@@ -82,7 +72,7 @@ private:
 Parser::Parser(const std::string& domain_source, ParserOptions options) : m_impl(std::make_unique<Impl>(domain_source, "", options)) {}
 
 Parser::Parser(const std::filesystem::path& domain_path, ParserOptions options) :
-    m_impl(std::make_unique<Impl>(read_file(domain_path), domain_path.string(), options))
+    m_impl(std::make_unique<Impl>(ygg::common::read_file(domain_path), domain_path.string(), options))
 {
 }
 
@@ -116,7 +106,7 @@ formalism::Repository& Parser::Impl::repository() noexcept { return repo(); }
 formalism::DomainView Parser::Impl::get_domain() const noexcept { return m_domain_context.get_domain(); }
 formalism::TaskView Parser::Impl::parse_task(const std::string& source) { return parse_task_source(source, ""); }
 
-formalism::TaskView Parser::Impl::parse_task(const std::filesystem::path& path) { return parse_task_source(read_file(path), path.string()); }
+formalism::TaskView Parser::Impl::parse_task(const std::filesystem::path& path) { return parse_task_source(ygg::common::read_file(path), path.string()); }
 
 formalism::Repository& Parser::Impl::repo() noexcept { return m_domain_context.storage->repository; }
 const formalism::Repository& Parser::Impl::repo() const noexcept { return m_domain_context.storage->repository; }

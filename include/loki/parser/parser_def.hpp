@@ -45,6 +45,8 @@ using boost::spirit::x3::lit;
 using boost::spirit::x3::no_case;
 using boost::spirit::x3::string;
 using ygg::diagnostics::context;
+using ygg::diagnostics::keyword;
+using ygg::diagnostics::symbol_character;
 
 constexpr identifier_type identifier = "identifier";
 constexpr type_expression_type type_expression = "type_expression";
@@ -198,10 +200,7 @@ constexpr boost::spirit::x3::rule<FunctionSectionClass, urd::Store<urd::sequence
 constexpr boost::spirit::x3::rule<ObjectSectionClass, urd::Store<urd::sequence<ast::TypedGroup>>> object_section = "object_section";
 constexpr boost::spirit::x3::rule<InitialSectionClass, urd::Store<urd::sequence<ast::InitialElement>>> initial_section = "init section";
 
-inline constexpr auto symbol_character = char_ - '(' - ')' - ';' - boost::spirit::x3::ascii::space;
 inline constexpr auto symbol = lexeme[+symbol_character];
-inline constexpr auto keyword = [](char const* text)
-{ return boost::spirit::x3::rule<class KeywordClass> { text } = lexeme[no_case[lit(text)] >> !symbol_character]; };
 inline constexpr auto operator_symbol =
     lexeme[(string("scale-down") | string("scale-up") | string("increase") | string("decrease") | string("assign") | string("minus")) >> !symbol_character
            | (char_('+') | char_('-') | char_('*') | char_('/') | char_('=') | char_('<') | char_('>') | char_('!')) >> -char_('=')];
@@ -256,7 +255,7 @@ constexpr auto typed_name_list_def = *typed_name_group;
 constexpr auto typed_variable_list_def = *typed_variable_group;
 constexpr auto term_def = (detail::variable_identifier >> attr(true)) | (identifier >> attr(false));
 constexpr auto atom_def = context("atom")['(' >> identifier >> *term > ')'];
-constexpr auto literal_def = (context("negated literal")['(' >> detail::keyword("not") > atom > ')'] >> attr(false)) | (atom >> attr(true));
+constexpr auto literal_def = (context("negated literal")['(' >> keyword("not") > atom > ')'] >> attr(false)) | (atom >> attr(true));
 constexpr auto function_term_def = context("function term")['(' >> identifier >> *term > ')'];
 constexpr auto function_expression_def = detail::function_expression_number | detail::function_expression_binary | detail::function_expression_unary
                                          | detail::function_expression_multi | detail::function_expression_function;
@@ -269,26 +268,26 @@ constexpr auto effect_def = detail::effect_and | detail::effect_forall | detail:
 constexpr auto predicate_declaration_def = context("predicate declaration")['(' >> identifier >> typed_variable_list > ')'];
 constexpr auto function_declaration_def = context("function declaration")['(' >> identifier >> typed_variable_list > ')'] >> -(lit('-') >> type_expression);
 constexpr auto action_def = context(
-    "action")[('(' >> detail::keyword(":action") > identifier > detail::keyword(":parameters") > context("action parameters")['(' >> typed_variable_list > ')'])
-              >> -(detail::keyword(":precondition") > condition) >> -(detail::keyword(":effect") > effect) > ')'];
-constexpr auto axiom_def = context("derived predicate")['(' >> detail::keyword(":derived") > predicate_declaration > condition > ')'];
-constexpr auto metric_def = context("metric")['(' >> detail::keyword(":metric") > identifier > function_expression > ')'];
+    "action")[('(' >> keyword(":action") > identifier > keyword(":parameters") > context("action parameters")['(' >> typed_variable_list > ')'])
+              >> -(keyword(":precondition") > condition) >> -(keyword(":effect") > effect) > ')'];
+constexpr auto axiom_def = context("derived predicate")['(' >> keyword(":derived") > predicate_declaration > condition > ')'];
+constexpr auto metric_def = context("metric")['(' >> keyword(":metric") > identifier > function_expression > ')'];
 // '=' also introduces object equality; a function term distinguishes a numeric initial value.
-constexpr auto initial_function_value_def = context("initial function value")['(' >> detail::keyword("=") >> function_term > function_expression > ')'];
+constexpr auto initial_function_value_def = context("initial function value")['(' >> keyword("=") >> function_term > function_expression > ')'];
 constexpr auto domain_def = context(
-    "domain definition")['(' >> detail::keyword("define") >> context("domain header")['(' >> detail::keyword("domain") > identifier > ')']
+    "domain definition")['(' >> keyword("define") >> context("domain header")['(' >> keyword("domain") > identifier > ')']
                          >> (detail::requirement_section | attr(urd::Store<urd::sequence<ast::Requirement>> {}))
                          >> (detail::type_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {})) >> (detail::constant_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
                          >> (detail::predicate_section | attr(urd::Store<urd::sequence<ast::PredicateDeclaration>> {}))
                          >> (detail::function_section | attr(urd::Store<urd::sequence<ast::FunctionDeclaration>> {})) >> *(axiom | action) > ')'];
 constexpr auto task_def =
-    context("problem definition")[('(' >> detail::keyword("define") >> context("problem header")['(' >> detail::keyword("problem") > identifier > ')']
-                                   > context("problem domain")['(' >> detail::keyword(":domain") > identifier > ')'])
+    context("problem definition")[('(' >> keyword("define") >> context("problem header")['(' >> keyword("problem") > identifier > ')']
+                                   > context("problem domain")['(' >> keyword(":domain") > identifier > ')'])
                                   >> (detail::requirement_section | attr(urd::Store<urd::sequence<ast::Requirement>> {}))
                                   >> (detail::type_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
                                   >> (detail::predicate_section | attr(urd::Store<urd::sequence<ast::PredicateDeclaration>> {}))
                                   >> (detail::object_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {})) >> boost::spirit::x3::expect[detail::initial_section]
-                                  >> -context("goal")['(' >> detail::keyword(":goal") > condition > ')'] >> -metric >> *axiom > ')'];
+                                  >> -context("goal")['(' >> keyword(":goal") > condition > ')'] >> -metric >> *axiom > ')'];
 constexpr auto file_def = domain | task;
 
 BOOST_SPIRIT_DEFINE(identifier,

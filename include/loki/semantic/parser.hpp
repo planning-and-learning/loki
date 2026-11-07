@@ -27,8 +27,6 @@
 
 namespace loki::semantic
 {
-std::string read_file(const std::filesystem::path& path);
-
 class Parser
 {
 public:

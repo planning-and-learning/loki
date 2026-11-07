@@ -31,43 +31,10 @@ class EffectTranslator : public CopyTranslatorComponent<Derived, EffectTranslato
 public:
     explicit EffectTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, EffectTranslator<Derived>>(context) {}
 
-    formalism::EntityView<formalism::Effect<formalism::AndTag>> copy(formalism::EntityView<formalism::Effect<formalism::AndTag>> source);
-
-    formalism::EntityView<formalism::Effect<formalism::NumericTag>> copy(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source);
-
     formalism::EntityView<formalism::Effect<formalism::ForallTag>> copy(formalism::EntityView<formalism::Effect<formalism::ForallTag>> source);
-
-    formalism::EntityView<formalism::Effect<formalism::WhenTag>> copy(formalism::EntityView<formalism::Effect<formalism::WhenTag>> source);
-
-    formalism::EntityView<formalism::Effect<formalism::OneOfTag>> copy(formalism::EntityView<formalism::Effect<formalism::OneOfTag>> source);
-
-    formalism::EffectProbabilisticAlternativeView copy(formalism::EffectProbabilisticAlternativeView source);
 
     formalism::EffectView copy(formalism::EffectView source);
 };
-
-template<typename Derived>
-formalism::EntityView<formalism::Effect<formalism::AndTag>> EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalism::AndTag>> source)
-{
-    auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
-    for (auto effect : source.get_effects())
-        data->effects.push_back(urd::to_stored(this->self().copy(effect)));
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
-}
-
-template<typename Derived>
-formalism::EntityView<formalism::Effect<formalism::NumericTag>>
-EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source)
-{
-    const auto& data = source.data();
-    const auto function = urd::to_stored(this->self().copy(source.get_function()));
-    const auto expression = urd::to_stored(this->self().copy(source.get_expression()));
-    auto result = formalism::checkout<formalism::Effect<formalism::NumericTag>>(this->copy_context().builder);
-    result->op = data.op;
-    result->function = function;
-    result->expression = expression;
-    return formalism::insert(this->copy_context().storage->repository, *result).first;
-}
 
 template<typename Derived>
 formalism::EntityView<formalism::Effect<formalism::ForallTag>>
@@ -97,41 +64,6 @@ EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalis
     const auto out = formalism::insert(this->copy_context().storage->repository, *data).first;
     this->self().leave_scope();
     return out;
-}
-
-template<typename Derived>
-formalism::EntityView<formalism::Effect<formalism::WhenTag>>
-EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalism::WhenTag>> source)
-{
-    // Sequence the child copies: argument evaluation order is unspecified, and both children
-    // may pull from the generated-name counter (compiler-independent output requires a fixed order).
-    const auto condition = urd::to_stored(this->self().copy(source.get_condition()));
-    const auto effect = urd::to_stored(this->self().copy(source.get_effect()));
-    auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
-    data->condition = condition;
-    data->effect = effect;
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
-}
-
-template<typename Derived>
-formalism::EntityView<formalism::Effect<formalism::OneOfTag>>
-EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalism::OneOfTag>> source)
-{
-    auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(this->copy_context().builder);
-    for (auto effect : source.get_effects())
-        data->effects.push_back(urd::to_stored(this->self().copy(effect)));
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
-}
-
-template<typename Derived>
-formalism::EffectProbabilisticAlternativeView EffectTranslator<Derived>::copy(formalism::EffectProbabilisticAlternativeView source)
-{
-    const auto& data = source.data();
-    const auto effect = urd::to_stored(this->self().copy(source.get_effect()));
-    auto result = formalism::checkout<formalism::EffectProbabilisticAlternative>(this->copy_context().builder);
-    result->probability = data.probability;
-    result->effect = effect;
-    return formalism::insert(this->copy_context().storage->repository, *result).first;
 }
 
 template<typename Derived>

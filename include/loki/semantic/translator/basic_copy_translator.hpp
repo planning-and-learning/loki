@@ -46,8 +46,8 @@ public:
 
     void set_requirements(const urd::Store<urd::sequence<formalism::RequirementKind>>& kinds, urd::flat_vector<urd::index<formalism::Requirement>>& result);
 
-    /// The entities without type-specific logic (Parameter, Atom, Literal, FunctionTerm): their children copied
-    /// through copy, the record rebuilt.
+    /// The entities without type-specific logic: their children copied through copy, a variant slot whole (so that
+    /// the phase hooks on ConditionView, EffectView and FunctionExpressionView apply), the record rebuilt.
     template<typename T>
     formalism::EntityView<T> copy(formalism::EntityView<T> source);
 
@@ -67,15 +67,6 @@ public:
 
     formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>
     copy(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source);
-
-    formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>>
-    copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source);
-
-    formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>
-    copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source);
-
-    formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>
-    copy(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source);
 
     formalism::FunctionExpressionView copy(formalism::FunctionExpressionView source);
 };
@@ -153,7 +144,10 @@ void BasicCopyTranslator<Derived>::set_requirements(const urd::Store<urd::sequen
 template<typename Derived>
 template<typename T>
 formalism::EntityView<T> BasicCopyTranslator<Derived>::copy(formalism::EntityView<T> source)
-{ return rebuild(this->copy_context().storage->repository, source, [&](auto child) { return this->self().copy(child); }); }
+{
+    auto data = urd::map_variant_children<formalism::SymbolRepositoryTypes, T>(source.data(), source.context(), [&](auto child) { return this->self().copy(child); });
+    return formalism::insert(this->copy_context().storage->repository, data).first;
+}
 
 template<typename Derived>
 formalism::RequirementView BasicCopyTranslator<Derived>::copy(formalism::RequirementView source)
@@ -255,43 +249,6 @@ BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpr
 {
     // Memoized: the translation maps record these copies.
     return memoized(this->copy_context().storage->maps, source, [&] { return this->template copy<formalism::FunctionExpression<formalism::NumberTag>>(source); });
-}
-
-template<typename Derived>
-formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>>
-BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source)
-{
-    const auto& data = source.data();
-    const auto expression = urd::to_stored(this->self().copy(source.get_expression()));
-    auto result = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(this->copy_context().builder);
-    result->op = data.op;
-    result->expression = expression;
-    return formalism::insert(this->copy_context().storage->repository, *result).first;
-}
-
-template<typename Derived>
-formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>
-BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source)
-{
-    const auto& data = source.data();
-    const auto left = urd::to_stored(this->self().copy(source.get_left()));
-    const auto right = urd::to_stored(this->self().copy(source.get_right()));
-    auto result = formalism::checkout<formalism::FunctionExpression<formalism::BinaryTag>>(this->copy_context().builder);
-    result->op = data.op;
-    result->left = left;
-    result->right = right;
-    return formalism::insert(this->copy_context().storage->repository, *result).first;
-}
-
-template<typename Derived>
-formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>
-BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source)
-{
-    auto data = formalism::checkout<formalism::FunctionExpression<formalism::MultiTag>>(this->copy_context().builder);
-    data->op = source.get_operator();
-    for (const auto expression : source.get_args())
-        data->args.push_back(urd::to_stored(this->self().copy(expression)));
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
 }
 
 template<typename Derived>

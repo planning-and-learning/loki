@@ -133,7 +133,7 @@ TEST(LokiTests, CompileConditionalEffectsThrowsOnOverflow)
     auto options = semantic::TranslatorOptions {};
     options.compile_conditional_effects = true;
 
-    EXPECT_THROW(semantic::translate(parser.get_domain(), options), semantic::SemanticError);
+    EXPECT_THROW(semantic::translate(parser.get_domain(), options), ygg::diagnostics::SemanticError);
 }
 
 TEST(LokiTests, ExistentialConditionalEffectBecomesUniversalEffect)

@@ -315,9 +315,9 @@ void AstBuilder::complete_action_costs(const ast::Task& task,
     if (m_options.strict && !m_options.add_action_costs)
     {
         if (missing_metric)
-            m_diagnostics.throw_at(task, SemanticError("Missing total-cost metric for :action-costs"));
+            m_diagnostics.throw_at(task, ygg::diagnostics::SemanticError("Missing total-cost metric for :action-costs"));
         if (missing_initial_value)
-            m_diagnostics.throw_at(task, SemanticError("Missing initial value for total-cost for :action-costs"));
+            m_diagnostics.throw_at(task, ygg::diagnostics::SemanticError("Missing initial value for total-cost for :action-costs"));
         return;
     }
 

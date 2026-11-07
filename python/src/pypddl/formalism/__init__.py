@@ -117,7 +117,6 @@ from pypddl._pypddl.formalism import (
     Parameter as Parameter,
     ParameterData as ParameterData,
     ParameterIndex as ParameterIndex,
-    ParseError as ParseError,
     Parser as Parser,
     ParserOptions as ParserOptions,
     Predicate as Predicate,
@@ -131,7 +130,6 @@ from pypddl._pypddl.formalism import (
     RequirementData as RequirementData,
     RequirementIndex as RequirementIndex,
     RequirementKind as RequirementKind,
-    SemanticError as SemanticError,
     Task as Task,
     TaskData as TaskData,
     TaskIndex as TaskIndex,
@@ -158,4 +156,8 @@ from pypddl._pypddl.formalism import (
     format_task as format_task,
     translate_domain as translate_domain,
     translate_task as translate_task,
+)
+from pyyggdrasil.diagnostics import (
+    ParseError as ParseError,
+    SemanticError as SemanticError,
 )

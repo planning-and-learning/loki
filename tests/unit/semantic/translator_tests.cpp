@@ -425,7 +425,7 @@ TEST(LokiSemanticTranslator, TaskCannotChangeDomainTypes)
     // Redeclaring a domain type is a duplicate.
     EXPECT_THROW(parser.parse_task(task("(:types special - object u - special)")), semantic::DuplicateTypeError);
     // A union over domain types would have to become a base of them.
-    EXPECT_THROW(parser.parse_task(task("(:predicates (s ?x - (either a u)))")), semantic::SemanticError);
+    EXPECT_THROW(parser.parse_task(task("(:predicates (s ?x - (either a u)))")), ygg::diagnostics::SemanticError);
 }
 
 TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
@@ -478,7 +478,7 @@ TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
     ASSERT_EQ(target.maps.get<formalism::Type>().size(), 2);
     EXPECT_EQ(target.maps.get<formalism::Type>().at(original_base), final_base);
     const auto final_type = target.maps.get<formalism::Type>().at(original_type);
-    EXPECT_EQ(final_type.context().get_index(), target.repository.get_index());
+    EXPECT_EQ(final_type.context().layer(), target.repository.layer());
     EXPECT_EQ(std::string(final_type.get_name()), "child");
     ASSERT_EQ(final_type.get_bases().size(), 1);
     EXPECT_EQ(final_type.get_bases().front(), final_base);

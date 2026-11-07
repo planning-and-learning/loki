@@ -89,7 +89,7 @@ std::optional<formalism::TypeView> AstBuilder::union_type(const urd::Store<urd::
     // parse_type_hierarchy creates union types only over the types it declares, since a task cannot change its domain's types.
     if (m_parse_context.union_types.contains(alternatives))
         m_diagnostics.throw_at(identifier,
-                               SemanticError("Type " + union_type_name(alternatives) + " over types of the domain must also type a variable in the domain"));
+                               ygg::diagnostics::SemanticError("Type " + union_type_name(alternatives) + " over types of the domain must also type a variable in the domain"));
     // A union type must be a base of its alternatives when they are built, so the parser builds the domain or task again with it.
     m_parse_context.missing_union_types.insert(alternatives);
     return std::nullopt;
@@ -161,7 +161,7 @@ urd::Store<urd::sequence<formalism::TypeView>> AstBuilder::parse_type_hierarchy(
         if (declaration == declarations.end() && m_options.strict)
             m_diagnostics.throw_at(*identifier, UndefinedTypeError(name));
         if (!resolving.insert(name).second)
-            m_diagnostics.throw_at(*declaration->second.first, SemanticError("Cyclic type hierarchy involving " + name));
+            m_diagnostics.throw_at(*declaration->second.first, ygg::diagnostics::SemanticError("Cyclic type hierarchy involving " + name));
 
         auto bases = urd::Store<urd::sequence<formalism::TypeView>> {};
         if (declaration != declarations.end() && declaration->second.second->type)

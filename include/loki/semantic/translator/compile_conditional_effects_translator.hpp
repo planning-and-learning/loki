@@ -90,7 +90,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
         }
 
         if (conditional.size() >= std::numeric_limits<size_t>::digits)
-            throw SemanticError("Too many conditional effects to compile.");
+            throw ygg::diagnostics::SemanticError("Too many conditional effects to compile.");
 
         const auto num_variants = size_t { 1 } << conditional.size();
         auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
