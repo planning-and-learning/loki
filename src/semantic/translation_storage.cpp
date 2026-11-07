@@ -48,23 +48,14 @@ static void compose_maps(ViewMaps& out, const ViewMaps& source_to_middle, const 
         });
 }
 
-static formalism::TypeView copy_type_view_for_metadata(TranslationStorage& target, formalism::Builder& builder, formalism::TypeView source)
+static formalism::TypeView copy_type_view_for_metadata(TranslationStorage& target, formalism::TypeView source)
 {
-    if (auto mapped = find_mapped(target.maps, source))
-        return *mapped;
-
-    auto data = formalism::checkout<formalism::Type>(builder);
-    data->name = source.get_name();
-    for (auto base : source.get_bases())
-        data->bases.push_back(copy_type_view_for_metadata(target, builder, base).index());
-
-    auto out = formalism::insert(target.repository, *data).first;
-    remember(target.maps, source, out);
-    return out;
+    return memoized(target.maps,
+                    source,
+                    [&] { return rebuild(target.repository, source, [&](formalism::TypeView base) { return copy_type_view_for_metadata(target, base); }); });
 }
 
 static void remap_object_type_metadata(TranslationStorage& target,
-                                       formalism::Builder& builder,
                                        const TranslationStorage& source,
                                        const ViewMap<formalism::Object>& object_map,
                                        const ViewMap<formalism::Type>& type_map)
@@ -82,7 +73,7 @@ static void remap_object_type_metadata(TranslationStorage& target,
             if (auto type_it = type_map.find(type); type_it != type_map.end())
                 remapped.push_back(type_it->second);
             else
-                remapped.push_back(copy_type_view_for_metadata(target, builder, type));
+                remapped.push_back(copy_type_view_for_metadata(target, type));
         }
         target.object_type_views.emplace(object_it->second, std::move(remapped));
     }
@@ -97,8 +88,7 @@ std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::Domai
 
     const auto middle_objects = canonical->maps.get<formalism::Object>();
     const auto middle_types = canonical->maps.get<formalism::Type>();
-    auto builder = formalism::Builder {};
-    remap_object_type_metadata(*canonical, builder, *middle, middle_objects, middle_types);
+    remap_object_type_metadata(*canonical, *middle, middle_objects, middle_types);
 
     canonical->translated_domain = canonical_domain;
     compose_maps(canonical->maps, middle->maps, canonical->maps);
@@ -113,8 +103,7 @@ void compose_storage_maps_from_previous(TranslationStorage& target, const Transl
 {
     const auto precompose_objects = target.maps.get<formalism::Object>();
     const auto precompose_types = target.maps.get<formalism::Type>();
-    auto builder = formalism::Builder {};
-    remap_object_type_metadata(target, builder, previous, precompose_objects, precompose_types);
+    remap_object_type_metadata(target, previous, precompose_objects, precompose_types);
 
     compose_maps(target.maps, previous.maps, target.maps);
 }

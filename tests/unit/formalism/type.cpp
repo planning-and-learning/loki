@@ -60,14 +60,14 @@ TEST(LokiTests, SharedInterningCanonicalizesTypeBasesUsingTheRepository)
 {
     auto repository = loki::formalism::Repository(0);
     auto builder = loki::formalism::Builder {};
-    auto zebra_data = Data(cista::offset::string("zebra"));
-    auto alpha_data = Data(cista::offset::string("alpha"));
+    auto zebra_data = Data(urd::flat_string("zebra"));
+    auto alpha_data = Data(urd::flat_string("alpha"));
     const auto zebra = loki::formalism::insert(repository, zebra_data).first;
     const auto alpha = loki::formalism::insert(repository, alpha_data).first;
     ASSERT_LT(zebra.index(), alpha.index());
 
     auto data = loki::formalism::checkout<loki::formalism::Type>(builder);
-    data->name = cista::offset::string("combined");
+    data->name = urd::flat_string("combined");
     data->bases.push_back(zebra.index());
     data->bases.push_back(alpha.index());
     data->bases.push_back(zebra.index());
@@ -91,7 +91,7 @@ TEST(LokiTests, SharedInterningCanonicalizesTypeBasesUsingTheRepository)
 TEST(LokiTests, SymbolViewsUseTheRepositoryOfTheirContext)
 {
     auto repository = loki::formalism::Repository(13);
-    auto data = Data(cista::offset::string("type"));
+    auto data = Data(urd::flat_string("type"));
     const auto original = loki::formalism::insert(repository, data).first;
     const auto again = repository.view(original.index());
     EXPECT_EQ(&again.data(), &original.data());

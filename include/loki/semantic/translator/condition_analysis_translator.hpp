@@ -23,10 +23,15 @@
 #include <urd/store.hpp>
 
 #include <algorithm>
+#include <concepts>
+#include <urd/elements/children.hpp>
+#include <variant>
 #include <urd/elements/less.hpp>
 
 namespace loki::semantic::detail
 {
+
+using VariableSet = urd::Store<urd::set<formalism::VariableView>>;
 
 template<typename Derived>
 class ConditionAnalysisTranslator : public CopyTranslatorComponent<Derived, ConditionAnalysisTranslator<Derived>>
@@ -34,213 +39,49 @@ class ConditionAnalysisTranslator : public CopyTranslatorComponent<Derived, Cond
 public:
     explicit ConditionAnalysisTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, ConditionAnalysisTranslator<Derived>>(context) {}
 
-    void
-    collect_free_variables(formalism::TermView term, urd::Store<urd::set<formalism::VariableView>>& bound, urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void
-    collect_free_variables(formalism::AtomView atom, urd::Store<urd::set<formalism::VariableView>>& bound, urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::LiteralView literal,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::FunctionTermView term,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>,
-                                urd::Store<urd::set<formalism::VariableView>>&,
-                                urd::Store<urd::set<formalism::VariableView>>&) const;
-    void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> expression,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> expression,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> expression,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::FunctionExpressionView expression,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::ConditionView condition,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> node,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> node,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NotTag>> node,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> node,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::AndTag>> node,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::OrTag>> node,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
-    void collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ForallTag>> node,
-                                urd::Store<urd::set<formalism::VariableView>>& bound,
-                                urd::Store<urd::set<formalism::VariableView>>& free) const;
+    /// Adds the variables of node not in bound to free: those of its children.
+    template<typename T>
+    void collect_free_variables(formalism::EntityView<T> node, VariableSet& bound, VariableSet& free) const;
+    template<typename... Vs>
+    void collect_free_variables(const std::variant<Vs...>& node, VariableSet& bound, VariableSet& free) const;
+    void collect_free_variables(formalism::VariableView variable, VariableSet& bound, VariableSet& free) const;
+    /// A quantifier binds its parameters' variables in its condition.
+    template<typename Tag>
+        requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
+    void collect_free_variables(formalism::EntityView<formalism::Condition<Tag>> node, VariableSet& bound, VariableSet& free) const;
+    /// Declarations and constants hold none of the node's variables.
+    void collect_free_variables(formalism::PredicateView, VariableSet&, VariableSet&) const {}
+    void collect_free_variables(formalism::FunctionSkeletonView, VariableSet&, VariableSet&) const {}
+    void collect_free_variables(formalism::ObjectView, VariableSet&, VariableSet&) const {}
+
     [[nodiscard]] urd::Store<urd::sequence<std::pair<formalism::ParameterView, formalism::VariableView>>> free_parameters_in_scope(formalism::ConditionView condition) const;
 };
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::TermView term,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
+template<typename T>
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<T> node, VariableSet& bound, VariableSet& free) const
 {
-    std::visit(
-        [&]<typename Value>(const Value& value)
-        {
-            if constexpr (std::is_same_v<Value, formalism::VariableView>)
-            {
-                if (!bound.contains(value))
-                    free.insert(value);
-            }
-        },
-        term);
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(),
+                                                             node.context(),
+                                                             [&](auto child) { this->self().collect_free_variables(child, bound, free); });
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::AtomView atom,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
+template<typename... Vs>
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(const std::variant<Vs...>& node, VariableSet& bound, VariableSet& free) const
+{ std::visit([&](auto alternative) { this->self().collect_free_variables(alternative, bound, free); }, node); }
+
+template<typename Derived>
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::VariableView variable, VariableSet& bound, VariableSet& free) const
 {
-    for (auto term : atom.get_terms())
-        this->self().collect_free_variables(term, bound, free);
+    if (!bound.contains(variable))
+        free.insert(variable);
 }
 
 template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::LiteralView literal,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{ this->self().collect_free_variables(literal.get_atom(), bound, free); }
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::FunctionTermView term,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{
-    for (auto argument : term.get_terms())
-        this->self().collect_free_variables(argument, bound, free);
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>,
-                                                                  urd::Store<urd::set<formalism::VariableView>>&,
-                                                                  urd::Store<urd::set<formalism::VariableView>>&) const
-{
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> expression,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{ this->self().collect_free_variables(expression.get_expression(), bound, free); }
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> expression,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{
-    this->self().collect_free_variables(expression.get_left(), bound, free);
-    this->self().collect_free_variables(expression.get_right(), bound, free);
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> expression,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{
-    for (auto part : expression.get_args())
-        this->self().collect_free_variables(part, bound, free);
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::FunctionExpressionView expression,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{
-    std::visit([&](const auto& node) { this->self().collect_free_variables(node, bound, free); }, expression);
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::ConditionView condition,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{
-    std::visit([&](const auto& node) { this->self().collect_free_variables(node, bound, free); }, condition);
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> node,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{ this->self().collect_free_variables(node.get_literal(), bound, free); }
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> node,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{
-    this->self().collect_free_variables(node.get_left(), bound, free);
-    this->self().collect_free_variables(node.get_right(), bound, free);
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::NotTag>> node,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{ this->self().collect_free_variables(node.get_condition(), bound, free); }
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> node,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{
-    this->self().collect_free_variables(node.get_left(), bound, free);
-    this->self().collect_free_variables(node.get_right(), bound, free);
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::AndTag>> node,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{
-    for (auto condition : node.get_conditions())
-        this->self().collect_free_variables(condition, bound, free);
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::OrTag>> node,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{
-    for (auto condition : node.get_conditions())
-        this->self().collect_free_variables(condition, bound, free);
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
-{
-    for (auto parameter : node.get_parameters())
-        bound.insert(parameter.get_variable());
-    this->self().collect_free_variables(node.get_condition(), bound, free);
-    for (auto parameter : node.get_parameters())
-        bound.erase(parameter.get_variable());
-}
-
-template<typename Derived>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<formalism::ForallTag>> node,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& bound,
-                                                                  urd::Store<urd::set<formalism::VariableView>>& free) const
+template<typename Tag>
+    requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<Tag>> node, VariableSet& bound, VariableSet& free) const
 {
     for (auto parameter : node.get_parameters())
         bound.insert(parameter.get_variable());

@@ -167,7 +167,7 @@ void expect_counts(formalism::DomainView domain, formalism::TaskView task, const
 template<typename Node, typename ParseFn>
 void expect_parse_format_reparse(const std::filesystem::path& path, ParseFn parse)
 {
-    const auto source = read_text(path);
+    const auto source = ygg::common::read_file(path);
     auto first = source.cbegin();
     const auto last = source.cend();
     parser::ErrorHandlerType error_handler(first, last, std::cerr);
@@ -288,7 +288,7 @@ TEST(LokiParserCountsSuite, RawArithmeticAstPreservesEmptyAndUnaryMultiExpressio
         parser::ErrorHandlerType error_handler(first, last, std::cerr);
         auto expression = ast::FunctionExpression {};
 
-        ASSERT_TRUE(parser::parse_full(source, parser::function_expression(), expression, error_handler));
+        ASSERT_TRUE(ygg::diagnostics::parse_full(source, parser::function_expression(), expression, error_handler));
         const auto* multi = boost::get<ast::FunctionExpressionMulti>(&expression.get());
         ASSERT_NE(multi, nullptr);
         EXPECT_EQ(multi->op, item.op);

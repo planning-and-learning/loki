@@ -28,10 +28,8 @@ namespace loki::parser
 {
 using Iterator = std::string::const_iterator;
 using Position = boost::spirit::x3::position_tagged;
-using PositionList = urd::Store<urd::sequence<Position>>;
 
 using ygg::diagnostics::ErrorHandler;
-using ygg::diagnostics::format_error_at;
 using ErrorHandlerType = ErrorHandler<Iterator>;
 
 }  // namespace loki::parser

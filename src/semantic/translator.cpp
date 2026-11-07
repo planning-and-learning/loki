@@ -37,7 +37,6 @@ namespace
 struct PhaseStep
 {
     TranslationPhase phase;
-    std::string_view name;
     // Compiling conditional effects negates when-conditions, which reintroduces disjunctions
     // and quantifiers into preconditions; the normalization phases must run again afterwards.
     bool requires_compile_conditional_effects = false;
@@ -47,23 +46,23 @@ struct PhaseStep
 static const urd::Store<urd::sequence<PhaseStep>>& domain_phase_steps()
 {
     static const auto steps = urd::Store<urd::sequence<PhaseStep>> {
-        { TranslationPhase::ToNegationNormalForm, "to-negation-normal-form" },
-        { TranslationPhase::RenameQuantifiedVariables, "rename-quantified-variables" },
-        { TranslationPhase::RemoveUniversalQuantifiers, "remove-universal-quantifiers" },
-        { TranslationPhase::ToDisjunctiveNormalForm, "to-disjunctive-normal-form" },
-        { TranslationPhase::SplitDisjunctiveConditions, "split-disjunctive-conditions" },
-        { TranslationPhase::MoveExistentialQuantifiers, "move-existential-quantifiers" },
-        { TranslationPhase::CompileTyping, "compile-typing" },
-        { TranslationPhase::ToEffectNormalForm, "to-effect-normal-form" },
-        { TranslationPhase::CompileConditionalEffects, "compile-conditional-effects", true },
-        { TranslationPhase::RemoveUniversalQuantifiers, "remove-universal-quantifiers", true },
-        { TranslationPhase::ToDisjunctiveNormalForm, "to-disjunctive-normal-form", true },
-        { TranslationPhase::SplitDisjunctiveConditions, "split-disjunctive-conditions", true },
-        { TranslationPhase::MoveExistentialQuantifiers, "move-existential-quantifiers", true },
-        { TranslationPhase::MaterializeEquality, "materialize-equality" },
-        { TranslationPhase::NormalizeArithmeticExpressions, "normalize-arithmetic-expressions" },
+        { TranslationPhase::ToNegationNormalForm },
+        { TranslationPhase::RenameQuantifiedVariables },
+        { TranslationPhase::RemoveUniversalQuantifiers },
+        { TranslationPhase::ToDisjunctiveNormalForm },
+        { TranslationPhase::SplitDisjunctiveConditions },
+        { TranslationPhase::MoveExistentialQuantifiers },
+        { TranslationPhase::CompileTyping },
+        { TranslationPhase::ToEffectNormalForm },
+        { TranslationPhase::CompileConditionalEffects, true },
+        { TranslationPhase::RemoveUniversalQuantifiers, true },
+        { TranslationPhase::ToDisjunctiveNormalForm, true },
+        { TranslationPhase::SplitDisjunctiveConditions, true },
+        { TranslationPhase::MoveExistentialQuantifiers, true },
+        { TranslationPhase::MaterializeEquality },
+        { TranslationPhase::NormalizeArithmeticExpressions },
         // Last, so that the requirements are exactly those the strict parser demands of the translation.
-        { TranslationPhase::InferRequirements, "infer-requirements" },
+        { TranslationPhase::InferRequirements },
     };
     return steps;
 }
@@ -71,18 +70,18 @@ static const urd::Store<urd::sequence<PhaseStep>>& domain_phase_steps()
 static const urd::Store<urd::sequence<PhaseStep>>& task_phase_steps()
 {
     static const auto steps = urd::Store<urd::sequence<PhaseStep>> {
-        { TranslationPhase::ToNegationNormalForm, "to-negation-normal-form" },
-        { TranslationPhase::RenameQuantifiedVariables, "rename-quantified-variables" },
-        { TranslationPhase::RemoveUniversalQuantifiers, "remove-universal-quantifiers" },
-        { TranslationPhase::SimplifyGoal, "simplify-goal" },
-        { TranslationPhase::ToDisjunctiveNormalForm, "to-disjunctive-normal-form" },
-        { TranslationPhase::SplitDisjunctiveConditions, "split-disjunctive-conditions" },
-        { TranslationPhase::MoveExistentialQuantifiers, "move-existential-quantifiers" },
-        { TranslationPhase::ToEffectNormalForm, "to-effect-normal-form" },
-        { TranslationPhase::MaterializeEquality, "materialize-equality" },
-        { TranslationPhase::CompileTyping, "compile-typing" },
-        { TranslationPhase::NormalizeArithmeticExpressions, "normalize-arithmetic-expressions" },
-        { TranslationPhase::InferRequirements, "infer-requirements" },
+        { TranslationPhase::ToNegationNormalForm },
+        { TranslationPhase::RenameQuantifiedVariables },
+        { TranslationPhase::RemoveUniversalQuantifiers },
+        { TranslationPhase::SimplifyGoal },
+        { TranslationPhase::ToDisjunctiveNormalForm },
+        { TranslationPhase::SplitDisjunctiveConditions },
+        { TranslationPhase::MoveExistentialQuantifiers },
+        { TranslationPhase::ToEffectNormalForm },
+        { TranslationPhase::MaterializeEquality },
+        { TranslationPhase::CompileTyping },
+        { TranslationPhase::NormalizeArithmeticExpressions },
+        { TranslationPhase::InferRequirements },
     };
     return steps;
 }

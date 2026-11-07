@@ -48,13 +48,13 @@ TEST(LokiSemanticParser, LowercasesSourceBeforeParsing)
 {
     auto options = semantic::ParserOptions {};
     options.add_action_costs = false;
-    auto parser = semantic::Parser(read_text(fixture_path("mixed-case")), options);
+    auto parser = semantic::Parser(ygg::common::read_file(fixture_path("mixed-case")), options);
 
     EXPECT_EQ(parser.get_domain().get_name(), "mixed-domain");
     ASSERT_EQ(parser.get_domain().get_predicates().size(), 1);
     EXPECT_EQ(parser.get_domain().get_predicates()[0].get_name(), "ready");
 
-    const auto task = parser.parse_task(read_text(fixture_path("mixed-case", "task.pddl")));
+    const auto task = parser.parse_task(ygg::common::read_file(fixture_path("mixed-case", "task.pddl")));
     EXPECT_EQ(task.get_name(), "mixed-task");
     ASSERT_EQ(task.get_objects().size(), 1);
     EXPECT_EQ(task.get_objects()[0].get_name(), "item");

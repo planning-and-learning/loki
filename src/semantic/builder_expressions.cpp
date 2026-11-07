@@ -115,7 +115,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionEx
     auto parameters = parse_parameters(node.parameters);
     auto child = parse_condition(node.condition.get());
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(m_builder);
-    append_indices(parameters, data->parameters);
+    data->parameters = urd::to_stored(parameters);
     data->condition = urd::to_stored(child);
     return formalism::insert(repo(), *data).first;
 }
@@ -127,7 +127,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionFo
     auto parameters = parse_parameters(node.parameters);
     auto child = parse_condition(node.condition.get());
     auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(m_builder);
-    append_indices(parameters, data->parameters);
+    data->parameters = urd::to_stored(parameters);
     data->condition = urd::to_stored(child);
     return formalism::insert(repo(), *data).first;
 }

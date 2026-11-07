@@ -20,6 +20,8 @@
 
 #include "loki/semantic/translator/copy_translator_component.hpp"
 
+#include <concepts>
+
 namespace loki::semantic::detail
 {
 
@@ -29,8 +31,6 @@ class ConditionTranslator : public CopyTranslatorComponent<Derived, ConditionTra
 public:
     explicit ConditionTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, ConditionTranslator<Derived>>(context) {}
 
-    formalism::EntityView<formalism::Condition<formalism::LiteralTag>> copy(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source);
-
     formalism::EntityView<formalism::Condition<formalism::AndTag>> copy(formalism::EntityView<formalism::Condition<formalism::AndTag>> source);
 
     formalism::EntityView<formalism::Condition<formalism::OrTag>> copy(formalism::EntityView<formalism::Condition<formalism::OrTag>> source);
@@ -39,25 +39,16 @@ public:
 
     formalism::EntityView<formalism::Condition<formalism::ImplyTag>> copy(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source);
 
-    formalism::EntityView<formalism::Condition<formalism::ExistsTag>> copy(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source);
-
-    formalism::EntityView<formalism::Condition<formalism::ForallTag>> copy(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source);
+    /// A quantifier: its parameters scope its condition, which compiling typing prefixes with their type conditions.
+    template<typename Tag>
+        requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
+    formalism::EntityView<formalism::Condition<Tag>> copy(formalism::EntityView<formalism::Condition<Tag>> source);
 
     formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>
     copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source);
 
     formalism::ConditionView copy(formalism::ConditionView source);
 };
-
-template<typename Derived>
-formalism::EntityView<formalism::Condition<formalism::LiteralTag>>
-ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source)
-{
-    const auto literal = urd::to_stored(this->self().copy(source.get_literal()));
-    auto data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
-    data->literal = literal;
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
-}
 
 template<typename Derived>
 formalism::EntityView<formalism::Condition<formalism::AndTag>>
@@ -102,8 +93,9 @@ ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<fo
 }
 
 template<typename Derived>
-formalism::EntityView<formalism::Condition<formalism::ExistsTag>>
-ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
+template<typename Tag>
+    requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
+formalism::EntityView<formalism::Condition<Tag>> ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<Tag>> source)
 {
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
@@ -113,29 +105,7 @@ ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<fo
     auto typed_condition = condition;
     if (this->copy_context().phase == TranslationPhase::CompileTyping)
         this->self().prepend_type_conditions(typed_condition, source.get_parameters());
-    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
-    if (this->self().compiles_typing_now())
-        this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
-    else
-        for (auto parameter : parameter_views)
-            data->parameters.push_back(parameter.index());
-    data->condition = urd::to_stored(typed_condition);
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
-}
-
-template<typename Derived>
-formalism::EntityView<formalism::Condition<formalism::ForallTag>>
-ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
-{
-    this->self().increment_quantifications(source.get_parameters());
-    auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
-    this->self().enter_scope(parameter_views);
-    const auto condition = this->self().copy(source.get_condition());
-    this->self().leave_scope();
-    auto typed_condition = condition;
-    if (this->copy_context().phase == TranslationPhase::CompileTyping)
-        this->self().prepend_type_conditions(typed_condition, source.get_parameters());
-    auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
+    auto data = formalism::checkout<formalism::Condition<Tag>>(this->copy_context().builder);
     if (this->self().compiles_typing_now())
         this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
     else

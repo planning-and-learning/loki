@@ -21,10 +21,7 @@
 #include <filesystem>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
-#include <fstream>
 #include <optional>
-#include <sstream>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -75,16 +72,6 @@ inline urd::Store<urd::sequence<SuiteCase>> all_positive_cases()
 
 inline std::filesystem::path fixture_path(const std::string& case_dir, const std::string& file = "domain.pddl")
 { return ygg::common::root_path() / "tests/fixtures" / case_dir / file; }
-
-inline std::string read_text(const std::filesystem::path& path)
-{
-    auto in = std::ifstream(path);
-    if (!in)
-        throw std::runtime_error("Failed to open test fixture: " + path.string());
-    auto out = std::ostringstream {};
-    out << in.rdbuf();
-    return out.str();
-}
 
 }  // namespace loki::tests
 

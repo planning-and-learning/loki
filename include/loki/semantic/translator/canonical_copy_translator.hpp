@@ -37,66 +37,17 @@ public:
     std::pair<formalism::TaskView, bool> copy(formalism::TaskView task);
 
 private:
-    formalism::Builder m_builder;
     std::shared_ptr<TranslationStorage> m_storage;
 
-    template<typename Range, typename List>
-    void copy_list(const Range& source, List& target);
-
-    formalism::RequirementView copy(formalism::RequirementView source);
-    formalism::TypeView copy(formalism::TypeView source);
-    formalism::ObjectView copy(formalism::ObjectView source);
-    formalism::VariableView copy(formalism::VariableView source);
-    formalism::ParameterView copy(formalism::ParameterView source);
-    formalism::PredicateView copy(formalism::PredicateView source);
-    formalism::FunctionSkeletonView copy(formalism::FunctionSkeletonView source);
-    formalism::TermView copy(formalism::TermView source);
-    formalism::AtomView copy(formalism::AtomView source);
-    formalism::LiteralView copy(formalism::LiteralView source);
-    formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>
-    copy(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source);
-    formalism::FunctionTermView copy(formalism::FunctionTermView source);
-    formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>>
-    copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source);
-    formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>
-    copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source);
-    formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>
-    copy(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source);
-    formalism::FunctionExpressionView copy(formalism::FunctionExpressionView source);
-    formalism::EntityView<formalism::Condition<formalism::LiteralTag>> copy(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source);
-    formalism::EntityView<formalism::Condition<formalism::AndTag>> copy(formalism::EntityView<formalism::Condition<formalism::AndTag>> source);
-    formalism::EntityView<formalism::Condition<formalism::OrTag>> copy(formalism::EntityView<formalism::Condition<formalism::OrTag>> source);
-    formalism::EntityView<formalism::Condition<formalism::NotTag>> copy(formalism::EntityView<formalism::Condition<formalism::NotTag>> source);
-    formalism::EntityView<formalism::Condition<formalism::ImplyTag>> copy(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source);
-    formalism::EntityView<formalism::Condition<formalism::ExistsTag>> copy(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source);
-    formalism::EntityView<formalism::Condition<formalism::ForallTag>> copy(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source);
-    formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>
-    copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source);
-    formalism::ConditionView copy(formalism::ConditionView source);
-    formalism::EntityView<formalism::Effect<formalism::LiteralTag>> copy(formalism::EntityView<formalism::Effect<formalism::LiteralTag>> source);
-    formalism::EntityView<formalism::Effect<formalism::AndTag>> copy(formalism::EntityView<formalism::Effect<formalism::AndTag>> source);
-    formalism::EntityView<formalism::Effect<formalism::NumericTag>> copy(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source);
-    formalism::EntityView<formalism::Effect<formalism::ForallTag>> copy(formalism::EntityView<formalism::Effect<formalism::ForallTag>> source);
-    formalism::EntityView<formalism::Effect<formalism::WhenTag>> copy(formalism::EntityView<formalism::Effect<formalism::WhenTag>> source);
-    formalism::EntityView<formalism::Effect<formalism::OneOfTag>> copy(formalism::EntityView<formalism::Effect<formalism::OneOfTag>> source);
-    formalism::EffectProbabilisticAlternativeView copy(formalism::EffectProbabilisticAlternativeView source);
-    formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> copy(formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> source);
-    formalism::EffectView copy(formalism::EffectView source);
-    formalism::ActionView copy(formalism::ActionView source);
-    formalism::AxiomView copy(formalism::AxiomView source);
-    formalism::MetricView copy(formalism::MetricView source);
-    formalism::InitialFunctionValueView copy(formalism::InitialFunctionValueView source);
+    /// The copy of every entity below the domain and the task: memoized, children copied first.
+    template<typename T>
+    formalism::EntityView<T> copy_child(formalism::EntityView<T> source);
+    /// A task's domain: the translated domain once there is one.
+    formalism::DomainView copy_child(formalism::DomainView source);
 };
 
 inline auto copy(formalism::DomainView source, CanonicalCopyTranslator& context) { return context.copy(source); }
 inline auto copy(formalism::TaskView source, CanonicalCopyTranslator& context) { return context.copy(source); }
-
-template<typename Range, typename List>
-void CanonicalCopyTranslator::copy_list(const Range& source, List& target)
-{
-    for (auto view : source)
-        target.push_back(urd::to_stored(copy(view)));
-}
 
 }  // namespace loki::semantic::detail
 

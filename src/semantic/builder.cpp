@@ -110,14 +110,14 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
     std::sort(types.begin(), types.end(), [](auto lhs, auto rhs) { return lhs.index() < rhs.index(); });
 
     auto data = formalism::checkout<formalism::Domain>(m_builder);
-    data->name = to_cista(domain.name.text);
-    append_indices(requirements, data->requirements);
-    append_indices(types, data->types);
-    append_indices(constants, data->constants);
-    append_indices(predicates, data->predicates);
-    append_indices(functions, data->functions);
-    append_indices(actions, data->actions);
-    append_indices(axioms, data->axioms);
+    data->name = urd::flat_string(domain.name.text);
+    data->requirements = urd::to_stored(requirements);
+    data->types = urd::to_stored(types);
+    data->constants = urd::to_stored(constants);
+    data->predicates = urd::to_stored(predicates);
+    data->functions = urd::to_stored(functions);
+    data->actions = urd::to_stored(actions);
+    data->axioms = urd::to_stored(axioms);
     return formalism::insert(repo(), *data).first;
 }
 
@@ -164,18 +164,18 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
     checks().reject_unused_requirements(task.requirements);
 
     auto data = formalism::checkout<formalism::Task>(m_builder);
-    data->name = to_cista(task.name.text);
+    data->name = urd::flat_string(task.name.text);
     data->domain = m_domain_context.get_domain().index();
-    append_indices(requirements, data->requirements);
-    append_indices(types, data->types);
-    append_indices(predicates, data->predicates);
-    append_indices(objects, data->objects);
-    append_indices(initial_literals, data->initial_literals);
-    append_indices(initial_function_values, data->initial_function_values);
+    data->requirements = urd::to_stored(requirements);
+    data->types = urd::to_stored(types);
+    data->predicates = urd::to_stored(predicates);
+    data->objects = urd::to_stored(objects);
+    data->initial_literals = urd::to_stored(initial_literals);
+    data->initial_function_values = urd::to_stored(initial_function_values);
     if (goal)
         data->goal = urd::to_stored(*goal);
-    data->metric = to_optional_index(metric);
-    append_indices(axioms, data->axioms);
+    data->metric = urd::to_stored(metric);
+    data->axioms = urd::to_stored(axioms);
     return formalism::insert(repo(), *data).first;
 }
 

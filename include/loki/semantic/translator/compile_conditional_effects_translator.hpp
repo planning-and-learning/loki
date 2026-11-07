@@ -118,13 +118,13 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 }
             }
 
-            auto precondition = cista::optional<formalism::ConditionVariant> {};
+            auto precondition = urd::flat_optional<formalism::ConditionVariant> {};
             if (condition_data->conditions.size() == 1)
                 precondition = condition_data->conditions.front();
             else if (!condition_data->conditions.empty())
                 precondition = urd::to_stored(this->self().make_conjunction(*condition_data));
 
-            auto effect = cista::optional<formalism::EffectVariant> {};
+            auto effect = urd::flat_optional<formalism::EffectVariant> {};
             if (effect_data->effects.size() == 1)
                 effect = effect_data->effects.front();
             else if (!effect_data->effects.empty())
@@ -138,7 +138,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
             name += "_" + std::to_string(mask);
 
             auto action_data = formalism::checkout<formalism::Action>(this->copy_context().builder);
-            action_data->name = cista::offset::string(name);
+            action_data->name = urd::flat_string(name);
             action_data->original_name = data.original_name;
             for (auto parameter : data.parameters)
                 action_data->parameters.push_back(parameter);

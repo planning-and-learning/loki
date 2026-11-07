@@ -34,7 +34,7 @@ TEST(LokiSemanticDiagnostics, ReportsSyntaxFailureMessage)
 {
     try
     {
-        auto parser = semantic::Parser(read_text(fixture_path("broken-syntax")));
+        auto parser = semantic::Parser(ygg::common::read_file(fixture_path("broken-syntax")));
         FAIL() << "Expected parse error";
     }
     catch (const semantic::ParseError& error)
@@ -112,7 +112,7 @@ TEST(LokiSemanticDiagnostics, NestedExpressionKeepsItsFirstFailureAndContext)
     auto output = std::ostringstream {};
     auto handler = parser::ErrorHandlerType(source.cbegin(), source.cend(), output);
     auto condition = ast::Condition {};
-    EXPECT_FALSE(parser::parse_full(source, parser::condition(), condition, handler));
+    EXPECT_FALSE(ygg::diagnostics::parse_full(source, parser::condition(), condition, handler));
     ASSERT_TRUE(handler.last_error());
     const auto diagnostic = handler.diagnostic("fallback", source.cbegin());
     EXPECT_NE(diagnostic.message.find("while parsing and condition"), std::string::npos);
@@ -148,7 +148,7 @@ TEST(LokiSemanticDiagnostics, OnlyIdentifiedChildConditionsOwnTheirErrors)
         auto output = std::ostringstream {};
         auto handler = parser::ErrorHandlerType(item.source.cbegin(), item.source.cend(), output);
         auto condition = ast::Condition {};
-        EXPECT_FALSE(parser::parse_full(item.source, parser::condition(), condition, handler));
+        EXPECT_FALSE(ygg::diagnostics::parse_full(item.source, parser::condition(), condition, handler));
         ASSERT_TRUE(handler.last_error());
         const auto diagnostic = handler.diagnostic("fallback", item.source.cbegin());
         EXPECT_NE(diagnostic.message.find("while parsing " + item.owner), std::string::npos);
@@ -178,7 +178,7 @@ TEST(LokiSemanticDiagnostics, OnlyIdentifiedChildEffectsOwnTheirErrors)
         auto output = std::ostringstream {};
         auto handler = parser::ErrorHandlerType(source.cbegin(), source.cend(), output);
         auto effect = ast::Effect {};
-        EXPECT_FALSE(parser::parse_full(source, parser::effect(), effect, handler));
+        EXPECT_FALSE(ygg::diagnostics::parse_full(source, parser::effect(), effect, handler));
         ASSERT_TRUE(handler.last_error());
         const auto diagnostic = handler.diagnostic("fallback", source.cbegin());
         EXPECT_NE(diagnostic.message.find(std::string("while parsing ") + owner), std::string::npos);
@@ -320,7 +320,7 @@ TEST(LokiSemanticDiagnostics, KeywordPrefixesAndAmbiguousArithmeticStillParse)
         auto output = std::ostringstream {};
         auto handler = parser::ErrorHandlerType(source.cbegin(), source.cend(), output);
         auto condition = ast::Condition {};
-        EXPECT_TRUE(parser::parse_full(source, parser::condition(), condition, handler));
+        EXPECT_TRUE(ygg::diagnostics::parse_full(source, parser::condition(), condition, handler));
         EXPECT_FALSE(handler.last_error());
         EXPECT_TRUE(output.str().empty());
     }
@@ -342,7 +342,7 @@ TEST(LokiSemanticDiagnostics, KeywordPrefixesAndAmbiguousArithmeticStillParse)
         auto output = std::ostringstream {};
         auto handler = parser::ErrorHandlerType(source.cbegin(), source.cend(), output);
         auto expression = ast::FunctionExpression {};
-        EXPECT_TRUE(parser::parse_full(source, parser::function_expression(), expression, handler));
+        EXPECT_TRUE(ygg::diagnostics::parse_full(source, parser::function_expression(), expression, handler));
         EXPECT_FALSE(handler.last_error());
         EXPECT_TRUE(output.str().empty());
     }
@@ -372,7 +372,7 @@ TEST(LokiSemanticDiagnostics, ArithmeticErrorsKeepTheInnermostIdentifiedExpressi
         auto output = std::ostringstream {};
         auto handler = parser::ErrorHandlerType(source.cbegin(), source.cend(), output);
         auto expression = ast::FunctionExpression {};
-        EXPECT_FALSE(parser::parse_full(source, parser::function_expression(), expression, handler));
+        EXPECT_FALSE(ygg::diagnostics::parse_full(source, parser::function_expression(), expression, handler));
         ASSERT_TRUE(handler.last_error());
         const auto diagnostic = handler.diagnostic("fallback", source.cbegin());
         EXPECT_NE(diagnostic.message.find(std::string("while parsing ") + owner), std::string::npos);

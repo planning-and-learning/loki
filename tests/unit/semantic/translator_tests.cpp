@@ -759,7 +759,7 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
     auto repository = formalism::Repository(0);
     auto builder = formalism::Builder {};
     const auto make_predicate = [&](const char* name)
-    { return intern<formalism::Predicate>(repository, builder, [&](auto& data) { data.name = cista::offset::string(name); }); };
+    { return intern<formalism::Predicate>(repository, builder, [&](auto& data) { data.name = urd::flat_string(name); }); };
     const auto p_predicate = make_predicate("p");
     const auto q_predicate = make_predicate("q");
     const auto p = p_predicate.index();
@@ -816,7 +816,7 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
                                                         builder,
                                                         [&](auto& data)
                                                         {
-                                                            data.name = cista::offset::string("d");
+                                                            data.name = urd::flat_string("d");
                                                             data.predicates.push_back(q);
                                                             data.predicates.push_back(p);
                                                         });
@@ -825,7 +825,7 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
                                                          builder,
                                                          [&](auto& data)
                                                          {
-                                                             data.name = cista::offset::string("d");
+                                                             data.name = urd::flat_string("d");
                                                              data.predicates.push_back(p);
                                                              data.predicates.push_back(q);
                                                          });

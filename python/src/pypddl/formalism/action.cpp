@@ -39,24 +39,24 @@ void bind_action(nb::module_& m, RepositoryBinding& repository)
         urd::python::bind_data<V>(m, "ActionData")
             .def(nb::init<std::string,
                           urd::flat_vector<urd::index<formalism::Parameter>>,
-                          cista::optional<formalism::ConditionVariant>,
-                          cista::optional<formalism::EffectVariant>>(),
+                          urd::flat_optional<formalism::ConditionVariant>,
+                          urd::flat_optional<formalism::EffectVariant>>(),
                  "name"_a,
                  "parameters"_a = urd::flat_vector<urd::index<formalism::Parameter>> {},
-                 "precondition"_a.none() = cista::optional<formalism::ConditionVariant> {},
-                 "effect"_a.none() = cista::optional<formalism::EffectVariant> {})
+                 "precondition"_a.none() = urd::flat_optional<formalism::ConditionVariant> {},
+                 "effect"_a.none() = urd::flat_optional<formalism::EffectVariant> {})
             .def(nb::init<std::string,
                           std::string,
                           urd::flat_vector<urd::index<formalism::Parameter>>,
                           ygg::uint_t,
-                          cista::optional<formalism::ConditionVariant>,
-                          cista::optional<formalism::EffectVariant>>(),
+                          urd::flat_optional<formalism::ConditionVariant>,
+                          urd::flat_optional<formalism::EffectVariant>>(),
                  "name"_a,
                  "original_name"_a,
                  "parameters"_a,
                  "original_arity"_a,
-                 "precondition"_a.none() = cista::optional<formalism::ConditionVariant> {},
-                 "effect"_a.none() = cista::optional<formalism::EffectVariant> {})
+                 "precondition"_a.none() = urd::flat_optional<formalism::ConditionVariant> {},
+                 "effect"_a.none() = urd::flat_optional<formalism::EffectVariant> {})
             .def(urd::python::init_from_views<const std::string&,
                           const urd::Store<urd::sequence<formalism::ParameterView>>&,
                           const std::optional<formalism::ConditionView>&,

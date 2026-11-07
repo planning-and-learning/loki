@@ -69,97 +69,97 @@ constexpr file_type file = "file";
 
 namespace detail
 {
-struct VariableIdentifierClass : ErrorHandlerBase
+struct VariableIdentifierClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct TypeReferenceClass : ErrorHandlerBase
+struct TypeReferenceClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct EitherTypeClass : ErrorHandlerBase
+struct EitherTypeClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct FunctionExpressionNumberClass : ErrorHandlerBase
+struct FunctionExpressionNumberClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct FunctionExpressionFunctionClass : ErrorHandlerBase
+struct FunctionExpressionFunctionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct FunctionExpressionUnaryClass : ErrorHandlerBase
+struct FunctionExpressionUnaryClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct FunctionExpressionBinaryClass : ErrorHandlerBase
+struct FunctionExpressionBinaryClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct FunctionExpressionMultiClass : ErrorHandlerBase
+struct FunctionExpressionMultiClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ConditionLiteralClass : ErrorHandlerBase
+struct ConditionLiteralClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ConditionAndClass : ErrorHandlerBase
+struct ConditionAndClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ConditionOrClass : ErrorHandlerBase
+struct ConditionOrClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ConditionNotClass : ErrorHandlerBase
+struct ConditionNotClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ConditionImplyClass : ErrorHandlerBase
+struct ConditionImplyClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ConditionExistsClass : ErrorHandlerBase
+struct ConditionExistsClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ConditionForallClass : ErrorHandlerBase
+struct ConditionForallClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ConditionNumericConstraintClass : ErrorHandlerBase
+struct ConditionNumericConstraintClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct EffectLiteralClass : ErrorHandlerBase
+struct EffectLiteralClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct EffectAndClass : ErrorHandlerBase
+struct EffectAndClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct EffectNumericClass : ErrorHandlerBase
+struct EffectNumericClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct EffectForallClass : ErrorHandlerBase
+struct EffectForallClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct EffectWhenClass : ErrorHandlerBase
+struct EffectWhenClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct EffectOneOfClass : ErrorHandlerBase
+struct EffectOneOfClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct EffectProbabilisticClass : ErrorHandlerBase
+struct EffectProbabilisticClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ProbabilisticEffectAlternativeClass : ErrorHandlerBase
+struct ProbabilisticEffectAlternativeClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct RequirementSectionClass : ErrorHandlerBase
+struct RequirementSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct TypeSectionClass : ErrorHandlerBase
+struct TypeSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ConstantSectionClass : ErrorHandlerBase
+struct ConstantSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct PredicateSectionClass : ErrorHandlerBase
+struct PredicateSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct FunctionSectionClass : ErrorHandlerBase
+struct FunctionSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ObjectSectionClass : ErrorHandlerBase
+struct ObjectSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct InitialSectionClass : ErrorHandlerBase
+struct InitialSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
 

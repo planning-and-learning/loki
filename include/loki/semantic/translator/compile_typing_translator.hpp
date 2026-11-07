@@ -110,7 +110,7 @@ formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formal
                 break;
             }
     auto variable_data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
-    variable_data->name = cista::offset::string("?arg");
+    variable_data->name = urd::flat_string("?arg");
     parameter_data->variable = formalism::insert(this->copy_context().storage->repository, *variable_data).first.index();
     auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
     predicate_data->name = type.get_name();

@@ -19,9 +19,10 @@
 
 #include "mappings.hpp"
 
-#include <set>
+#include <optional>
 #include <string_view>
-#include <type_traits>
+#include <urd/elements/children.hpp>
+#include <variant>
 #include <urd/repr/maps/unordered_flat_map.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
@@ -34,244 +35,167 @@ namespace
 {
 
 using enum formalism::RequirementKind;
+using namespace formalism;
+
+/// What a construct requires by its kind alone.
+template<typename T>
+inline constexpr auto required = std::optional<RequirementKind> {};
+template<>
+inline constexpr auto required<Condition<OrTag>> = std::optional(DisjunctivePreconditions);
+template<>
+inline constexpr auto required<Condition<ImplyTag>> = std::optional(DisjunctivePreconditions);
+template<>
+inline constexpr auto required<Condition<NotTag>> = std::optional(NegativePreconditions);
+template<>
+inline constexpr auto required<Condition<ExistsTag>> = std::optional(ExistentialPreconditions);
+template<>
+inline constexpr auto required<Condition<ForallTag>> = std::optional(UniversalPreconditions);
+template<>
+inline constexpr auto required<Condition<NumericConstraintTag>> = std::optional(NumericFluents);
+template<>
+inline constexpr auto required<Effect<OneOfTag>> = std::optional(NonDeterministic);
+template<>
+inline constexpr auto required<Effect<ForallTag>> = std::optional(UniversalPreconditions);
+template<>
+inline constexpr auto required<Effect<WhenTag>> = std::optional(ConditionalEffects);
+template<>
+inline constexpr auto required<Effect<ProbabilisticTag>> = std::optional(ProbabilisticEffects);
+template<>
+inline constexpr auto required<Metric> = std::optional(NumericFluents);
 
 /// Mirrors the requirement checks of the strict parser (AstBuilder and SemanticChecks): each construct adds what parsing it requires
 /// or marks used, so that the result declares every requirement the reparse demands and none that it would reject as unused.
 struct RequirementCollector
 {
-    urd::Store<urd::set<formalism::RequirementKind>, urd::sorted, urd::stable_refs> requirements;
+    urd::Store<urd::set<RequirementKind>, urd::sorted, urd::stable_refs> requirements;
 
-    template<typename Node, typename Tag>
-    static constexpr bool is = std::is_same_v<std::decay_t<Node>, formalism::EntityView<Tag>>;
+    static bool is_total_cost(FunctionSkeletonView function) { return std::string_view(function.get_name()) == "total-cost"; }
 
-    static bool is_total_cost(formalism::FunctionSkeletonView function) { return std::string_view(function.get_name()) == "total-cost"; }
-
-    void parameters(formalism::EntityListView<formalism::Parameter> parameters)
+    /// A construct: what its kind requires, then what its children require.
+    template<typename T>
+    void visit(EntityView<T> node)
     {
-        for (const auto parameter : parameters)
-            if (!parameter.get_types().empty())
-                requirements.insert(Typing);
+        if (required<T>)
+            requirements.insert(*required<T>);
+        urd::for_each_child<SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { visit(child); });
     }
 
-    void objects(formalism::EntityListView<formalism::Object> objects)
+    template<typename... Vs>
+    void visit(const std::variant<Vs...>& node)
+    { std::visit([&](auto alternative) { visit(alternative); }, node); }
+
+    void visit(ParameterView parameter)
     {
-        for (const auto object : objects)
-            if (!object.get_types().empty())
-                requirements.insert(Typing);
+        if (!parameter.get_types().empty())
+            requirements.insert(Typing);
     }
 
-    void types(formalism::EntityListView<formalism::Type> types)
+    void visit(ObjectView object)
     {
-        for (const auto type : types)
-        {
-            const auto name = std::string_view(type.get_name());
-            if (name != "object" && name != "number")
-                requirements.insert(Typing);
-        }
+        if (!object.get_types().empty())
+            requirements.insert(Typing);
     }
 
-    void function(formalism::FunctionSkeletonView function)
+    void visit(TypeView type)
     {
-        requirements.insert(is_total_cost(function) ? ActionCosts : NumericFluents);
-        parameters(function.get_parameters());
+        const auto name = std::string_view(type.get_name());
+        if (name != "object" && name != "number")
+            requirements.insert(Typing);
     }
 
-    void atom(formalism::AtomView atom)
+    /// An atom's predicate and terms require nothing beyond the atom: their declarations are visited on their own.
+    void visit(AtomView atom)
     {
         if (std::string_view(atom.get_predicate().get_name()) == "=")
             requirements.insert(Equality);
     }
 
-    void function_term(formalism::FunctionTermView term) { requirements.insert(is_total_cost(term.get_function()) ? ActionCosts : NumericFluents); }
-
-    void expression(formalism::FunctionExpressionView expression)
+    void visit(FunctionSkeletonView function)
     {
-        std::visit(
-            [&](const auto& node)
-            {
-                using Node = decltype(node);
-                if constexpr (std::is_same_v<std::decay_t<Node>, formalism::FunctionTermView>)
-                    function_term(node);
-                else if constexpr (is<Node, formalism::FunctionExpression<formalism::UnaryTag>>)
-                    this->expression(node.get_expression());
-                else if constexpr (is<Node, formalism::FunctionExpression<formalism::BinaryTag>>)
-                {
-                    this->expression(node.get_left());
-                    this->expression(node.get_right());
-                }
-                else if constexpr (is<Node, formalism::FunctionExpression<formalism::MultiTag>>)
-                    for (const auto arg : node.get_args())
-                        this->expression(arg);
-            },
-            expression);
+        requirements.insert(is_total_cost(function) ? ActionCosts : NumericFluents);
+        for (const auto parameter : function.get_parameters())
+            visit(parameter);
     }
 
-    void condition(formalism::ConditionView condition)
+    void visit(FunctionTermView term) { requirements.insert(is_total_cost(term.get_function()) ? ActionCosts : NumericFluents); }
+
+    void visit(EntityView<Condition<LiteralTag>> node)
     {
-        std::visit(
-            [&](const auto& node)
-            {
-                using Node = decltype(node);
-                if constexpr (is<Node, formalism::Condition<formalism::LiteralTag>>)
-                {
-                    atom(node.get_literal().get_atom());
-                    if (!node.get_literal().get_polarity())
-                        requirements.insert(NegativePreconditions);
-                }
-                else if constexpr (is<Node, formalism::Condition<formalism::AndTag>>)
-                    for (const auto child : node.get_conditions())
-                        this->condition(child);
-                else if constexpr (is<Node, formalism::Condition<formalism::OrTag>>)
-                {
-                    requirements.insert(DisjunctivePreconditions);
-                    for (const auto child : node.get_conditions())
-                        this->condition(child);
-                }
-                else if constexpr (is<Node, formalism::Condition<formalism::NotTag>>)
-                {
-                    requirements.insert(NegativePreconditions);
-                    this->condition(node.get_condition());
-                }
-                else if constexpr (is<Node, formalism::Condition<formalism::ImplyTag>>)
-                {
-                    requirements.insert(DisjunctivePreconditions);
-                    this->condition(node.get_left());
-                    this->condition(node.get_right());
-                }
-                else if constexpr (is<Node, formalism::Condition<formalism::ExistsTag>> || is<Node, formalism::Condition<formalism::ForallTag>>)
-                {
-                    requirements.insert(is<Node, formalism::Condition<formalism::ExistsTag>> ? ExistentialPreconditions : UniversalPreconditions);
-                    parameters(node.get_parameters());
-                    this->condition(node.get_condition());
-                }
-                else if constexpr (is<Node, formalism::Condition<formalism::NumericConstraintTag>>)
-                {
-                    requirements.insert(NumericFluents);
-                    expression(node.get_left());
-                    expression(node.get_right());
-                }
-            },
-            condition);
+        if (!node.get_literal().get_polarity())
+            requirements.insert(NegativePreconditions);
+        visit(node.get_literal());
     }
 
-    void effect(formalism::EffectView effect)
+    void visit(EntityView<Effect<NumericTag>> node)
     {
-        std::visit(
-            [&](const auto& node)
-            {
-                using Node = decltype(node);
-                if constexpr (is<Node, formalism::Effect<formalism::LiteralTag>>)
-                    atom(node.get_literal().get_atom());
-                else if constexpr (is<Node, formalism::Effect<formalism::AndTag>> || is<Node, formalism::Effect<formalism::OneOfTag>>)
-                {
-                    if constexpr (is<Node, formalism::Effect<formalism::OneOfTag>>)
-                        requirements.insert(NonDeterministic);
-                    for (const auto child : node.get_effects())
-                        this->effect(child);
-                }
-                else if constexpr (is<Node, formalism::Effect<formalism::NumericTag>>)
-                {
-                    // Bare :action-costs permits only writes of the form (increase (total-cost) ...).
-                    const auto increases_total_cost =
-                        node.get_operator() == formalism::NumericEffectOperator::Increase && is_total_cost(node.get_function().get_function());
-                    requirements.insert(increases_total_cost ? ActionCosts : NumericFluents);
-                    function_term(node.get_function());
-                    expression(node.get_expression());
-                }
-                else if constexpr (is<Node, formalism::Effect<formalism::ForallTag>>)
-                {
-                    requirements.insert(UniversalPreconditions);
-                    parameters(node.get_parameters());
-                    this->effect(node.get_effect());
-                }
-                else if constexpr (is<Node, formalism::Effect<formalism::WhenTag>>)
-                {
-                    requirements.insert(ConditionalEffects);
-                    condition(node.get_condition());
-                    this->effect(node.get_effect());
-                }
-                else if constexpr (is<Node, formalism::Effect<formalism::ProbabilisticTag>>)
-                {
-                    requirements.insert(ProbabilisticEffects);
-                    for (const auto alternative : node.get_alternatives())
-                        this->effect(alternative.get_effect());
-                }
-            },
-            effect);
+        // Bare :action-costs permits only writes of the form (increase (total-cost) ...).
+        const auto increases_total_cost = node.get_operator() == NumericEffectOperator::Increase && is_total_cost(node.get_function().get_function());
+        requirements.insert(increases_total_cost ? ActionCosts : NumericFluents);
+        visit(node.get_function());
+        visit(node.get_expression());
     }
 
-    void axioms(formalism::EntityListView<formalism::Axiom> axioms)
+    void visit(AxiomView axiom)
     {
-        for (const auto axiom : axioms)
-        {
-            requirements.insert(DerivedPredicates);
-            parameters(axiom.get_parameters());
-            condition(axiom.get_condition());
-            // The printer writes the parameters that are not in the head as an exists around the condition.
-            auto head_variables = urd::Store<urd::set<formalism::VariableView>> {};
-            for (const auto term : axiom.get_head().get_atom().get_terms())
-                std::visit(
-                    [&](const auto& node)
-                    {
-                        if constexpr (std::is_same_v<std::decay_t<decltype(node)>, formalism::VariableView>)
-                            head_variables.insert(node);
-                    },
-                    term);
-            for (const auto parameter : axiom.get_parameters())
-                if (!head_variables.contains(parameter.get_variable()))
-                    requirements.insert(ExistentialPreconditions);
-        }
+        requirements.insert(DerivedPredicates);
+        for (const auto parameter : axiom.get_parameters())
+            visit(parameter);
+        visit(axiom.get_condition());
+        // The printer writes the parameters that are not in the head as an exists around the condition.
+        auto head_variables = urd::Store<urd::set<VariableView>> {};
+        for (const auto term : axiom.get_head().get_atom().get_terms())
+            if (const auto* variable = std::get_if<VariableView>(&term))
+                head_variables.insert(*variable);
+        for (const auto parameter : axiom.get_parameters())
+            if (!head_variables.contains(parameter.get_variable()))
+                requirements.insert(ExistentialPreconditions);
     }
 
-    void predicates(formalism::EntityListView<formalism::Predicate> predicates)
+    /// Declared predicates: what their parameters require.
+    void predicates(EntityListView<Predicate> predicates)
     {
         for (const auto predicate : predicates)
-            parameters(predicate.get_parameters());
+            for (const auto parameter : predicate.get_parameters())
+                visit(parameter);
+    }
+
+    template<typename Range>
+    void visit_all(const Range& nodes)
+    {
+        for (const auto node : nodes)
+            visit(node);
     }
 };
 
 }  // namespace
 
-urd::Store<urd::sequence<formalism::RequirementKind>> infer_requirements(formalism::DomainView domain)
+urd::Store<urd::sequence<RequirementKind>> infer_requirements(DomainView domain)
 {
     auto collector = RequirementCollector {};
     // The strict parser demands :strips of every domain.
     collector.requirements.insert(Strips);
-    collector.types(domain.get_types());
-    collector.objects(domain.get_constants());
+    collector.visit_all(domain.get_types());
+    collector.visit_all(domain.get_constants());
     collector.predicates(domain.get_predicates());
-    for (const auto function : domain.get_functions())
-        collector.function(function);
-    for (const auto action : domain.get_actions())
-    {
-        collector.parameters(action.get_parameters());
-        if (const auto precondition = action.get_precondition())
-            collector.condition(precondition.value());
-        if (const auto effect = action.get_effect())
-            collector.effect(effect.value());
-    }
-    collector.axioms(domain.get_axioms());
+    collector.visit_all(domain.get_functions());
+    collector.visit_all(domain.get_actions());
+    collector.visit_all(domain.get_axioms());
     return { collector.requirements.begin(), collector.requirements.end() };
 }
 
-urd::Store<urd::sequence<formalism::RequirementKind>> infer_requirements(formalism::TaskView task, formalism::DomainView domain)
+urd::Store<urd::sequence<RequirementKind>> infer_requirements(TaskView task, DomainView domain)
 {
     auto collector = RequirementCollector {};
-    collector.types(task.get_types());
+    collector.visit_all(task.get_types());
     collector.predicates(task.get_predicates());
-    collector.objects(task.get_objects());
-    for (const auto literal : task.get_initial_literals())
-        collector.atom(literal.get_atom());
-    for (const auto value : task.get_initial_function_values())
-        collector.function_term(value.get_function());
+    collector.visit_all(task.get_objects());
+    collector.visit_all(task.get_initial_literals());
+    collector.visit_all(task.get_initial_function_values());
     if (const auto goal = task.get_goal())
-        collector.condition(goal.value());
+        collector.visit(goal.value());
     if (const auto metric = task.get_metric())
-    {
-        collector.requirements.insert(NumericFluents);
-        collector.expression(metric.value().get_expression());
-    }
-    collector.axioms(task.get_axioms());
+        collector.visit(metric.value());
+    collector.visit_all(task.get_axioms());
 
     // What a domain requirement provides needs no declaration in the task, and declaring it again is redundant.
     collector.requirements.erase(Strips);

@@ -96,8 +96,8 @@ struct EffectProbabilisticAlternative
 };
 
 /// A term: a variable or an object. Stored as it is, not interned.
-using Term = ::cista::offset::variant<urd::index<Variable>, urd::index<Object>>;
-using TermList = ::cista::offset::vector<Term>;
+using Term = urd::flat_variant<urd::index<Variable>, urd::index<Object>>;
+using TermList = urd::flat_vector<Term>;
 
 // Shared tags
 struct LiteralTag
@@ -180,11 +180,11 @@ using FunctionExpressionTypes = boost::mp11::mp_append<boost::mp11::mp_list<Func
 
 /// A function expression, condition or effect: one of the family's records. Stored as it is, not interned.
 using FunctionExpressionVariant = urd::index_variant<FunctionExpressionTypes>;
-using FunctionExpressionList = ::cista::offset::vector<FunctionExpressionVariant>;
+using FunctionExpressionList = urd::flat_vector<FunctionExpressionVariant>;
 using ConditionVariant = urd::index_variant<boost::mp11::mp_transform<Condition, ConditionTags>>;
-using ConditionList = ::cista::offset::vector<ConditionVariant>;
+using ConditionList = urd::flat_vector<ConditionVariant>;
 using EffectVariant = urd::index_variant<boost::mp11::mp_transform<Effect, EffectTags>>;
-using EffectList = ::cista::offset::vector<EffectVariant>;
+using EffectList = urd::flat_vector<EffectVariant>;
 
 struct Action
 {

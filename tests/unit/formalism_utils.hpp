@@ -26,116 +26,42 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <urd/elements/children.hpp>
 #include <urd/repr/maps/unordered_flat_map.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
+#include <variant>
 #include <vector>
 
 namespace loki::tests
 {
 
-template<class... Ts>
-struct Overloaded : Ts...
+/// The number of nodes of type Target in node: it and its descendants.
+template<typename Target, typename T>
+std::size_t count_nodes(formalism::EntityView<T> node)
 {
-    using Ts::operator()...;
-};
-template<class... Ts>
-Overloaded(Ts...) -> Overloaded<Ts...>;
-
-template<typename Target>
-std::size_t count_effect_nodes(formalism::EffectView effect);
-
-template<typename Target, typename Node>
-std::size_t count_nested_effect_nodes(const Node& node)
-{
-    if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
-                  || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
-    {
-        auto result = std::size_t {};
-        for (auto child : node.get_effects())
-            result += count_effect_nodes<Target>(child);
-        return result;
-    }
-    else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>
-                       || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
-    {
-        return count_effect_nodes<Target>(node.get_effect());
-    }
-    else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
-    {
-        auto result = std::size_t {};
-        for (auto alternative : node.get_alternatives())
-            result += count_effect_nodes<Target>(alternative.get_effect());
-        return result;
-    }
-    else
-    {
-        return 0;
-    }
+    auto result = std::size_t { std::is_same_v<T, Target> };
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { result += count_nodes<Target>(child); });
+    return result;
 }
 
-template<typename Target>
-std::size_t count_effect_nodes(formalism::EffectView effect)
-{
-    return std::visit(
-        [&](const auto& node) -> std::size_t
-        {
-            using Node = std::decay_t<decltype(node)>;
-            auto result = count_nested_effect_nodes<Target>(node);
-            if constexpr (std::is_same_v<Node, formalism::EntityView<Target>>)
-                ++result;
-            return result;
-        },
-        effect);
-}
-
-template<typename Target>
-std::size_t count_condition_nodes(formalism::ConditionView condition)
-{
-    return std::visit(
-        [&](const auto& node) -> std::size_t
-        {
-            using Node = std::decay_t<decltype(node)>;
-            auto result = std::size_t {};
-            if constexpr (std::is_same_v<Node, formalism::EntityView<Target>>)
-            {
-                ++result;
-            }
-            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>
-                          || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
-            {
-                for (auto child : node.get_conditions())
-                    result += count_condition_nodes<Target>(child);
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::NotTag>>>
-                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>
-                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
-            {
-                result += count_condition_nodes<Target>(node.get_condition());
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ImplyTag>>>)
-            {
-                result += count_condition_nodes<Target>(node.get_left());
-                result += count_condition_nodes<Target>(node.get_right());
-            }
-            return result;
-        },
-        condition);
-}
+template<typename Target, typename... Vs>
+std::size_t count_nodes(const std::variant<Vs...>& node)
+{ return std::visit([](auto alternative) { return count_nodes<Target>(alternative); }, node); }
 
 inline bool contains_not_or_imply(formalism::ConditionView condition)
 {
-    return count_condition_nodes<formalism::Condition<formalism::NotTag>>(condition) > 0
-           || count_condition_nodes<formalism::Condition<formalism::ImplyTag>>(condition) > 0;
+    return count_nodes<formalism::Condition<formalism::NotTag>>(condition) > 0
+           || count_nodes<formalism::Condition<formalism::ImplyTag>>(condition) > 0;
 }
 
-inline bool contains_forall(formalism::ConditionView condition) { return count_condition_nodes<formalism::Condition<formalism::ForallTag>>(condition) > 0; }
+inline bool contains_forall(formalism::ConditionView condition) { return count_nodes<formalism::Condition<formalism::ForallTag>>(condition) > 0; }
 
-inline bool contains_exists(formalism::ConditionView condition) { return count_condition_nodes<formalism::Condition<formalism::ExistsTag>>(condition) > 0; }
+inline bool contains_exists(formalism::ConditionView condition) { return count_nodes<formalism::Condition<formalism::ExistsTag>>(condition) > 0; }
 
-inline std::size_t count_effect_when(formalism::EffectView effect) { return count_effect_nodes<formalism::Effect<formalism::WhenTag>>(effect); }
+inline std::size_t count_effect_when(formalism::EffectView effect) { return count_nodes<formalism::Effect<formalism::WhenTag>>(effect); }
 
 inline bool is_effect_and(formalism::EffectView effect) { return std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::AndTag>>>(effect); }
 
@@ -152,35 +78,19 @@ formalism::EntityView<formalism::Effect<Tag>> effect_node(formalism::EffectView 
     return std::get<Node>(effect);
 }
 
-inline bool condition_mentions_predicate(formalism::ConditionView condition, const std::string& name)
+inline bool mentions_predicate(formalism::PredicateView predicate, const std::string& name) { return std::string(predicate.get_name()) == name; }
+
+/// Whether the predicate name occurs in node.
+template<typename T>
+bool mentions_predicate(formalism::EntityView<T> node, const std::string& name)
 {
-    return std::visit(
-        Overloaded {
-            [&](formalism::EntityView<formalism::Condition<formalism::LiteralTag>> node)
-            { return std::string(node.get_literal().get_atom().get_predicate().get_name()) == name; },
-            [&](formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>) { return false; },
-            [&](formalism::EntityView<formalism::Condition<formalism::NotTag>> node) { return condition_mentions_predicate(node.get_condition(), name); },
-            [&](formalism::EntityView<formalism::Condition<formalism::ImplyTag>> node)
-            { return condition_mentions_predicate(node.get_left(), name) || condition_mentions_predicate(node.get_right(), name); },
-            [&](formalism::EntityView<formalism::Condition<formalism::AndTag>> node)
-            {
-                for (auto child : node.get_conditions())
-                    if (condition_mentions_predicate(child, name))
-                        return true;
-                return false;
-            },
-            [&](formalism::EntityView<formalism::Condition<formalism::OrTag>> node)
-            {
-                for (auto child : node.get_conditions())
-                    if (condition_mentions_predicate(child, name))
-                        return true;
-                return false;
-            },
-            [&](formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node) { return condition_mentions_predicate(node.get_condition(), name); },
-            [&](formalism::EntityView<formalism::Condition<formalism::ForallTag>> node) { return condition_mentions_predicate(node.get_condition(), name); },
-        },
-        condition);
+    auto found = false;
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { found = found || mentions_predicate(child, name); });
+    return found;
 }
+
+inline bool condition_mentions_predicate(formalism::ConditionView condition, const std::string& name)
+{ return std::visit([&](auto node) { return mentions_predicate(node, name); }, condition); }
 
 // Conjunction of literals and numeric constraints; what grounding-based consumers require.
 inline bool is_conjunctive(formalism::ConditionView condition)
@@ -205,37 +115,20 @@ inline bool is_conjunctive(formalism::ConditionView condition)
         condition);
 }
 
-inline bool writes_function_named(formalism::EffectView effect, std::string_view name)
+inline bool writes_function_named(formalism::EntityView<formalism::Effect<formalism::NumericTag>> effect, std::string_view name)
+{ return std::string_view(effect.get_function().get_function().get_name()) == name; }
+
+/// Whether a numeric effect on the function name occurs in node.
+template<typename T>
+bool writes_function_named(formalism::EntityView<T> node, std::string_view name)
 {
-    return std::visit(
-        [&](const auto& node) -> bool
-        {
-            using Node = std::decay_t<decltype(node)>;
-            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::NumericTag>>>)
-                return std::string_view(node.get_function().get_function().get_name()) == name;
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
-                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
-            {
-                for (auto child : node.get_effects())
-                    if (writes_function_named(child, name))
-                        return true;
-                return false;
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>
-                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
-                return writes_function_named(node.get_effect(), name);
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
-            {
-                for (auto alternative : node.get_alternatives())
-                    if (writes_function_named(alternative.get_effect(), name))
-                        return true;
-                return false;
-            }
-            else
-                return false;
-        },
-        effect);
+    auto found = false;
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { found = found || writes_function_named(child, name); });
+    return found;
 }
+
+inline bool writes_function_named(formalism::EffectView effect, std::string_view name)
+{ return std::visit([&](auto node) { return writes_function_named(node, name); }, effect); }
 
 inline bool has_predicate_named(formalism::DomainView domain, std::string_view name)
 {
@@ -277,32 +170,23 @@ inline bool has_requirement_kind(formalism::DomainView domain, formalism::Requir
 
 inline std::optional<std::string> object_term_name(formalism::TermView term)
 {
-    return std::visit(
-        Overloaded {
-            [](formalism::ObjectView object) -> std::optional<std::string> { return std::string(object.get_name()); },
-            [](auto) -> std::optional<std::string> { return std::nullopt; },
-        },
-        term);
+    if (const auto* object = std::get_if<formalism::ObjectView>(&term))
+        return std::string(object->get_name());
+    return std::nullopt;
 }
 
 inline std::optional<std::string> variable_term_name(formalism::TermView term)
 {
-    return std::visit(
-        Overloaded {
-            [&](formalism::VariableView variable) -> std::optional<std::string> { return std::string(variable.get_name()); },
-            [&](auto) -> std::optional<std::string> { return std::nullopt; },
-        },
-        term);
+    if (const auto* variable = std::get_if<formalism::VariableView>(&term))
+        return std::string(variable->get_name());
+    return std::nullopt;
 }
 
 inline std::optional<urd::index<formalism::Object>> object_term(formalism::TermView term)
 {
-    return std::visit(
-        Overloaded {
-            [](formalism::ObjectView object) -> std::optional<urd::index<formalism::Object>> { return object.index(); },
-            [](auto) -> std::optional<urd::index<formalism::Object>> { return std::nullopt; },
-        },
-        term);
+    if (const auto* object = std::get_if<formalism::ObjectView>(&term))
+        return object->index();
+    return std::nullopt;
 }
 
 // Reflexive (= o o) initialization literals produced by materialize_equality.

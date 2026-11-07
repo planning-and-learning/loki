@@ -38,11 +38,11 @@ template<>
 struct data<::loki::formalism::Predicate>
 {
     urd::index<::loki::formalism::Predicate> index;
-    ::cista::offset::string name;
+    urd::flat_string name;
     urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
 
     data() = default;
-    data(::cista::offset::string name_, urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_ = {}) :
+    data(urd::flat_string name_, urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_ = {}) :
         index(),
         name(std::move(name_)),
         parameters(std::move(parameters_))

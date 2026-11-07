@@ -149,8 +149,8 @@ Headers and templates follow the [template and include rules](https://github.com
 
 ## C++ API
 
-The umbrella header exposes the semantic parser, translator, and reparseable
-PDDL formatter through the top-level `loki` namespace:
+The umbrella header includes the semantic parser (`loki::semantic`), translator
+(`loki::semantic`), and reparseable PDDL formatter (`loki::formalism::format`):
 
 ```cpp
 #include <loki/loki.hpp>
@@ -159,10 +159,10 @@ PDDL formatter through the top-level `loki` namespace:
 
 int main()
 {
-    auto parser = loki::Parser(std::string { "(define (domain ready-domain) (:predicates (ready)))" });
-    const auto translation = loki::translate_domain(parser.get_domain());
-    const auto domain_text = loki::format_domain(translation.get_translated_domain());
-    auto reparsed = loki::Parser(domain_text);
+    auto parser = loki::semantic::Parser(std::string { "(define (domain ready-domain) (:predicates (ready)))" });
+    const auto translation = loki::semantic::translate(parser.get_domain());
+    const auto domain_text = loki::formalism::format::to_string(translation.get_translated_domain());
+    auto reparsed = loki::semantic::Parser(domain_text);
     return reparsed.get_domain().get_name() == "ready-domain" ? 0 : 1;
 }
 ```
@@ -191,7 +191,7 @@ nodes. Semantic construction always maps empty addition and multiplication to
 `0` and `1`, maps unary forms to their operand, and lexicographically sorts the
 immediate operands of each remaining multi-expression.
 
-`TranslatorOptions` (second argument of `translate_domain`/`translate_task`):
+`TranslatorOptions` (last argument of `translate`; `translate_domain`/`translate_task` in Python):
 
 | Option | Default | Description |
 | --- | --- | --- |

@@ -26,6 +26,7 @@
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
 #include <urd/repr/sequences/sequence.hpp>
+#include <urd/repr/wrappers/scoped.hpp>
 #include <urd/store.hpp>
 
 
@@ -42,7 +43,10 @@ struct CopyContext
     urd::Store<urd::map<formalism::VariableView, size_t>> num_quantifications;
     /// The parameters in scope with their variables, a sequence per scope, innermost last.
     urd::Store<urd::sequence<urd::Store<urd::sequence<ScopedFreeParameter>>>> active_parameters;
-    urd::Store<urd::sequence<urd::Store<urd::map<formalism::VariableView, formalism::VariableView>>>> variable_bindings;
+    /// The renamed variables in force: an inner quantifier's binding shadows an outer one until its scope ends.
+    urd::Store<urd::map<formalism::VariableView, formalism::VariableView>, urd::scoped> variable_bindings;
+    /// The targets of the bindings shadowed in the open scopes, by name: still taken while their scope is open.
+    urd::Store<urd::map<std::string, formalism::VariableView>, urd::scoped> shadowed_variable_names;
     urd::Store<urd::set<std::string>> renamed_variable_names;
     urd::Store<urd::set<std::string>> used_predicate_names;
     urd::Store<urd::sequence<formalism::PredicateView>> generated_predicates;

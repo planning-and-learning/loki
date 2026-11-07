@@ -43,7 +43,7 @@ public:
 template<typename Derived>
 formalism::ConditionView SimplifyGoalTranslator<Derived>::make_generated_goal_condition(formalism::ConditionVariant condition)
 {
-    const auto name = cista::offset::string(this->self().next_generated_predicate_name("loki-goal-"));
+    const auto name = urd::flat_string(this->self().next_generated_predicate_name("loki-goal-"));
     auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
     predicate_data->name = name;
     const auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first;

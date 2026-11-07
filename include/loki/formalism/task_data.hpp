@@ -39,7 +39,7 @@ template<>
 struct data<::loki::formalism::Task>
 {
     urd::index<::loki::formalism::Task> index;
-    ::cista::offset::string name;
+    urd::flat_string name;
     urd::index<::loki::formalism::Domain> domain;
     urd::flat_vector<urd::index<::loki::formalism::Requirement>> requirements;
     urd::flat_vector<urd::index<::loki::formalism::Type>> types;
@@ -47,12 +47,12 @@ struct data<::loki::formalism::Task>
     urd::flat_vector<urd::index<::loki::formalism::Object>> objects;
     urd::flat_vector<urd::index<::loki::formalism::Literal>> initial_literals;
     urd::flat_vector<urd::index<::loki::formalism::InitialFunctionValue>> initial_function_values;
-    ::cista::optional<::loki::formalism::ConditionVariant> goal;
-    ::cista::optional<urd::index<::loki::formalism::Metric>> metric;
+    urd::flat_optional<::loki::formalism::ConditionVariant> goal;
+    urd::flat_optional<urd::index<::loki::formalism::Metric>> metric;
     urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms;
 
     data() = default;
-    data(::cista::offset::string name_,
+    data(urd::flat_string name_,
          urd::index<::loki::formalism::Domain> domain_,
          urd::flat_vector<urd::index<::loki::formalism::Requirement>> requirements_,
          urd::flat_vector<urd::index<::loki::formalism::Type>> types_,
@@ -60,8 +60,8 @@ struct data<::loki::formalism::Task>
          urd::flat_vector<urd::index<::loki::formalism::Object>> objects_,
          urd::flat_vector<urd::index<::loki::formalism::Literal>> initial_literals_,
          urd::flat_vector<urd::index<::loki::formalism::InitialFunctionValue>> initial_function_values_,
-         ::cista::optional<::loki::formalism::ConditionVariant> goal_,
-         ::cista::optional<urd::index<::loki::formalism::Metric>> metric_,
+         urd::flat_optional<::loki::formalism::ConditionVariant> goal_,
+         urd::flat_optional<urd::index<::loki::formalism::Metric>> metric_,
          urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms_) :
         index(),
         name(std::move(name_)),

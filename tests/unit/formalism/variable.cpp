@@ -31,9 +31,9 @@ TEST(LokiTests, VariableViewIdentityUsesRepositoryIndex)
     auto first_repository = loki::formalism::Repository(0);
     auto second_repository = loki::formalism::Repository(1);
     auto equivalent_repository = loki::formalism::Repository(0);
-    auto first_data = Data(cista::offset::string("?x"));
-    auto second_data = Data(cista::offset::string("?x"));
-    auto equivalent_data = Data(cista::offset::string("?x"));
+    auto first_data = Data(urd::flat_string("?x"));
+    auto second_data = Data(urd::flat_string("?x"));
+    auto equivalent_data = Data(urd::flat_string("?x"));
 
     const auto [first, first_created] = first_repository.insert(first_data);
     const auto [second, second_created] = second_repository.insert(second_data);

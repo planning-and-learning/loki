@@ -31,8 +31,6 @@ class EffectTranslator : public CopyTranslatorComponent<Derived, EffectTranslato
 public:
     explicit EffectTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, EffectTranslator<Derived>>(context) {}
 
-    formalism::EntityView<formalism::Effect<formalism::LiteralTag>> copy(formalism::EntityView<formalism::Effect<formalism::LiteralTag>> source);
-
     formalism::EntityView<formalism::Effect<formalism::AndTag>> copy(formalism::EntityView<formalism::Effect<formalism::AndTag>> source);
 
     formalism::EntityView<formalism::Effect<formalism::NumericTag>> copy(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source);
@@ -45,20 +43,8 @@ public:
 
     formalism::EffectProbabilisticAlternativeView copy(formalism::EffectProbabilisticAlternativeView source);
 
-    formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> copy(formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> source);
-
     formalism::EffectView copy(formalism::EffectView source);
 };
-
-template<typename Derived>
-formalism::EntityView<formalism::Effect<formalism::LiteralTag>>
-EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalism::LiteralTag>> source)
-{
-    const auto literal = urd::to_stored(this->self().copy(source.get_literal()));
-    auto data = formalism::checkout<formalism::Effect<formalism::LiteralTag>>(this->copy_context().builder);
-    data->literal = literal;
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
-}
 
 template<typename Derived>
 formalism::EntityView<formalism::Effect<formalism::AndTag>> EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalism::AndTag>> source)
@@ -149,53 +135,30 @@ formalism::EffectProbabilisticAlternativeView EffectTranslator<Derived>::copy(fo
 }
 
 template<typename Derived>
-formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>
-EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> source)
-{
-    auto data = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(this->copy_context().builder);
-    for (auto alternative : source.get_alternatives())
-        data->alternatives.push_back(urd::to_stored(this->self().copy(alternative)));
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
-}
-
-template<typename Derived>
 formalism::EffectView EffectTranslator<Derived>::copy(formalism::EffectView source)
 {
-    if (this->copy_context().phase == TranslationPhase::SplitDisjunctiveConditions)
+    const auto* when = std::get_if<formalism::EntityView<formalism::Effect<formalism::WhenTag>>>(&source);
+    if (this->copy_context().phase == TranslationPhase::SplitDisjunctiveConditions && when)
     {
-        auto split = std::optional<formalism::EffectView> {};
-        std::visit(
-            [&]<typename Node>(const Node& arg)
+        const auto condition = this->self().copy(when->get_condition());
+        const auto effect = urd::to_stored(this->self().copy(when->get_effect()));
+        if (const auto condition_or = this->self().as_or(condition))
+        {
+            auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
+            for (auto part : condition_or->get_conditions())
             {
-                if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
-                {
-                    const auto condition = this->self().copy(arg.get_condition());
-                    const auto effect = urd::to_stored(this->self().copy(arg.get_effect()));
-                    if (const auto condition_or = this->self().as_or(condition))
-                    {
-                        auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
-                        for (auto part : condition_or->get_conditions())
-                        {
-                            auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
-                            when_data->condition = urd::to_stored(part);
-                            when_data->effect = effect;
-                            const auto when = formalism::insert(this->copy_context().storage->repository, *when_data).first;
-                            data->effects.push_back(when.index());
-                        }
-                        split = formalism::EffectView(formalism::insert(this->copy_context().storage->repository, *data).first);
-                    }
-                    else
-                    {
-                        auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
-                        data->condition = urd::to_stored(condition);
-                        data->effect = effect;
-                        split = formalism::EffectView(formalism::insert(this->copy_context().storage->repository, *data).first);
-                    }
-                }
-            },
-            source);
-        if (split)
-            return *split;
+                auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
+                when_data->condition = urd::to_stored(part);
+                when_data->effect = effect;
+                const auto split = formalism::insert(this->copy_context().storage->repository, *when_data).first;
+                data->effects.push_back(split.index());
+            }
+            return formalism::insert(this->copy_context().storage->repository, *data).first;
+        }
+        auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
+        data->condition = urd::to_stored(condition);
+        data->effect = effect;
+        return formalism::insert(this->copy_context().storage->repository, *data).first;
     }
 
     const auto copied = std::visit([&](const auto& arg) -> formalism::EffectView { return this->self().copy(arg); }, source);

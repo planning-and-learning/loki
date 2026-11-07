@@ -38,12 +38,12 @@ template<>
 struct data<::loki::formalism::FunctionSkeleton>
 {
     urd::index<::loki::formalism::FunctionSkeleton> index;
-    ::cista::offset::string name;
+    urd::flat_string name;
     urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
     urd::index<::loki::formalism::Type> type;
 
     data() = default;
-    data(::cista::offset::string name_, urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_, urd::index<::loki::formalism::Type> type_) :
+    data(urd::flat_string name_, urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_, urd::index<::loki::formalism::Type> type_) :
         index(),
         name(std::move(name_)),
         parameters(std::move(parameters_)),

@@ -24,7 +24,6 @@
 
 namespace loki::parser
 {
-using ErrorHandlerTag = ygg::diagnostics::ErrorHandlerTag;
 using Context = ygg::diagnostics::ParserContext<ErrorHandlerType>;
 }
 

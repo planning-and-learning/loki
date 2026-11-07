@@ -28,7 +28,7 @@
 #include "mappings.hpp"
 
 #include <cmath>
-#include <type_traits>
+#include <urd/elements/children.hpp>
 #include <utility>
 
 namespace loki::semantic
@@ -89,7 +89,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectForall& nod
     auto parameters = parse_parameters(node.parameters);
     auto child = parse_effect(node.effect.get());
     auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(m_builder);
-    append_indices(parameters, data->parameters);
+    data->parameters = urd::to_stored(parameters);
     data->effect = urd::to_stored(child);
     return formalism::insert(repo(), *data).first;
 }
@@ -150,9 +150,9 @@ formalism::ActionView AstBuilder::parse_action(const ast::Action& node)
     if (node.effect)
         effect = parse_effect(*node.effect);
     auto data = formalism::checkout<formalism::Action>(m_builder);
-    data->name = to_cista(name);
+    data->name = urd::flat_string(name);
     data->original_name = data->name;
-    append_indices(parameters, data->parameters);
+    data->parameters = urd::to_stored(parameters);
     data->original_arity = data->parameters.size();
     if (precondition)
         data->precondition = urd::to_stored(*precondition);
@@ -183,7 +183,7 @@ formalism::AxiomView AstBuilder::parse_axiom(const ast::Axiom& node)
     auto head = formalism::insert(repo(), *literal_data).first;
     auto condition = parse_condition(node.condition);
     auto data = formalism::checkout<formalism::Axiom>(m_builder);
-    append_indices(parameters, data->parameters);
+    data->parameters = urd::to_stored(parameters);
     data->original_arity = data->parameters.size();
     data->head = head.index();
     data->condition = urd::to_stored(condition);
@@ -227,7 +227,7 @@ formalism::FunctionSkeletonView AstBuilder::total_cost_function()
     if (auto it = m_domain_context.functions.find("total-cost"); it != m_domain_context.functions.end())
         return it->second;
     auto data = formalism::checkout<formalism::FunctionSkeleton>(m_builder);
-    data->name = cista::offset::string("total-cost");
+    data->name = urd::flat_string("total-cost");
     data->type = m_domain_context.number_type.index();
     auto view = formalism::insert(repo(), *data).first;
     m_domain_context.functions.emplace("total-cost", view);
@@ -242,40 +242,24 @@ formalism::FunctionTermView AstBuilder::total_cost_term()
     return formalism::insert(repo(), *data).first;
 }
 
-bool AstBuilder::writes_total_cost(formalism::EffectView effect)
+namespace
 {
-    return std::visit(
-        [&]<typename Node>(const Node& arg) -> bool
-        {
-            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::NumericTag>>>)
-                return arg.get_function().get_function().get_name() == "total-cost";
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
-                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
-            {
-                for (auto child : arg.get_effects())
-                    if (writes_total_cost(child))
-                        return true;
-                return false;
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>
-                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
-                return writes_total_cost(arg.get_effect());
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
-            {
-                for (auto alternative : arg.get_alternatives())
-                    if (writes_total_cost(alternative.get_effect()))
-                        return true;
-                return false;
-            }
-            else
-                return false;
-        },
-        effect);
+bool writes_total_cost(formalism::EntityView<formalism::Effect<formalism::NumericTag>> effect)
+{ return effect.get_function().get_function().get_name() == "total-cost"; }
+
+/// Whether a numeric effect on total-cost occurs in node.
+template<typename T>
+bool writes_total_cost(formalism::EntityView<T> node)
+{
+    auto found = false;
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { found = found || writes_total_cost(child); });
+    return found;
 }
+}  // namespace
 
 formalism::ActionView AstBuilder::add_unit_cost(formalism::ActionView view)
 {
-    if (const auto effect = view.get_effect(); effect && writes_total_cost(effect.value()))
+    if (writes_total_cost(view))
         return view;
 
     auto number_data = formalism::checkout<formalism::FunctionExpression<formalism::NumberTag>>(m_builder);

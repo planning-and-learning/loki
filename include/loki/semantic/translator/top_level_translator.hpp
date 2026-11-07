@@ -74,7 +74,7 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
     }
     if (this->copy_context().phase == TranslationPhase::CompileTyping)
         this->self().prepend_type_conditions(precondition, source.get_parameters());
-    auto effect = cista::optional<formalism::EffectVariant> {};
+    auto effect = urd::flat_optional<formalism::EffectVariant> {};
     if (const auto effect_view = source.get_effect())
         effect = urd::to_stored(this->self().copy(effect_view.value()));
     auto result = formalism::checkout<formalism::Action>(this->copy_context().builder);

@@ -26,6 +26,15 @@ namespace loki::semantic::detail
 
 CanonicalCopyTranslator::CanonicalCopyTranslator(std::shared_ptr<TranslationStorage> storage) : m_storage(std::move(storage)) {}
 
+template<typename T>
+formalism::EntityView<T> CanonicalCopyTranslator::copy_child(formalism::EntityView<T> source)
+{
+    return memoized(m_storage->maps, source, [&] { return rebuild(m_storage->repository, source, [&](auto child) { return copy_child(child); }); });
+}
+
+formalism::DomainView CanonicalCopyTranslator::copy_child(formalism::DomainView source)
+{ return m_storage->translated_domain ? m_storage->translated() : copy(source).first; }
+
 std::pair<formalism::DomainView, bool> CanonicalCopyTranslator::copy(formalism::DomainView domain)
 {
     if (auto mapped = find_mapped(m_storage->maps, domain))
@@ -39,16 +48,10 @@ std::pair<formalism::DomainView, bool> CanonicalCopyTranslator::copy(formalism::
         remember(m_storage->maps, domain, domain);
         return { domain, false };
     }
-    auto data = formalism::checkout<formalism::Domain>(m_builder);
-    data->name = domain.data().name;
-    copy_list(domain.get_requirements(), data->requirements);
-    copy_list(domain.get_types(), data->types);
-    copy_list(domain.get_constants(), data->constants);
-    copy_list(domain.get_predicates(), data->predicates);
-    copy_list(domain.get_functions(), data->functions);
-    copy_list(domain.get_actions(), data->actions);
-    copy_list(domain.get_axioms(), data->axioms);
-    auto [view, inserted] = formalism::insert(m_storage->repository, *data);
+    auto data = urd::map_children<formalism::SymbolRepositoryTypes, formalism::Domain>(domain.data(),
+                                                                                        domain.context(),
+                                                                                        [&](auto child) { return urd::to_stored(copy_child(child)); });
+    auto [view, inserted] = formalism::insert(m_storage->repository, data);
     m_storage->translated_domain = view;
     remember(m_storage->maps, domain, view);
     return { view, inserted };
@@ -63,183 +66,11 @@ std::pair<formalism::TaskView, bool> CanonicalCopyTranslator::copy(formalism::Ta
         remember(m_storage->maps, task, task);
         return { task, false };
     }
-    auto data = formalism::checkout<formalism::Task>(m_builder);
-    data->name = task.data().name;
-    data->domain = m_storage->translated_domain ? m_storage->translated().index() : copy(task.get_domain()).first.index();
-    copy_list(task.get_requirements(), data->requirements);
-    copy_list(task.get_objects(), data->objects);
-    copy_list(task.get_initial_literals(), data->initial_literals);
-    copy_list(task.get_initial_function_values(), data->initial_function_values);
-    if (const auto source_goal = task.get_goal())
-        data->goal = urd::to_stored(copy(source_goal.value()));
-    if (const auto source_metric = task.get_metric())
-        data->metric = urd::to_stored(copy(source_metric.value()));
-    copy_list(task.get_predicates(), data->predicates);
-    copy_list(task.get_axioms(), data->axioms);
-    copy_list(task.get_types(), data->types);
-    auto [view, inserted] = formalism::insert(m_storage->repository, *data);
+    auto data =
+        urd::map_children<formalism::SymbolRepositoryTypes, formalism::Task>(task.data(), task.context(), [&](auto child) { return urd::to_stored(copy_child(child)); });
+    auto [view, inserted] = formalism::insert(m_storage->repository, data);
     remember(m_storage->maps, task, view);
     return { view, inserted };
-}
-
-formalism::EntityView<formalism::Effect<formalism::LiteralTag>>
-CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::LiteralTag>> source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Effect<formalism::LiteralTag>>(m_builder);
-    data->literal = urd::to_stored(copy(source.get_literal()));
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::EntityView<formalism::Effect<formalism::AndTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::AndTag>> source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(m_builder);
-    copy_list(source.get_effects(), data->effects);
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::EntityView<formalism::Effect<formalism::NumericTag>>
-CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::NumericTag>> source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Effect<formalism::NumericTag>>(m_builder);
-    data->op = source.data().op;
-    data->function = urd::to_stored(copy(source.get_function()));
-    data->expression = urd::to_stored(copy(source.get_expression()));
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::EntityView<formalism::Effect<formalism::ForallTag>>
-CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::ForallTag>> source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(m_builder);
-    copy_list(source.get_parameters(), data->parameters);
-    data->effect = urd::to_stored(copy(source.get_effect()));
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::EntityView<formalism::Effect<formalism::WhenTag>> CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::WhenTag>> source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(m_builder);
-    data->condition = urd::to_stored(copy(source.get_condition()));
-    data->effect = urd::to_stored(copy(source.get_effect()));
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::EntityView<formalism::Effect<formalism::OneOfTag>>
-CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::OneOfTag>> source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(m_builder);
-    copy_list(source.get_effects(), data->effects);
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::EffectProbabilisticAlternativeView CanonicalCopyTranslator::copy(formalism::EffectProbabilisticAlternativeView source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::EffectProbabilisticAlternative>(m_builder);
-    data->probability = source.data().probability;
-    data->effect = urd::to_stored(copy(source.get_effect()));
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>
-CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(m_builder);
-    copy_list(source.get_alternatives(), data->alternatives);
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::EffectView CanonicalCopyTranslator::copy(formalism::EffectView source)
-{
-    return std::visit([&](const auto& arg) -> formalism::EffectView { return copy(arg); }, source);
-}
-
-formalism::ActionView CanonicalCopyTranslator::copy(formalism::ActionView source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    const auto& data = source.data();
-    auto out_data = formalism::checkout<formalism::Action>(m_builder);
-    out_data->name = data.name;
-    out_data->original_name = data.original_name;
-    out_data->original_arity = data.original_arity;
-    if (const auto condition = source.get_precondition())
-        out_data->precondition = urd::to_stored(copy(condition.value()));
-    if (const auto effect_view = source.get_effect())
-        out_data->effect = urd::to_stored(copy(effect_view.value()));
-    copy_list(source.get_parameters(), out_data->parameters);
-    auto out = formalism::insert(m_storage->repository, *out_data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::AxiomView CanonicalCopyTranslator::copy(formalism::AxiomView source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Axiom>(m_builder);
-    copy_list(source.get_parameters(), data->parameters);
-    data->original_arity = source.data().original_arity;
-    data->head = urd::to_stored(copy(source.get_head()));
-    data->condition = urd::to_stored(copy(source.get_condition()));
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::MetricView CanonicalCopyTranslator::copy(formalism::MetricView source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::Metric>(m_builder);
-    data->optimization_direction = source.get_optimization_direction();
-    data->expression = urd::to_stored(copy(source.get_expression()));
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
-}
-
-formalism::InitialFunctionValueView CanonicalCopyTranslator::copy(formalism::InitialFunctionValueView source)
-{
-    if (auto mapped = find_mapped(m_storage->maps, source))
-        return *mapped;
-    auto data = formalism::checkout<formalism::InitialFunctionValue>(m_builder);
-    data->function = urd::to_stored(copy(source.get_function()));
-    data->value = urd::to_stored(copy(source.get_value()));
-    auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->maps, source, out);
-    return out;
 }
 
 }  // namespace loki::semantic::detail

@@ -32,7 +32,7 @@ void bind_variable(nb::module_& m, RepositoryBinding& repository)
 
     {
         using V = urd::data<formalism::Variable>;
-        urd::python::bind_data<V>(m, "VariableData").def(nb::init<cista::offset::string>(), "name"_a).def_rw("name", &V::name);
+        urd::python::bind_data<V>(m, "VariableData").def(nb::init<urd::flat_string>(), "name"_a).def_rw("name", &V::name);
     }
 
     {

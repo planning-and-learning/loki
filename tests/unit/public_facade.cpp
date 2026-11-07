@@ -25,18 +25,16 @@
 namespace loki::tests
 {
 
-TEST(LokiPublicFacade, ExposesParserAndTranslatorThroughLokiNamespace)
+TEST(LokiPublicFacade, ExposesParserAndTranslator)
 {
-    auto parser = loki::Parser(fixture_path("facade"), loki::ParserOptions { .strict = false, .add_action_costs = false });
+    auto parser = loki::semantic::Parser(fixture_path("facade"), loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
 
     const auto domain = parser.get_domain();
 
     const auto task = parser.parse_task(fixture_path("facade", "task.pddl"));
 
-    const auto domain_translation = loki::translate(domain);
-    const auto task_translation = loki::translate(task, domain_translation);
-    const auto named_domain_translation = loki::translate_domain(domain);
-    const auto named_task_translation = loki::translate_task(task, named_domain_translation);
+    const auto domain_translation = loki::semantic::translate(domain);
+    const auto task_translation = loki::semantic::translate(task, domain_translation);
 
     EXPECT_EQ(domain.get_requirements().size(), 1);
     EXPECT_EQ(domain.get_predicates().size(), 1);
@@ -54,48 +52,11 @@ TEST(LokiPublicFacade, ExposesParserAndTranslatorThroughLokiNamespace)
     EXPECT_EQ(domain_translation.get_original_domain().get_name(), domain.get_name());
     EXPECT_EQ(task_translation.get_original_task().get_name(), task.get_name());
     EXPECT_EQ(task_translation.get_translated_task().get_domain().get_name(), domain_translation.get_translated_domain().get_name());
-    EXPECT_EQ(named_domain_translation.get_original_domain().get_name(), domain.get_name());
-    EXPECT_EQ(named_task_translation.get_original_task().get_name(), task.get_name());
-    EXPECT_EQ(named_task_translation.get_translated_task().get_domain().get_name(), named_domain_translation.get_translated_domain().get_name());
-}
-
-TEST(LokiPublicFacade, ExposesSemanticErrorsThroughLokiNamespace)
-{
-    static_assert(std::is_same_v<loki::SemanticError, loki::semantic::SemanticError>);
-    static_assert(std::is_same_v<loki::ParseError, loki::semantic::ParseError>);
-    static_assert(std::is_same_v<loki::UnsupportedRequirementError, loki::semantic::UnsupportedRequirementError>);
-    static_assert(std::is_same_v<loki::MissingRequirementError, loki::semantic::MissingRequirementError>);
-    static_assert(std::is_same_v<loki::UnusedRequirementError, loki::semantic::UnusedRequirementError>);
-    static_assert(std::is_same_v<loki::UndefinedTypeError, loki::semantic::UndefinedTypeError>);
-    static_assert(std::is_same_v<loki::UndefinedPredicateError, loki::semantic::UndefinedPredicateError>);
-    static_assert(std::is_same_v<loki::UndefinedObjectError, loki::semantic::UndefinedObjectError>);
-    static_assert(std::is_same_v<loki::UndefinedVariableError, loki::semantic::UndefinedVariableError>);
-    static_assert(std::is_same_v<loki::UndefinedFunctionError, loki::semantic::UndefinedFunctionError>);
-    static_assert(std::is_same_v<loki::DuplicateDefinitionError, loki::semantic::DuplicateDefinitionError>);
-    static_assert(std::is_same_v<loki::DuplicateTypeError, loki::semantic::DuplicateTypeError>);
-    static_assert(std::is_same_v<loki::DuplicatePredicateError, loki::semantic::DuplicatePredicateError>);
-    static_assert(std::is_same_v<loki::DuplicateObjectError, loki::semantic::DuplicateObjectError>);
-    static_assert(std::is_same_v<loki::DuplicateVariableError, loki::semantic::DuplicateVariableError>);
-    static_assert(std::is_same_v<loki::DuplicateFunctionError, loki::semantic::DuplicateFunctionError>);
-    static_assert(std::is_same_v<loki::ArityMismatchError, loki::semantic::ArityMismatchError>);
-    static_assert(std::is_same_v<loki::TypeMismatchError, loki::semantic::TypeMismatchError>);
-    static_assert(std::is_same_v<loki::InvalidMetricError, loki::semantic::InvalidMetricError>);
-    static_assert(std::is_same_v<loki::InvalidNumericConstraintError, loki::semantic::InvalidNumericConstraintError>);
-    static_assert(std::is_same_v<loki::InvalidNumericEffectError, loki::semantic::InvalidNumericEffectError>);
-    static_assert(std::is_same_v<loki::InvalidProbabilisticEffectError, loki::semantic::InvalidProbabilisticEffectError>);
-    static_assert(std::is_same_v<loki::InvalidEqualityError, loki::semantic::InvalidEqualityError>);
-    static_assert(std::is_same_v<loki::MismatchedDomainError, loki::semantic::MismatchedDomainError>);
-    static_assert(std::is_same_v<loki::MissingDomainError, loki::semantic::MissingDomainError>);
-
-    auto error = loki::SemanticError("base diagnostic");
-    EXPECT_EQ(std::string(error.what()), "base diagnostic");
-    error.set_display_message("rendered diagnostic");
-    EXPECT_EQ(std::string(error.what()), "rendered diagnostic");
 }
 
 TEST(LokiPublicFacade, ViewConvenienceMethodsCoverTypedSymbolsAndLiterals)
 {
-    auto parser = loki::Parser(fixture_path("typed-facade"));
+    auto parser = loki::semantic::Parser(fixture_path("typed-facade"));
 
     const auto domain = parser.get_domain();
     const auto task = parser.parse_task(fixture_path("typed-facade", "task.pddl"));
@@ -136,7 +97,7 @@ TEST(LokiPublicFacade, ViewConvenienceMethodsCoverTypedSymbolsAndLiterals)
 
 TEST(LokiPublicFacade, ViewConvenienceMethodsCoverNumericEffectsAndMetrics)
 {
-    auto parser = loki::Parser(fixture_path("numeric-facade"));
+    auto parser = loki::semantic::Parser(fixture_path("numeric-facade"));
 
     const auto domain = parser.get_domain();
     const auto task = parser.parse_task(fixture_path("numeric-facade", "task.pddl"));
@@ -208,15 +169,15 @@ TEST(LokiPublicFacade, ViewConvenienceMethodsCoverNumericEffectsAndMetrics)
 
 TEST(LokiPublicFacade, FormatsSemanticDomainAndTaskAsReparseablePddl)
 {
-    auto parser = loki::Parser(fixture_path("facade-format"));
+    auto parser = loki::semantic::Parser(fixture_path("facade-format"));
 
     const auto domain = parser.get_domain();
     const auto task = parser.parse_task(fixture_path("facade-format", "task.pddl"));
 
-    const auto domain_text = loki::format_domain(domain);
-    const auto task_text = loki::format_task(task);
+    const auto domain_text = loki::formalism::format::to_string(domain);
+    const auto task_text = loki::formalism::format::to_string(task);
 
-    auto reparsed = loki::Parser(domain_text);
+    auto reparsed = loki::semantic::Parser(domain_text);
 
     const auto reparsed_domain = reparsed.get_domain();
     const auto reparsed_task = reparsed.parse_task(task_text);
@@ -228,12 +189,12 @@ TEST(LokiPublicFacade, FormatsSemanticDomainAndTaskAsReparseablePddl)
 
 TEST(LokiPublicFacade, FormatsAlternativeEffectsAsReparseablePddl)
 {
-    auto parser = loki::Parser(fixture_path("alternative-effects"), loki::ParserOptions { .strict = false, .add_action_costs = false });
+    auto parser = loki::semantic::Parser(fixture_path("alternative-effects"), loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
 
     const auto domain = parser.get_domain();
-    const auto domain_text = loki::format_domain(domain);
+    const auto domain_text = loki::formalism::format::to_string(domain);
 
-    auto reparsed = loki::Parser(domain_text, loki::ParserOptions { .strict = false, .add_action_costs = false });
+    auto reparsed = loki::semantic::Parser(domain_text, loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
     const auto reparsed_domain = reparsed.get_domain();
 
     EXPECT_EQ(reparsed_domain.get_name(), domain.get_name());
@@ -258,13 +219,13 @@ TEST(LokiPublicFacade, FormatsAlternativeEffectsAsReparseablePddl)
 
 TEST(LokiPublicFacade, FormatsTypedNumericTaskSectionsAsReparseablePddl)
 {
-    auto parser = loki::Parser(fixture_path("facade-format-numeric"), loki::ParserOptions { .strict = false, .add_action_costs = false });
+    auto parser = loki::semantic::Parser(fixture_path("facade-format-numeric"), loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
 
     const auto domain = parser.get_domain();
     const auto task = parser.parse_task(fixture_path("facade-format-numeric", "task.pddl"));
 
-    const auto domain_text = loki::format_domain(domain);
-    const auto task_text = loki::format_task(task);
+    const auto domain_text = loki::formalism::format::to_string(domain);
+    const auto task_text = loki::formalism::format::to_string(task);
 
     EXPECT_NE(domain_text.find("(:types item - object)"), std::string::npos);
     EXPECT_NE(domain_text.find("(:constants depot - item)"), std::string::npos);
@@ -276,7 +237,7 @@ TEST(LokiPublicFacade, FormatsTypedNumericTaskSectionsAsReparseablePddl)
     EXPECT_NE(task_text.find("(= (cost package) 0)"), std::string::npos);
     EXPECT_NE(task_text.find("(:metric minimize (cost package))"), std::string::npos);
 
-    auto reparsed = loki::Parser(domain_text, loki::ParserOptions { .strict = false, .add_action_costs = false });
+    auto reparsed = loki::semantic::Parser(domain_text, loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
     const auto reparsed_domain = reparsed.get_domain();
     const auto reparsed_task = reparsed.parse_task(task_text);
 

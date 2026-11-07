@@ -61,7 +61,7 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
         atom_data->terms.push_back(variable.index());
     }
 
-    predicate_data->name = cista::offset::string(this->self().next_generated_predicate_name("loki-universal-"));
+    predicate_data->name = urd::flat_string(this->self().next_generated_predicate_name("loki-universal-"));
     const auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first;
     atom_data->predicate = predicate.index();
     const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();

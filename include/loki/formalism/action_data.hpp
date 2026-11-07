@@ -40,18 +40,18 @@ template<>
 struct data<::loki::formalism::Action>
 {
     urd::index<::loki::formalism::Action> index;
-    ::cista::offset::string name;
-    ::cista::offset::string original_name;
+    urd::flat_string name;
+    urd::flat_string original_name;
     urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
     ygg::uint_t original_arity = 0;
-    ::cista::optional<::loki::formalism::ConditionVariant> precondition;
-    ::cista::optional<::loki::formalism::EffectVariant> effect;
+    urd::flat_optional<::loki::formalism::ConditionVariant> precondition;
+    urd::flat_optional<::loki::formalism::EffectVariant> effect;
 
     data() = default;
-    data(::cista::offset::string name_,
+    data(urd::flat_string name_,
          urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
-         ::cista::optional<::loki::formalism::ConditionVariant> precondition_,
-         ::cista::optional<::loki::formalism::EffectVariant> effect_) :
+         urd::flat_optional<::loki::formalism::ConditionVariant> precondition_,
+         urd::flat_optional<::loki::formalism::EffectVariant> effect_) :
         index(),
         name(std::move(name_)),
         original_name(name),
@@ -61,11 +61,11 @@ struct data<::loki::formalism::Action>
         effect(std::move(effect_))
     {
     }
-    data(::cista::offset::string name_,
+    data(urd::flat_string name_,
          urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
          ygg::uint_t original_arity_,
-         ::cista::optional<::loki::formalism::ConditionVariant> precondition_,
-         ::cista::optional<::loki::formalism::EffectVariant> effect_) :
+         urd::flat_optional<::loki::formalism::ConditionVariant> precondition_,
+         urd::flat_optional<::loki::formalism::EffectVariant> effect_) :
         index(),
         name(std::move(name_)),
         original_name(name),
@@ -75,12 +75,12 @@ struct data<::loki::formalism::Action>
         effect(std::move(effect_))
     {
     }
-    data(::cista::offset::string name_,
-         ::cista::offset::string original_name_,
+    data(urd::flat_string name_,
+         urd::flat_string original_name_,
          urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
          ygg::uint_t original_arity_,
-         ::cista::optional<::loki::formalism::ConditionVariant> precondition_,
-         ::cista::optional<::loki::formalism::EffectVariant> effect_) :
+         urd::flat_optional<::loki::formalism::ConditionVariant> precondition_,
+         urd::flat_optional<::loki::formalism::EffectVariant> effect_) :
         index(),
         name(std::move(name_)),
         original_name(std::move(original_name_)),

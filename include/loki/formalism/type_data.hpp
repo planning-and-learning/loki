@@ -38,11 +38,11 @@ template<>
 struct data<::loki::formalism::Type>
 {
     urd::index<::loki::formalism::Type> index;
-    ::cista::offset::string name;
+    urd::flat_string name;
     urd::flat_vector<urd::index<::loki::formalism::Type>> bases;
 
     data() = default;
-    data(::cista::offset::string name_, urd::flat_vector<urd::index<::loki::formalism::Type>> bases_ = {}) : index(), name(std::move(name_)), bases(std::move(bases_)) {}
+    data(urd::flat_string name_, urd::flat_vector<urd::index<::loki::formalism::Type>> bases_ = {}) : index(), name(std::move(name_)), bases(std::move(bases_)) {}
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name, &data::bases> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::name, &data::bases> {}; }

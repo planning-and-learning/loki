@@ -93,89 +93,10 @@ public:
     }
 
     using CopyTranslatorFacade<CopyTranslator>::copy;
-    using CopyTranslatorFacade<CopyTranslator>::used_predicate_names;
-    using CopyTranslatorFacade<CopyTranslator>::next_generated_predicate_name;
-
-    using SplitDisjunctiveConditionsTranslator<CopyTranslator>::split_disjunctive_actions;
-    using SplitDisjunctiveConditionsTranslator<CopyTranslator>::split_disjunctive_axioms;
-
-    using CompileConditionalEffectsTranslator<CopyTranslator>::compile_conditional_effect_actions;
-
     using BasicCopyTranslator<CopyTranslator>::copy;
-    using BasicCopyTranslator<CopyTranslator>::copy_list;
-    using BasicCopyTranslator<CopyTranslator>::increment_quantifications;
-    using BasicCopyTranslator<CopyTranslator>::enter_scope;
-    using BasicCopyTranslator<CopyTranslator>::leave_scope;
-    using BasicCopyTranslator<CopyTranslator>::append_generated_domain_objects;
-    using BasicCopyTranslator<CopyTranslator>::set_requirements;
     using ConditionTranslator<CopyTranslator>::copy;
-
-    using ConditionAnalysisTranslator<CopyTranslator>::collect_free_variables;
-    using ConditionAnalysisTranslator<CopyTranslator>::free_parameters_in_scope;
-
-    using ConditionBuilderTranslator<CopyTranslator>::as_or;
-    using ConditionBuilderTranslator<CopyTranslator>::flatten_condition;
-    using ConditionBuilderTranslator<CopyTranslator>::make_conjunction;
-    using ConditionBuilderTranslator<CopyTranslator>::make_disjunction;
-
-    using ToDisjunctiveNormalFormTranslator<CopyTranslator>::to_dnf;
-    using ToDisjunctiveNormalFormTranslator<CopyTranslator>::to_dnf_node;
-
-    using ToNegationNormalFormTranslator<CopyTranslator>::negate_comparator;
-    using ToNegationNormalFormTranslator<CopyTranslator>::negate_condition;
-    using ToNegationNormalFormTranslator<CopyTranslator>::negate_condition_node;
-    using ToNegationNormalFormTranslator<CopyTranslator>::copy_condition_node;
-
-    using RemoveUniversalQuantifiersTranslator<CopyTranslator>::make_generated_axiom_condition;
-    using RemoveUniversalQuantifiersTranslator<CopyTranslator>::remove_universal_quantifiers;
-    using RemoveUniversalQuantifiersTranslator<CopyTranslator>::remove_universal_quantifiers_node;
-
-    using MoveExistentialQuantifiersTranslator<CopyTranslator>::as_exists;
-    using MoveExistentialQuantifiersTranslator<CopyTranslator>::move_existentials;
-    using MoveExistentialQuantifiersTranslator<CopyTranslator>::move_existentials_node;
-    using MoveExistentialQuantifiersTranslator<CopyTranslator>::lift_top_level_exists;
-
-    using SimplifyGoalTranslator<CopyTranslator>::make_generated_goal_condition;
-    using SimplifyGoalTranslator<CopyTranslator>::simplify_goal_condition;
-    using SimplifyGoalTranslator<CopyTranslator>::simplify_goal_condition_node;
-
     using EffectTranslator<CopyTranslator>::copy;
-
-    using MaterializeEqualityTranslator<CopyTranslator>::has_requirement;
-    using MaterializeEqualityTranslator<CopyTranslator>::equality_required;
-    using MaterializeEqualityTranslator<CopyTranslator>::find_domain_equality_predicate;
-    using MaterializeEqualityTranslator<CopyTranslator>::equality_literal;
-    using MaterializeEqualityTranslator<CopyTranslator>::domain_uses_equality;
-    using MaterializeEqualityTranslator<CopyTranslator>::add_equality_predicate_to_domain;
-    using MaterializeEqualityTranslator<CopyTranslator>::materialize_equality;
-
-    using ToEffectNormalFormTranslator<CopyTranslator>::as_effect;
-    using ToEffectNormalFormTranslator<CopyTranslator>::normalize_effect;
-    using ToEffectNormalFormTranslator<CopyTranslator>::normalize_effect_node;
-
-    using NormalizeArithmeticExpressionsTranslator<CopyTranslator>::normalize_arithmetic_expression;
-
     using TopLevelTranslator<CopyTranslator>::copy;
-
-    using CompileTypingTranslator<CopyTranslator>::collect_type_hierarchy;
-    using CompileTypingTranslator<CopyTranslator>::copy_type_hierarchy;
-    using CompileTypingTranslator<CopyTranslator>::copy_parameters_without_types;
-    using CompileTypingTranslator<CopyTranslator>::type_predicate;
-    using CompileTypingTranslator<CopyTranslator>::type_literal;
-    using CompileTypingTranslator<CopyTranslator>::type_condition;
-    using CompileTypingTranslator<CopyTranslator>::type_conditions_for_parameters;
-    using CompileTypingTranslator<CopyTranslator>::prepend_type_conditions;
-    using CompileTypingTranslator<CopyTranslator>::compile_typing_to_domain;
-    using CompileTypingTranslator<CopyTranslator>::add_type_literals_for_object;
-    using CompileTypingTranslator<CopyTranslator>::initialize_type_literals;
-
-    using RenameQuantifiedVariablesTranslator<CopyTranslator>::enter_variable_scope;
-    using RenameQuantifiedVariablesTranslator<CopyTranslator>::leave_variable_scope;
-    using RenameQuantifiedVariablesTranslator<CopyTranslator>::rename_parameter;
-    using RenameQuantifiedVariablesTranslator<CopyTranslator>::rename_parameters;
-    using RenameQuantifiedVariablesTranslator<CopyTranslator>::rename_variables;
-    using RenameQuantifiedVariablesTranslator<CopyTranslator>::rename_action_variables;
-    using RenameQuantifiedVariablesTranslator<CopyTranslator>::rename_axiom_variables;
 };
 
 // Defined in the library: inline definitions would instantiate the whole copy stack in every includer.

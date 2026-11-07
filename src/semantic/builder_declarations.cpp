@@ -201,7 +201,7 @@ formalism::PredicateView AstBuilder::predicate(const ast::Identifier& identifier
     if (m_options.strict)
         m_diagnostics.throw_at(identifier, UndefinedPredicateError(name));
     auto data = formalism::checkout<formalism::Predicate>(m_builder);
-    data->name = to_cista(name);
+    data->name = urd::flat_string(name);
     auto view = formalism::insert(repo(), *data).first;
     m_domain_context.predicates.emplace(name, view);
     return view;
@@ -222,10 +222,10 @@ formalism::PredicateView AstBuilder::equality_predicate(const ast::Identifier& i
     }
 
     auto variable_data = formalism::checkout<formalism::Variable>(m_builder);
-    variable_data->name = cista::offset::string("?lhs");
+    variable_data->name = urd::flat_string("?lhs");
     const auto left = formalism::insert(repo(), *variable_data).first.index();
     urd::clear_members(*variable_data);
-    variable_data->name = cista::offset::string("?rhs");
+    variable_data->name = urd::flat_string("?rhs");
     const auto right = formalism::insert(repo(), *variable_data).first.index();
     auto parameter_data = formalism::checkout<formalism::Parameter>(m_builder);
     parameter_data->variable = left;
@@ -236,7 +236,7 @@ formalism::PredicateView AstBuilder::equality_predicate(const ast::Identifier& i
     parameter_data->types.push_back(m_domain_context.object_type.index());
     const auto right_parameter = formalism::insert(repo(), *parameter_data).first;
     auto predicate_data = formalism::checkout<formalism::Predicate>(m_builder);
-    predicate_data->name = cista::offset::string("=");
+    predicate_data->name = urd::flat_string("=");
     predicate_data->parameters.push_back(left_parameter.index());
     predicate_data->parameters.push_back(right_parameter.index());
     auto view = formalism::insert(repo(), *predicate_data).first;
@@ -256,7 +256,7 @@ formalism::FunctionSkeletonView AstBuilder::function(const ast::Identifier& iden
     if (m_options.strict)
         m_diagnostics.throw_at(identifier, UndefinedFunctionError(name));
     auto data = formalism::checkout<formalism::FunctionSkeleton>(m_builder);
-    data->name = to_cista(name);
+    data->name = urd::flat_string(name);
     data->type = m_domain_context.number_type.index();
     auto view = formalism::insert(repo(), *data).first;
     m_domain_context.functions.emplace(name, view);
@@ -335,8 +335,8 @@ urd::Store<urd::sequence<formalism::ObjectView>> AstBuilder::parse_objects(const
             checks().require_typing_if_needed(group.type, identifier);
             auto types = group.type ? parse_type_expression(*group.type) : urd::Store<urd::sequence<formalism::TypeView>> { m_domain_context.object_type };
             auto data = formalism::checkout<formalism::Object>(m_builder);
-            data->name = to_cista(name);
-            append_indices(types, data->types);
+            data->name = urd::flat_string(name);
+            data->types = urd::to_stored(types);
             auto view = formalism::insert(repo(), *data).first;
             table.emplace(name, view);
             result.push_back(view);
@@ -354,7 +354,7 @@ urd::Store<urd::sequence<formalism::ParameterView>> AstBuilder::parse_parameters
             if (m_parse_context.variable_scopes.depth() > 0 && m_parse_context.variable_scopes.bound_in_scope(name))
                 m_diagnostics.throw_at(identifier, DuplicateVariableError(name));
             auto variable_data = formalism::checkout<formalism::Variable>(m_builder);
-            variable_data->name = to_cista(name);
+            variable_data->name = urd::flat_string(name);
             auto variable = formalism::insert(repo(), *variable_data).first;
             if (m_parse_context.variable_scopes.depth() > 0)
                 m_parse_context.variable_scopes.insert_or_assign(name, variable);  // shadows an outer binding
@@ -368,7 +368,7 @@ urd::Store<urd::sequence<formalism::ParameterView>> AstBuilder::parse_parameters
             if (const auto union_view = alternatives ? union_type(*alternatives, identifier) : std::nullopt)
                 parameter_data->types.push_back(union_view->index());
             else
-                append_indices(types, parameter_data->types);
+                parameter_data->types = urd::to_stored(types);
             m_parse_context.variable_types.insert_or_assign(variable, std::move(types));
             result.push_back(formalism::insert(repo(), *parameter_data).first);
         }
@@ -385,8 +385,8 @@ urd::Store<urd::sequence<formalism::PredicateView>> AstBuilder::parse_predicates
         const auto name = key(node.name.text);
         checks().ensure_new<DuplicatePredicateError>(m_domain_context.declared_predicates, name, node.name);
         auto data = formalism::checkout<formalism::Predicate>(m_builder);
-        data->name = to_cista(name);
-        append_indices(parameters, data->parameters);
+        data->name = urd::flat_string(name);
+        data->parameters = urd::to_stored(parameters);
         auto view = formalism::insert(repo(), *data).first;
         m_domain_context.predicates.emplace(name, view);
         result.push_back(view);
@@ -410,8 +410,8 @@ urd::Store<urd::sequence<formalism::FunctionSkeletonView>> AstBuilder::parse_fun
         checks().require_typing_if_needed(node.type, node.name);
         auto type = node.type ? parse_type_expression(*node.type).front().index() : m_domain_context.number_type.index();
         auto data = formalism::checkout<formalism::FunctionSkeleton>(m_builder);
-        data->name = to_cista(name);
-        append_indices(parameters, data->parameters);
+        data->name = urd::flat_string(name);
+        data->parameters = urd::to_stored(parameters);
         data->type = type;
         auto view = formalism::insert(repo(), *data).first;
         m_domain_context.functions.emplace(name, view);

@@ -22,7 +22,6 @@
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 #include "loki/parser/config.hpp"
-#include "loki/parser/error_handler.hpp"
 
 #include <boost/spirit/home/x3.hpp>
 
@@ -30,64 +29,64 @@ namespace loki::parser
 {
 namespace rules
 {
-struct IdentifierClass : ErrorHandlerBase
+struct IdentifierClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct TypeExpressionClass : ErrorHandlerBase
+struct TypeExpressionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct TypedNameListClass : ErrorHandlerBase
+struct TypedNameListClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct TypedVariableListClass : ErrorHandlerBase
+struct TypedVariableListClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct TermClass : ErrorHandlerBase
+struct TermClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct AtomClass : ErrorHandlerBase
+struct AtomClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct LiteralClass : ErrorHandlerBase
+struct LiteralClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct FunctionTermClass : ErrorHandlerBase
+struct FunctionTermClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct FunctionExpressionClass : ErrorHandlerBase
+struct FunctionExpressionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ConditionClass : ErrorHandlerBase
+struct ConditionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct EffectClass : ErrorHandlerBase
+struct EffectClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct PredicateDeclarationClass : ErrorHandlerBase
+struct PredicateDeclarationClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct FunctionDeclarationClass : ErrorHandlerBase
+struct FunctionDeclarationClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct ActionClass : ErrorHandlerBase
+struct ActionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct AxiomClass : ErrorHandlerBase
+struct AxiomClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct MetricClass : ErrorHandlerBase
+struct MetricClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct InitialFunctionValueClass : ErrorHandlerBase
+struct InitialFunctionValueClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct DomainClass : ErrorHandlerBase
+struct DomainClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct TaskClass : ErrorHandlerBase
+struct TaskClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
-struct FileClass : ErrorHandlerBase
+struct FileClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
 
@@ -155,44 +154,12 @@ rules::domain_type const& domain();
 rules::task_type const& task();
 rules::file_type const& file();
 
-template<typename Iterator, typename Parser, typename Node>
-bool parse_ast(Iterator& first, Iterator last, const Parser& parser, Node& out, ErrorHandler<Iterator>& error_handler)
-{
-    error_handler.clear_error();
-    out = Node {};
-    auto wrapped = boost::spirit::x3::with<ErrorHandlerTag>(std::ref(error_handler))[parser];
-    return phrase_parse(first, last, wrapped, ygg::diagnostics::comment_skipper(), out) && !error_handler.last_error();
-}
-
-template<typename Parser, typename Node>
-bool parse_ast(const std::string& source, const Parser& parser, Node& out, ErrorHandlerType& error_handler)
-{
-    auto first = source.begin();
-    return parse_ast(first, source.end(), parser, out, error_handler);
-}
-
-template<typename Iterator, typename Parser, typename Node>
-bool parse_full(Iterator& first, Iterator last, const Parser& parser, Node& out, ErrorHandler<Iterator>& error_handler)
-{
-    const auto success = parse_ast(first, last, parser, out, error_handler);
-    if (success && first != last)
-        error_handler.record_error(first, "Unexpected trailing input.");
-    return success && first == last;
-}
-
-template<typename Parser, typename Node>
-bool parse_full(const std::string& source, const Parser& parser, Node& out, ErrorHandlerType& error_handler)
-{
-    auto first = source.begin();
-    return parse_full(first, source.end(), parser, out, error_handler);
-}
-
 inline bool parse_domain(const std::string& source, ast::Domain& out, ErrorHandlerType& error_handler)
-{ return parse_full(source, domain(), out, error_handler); }
+{ return ygg::diagnostics::parse_full(source, domain(), out, error_handler); }
 
-inline bool parse_task(const std::string& source, ast::Task& out, ErrorHandlerType& error_handler) { return parse_full(source, task(), out, error_handler); }
+inline bool parse_task(const std::string& source, ast::Task& out, ErrorHandlerType& error_handler) { return ygg::diagnostics::parse_full(source, task(), out, error_handler); }
 
-inline bool parse_file(const std::string& source, ast::File& out, ErrorHandlerType& error_handler) { return parse_full(source, file(), out, error_handler); }
+inline bool parse_file(const std::string& source, ast::File& out, ErrorHandlerType& error_handler) { return ygg::diagnostics::parse_full(source, file(), out, error_handler); }
 
 }
 

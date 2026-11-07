@@ -30,6 +30,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <urd/elements/children.hpp>
 #include <urd/elements/equal_to.hpp>
 #include <urd/elements/hash.hpp>
 #include <urd/repr/maps/std_map.hpp>
@@ -62,43 +63,6 @@ enum class TranslationPhase : std::uint8_t
     NormalizeArithmeticExpressions,
     InferRequirements,
 };
-
-inline const urd::Store<urd::sequence<std::string_view>>& domain_translation_steps()
-{
-    static const auto steps = urd::Store<urd::sequence<std::string_view>> {
-        "to-negation-normal-form",
-        "rename-quantified-variables",
-        "remove-universal-quantifiers",
-        "to-disjunctive-normal-form",
-        "split-disjunctive-conditions",
-        "move-existential-quantifiers",
-        "compile-typing",
-        "to-effect-normal-form",
-        "materialize-equality",
-        "normalize-arithmetic-expressions",
-        "infer-requirements",
-    };
-    return steps;
-}
-
-inline const urd::Store<urd::sequence<std::string_view>>& task_translation_steps()
-{
-    static const auto steps = urd::Store<urd::sequence<std::string_view>> {
-        "to-negation-normal-form",
-        "rename-quantified-variables",
-        "remove-universal-quantifiers",
-        "simplify-goal",
-        "to-disjunctive-normal-form",
-        "split-disjunctive-conditions",
-        "move-existential-quantifiers",
-        "to-effect-normal-form",
-        "materialize-equality",
-        "compile-typing",
-        "normalize-arithmetic-expressions",
-        "infer-requirements",
-    };
-    return steps;
-}
 
 namespace detail
 {
@@ -156,6 +120,26 @@ std::optional<formalism::EntityView<T>> find_mapped(const ViewMaps& maps, formal
 template<typename T>
 void remember(ViewMaps& maps, formalism::EntityView<T> source, formalism::EntityView<T> target)
 { maps.template get<T>().emplace(source, target); }
+
+/// The target remembered for source, else make()'s, remembered.
+template<typename T, typename Make>
+formalism::EntityView<T> memoized(ViewMaps& maps, formalism::EntityView<T> source, Make make)
+{
+    if (auto mapped = find_mapped(maps, source))
+        return *mapped;
+    const auto target = make();
+    remember(maps, source, target);
+    return target;
+}
+
+/// source's record with every child c (urd::map_children) replaced by f(c), interned in repository. f returns a view
+/// of c's own type, so a copy that returns a variant fails to compile here instead of storing its alternative's number.
+template<typename T, typename F>
+formalism::EntityView<T> rebuild(formalism::Repository& repository, formalism::EntityView<T> source, F f)
+{
+    auto data = urd::map_children<formalism::SymbolRepositoryTypes, T>(source.data(), source.context(), [&](auto child) { return urd::to_stored(f(child)); });
+    return formalism::insert(repository, data).first;
+}
 
 }  // namespace detail
 }  // namespace loki::semantic

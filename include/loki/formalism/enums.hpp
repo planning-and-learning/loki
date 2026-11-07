@@ -18,8 +18,10 @@
 #ifndef LOKI_FORMALISM_ENUMS_HPP_
 #define LOKI_FORMALISM_ENUMS_HPP_
 
+#include <array>
+#include <cstddef>
 #include <cstdint>
-#include <stdexcept>
+#include <utility>
 
 namespace loki::formalism
 {
@@ -84,125 +86,25 @@ enum class RequirementKind : std::uint8_t
     ProbabilisticEffects,
 };
 
-inline const char* to_string(BinaryComparator op)
-{
-    switch (op)
-    {
-        case BinaryComparator::Eq:
-            return "=";
-        case BinaryComparator::Ne:
-            return "!=";
-        case BinaryComparator::Lt:
-            return "<";
-        case BinaryComparator::Le:
-            return "<=";
-        case BinaryComparator::Gt:
-            return ">";
-        case BinaryComparator::Ge:
-            return ">=";
-    }
-    throw std::invalid_argument("invalid BinaryComparator");
-}
+// One name table per enum, indexed by the enumerator's value.
+inline constexpr std::array<const char*, 6> binary_comparator_names = { "=", "!=", "<", "<=", ">", ">=" };
+inline constexpr std::array<const char*, 4> binary_arithmetic_operator_names = { "+", "-", "*", "/" };
+inline constexpr std::array<const char*, 2> multi_arithmetic_operator_names = { "+", "*" };
+inline constexpr std::array<const char*, 5> numeric_effect_operator_names = { "assign", "increase", "decrease", "scale-up", "scale-down" };
+inline constexpr std::array<const char*, 2> optimization_direction_names = { "minimize", "maximize" };
+inline constexpr std::array<const char*, 17> requirement_kind_names = {
+    ":strips",           ":typing",           ":negative-preconditions", ":disjunctive-preconditions", ":equality",
+    ":existential-preconditions", ":universal-preconditions", ":quantified-preconditions", ":adl", ":conditional-effects",
+    ":fluents",          ":numeric-fluents",  ":action-costs",           ":durative-actions",          ":derived-predicates",
+    ":non-deterministic", ":probabilistic-effects",
+};
 
-inline const char* to_string(BinaryArithmeticOperator op)
-{
-    switch (op)
-    {
-        case BinaryArithmeticOperator::Add:
-            return "+";
-        case BinaryArithmeticOperator::Sub:
-            return "-";
-        case BinaryArithmeticOperator::Mul:
-            return "*";
-        case BinaryArithmeticOperator::Div:
-            return "/";
-    }
-    throw std::invalid_argument("invalid BinaryArithmeticOperator");
-}
-
-inline const char* to_string(MultiArithmeticOperator op)
-{
-    switch (op)
-    {
-        case MultiArithmeticOperator::Add:
-            return "+";
-        case MultiArithmeticOperator::Mul:
-            return "*";
-    }
-    throw std::invalid_argument("invalid MultiArithmeticOperator");
-}
-
-inline const char* to_string(NumericEffectOperator op)
-{
-    switch (op)
-    {
-        case NumericEffectOperator::Assign:
-            return "assign";
-        case NumericEffectOperator::Increase:
-            return "increase";
-        case NumericEffectOperator::Decrease:
-            return "decrease";
-        case NumericEffectOperator::ScaleUp:
-            return "scale-up";
-        case NumericEffectOperator::ScaleDown:
-            return "scale-down";
-    }
-    throw std::invalid_argument("invalid NumericEffectOperator");
-}
-
-inline const char* to_string(OptimizationDirection direction)
-{
-    switch (direction)
-    {
-        case OptimizationDirection::Minimize:
-            return "minimize";
-        case OptimizationDirection::Maximize:
-            return "maximize";
-    }
-    throw std::invalid_argument("invalid OptimizationDirection");
-}
-
-inline const char* to_string(RequirementKind kind)
-{
-    switch (kind)
-    {
-        case RequirementKind::Strips:
-            return ":strips";
-        case RequirementKind::Typing:
-            return ":typing";
-        case RequirementKind::NegativePreconditions:
-            return ":negative-preconditions";
-        case RequirementKind::DisjunctivePreconditions:
-            return ":disjunctive-preconditions";
-        case RequirementKind::Equality:
-            return ":equality";
-        case RequirementKind::ExistentialPreconditions:
-            return ":existential-preconditions";
-        case RequirementKind::UniversalPreconditions:
-            return ":universal-preconditions";
-        case RequirementKind::QuantifiedPreconditions:
-            return ":quantified-preconditions";
-        case RequirementKind::Adl:
-            return ":adl";
-        case RequirementKind::ConditionalEffects:
-            return ":conditional-effects";
-        case RequirementKind::Fluents:
-            return ":fluents";
-        case RequirementKind::NumericFluents:
-            return ":numeric-fluents";
-        case RequirementKind::ActionCosts:
-            return ":action-costs";
-        case RequirementKind::DurativeActions:
-            return ":durative-actions";
-        case RequirementKind::DerivedPredicates:
-            return ":derived-predicates";
-        case RequirementKind::NonDeterministic:
-            return ":non-deterministic";
-        case RequirementKind::ProbabilisticEffects:
-            return ":probabilistic-effects";
-    }
-    throw std::invalid_argument("invalid RequirementKind");
-}
+inline const char* to_string(BinaryComparator op) { return binary_comparator_names.at(static_cast<std::size_t>(op)); }
+inline const char* to_string(BinaryArithmeticOperator op) { return binary_arithmetic_operator_names.at(static_cast<std::size_t>(op)); }
+inline const char* to_string(MultiArithmeticOperator op) { return multi_arithmetic_operator_names.at(static_cast<std::size_t>(op)); }
+inline const char* to_string(NumericEffectOperator op) { return numeric_effect_operator_names.at(static_cast<std::size_t>(op)); }
+inline const char* to_string(OptimizationDirection direction) { return optimization_direction_names.at(static_cast<std::size_t>(direction)); }
+inline const char* to_string(RequirementKind kind) { return requirement_kind_names.at(static_cast<std::size_t>(kind)); }
 
 }  // namespace loki::formalism
 

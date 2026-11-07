@@ -24,7 +24,10 @@
 #include "loki/ast/ast.hpp"
 #include "loki/semantic/errors.hpp"
 
+#include <algorithm>
 #include <cctype>
+#include <optional>
+#include <string_view>
 #include <utility>
 
 namespace loki::semantic
@@ -44,45 +47,24 @@ std::string key(std::string text)
     return text;
 }
 
-cista::offset::string to_cista(const std::string& text) { return cista::offset::string(text); }
+namespace
+{
+/// The enumerator whose name in names is name, by its position in the table.
+template<typename E, std::size_t N>
+std::optional<E> from_name(const std::array<const char*, N>& names, std::string_view name)
+{
+    const auto it = std::ranges::find_if(names, [&](std::string_view candidate) { return candidate == name; });
+    if (it == names.end())
+        return std::nullopt;
+    return static_cast<E>(it - names.begin());
+}
+}  // namespace
 
 formalism::RequirementKind requirement_kind(const ast::Requirement& node, const DiagnosticContext& diagnostics)
 {
     const auto& name = node.name.text;
-    if (name == "strips")
-        return formalism::RequirementKind::Strips;
-    if (name == "typing")
-        return formalism::RequirementKind::Typing;
-    if (name == "negative-preconditions")
-        return formalism::RequirementKind::NegativePreconditions;
-    if (name == "disjunctive-preconditions")
-        return formalism::RequirementKind::DisjunctivePreconditions;
-    if (name == "equality")
-        return formalism::RequirementKind::Equality;
-    if (name == "existential-preconditions")
-        return formalism::RequirementKind::ExistentialPreconditions;
-    if (name == "universal-preconditions")
-        return formalism::RequirementKind::UniversalPreconditions;
-    if (name == "quantified-preconditions")
-        return formalism::RequirementKind::QuantifiedPreconditions;
-    if (name == "conditional-effects")
-        return formalism::RequirementKind::ConditionalEffects;
-    if (name == "fluents")
-        return formalism::RequirementKind::Fluents;
-    if (name == "numeric-fluents")
-        return formalism::RequirementKind::NumericFluents;
-    if (name == "action-costs")
-        return formalism::RequirementKind::ActionCosts;
-    if (name == "adl")
-        return formalism::RequirementKind::Adl;
-    if (name == "durative-actions")
-        return formalism::RequirementKind::DurativeActions;
-    if (name == "derived-predicates")
-        return formalism::RequirementKind::DerivedPredicates;
-    if (name == "non-deterministic")
-        return formalism::RequirementKind::NonDeterministic;
-    if (name == "probabilistic-effects")
-        return formalism::RequirementKind::ProbabilisticEffects;
+    if (const auto kind = from_name<formalism::RequirementKind>(formalism::requirement_kind_names, ":" + name))
+        return *kind;
     diagnostics.throw_at(node.name, UnsupportedRequirementError(name));
 }
 
@@ -110,63 +92,11 @@ urd::Store<urd::sequence<formalism::RequirementKind>> requirement_capabilities(f
 urd::Store<urd::sequence<formalism::RequirementKind>> requirement_capabilities(const ast::Requirement& node, const DiagnosticContext& diagnostics)
 { return requirement_capabilities(requirement_kind(node, diagnostics)); }
 
-std::string requirement_name(formalism::RequirementKind kind)
-{
-    switch (kind)
-    {
-        case formalism::RequirementKind::Adl:
-            return "adl";
-        case formalism::RequirementKind::Typing:
-            return "typing";
-        case formalism::RequirementKind::NegativePreconditions:
-            return "negative-preconditions";
-        case formalism::RequirementKind::DisjunctivePreconditions:
-            return "disjunctive-preconditions";
-        case formalism::RequirementKind::Equality:
-            return "equality";
-        case formalism::RequirementKind::ExistentialPreconditions:
-            return "existential-preconditions";
-        case formalism::RequirementKind::UniversalPreconditions:
-            return "universal-preconditions";
-        case formalism::RequirementKind::QuantifiedPreconditions:
-            return "quantified-preconditions";
-        case formalism::RequirementKind::ConditionalEffects:
-            return "conditional-effects";
-        case formalism::RequirementKind::Fluents:
-            return "fluents";
-        case formalism::RequirementKind::NumericFluents:
-            return "numeric-fluents";
-        case formalism::RequirementKind::ActionCosts:
-            return "action-costs";
-        case formalism::RequirementKind::DurativeActions:
-            return "durative-actions";
-        case formalism::RequirementKind::DerivedPredicates:
-            return "derived-predicates";
-        case formalism::RequirementKind::NonDeterministic:
-            return "non-deterministic";
-        case formalism::RequirementKind::ProbabilisticEffects:
-            return "probabilistic-effects";
-        case formalism::RequirementKind::Strips:
-            return "strips";
-    }
-    return "unknown";
-}
-
 formalism::BinaryComparator comparator(const ast::ConditionNumericConstraint& node, const DiagnosticContext& diagnostics)
 {
     auto op = key(node.comparator);
-    if (op == "=")
-        return formalism::BinaryComparator::Eq;
-    if (op == "!=")
-        return formalism::BinaryComparator::Ne;
-    if (op == "<")
-        return formalism::BinaryComparator::Lt;
-    if (op == "<=")
-        return formalism::BinaryComparator::Le;
-    if (op == ">")
-        return formalism::BinaryComparator::Gt;
-    if (op == ">=")
-        return formalism::BinaryComparator::Ge;
+    if (const auto comparator = from_name<formalism::BinaryComparator>(formalism::binary_comparator_names, op))
+        return *comparator;
     diagnostics.throw_at(node, InvalidNumericConstraintError(op));
 }
 
@@ -184,16 +114,8 @@ formalism::MultiArithmeticOperator multi_operator(std::string op)
 formalism::NumericEffectOperator numeric_effect_operator(const ast::EffectNumeric& node, const DiagnosticContext& diagnostics)
 {
     auto op = key(node.op);
-    if (op == "assign")
-        return formalism::NumericEffectOperator::Assign;
-    if (op == "increase")
-        return formalism::NumericEffectOperator::Increase;
-    if (op == "decrease")
-        return formalism::NumericEffectOperator::Decrease;
-    if (op == "scale-up")
-        return formalism::NumericEffectOperator::ScaleUp;
-    if (op == "scale-down")
-        return formalism::NumericEffectOperator::ScaleDown;
+    if (const auto effect_operator = from_name<formalism::NumericEffectOperator>(formalism::numeric_effect_operator_names, op))
+        return *effect_operator;
     diagnostics.throw_at(node, InvalidNumericEffectError(op));
 }
 

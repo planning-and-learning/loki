@@ -102,7 +102,7 @@ struct SemanticChecks
         if (!options->strict)
             return;
         if (!parse_context->active_requirements.contains(kind))
-            diagnostics->throw_at(node, MissingRequirementError(requirement_name(kind)));
+            diagnostics->throw_at(node, MissingRequirementError(formalism::to_string(kind) + 1));
     }
 
     void require_typing_if_needed(const boost::optional<ast::TypeExpression>& type, const boost::spirit::x3::position_tagged& node) const

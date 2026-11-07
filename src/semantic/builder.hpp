@@ -23,7 +23,6 @@
 #include "loki/formalism/repository.hpp"
 #include "loki/semantic/options.hpp"
 
-#include <cista/containers/optional.h>
 #include <cstddef>
 #include <optional>
 #include <set>
@@ -84,12 +83,6 @@ private:
 
     formalism::Repository& repo() noexcept;
     SemanticChecks checks() const;
-
-    template<typename T>
-    static void append_indices(const urd::Store<urd::sequence<formalism::EntityView<T>>>& views, urd::flat_vector<urd::index<T>>& indices);
-
-    template<typename T>
-    static cista::optional<urd::index<T>> to_optional_index(const std::optional<formalism::EntityView<T>>& view);
 
     // Symbol lookup with auto-declaration in non-strict mode.
     formalism::PredicateView predicate(const ast::Identifier& identifier, size_t arity);
@@ -155,25 +148,12 @@ private:
     // Action-costs completion.
     formalism::FunctionSkeletonView total_cost_function();
     formalism::FunctionTermView total_cost_term();
-    bool writes_total_cost(formalism::EffectView effect);
     formalism::ActionView add_unit_cost(formalism::ActionView view);
     bool has_total_cost_initial_value(const urd::Store<urd::sequence<formalism::InitialFunctionValueView>>& values);
     void complete_action_costs(const ast::Task& task,
                                urd::Store<urd::sequence<formalism::InitialFunctionValueView>>& initial_function_values,
                                std::optional<formalism::MetricView>& metric);
 };
-
-template<typename T>
-void AstBuilder::append_indices(const urd::Store<urd::sequence<formalism::EntityView<T>>>& views, urd::flat_vector<urd::index<T>>& indices)
-{
-    indices.reserve(indices.size() + views.size());
-    for (const auto view : views)
-        indices.push_back(view.index());
-}
-
-template<typename T>
-cista::optional<urd::index<T>> AstBuilder::to_optional_index(const std::optional<formalism::EntityView<T>>& view)
-{ return view ? cista::optional<urd::index<T>> { view->index() } : cista::optional<urd::index<T>> {}; }
 
 }  // namespace loki::semantic
 

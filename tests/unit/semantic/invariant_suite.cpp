@@ -75,7 +75,7 @@ void expect_flat_condition(formalism::ConditionView condition, const std::string
     EXPECT_FALSE(contains_not_or_imply(condition)) << what;
     EXPECT_FALSE(contains_forall(condition)) << what;
     EXPECT_FALSE(contains_exists(condition)) << what;
-    EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::OrTag>>(condition), 0) << what;
+    EXPECT_EQ(count_nodes<formalism::Condition<formalism::OrTag>>(condition), 0) << what;
 }
 
 template<typename Children>
@@ -119,8 +119,8 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
             {
-                EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::OrTag>>(node.get_condition()), 0) << what << ": disjunctive when-condition";
-                EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(node.get_effect()), 0) << what << ": nested when";
+                EXPECT_EQ(count_nodes<formalism::Condition<formalism::OrTag>>(node.get_condition()), 0) << what << ": disjunctive when-condition";
+                EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(node.get_effect()), 0) << what << ": nested when";
                 EXPECT_FALSE(std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::AndTag>>>(node.get_effect()))
                     << what << ": conjunctive when-body";
             }

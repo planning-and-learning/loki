@@ -43,7 +43,7 @@ static_assert(!CanonicalCopyRoot<formalism::TypeView>);
 TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
 {
     auto source = formalism::Repository(101);
-    auto type_data = urd::data<formalism::Type>(cista::offset::string("type"));
+    auto type_data = urd::data<formalism::Type>(urd::flat_string("type"));
     const auto type = formalism::insert(source, type_data).first;
     auto domain_data = urd::data<formalism::Domain>();
     domain_data.name = "domain";
@@ -55,7 +55,7 @@ TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
     const auto task = formalism::insert(source, task_data).first;
 
     auto destination = std::make_shared<semantic::detail::TranslationStorage>(102);
-    auto occupied_data = urd::data<formalism::Type>(cista::offset::string("occupied"));
+    auto occupied_data = urd::data<formalism::Type>(urd::flat_string("occupied"));
     static_cast<void>(formalism::insert(destination->repository, occupied_data));
     auto context = semantic::detail::CanonicalCopyTranslator(destination);
     const auto [copied_domain, domain_inserted] = semantic::detail::copy(domain, context);
@@ -119,10 +119,10 @@ TEST(LokiTests, CompileConditionalEffectsSplitsActions)
         EXPECT_TRUE(std::string_view(action.get_name()).starts_with("a_"));
         EXPECT_EQ(std::string_view(action.get_original_name()), "a");
         ASSERT_TRUE(action.get_precondition().has_value());
-        EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::LiteralTag>>(action.get_precondition().value()), std::size_t { 3 });
+        EXPECT_EQ(count_nodes<formalism::Condition<formalism::LiteralTag>>(action.get_precondition().value()), std::size_t { 3 });
         if (const auto effect = action.get_effect())
         {
-            EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(effect.value()), std::size_t { 0 });
+            EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(effect.value()), std::size_t { 0 });
         }
     }
 }
@@ -148,12 +148,12 @@ TEST(LokiTests, ExistentialConditionalEffectBecomesUniversalEffect)
     ASSERT_FALSE(domain.get_actions().empty());
     const auto action = domain.get_actions().front();
     ASSERT_TRUE(action.get_effect().has_value());
-    EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::ForallTag>>(action.get_effect().value()), std::size_t { 1 });
-    EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(action.get_effect().value()), std::size_t { 1 });
+    EXPECT_EQ(count_nodes<formalism::Effect<formalism::ForallTag>>(action.get_effect().value()), std::size_t { 1 });
+    EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(action.get_effect().value()), std::size_t { 1 });
 
     const auto effect_forall = effect_node<formalism::ForallTag>(action.get_effect().value());
     const auto effect_when = std::get<formalism::EntityView<formalism::Effect<formalism::WhenTag>>>(effect_forall.get_effect());
-    EXPECT_EQ(count_condition_nodes<formalism::Condition<formalism::ExistsTag>>(effect_when.get_condition()), std::size_t { 0 });
+    EXPECT_EQ(count_nodes<formalism::Condition<formalism::ExistsTag>>(effect_when.get_condition()), std::size_t { 0 });
 }
 
 TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
@@ -190,8 +190,8 @@ TEST(LokiTests, UntypedUniversalEffectKeepsEmptyGuardWhen)
     ASSERT_FALSE(domain.get_actions().empty());
     const auto action = domain.get_actions().front();
     ASSERT_TRUE(action.get_effect().has_value());
-    EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::ForallTag>>(action.get_effect().value()), std::size_t { 1 });
-    EXPECT_EQ(count_effect_nodes<formalism::Effect<formalism::WhenTag>>(action.get_effect().value()), std::size_t { 1 });
+    EXPECT_EQ(count_nodes<formalism::Effect<formalism::ForallTag>>(action.get_effect().value()), std::size_t { 1 });
+    EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(action.get_effect().value()), std::size_t { 1 });
 }
 
 TEST(LokiTests, KeepTypingPreservesPersistentParameters)
@@ -223,7 +223,7 @@ TEST(LokiTests, KeepTypingPreservesPersistentParameters)
         for (auto parameter : action.get_parameters())
             EXPECT_FALSE(parameter.get_types().empty());
         ASSERT_TRUE(action.get_precondition().has_value());
-        EXPECT_GT(count_condition_nodes<formalism::Condition<formalism::LiteralTag>>(action.get_precondition().value()), std::size_t { 1 });
+        EXPECT_GT(count_nodes<formalism::Condition<formalism::LiteralTag>>(action.get_precondition().value()), std::size_t { 1 });
     }
 }
 

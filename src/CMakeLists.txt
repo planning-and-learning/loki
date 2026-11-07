@@ -8,8 +8,6 @@ add_library(
     semantic/builder_effects.cpp
     semantic/builder_expressions.cpp
     semantic/canonical_copy.cpp
-    semantic/canonical_copy_expressions.cpp
-    semantic/canonical_copy_symbols.cpp
     semantic/context.cpp
     semantic/diagnostics.cpp
     semantic/infer_requirements.cpp

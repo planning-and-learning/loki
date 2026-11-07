@@ -47,8 +47,17 @@ public:
 private:
     // Collects the names of all binders occurring in a subtree; lifted parameters must avoid
     // them so that no binder shadows an action parameter after the lift.
-    void collect_binder_names(formalism::ConditionView condition, urd::Store<urd::set<std::string>>& names) const;
-    void collect_binder_names(formalism::EffectView effect, urd::Store<urd::set<std::string>>& names) const;
+    template<typename T>
+    void collect_binder_names(formalism::EntityView<T> node, urd::Store<urd::set<std::string>>& names) const;
+    template<typename... Vs>
+    void collect_binder_names(const std::variant<Vs...>& node, urd::Store<urd::set<std::string>>& names) const
+    { std::visit([&](auto alternative) { collect_binder_names(alternative, names); }, node); }
+    /// Below a condition or an effect, the parameters are those of its binders.
+    void collect_binder_names(formalism::ParameterView parameter, urd::Store<urd::set<std::string>>& names) const
+    { names.insert(std::string(parameter.get_variable().get_name())); }
+    /// A declaration's parameters bind nothing in the subtree.
+    void collect_binder_names(formalism::PredicateView, urd::Store<urd::set<std::string>>&) const {}
+    void collect_binder_names(formalism::FunctionSkeletonView, urd::Store<urd::set<std::string>>&) const {}
 
     // Hoists the binders of an exists into parameters/claimed; a binder whose name is already
     // claimed by a sibling scope is alpha-renamed together with its bound occurrences. Fresh
@@ -74,67 +83,10 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::move_exi
 }
 
 template<typename Derived>
-void MoveExistentialQuantifiersTranslator<Derived>::collect_binder_names(formalism::ConditionView condition, urd::Store<urd::set<std::string>>& names) const
+template<typename T>
+void MoveExistentialQuantifiersTranslator<Derived>::collect_binder_names(formalism::EntityView<T> node, urd::Store<urd::set<std::string>>& names) const
 {
-    std::visit(
-        [&]<typename Node>(const Node& node)
-        {
-            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>
-                          || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
-            {
-                for (auto parameter : node.get_parameters())
-                    names.insert(std::string(parameter.get_variable().get_name()));
-                collect_binder_names(node.get_condition(), names);
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>
-                               || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
-            {
-                for (auto child : node.get_conditions())
-                    collect_binder_names(child, names);
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::NotTag>>>)
-            {
-                collect_binder_names(node.get_condition(), names);
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ImplyTag>>>)
-            {
-                collect_binder_names(node.get_left(), names);
-                collect_binder_names(node.get_right(), names);
-            }
-        },
-        condition);
-}
-
-template<typename Derived>
-void MoveExistentialQuantifiersTranslator<Derived>::collect_binder_names(formalism::EffectView effect, urd::Store<urd::set<std::string>>& names) const
-{
-    std::visit(
-        [&]<typename Node>(const Node& node)
-        {
-            if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
-            {
-                for (auto parameter : node.get_parameters())
-                    names.insert(std::string(parameter.get_variable().get_name()));
-                collect_binder_names(node.get_effect(), names);
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
-                               || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
-            {
-                for (auto child : node.get_effects())
-                    collect_binder_names(child, names);
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
-            {
-                collect_binder_names(node.get_condition(), names);
-                collect_binder_names(node.get_effect(), names);
-            }
-            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
-            {
-                for (auto alternative : node.get_alternatives())
-                    collect_binder_names(alternative.get_effect(), names);
-            }
-        },
-        effect);
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { collect_binder_names(child, names); });
 }
 
 template<typename Derived>
@@ -167,10 +119,10 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::hoist_ex
                 break;
         }
         auto variable_data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
-        variable_data->name = cista::offset::string(name);
+        variable_data->name = urd::flat_string(name);
         const auto fresh = formalism::insert(this->copy_context().storage->repository, *variable_data).first;
         this->self().enter_variable_scope();
-        this->copy_context().variable_bindings.back().emplace(variable, fresh);
+        this->self().bind_variable(variable, fresh);
         condition = this->self().rename_variables(condition);
         this->self().leave_variable_scope();
         claimed.insert(name);

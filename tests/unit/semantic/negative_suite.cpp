@@ -151,9 +151,9 @@ TEST(LokiSemanticNegativeSuite, ReportsExpectedSemanticErrors)
         options.add_action_costs = false;
         try
         {
-            auto parser = semantic::Parser(read_text(item.domain_file), options);
+            auto parser = semantic::Parser(ygg::common::read_file(item.domain_file), options);
             if (!item.task_file.empty())
-                parser.parse_task(read_text(item.task_file));
+                parser.parse_task(ygg::common::read_file(item.task_file));
             FAIL() << "Expected semantic error";
         }
         catch (const semantic::SemanticError& error)

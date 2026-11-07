@@ -38,7 +38,7 @@ template<>
 struct data<::loki::formalism::Domain>
 {
     urd::index<::loki::formalism::Domain> index;
-    ::cista::offset::string name;
+    urd::flat_string name;
     urd::flat_vector<urd::index<::loki::formalism::Requirement>> requirements;
     urd::flat_vector<urd::index<::loki::formalism::Type>> types;
     urd::flat_vector<urd::index<::loki::formalism::Object>> constants;
@@ -48,7 +48,7 @@ struct data<::loki::formalism::Domain>
     urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms;
 
     data() = default;
-    data(::cista::offset::string name_,
+    data(urd::flat_string name_,
          urd::flat_vector<urd::index<::loki::formalism::Requirement>> requirements_,
          urd::flat_vector<urd::index<::loki::formalism::Type>> types_,
          urd::flat_vector<urd::index<::loki::formalism::Object>> constants_,
