@@ -78,12 +78,12 @@ namespace fmt
 {
 
 template<typename T>
-struct formatter<urd::view<T, loki::formalism::Repository>, char>
+struct formatter<urd::index_view<T, loki::formalism::Repository>, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template<typename FormatContext>
-    auto format(const urd::view<T, loki::formalism::Repository>& value, FormatContext& ctx) const
+    auto format(const urd::index_view<T, loki::formalism::Repository>& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), "{}", loki::formalism::format::to_string(value)); }
 };
 

@@ -51,7 +51,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectAnd& node)
 {
     auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(m_builder);
     for (const auto& child : node.effects)
-        data->effects.push_back(formalism::as_index(parse_effect(child.get())));
+        data->effects.push_back(urd::to_stored(parse_effect(child.get())));
     return formalism::insert(repo(), *data).first;
 }
 
@@ -78,7 +78,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectNumeric& no
     auto data = formalism::checkout<formalism::Effect<formalism::NumericTag>>(m_builder);
     data->op = op;
     data->function = function_term.index();
-    data->expression = formalism::as_index(expression);
+    data->expression = urd::to_stored(expression);
     return formalism::insert(repo(), *data).first;
 }
 
@@ -90,7 +90,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectForall& nod
     auto child = parse_effect(node.effect.get());
     auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(m_builder);
     append_indices(parameters, data->parameters);
-    data->effect = formalism::as_index(child);
+    data->effect = urd::to_stored(child);
     return formalism::insert(repo(), *data).first;
 }
 
@@ -100,8 +100,8 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectWhen& node)
     const auto condition = parse_condition(node.condition.get());
     const auto effect = parse_effect(node.effect.get());
     auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(m_builder);
-    data->condition = formalism::as_index(condition);
-    data->effect = formalism::as_index(effect);
+    data->condition = urd::to_stored(condition);
+    data->effect = urd::to_stored(effect);
     return formalism::insert(repo(), *data).first;
 }
 
@@ -110,7 +110,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectOneOf& node
     checks().require_requirement(formalism::RequirementKind::NonDeterministic, node);
     auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(m_builder);
     for (const auto& child : node.effects)
-        data->effects.push_back(formalism::as_index(parse_effect(child.get())));
+        data->effects.push_back(urd::to_stored(parse_effect(child.get())));
     return formalism::insert(repo(), *data).first;
 }
 
@@ -128,7 +128,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectProbabilist
         const auto effect = parse_effect(alternative.effect.get());
         urd::clear_members(*alternative_data);
         alternative_data->probability = alternative.probability;
-        alternative_data->effect = formalism::as_index(effect);
+        alternative_data->effect = urd::to_stored(effect);
         data->alternatives.push_back(formalism::insert(repo(), *alternative_data).first.index());
     }
     constexpr auto rounding_tolerance = 1e-9;
@@ -155,9 +155,9 @@ formalism::ActionView AstBuilder::parse_action(const ast::Action& node)
     append_indices(parameters, data->parameters);
     data->original_arity = data->parameters.size();
     if (precondition)
-        data->precondition = formalism::as_index(*precondition);
+        data->precondition = urd::to_stored(*precondition);
     if (effect)
-        data->effect = formalism::as_index(*effect);
+        data->effect = urd::to_stored(*effect);
     return formalism::insert(repo(), *data).first;
 }
 
@@ -186,7 +186,7 @@ formalism::AxiomView AstBuilder::parse_axiom(const ast::Axiom& node)
     append_indices(parameters, data->parameters);
     data->original_arity = data->parameters.size();
     data->head = head.index();
-    data->condition = formalism::as_index(condition);
+    data->condition = urd::to_stored(condition);
     return formalism::insert(repo(), *data).first;
 }
 
@@ -203,7 +203,7 @@ void AstBuilder::parse_initial_element(const ast::InitialFunctionValue& value,
     const auto expression = parse_function_expression(value.value);
     auto data = formalism::checkout<formalism::InitialFunctionValue>(m_builder);
     data->function = function.index();
-    data->value = formalism::as_index(expression);
+    data->value = urd::to_stored(expression);
     values.push_back(formalism::insert(repo(), *data).first);
 }
 
@@ -218,7 +218,7 @@ formalism::MetricView AstBuilder::parse_metric(const ast::Metric& node)
     const auto expression = parse_function_expression(node.expression);
     auto data = formalism::checkout<formalism::Metric>(m_builder);
     data->optimization_direction = optimization_direction;
-    data->expression = formalism::as_index(expression);
+    data->expression = urd::to_stored(expression);
     return formalism::insert(repo(), *data).first;
 }
 

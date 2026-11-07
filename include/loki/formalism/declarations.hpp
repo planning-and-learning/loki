@@ -235,7 +235,7 @@ using RepositoryFactory = ::ygg::formalism::RepositoryFactory<SymbolRepository, 
 using RepositoryFactoryPtr = std::shared_ptr<RepositoryFactory>;
 
 template<typename T>
-using EntityView = urd::view<T, Repository>;
+using EntityView = urd::index_view<T, Repository>;
 
 template<typename T>
 using EntityListView = urd::resolved_range<urd::flat_vector<urd::index<T>>, Repository>;

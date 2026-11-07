@@ -183,7 +183,7 @@ ProblemTranslationResult translate(formalism::TaskView task, const DomainTransla
     }
 
     const auto canonical = detail::canonicalize_problem_storage(current_task, current_storage, result.m_storage);
-    auto translated_task = canonical->tasks.at(task);
+    auto translated_task = canonical->maps.get<formalism::Task>().at(task);
     return ProblemTranslationResult(task, canonical, translated_task);
 }
 

@@ -88,7 +88,7 @@ std::string CopyTranslatorFacade<Derived>::next_generated_predicate_name(std::st
 template<typename Derived>
 std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(formalism::DomainView domain)
 {
-    if (auto mapped = find_mapped(this->copy_context().storage->domains, domain))
+    if (auto mapped = find_mapped(this->copy_context().storage->maps, domain))
         return { *mapped, false };
     auto data = formalism::checkout<formalism::Domain>(this->copy_context().builder);
     data->name = domain.data().name;
@@ -127,20 +127,20 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
             break;
         default:
             // data is unchanged since the first insert, so a second insert would only re-canonicalize it.
-            remember(this->copy_context().storage->domains, domain, copied_domain);
+            remember(this->copy_context().storage->maps, domain, copied_domain);
             return { copied_domain, copied_inserted };
     }
 
     auto [view, inserted] = formalism::insert(this->copy_context().storage->repository, *data);
     this->copy_context().storage->translated_domain = view;
-    remember(this->copy_context().storage->domains, domain, view);
+    remember(this->copy_context().storage->maps, domain, view);
     return { view, inserted || (copied_inserted && view == copied_domain) };
 }
 
 template<typename Derived>
 std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formalism::TaskView task)
 {
-    if (auto mapped = find_mapped(this->copy_context().storage->tasks, task))
+    if (auto mapped = find_mapped(this->copy_context().storage->maps, task))
         return { *mapped, false };
     auto data = formalism::checkout<formalism::Task>(this->copy_context().builder);
     data->name = task.data().name;
@@ -160,12 +160,12 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             this->self().leave_variable_scope();
             const auto previous = this->copy_context().renaming_enabled;
             this->copy_context().renaming_enabled = false;
-            data->goal = as_index(this->self().copy(renamed_goal));
+            data->goal = urd::to_stored(this->self().copy(renamed_goal));
             this->copy_context().renaming_enabled = previous;
         }
         else
         {
-            data->goal = as_index(this->self().copy(goal.value()));
+            data->goal = urd::to_stored(this->self().copy(goal.value()));
         }
     }
     else
@@ -174,7 +174,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     }
 
     if (const auto metric = task.get_metric())
-        data->metric = as_index(this->self().copy(metric.value()));
+        data->metric = urd::to_stored(this->self().copy(metric.value()));
     else
         data->metric = {};
     this->self().template copy_list<formalism::Predicate>(task.get_predicates(), data->predicates);
@@ -190,7 +190,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
         case TranslationPhase::SimplifyGoal:
         {
             if (this->copy_context().phase == TranslationPhase::SimplifyGoal && data->goal)
-                data->goal = as_index(this->self().simplify_goal_condition(copied_task.get_goal().value()));
+                data->goal = urd::to_stored(this->self().simplify_goal_condition(copied_task.get_goal().value()));
 
             auto existing_predicates = urd::Store<urd::set<formalism::PredicateView>> {};
             for (auto predicate : copied_task.get_predicates())
@@ -221,12 +221,12 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             break;
         default:
             // data is unchanged since the first insert, so a second insert would only re-canonicalize it.
-            remember(this->copy_context().storage->tasks, task, copied_task);
+            remember(this->copy_context().storage->maps, task, copied_task);
             return { copied_task, copied_inserted };
     }
 
     auto [view, inserted] = formalism::insert(this->copy_context().storage->repository, *data);
-    remember(this->copy_context().storage->tasks, task, view);
+    remember(this->copy_context().storage->maps, task, view);
     return { view, inserted || (copied_inserted && view == copied_task) };
 }
 

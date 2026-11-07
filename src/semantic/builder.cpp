@@ -173,7 +173,7 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
     append_indices(initial_literals, data->initial_literals);
     append_indices(initial_function_values, data->initial_function_values);
     if (goal)
-        data->goal = formalism::as_index(*goal);
+        data->goal = urd::to_stored(*goal);
     data->metric = to_optional_index(metric);
     append_indices(axioms, data->axioms);
     return formalism::insert(repo(), *data).first;

@@ -16,7 +16,7 @@
  */
 
 #include "bindings.hpp"
-#include <yggdrasil/python/type_casters.hpp>
+#include "pypddl/formalism/module.hpp"
 
 #include <loki/formalism/variable_view.hpp>
 

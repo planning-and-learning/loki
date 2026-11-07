@@ -96,7 +96,7 @@ formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_conditio
 template<typename Derived>
 template<typename T>
 formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_condition_node(formalism::ConditionView condition, T)
-{ return this->self().make_generated_goal_condition(as_index(condition)); }
+{ return this->self().make_generated_goal_condition(urd::to_stored(condition)); }
 
 }  // namespace loki::semantic::detail
 

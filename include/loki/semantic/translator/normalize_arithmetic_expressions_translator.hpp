@@ -85,7 +85,7 @@ NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::Ent
     const auto expression = normalize_arithmetic_expression(source.get_expression());
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(this->copy_context().builder);
     data->op = source.get_operator();
-    data->expression = as_index(expression);
+    data->expression = urd::to_stored(expression);
     return formalism::FunctionExpressionView(formalism::insert(this->copy_context().storage->repository, *data).first);
 }
 
@@ -106,8 +106,8 @@ NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::Ent
             const auto right = normalize_arithmetic_expression(source.get_right());
             auto data = formalism::checkout<formalism::FunctionExpression<formalism::BinaryTag>>(this->copy_context().builder);
             data->op = source.get_operator();
-            data->left = as_index(left);
-            data->right = as_index(right);
+            data->left = urd::to_stored(left);
+            data->right = urd::to_stored(right);
             return formalism::FunctionExpressionView(formalism::insert(this->copy_context().storage->repository, *data).first);
         }
     }
@@ -195,7 +195,7 @@ void NormalizeArithmeticExpressionsTranslator<Derived>::append_normalized_operan
             {
                 if (operands.empty())
                     first_operand = expression;
-                operands.push_back(as_index(expression));
+                operands.push_back(urd::to_stored(expression));
             }
             return;
         }
@@ -204,7 +204,7 @@ void NormalizeArithmeticExpressionsTranslator<Derived>::append_normalized_operan
     {
         if (operands.empty())
             first_operand = normalized;
-        operands.push_back(as_index(normalized));
+        operands.push_back(urd::to_stored(normalized));
     }
 }
 

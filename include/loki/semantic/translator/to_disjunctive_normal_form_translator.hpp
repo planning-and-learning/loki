@@ -118,7 +118,7 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
             auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
             for (auto parameter : data.parameters)
                 result->parameters.push_back(parameter);
-            result->condition = as_index(nested);
+            result->condition = urd::to_stored(nested);
             const auto exists = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
             this->self().append_disjunct(*condition_data, exists);
         }
@@ -127,7 +127,7 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
     auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : data.parameters)
         result->parameters.push_back(parameter);
-    result->condition = as_index(child);
+    result->condition = urd::to_stored(child);
     const auto exists = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
     return this->self().flatten_condition(exists);
 }
@@ -146,7 +146,7 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
             auto result = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
             for (auto parameter : data.parameters)
                 result->parameters.push_back(parameter);
-            result->condition = as_index(nested);
+            result->condition = urd::to_stored(nested);
             const auto forall = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
             this->self().append_disjunct(*condition_data, forall);
         }
@@ -155,7 +155,7 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
     auto result = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
     for (auto parameter : data.parameters)
         result->parameters.push_back(parameter);
-    result->condition = as_index(child);
+    result->condition = urd::to_stored(child);
     const auto forall = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
     return this->self().flatten_condition(forall);
 }

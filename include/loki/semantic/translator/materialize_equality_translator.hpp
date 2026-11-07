@@ -245,9 +245,9 @@ void MaterializeEqualityTranslator<Derived>::materialize_equality(urd::data<form
     if (!predicate)
         throw InvalidEqualityError("expected equality predicate to be declared in the translated domain");
     for (auto object : this->copy_context().storage->translated().get_constants())
-        data.initial_literals.push_back(as_index(this->self().equality_literal(*predicate, object.index())));
+        data.initial_literals.push_back(urd::to_stored(this->self().equality_literal(*predicate, object.index())));
     for (auto object : data.objects)
-        data.initial_literals.push_back(as_index(this->self().equality_literal(*predicate, object)));
+        data.initial_literals.push_back(urd::to_stored(this->self().equality_literal(*predicate, object)));
     data.domain = this->copy_context().storage->translated().index();
 }
 

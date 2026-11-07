@@ -78,7 +78,7 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
         axiom_data->parameters.push_back(parameter);
     axiom_data->original_arity = axiom_data->parameters.size();
     axiom_data->head = positive_head;
-    axiom_data->condition = as_index(condition);
+    axiom_data->condition = urd::to_stored(condition);
     const auto axiom = formalism::insert(this->copy_context().storage->repository, *axiom_data).first;
 
     this->copy_context().generated_predicates.push_back(predicate);
@@ -120,7 +120,7 @@ template<typename Derived>
 formalism::ConditionView
 RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
 {
-    const auto condition = as_index(this->self().remove_universal_quantifiers(source.get_condition()));
+    const auto condition = urd::to_stored(this->self().remove_universal_quantifiers(source.get_condition()));
     auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(this->copy_context().builder);
     data->condition = condition;
     return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
@@ -132,8 +132,8 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
 {
     // Sequence the recursions: both sides can generate loki-universal-* names, and argument
     // evaluation order is unspecified.
-    const auto left = as_index(this->self().remove_universal_quantifiers(source.get_left()));
-    const auto right = as_index(this->self().remove_universal_quantifiers(source.get_right()));
+    const auto left = urd::to_stored(this->self().remove_universal_quantifiers(source.get_left()));
+    const auto right = urd::to_stored(this->self().remove_universal_quantifiers(source.get_right()));
     auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(this->copy_context().builder);
     data->left = left;
     data->right = right;
@@ -147,7 +147,7 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
-    auto condition = as_index(this->self().remove_universal_quantifiers(source.get_condition()));
+    auto condition = urd::to_stored(this->self().remove_universal_quantifiers(source.get_condition()));
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
@@ -163,7 +163,7 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
-    auto negated = as_index(this->self().negate_condition(source.get_condition()));
+    auto negated = urd::to_stored(this->self().negate_condition(source.get_condition()));
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)

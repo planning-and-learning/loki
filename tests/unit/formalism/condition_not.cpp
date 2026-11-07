@@ -6,7 +6,7 @@
 
 using Index = urd::index<loki::formalism::Condition<loki::formalism::NotTag>>;
 using Data = urd::data<loki::formalism::Condition<loki::formalism::NotTag>>;
-using View = urd::view<loki::formalism::Condition<loki::formalism::NotTag>, loki::formalism::Repository>;
+using View = urd::index_view<loki::formalism::Condition<loki::formalism::NotTag>, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);

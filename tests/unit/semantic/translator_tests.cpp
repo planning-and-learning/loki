@@ -96,8 +96,8 @@ formalism::FunctionExpressionView binary_expression(formalism::Repository& repos
                                                                                        [&](auto& data)
                                                                                        {
                                                                                            data.op = op;
-                                                                                           data.left = formalism::as_index(left);
-                                                                                           data.right = formalism::as_index(right);
+                                                                                           data.left = urd::to_stored(left);
+                                                                                           data.right = urd::to_stored(right);
                                                                                        });
 }
 
@@ -112,7 +112,7 @@ formalism::FunctionExpressionView multi_expression(formalism::Repository& reposi
                                                                                       {
                                                                                           data.op = op;
                                                                                           for (const auto expression : expressions)
-                                                                                              data.args.push_back(formalism::as_index(expression));
+                                                                                              data.args.push_back(urd::to_stored(expression));
                                                                                       });
 }
 
@@ -459,33 +459,33 @@ TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
     const auto original_removed = object(original, "removed");
     const auto middle_removed = object(previous.repository, "removed");
 
-    previous.types.emplace(original_base, middle_base);
-    previous.types.emplace(original_type, middle_type);
-    target.types.emplace(middle_base, final_base);
-    previous.objects.emplace(original_object, middle_object);
-    previous.objects.emplace(original_removed, middle_removed);
-    target.objects.emplace(middle_object, final_object);
+    previous.maps.get<formalism::Type>().emplace(original_base, middle_base);
+    previous.maps.get<formalism::Type>().emplace(original_type, middle_type);
+    target.maps.get<formalism::Type>().emplace(middle_base, final_base);
+    previous.maps.get<formalism::Object>().emplace(original_object, middle_object);
+    previous.maps.get<formalism::Object>().emplace(original_removed, middle_removed);
+    target.maps.get<formalism::Object>().emplace(middle_object, final_object);
     previous.object_type_views.emplace(middle_object, decltype(previous.object_type_views)::mapped_type { middle_type });
     previous.object_type_views.emplace(middle_removed, decltype(previous.object_type_views)::mapped_type { middle_base });
 
     // The child type exists only in metadata; its final mapping must be created before composition.
     semantic::detail::compose_storage_maps_from_previous(target, previous);
 
-    ASSERT_EQ(target.objects.size(), 1);
-    EXPECT_EQ(target.objects.at(original_object), final_object);
-    EXPECT_FALSE(target.objects.contains(original_removed));
-    EXPECT_FALSE(target.objects.contains(middle_object));
-    ASSERT_EQ(target.types.size(), 2);
-    EXPECT_EQ(target.types.at(original_base), final_base);
-    const auto final_type = target.types.at(original_type);
+    ASSERT_EQ(target.maps.get<formalism::Object>().size(), 1);
+    EXPECT_EQ(target.maps.get<formalism::Object>().at(original_object), final_object);
+    EXPECT_FALSE(target.maps.get<formalism::Object>().contains(original_removed));
+    EXPECT_FALSE(target.maps.get<formalism::Object>().contains(middle_object));
+    ASSERT_EQ(target.maps.get<formalism::Type>().size(), 2);
+    EXPECT_EQ(target.maps.get<formalism::Type>().at(original_base), final_base);
+    const auto final_type = target.maps.get<formalism::Type>().at(original_type);
     EXPECT_EQ(final_type.context().get_index(), target.repository.get_index());
     EXPECT_EQ(std::string(final_type.get_name()), "child");
     ASSERT_EQ(final_type.get_bases().size(), 1);
     EXPECT_EQ(final_type.get_bases().front(), final_base);
     ASSERT_EQ(target.object_type_views.size(), 1);
     EXPECT_EQ(target.object_type_views.at(final_object), decltype(target.object_type_views)::mapped_type { final_type });
-    EXPECT_EQ(previous.objects.at(original_object), middle_object);
-    EXPECT_EQ(previous.types.at(original_type), middle_type);
+    EXPECT_EQ(previous.maps.get<formalism::Object>().at(original_object), middle_object);
+    EXPECT_EQ(previous.maps.get<formalism::Type>().at(original_type), middle_type);
 }
 
 TEST(LokiSemanticTranslator, TranslationStorageRetainsParent)
@@ -788,8 +788,8 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
     };
     const auto p_condition_view = make_condition(p_literal);
     const auto q_condition_view = make_condition(q_literal);
-    const auto p_condition = formalism::as_index(p_condition_view);
-    const auto q_condition = formalism::as_index(q_condition_view);
+    const auto p_condition = urd::to_stored(p_condition_view);
+    const auto q_condition = urd::to_stored(q_condition_view);
 
     const auto first = intern<formalism::Condition<formalism::AndTag>>(repository,
                                                                        builder,

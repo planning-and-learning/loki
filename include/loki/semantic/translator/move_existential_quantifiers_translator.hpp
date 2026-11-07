@@ -209,7 +209,7 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameters)
         data->parameters.push_back(parameter.index());
-    data->condition = as_index(conjunction);
+    data->condition = urd::to_stored(conjunction);
     return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
 }
 
@@ -223,7 +223,7 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
     auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : data.parameters)
         result->parameters.push_back(parameter);
-    result->condition = as_index(condition);
+    result->condition = urd::to_stored(condition);
     return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first));
 }
 

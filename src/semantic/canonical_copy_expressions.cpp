@@ -27,64 +27,64 @@ namespace loki::semantic::detail
 formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->numbers, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::NumberTag>>(m_builder);
     data->value = source.get_value();
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->numbers, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::FunctionTermView CanonicalCopyTranslator::copy(formalism::FunctionTermView source)
 {
-    if (auto mapped = find_mapped(m_storage->function_terms, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::FunctionTerm>(m_builder);
-    data->function = as_index(copy(source.get_function()));
+    data->function = urd::to_stored(copy(source.get_function()));
     copy_list(source.get_terms(), data->terms);
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->function_terms, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->unary_expressions, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(m_builder);
     data->op = source.data().op;
-    data->expression = as_index(copy(source.get_expression()));
+    data->expression = urd::to_stored(copy(source.get_expression()));
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->unary_expressions, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->binary_expressions, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::BinaryTag>>(m_builder);
     data->op = source.data().op;
-    data->left = as_index(copy(source.get_left()));
-    data->right = as_index(copy(source.get_right()));
+    data->left = urd::to_stored(copy(source.get_left()));
+    data->right = urd::to_stored(copy(source.get_right()));
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->binary_expressions, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->multi_expressions, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::MultiTag>>(m_builder);
     data->op = source.get_operator();
     copy_list(source.get_args(), data->args);
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->multi_expressions, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
@@ -96,101 +96,101 @@ formalism::FunctionExpressionView CanonicalCopyTranslator::copy(formalism::Funct
 formalism::EntityView<formalism::Condition<formalism::LiteralTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->condition_literals, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(m_builder);
-    data->literal = as_index(copy(source.get_literal()));
+    data->literal = urd::to_stored(copy(source.get_literal()));
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->condition_literals, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::EntityView<formalism::Condition<formalism::AndTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::AndTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->condition_ands, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(m_builder);
     copy_list(source.get_conditions(), data->conditions);
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->condition_ands, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::EntityView<formalism::Condition<formalism::OrTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::OrTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->condition_ors, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(m_builder);
     copy_list(source.get_conditions(), data->conditions);
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->condition_ors, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::EntityView<formalism::Condition<formalism::NotTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->condition_nots, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(m_builder);
-    data->condition = as_index(copy(source.get_condition()));
+    data->condition = urd::to_stored(copy(source.get_condition()));
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->condition_nots, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::EntityView<formalism::Condition<formalism::ImplyTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->condition_implies, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(m_builder);
-    data->left = as_index(copy(source.get_left()));
-    data->right = as_index(copy(source.get_right()));
+    data->left = urd::to_stored(copy(source.get_left()));
+    data->right = urd::to_stored(copy(source.get_right()));
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->condition_implies, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::EntityView<formalism::Condition<formalism::ExistsTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->condition_exists, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(m_builder);
     copy_list(source.get_parameters(), data->parameters);
-    data->condition = as_index(copy(source.get_condition()));
+    data->condition = urd::to_stored(copy(source.get_condition()));
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->condition_exists, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::EntityView<formalism::Condition<formalism::ForallTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->condition_foralls, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(m_builder);
     copy_list(source.get_parameters(), data->parameters);
-    data->condition = as_index(copy(source.get_condition()));
+    data->condition = urd::to_stored(copy(source.get_condition()));
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->condition_foralls, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 
 formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>
 CanonicalCopyTranslator::copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source)
 {
-    if (auto mapped = find_mapped(m_storage->condition_numeric_constraints, source))
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return *mapped;
     auto data = formalism::checkout<formalism::Condition<formalism::NumericConstraintTag>>(m_builder);
     data->comparator = source.data().comparator;
-    data->left = as_index(copy(source.get_left()));
-    data->right = as_index(copy(source.get_right()));
+    data->left = urd::to_stored(copy(source.get_left()));
+    data->right = urd::to_stored(copy(source.get_right()));
     auto out = formalism::insert(m_storage->repository, *data).first;
-    remember(m_storage->condition_numeric_constraints, source, out);
+    remember(m_storage->maps, source, out);
     return out;
 }
 

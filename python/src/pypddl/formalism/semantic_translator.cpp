@@ -16,7 +16,6 @@
  */
 
 #include "module.hpp"
-#include <yggdrasil/python/type_casters.hpp>
 
 #include <loki/formalism/formatter.hpp>
 #include <loki/formalism/repository.hpp>

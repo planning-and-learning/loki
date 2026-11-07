@@ -77,7 +77,7 @@ formalism::ConditionView
 ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source)
 {
     const auto literal = source.get_literal();
-    const auto atom = as_index(this->self().copy(literal.get_atom()));
+    const auto atom = urd::to_stored(this->self().copy(literal.get_atom()));
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
     literal_data->m_polarity = !literal.get_polarity();
@@ -125,7 +125,7 @@ ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::Entity
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
-    auto condition = as_index(this->self().negate_condition(source.get_condition()));
+    auto condition = urd::to_stored(this->self().negate_condition(source.get_condition()));
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
@@ -141,7 +141,7 @@ ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::Entity
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
-    auto condition = as_index(this->self().negate_condition(source.get_condition()));
+    auto condition = urd::to_stored(this->self().negate_condition(source.get_condition()));
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
@@ -156,8 +156,8 @@ ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::Entity
 {
     const auto& data = source.data();
     const auto comparator = this->self().negate_comparator(data.comparator);
-    const auto left = as_index(this->self().copy(source.get_left()));
-    const auto right = as_index(this->self().copy(source.get_right()));
+    const auto left = urd::to_stored(this->self().copy(source.get_left()));
+    const auto right = urd::to_stored(this->self().copy(source.get_right()));
     auto result = formalism::checkout<formalism::Condition<formalism::NumericConstraintTag>>(this->copy_context().builder);
     result->comparator = comparator;
     result->left = left;

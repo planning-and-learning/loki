@@ -7,7 +7,7 @@
 
 using Index = urd::index<loki::formalism::Type>;
 using Data = urd::data<loki::formalism::Type>;
-using View = urd::view<loki::formalism::Type, loki::formalism::Repository>;
+using View = urd::index_view<loki::formalism::Type, loki::formalism::Repository>;
 
 namespace
 {

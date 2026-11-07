@@ -6,7 +6,7 @@
 
 using Index = urd::index<loki::formalism::Domain>;
 using Data = urd::data<loki::formalism::Domain>;
-using View = urd::view<loki::formalism::Domain, loki::formalism::Repository>;
+using View = urd::index_view<loki::formalism::Domain, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);

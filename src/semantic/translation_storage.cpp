@@ -21,27 +21,36 @@
 #include "loki/semantic/translator/canonical_copy_translator.hpp"
 #include "loki/semantic/translator/common.hpp"
 
+#include <boost/mp11/algorithm.hpp>
+#include <type_traits>
 #include <utility>
 
 namespace loki::semantic::detail
 {
 
-template<typename T>
-static void compose_map(ViewMap<T>& out, const ViewMap<T>& source_to_middle, const ViewMap<T>& middle_to_target)
+/// Each map of `out` becomes the composition of source_to_middle's and middle_to_target's map of its kind.
+static void compose_maps(ViewMaps& out, const ViewMaps& source_to_middle, const ViewMaps& middle_to_target)
 {
-    ViewMap<T> composed;
-    for (const auto& [source, middle] : source_to_middle)
-    {
-        if (auto it = middle_to_target.find(middle); it != middle_to_target.end())
-            composed.emplace(source, it->second);
-    }
-    // Either input may alias out; replace it only after reading both maps.
-    out = std::move(composed);
+    out.for_each(
+        [&](auto& map)
+        {
+            using Map = std::remove_cvref_t<decltype(map)>;
+            using T = typename Map::key_type::value_type;
+            const auto& second = middle_to_target.template get<T>();
+            auto composed = Map();
+            for (const auto& [source, middle] : source_to_middle.template get<T>())
+            {
+                if (auto it = second.find(middle); it != second.end())
+                    composed.emplace(source, it->second);
+            }
+            // Either input may alias out; replace the map only after reading both.
+            map = std::move(composed);
+        });
 }
 
 static formalism::TypeView copy_type_view_for_metadata(TranslationStorage& target, formalism::Builder& builder, formalism::TypeView source)
 {
-    if (auto mapped = find_mapped(target.types, source))
+    if (auto mapped = find_mapped(target.maps, source))
         return *mapped;
 
     auto data = formalism::checkout<formalism::Type>(builder);
@@ -50,7 +59,7 @@ static formalism::TypeView copy_type_view_for_metadata(TranslationStorage& targe
         data->bases.push_back(copy_type_view_for_metadata(target, builder, base).index());
 
     auto out = formalism::insert(target.repository, *data).first;
-    remember(target.types, source, out);
+    remember(target.maps, source, out);
     return out;
 }
 
@@ -82,132 +91,67 @@ static void remap_object_type_metadata(TranslationStorage& target,
 std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::DomainView original_domain, const std::shared_ptr<TranslationStorage>& middle)
 {
     auto canonical = std::make_shared<TranslationStorage>(middle->repository.get_index());
-    const auto middle_domain = middle->domains.at(original_domain);
+    const auto middle_domain = middle->maps.get<formalism::Domain>().at(original_domain);
     auto context = CanonicalCopyTranslator(canonical);
     const auto canonical_domain = copy(middle_domain, context).first;
 
-    const auto middle_objects = canonical->objects;
-    const auto middle_types = canonical->types;
+    const auto middle_objects = canonical->maps.get<formalism::Object>();
+    const auto middle_types = canonical->maps.get<formalism::Type>();
     auto builder = formalism::Builder {};
     remap_object_type_metadata(*canonical, builder, *middle, middle_objects, middle_types);
 
     canonical->translated_domain = canonical_domain;
-    canonical->domains.clear();
-    remember(canonical->domains, original_domain, canonical_domain);
-    compose_map(canonical->requirements, middle->requirements, canonical->requirements);
-    compose_map(canonical->types, middle->types, canonical->types);
-    compose_map(canonical->objects, middle->objects, canonical->objects);
-    compose_map(canonical->variables, middle->variables, canonical->variables);
-    compose_map(canonical->parameters, middle->parameters, canonical->parameters);
-    compose_map(canonical->predicates, middle->predicates, canonical->predicates);
-    compose_map(canonical->functions, middle->functions, canonical->functions);
-    compose_map(canonical->atoms, middle->atoms, canonical->atoms);
-    compose_map(canonical->literals, middle->literals, canonical->literals);
-    compose_map(canonical->numbers, middle->numbers, canonical->numbers);
-    compose_map(canonical->function_terms, middle->function_terms, canonical->function_terms);
-    compose_map(canonical->unary_expressions, middle->unary_expressions, canonical->unary_expressions);
-    compose_map(canonical->binary_expressions, middle->binary_expressions, canonical->binary_expressions);
-    compose_map(canonical->multi_expressions, middle->multi_expressions, canonical->multi_expressions);
-    compose_map(canonical->condition_literals, middle->condition_literals, canonical->condition_literals);
-    compose_map(canonical->condition_ands, middle->condition_ands, canonical->condition_ands);
-    compose_map(canonical->condition_ors, middle->condition_ors, canonical->condition_ors);
-    compose_map(canonical->condition_nots, middle->condition_nots, canonical->condition_nots);
-    compose_map(canonical->condition_implies, middle->condition_implies, canonical->condition_implies);
-    compose_map(canonical->condition_exists, middle->condition_exists, canonical->condition_exists);
-    compose_map(canonical->condition_foralls, middle->condition_foralls, canonical->condition_foralls);
-    compose_map(canonical->condition_numeric_constraints, middle->condition_numeric_constraints, canonical->condition_numeric_constraints);
-    compose_map(canonical->effect_literals, middle->effect_literals, canonical->effect_literals);
-    compose_map(canonical->effect_ands, middle->effect_ands, canonical->effect_ands);
-    compose_map(canonical->effect_numerics, middle->effect_numerics, canonical->effect_numerics);
-    compose_map(canonical->effect_foralls, middle->effect_foralls, canonical->effect_foralls);
-    compose_map(canonical->effect_whens, middle->effect_whens, canonical->effect_whens);
-    compose_map(canonical->effect_one_ofs, middle->effect_one_ofs, canonical->effect_one_ofs);
-    compose_map(canonical->effect_probabilistic_alternatives, middle->effect_probabilistic_alternatives, canonical->effect_probabilistic_alternatives);
-    compose_map(canonical->effect_probabilistics, middle->effect_probabilistics, canonical->effect_probabilistics);
-    compose_map(canonical->actions, middle->actions, canonical->actions);
-    compose_map(canonical->axioms, middle->axioms, canonical->axioms);
-    compose_map(canonical->metrics, middle->metrics, canonical->metrics);
-    compose_map(canonical->initial_function_values, middle->initial_function_values, canonical->initial_function_values);
-    compose_map(canonical->tasks, middle->tasks, canonical->tasks);
+    compose_maps(canonical->maps, middle->maps, canonical->maps);
+    // The composed domain map is replaced: it maps the original domain alone.
+    auto& domains = canonical->maps.get<formalism::Domain>();
+    domains.clear();
+    domains.emplace(original_domain, canonical_domain);
     return canonical;
 }
 
-template<typename T>
-static void copy_map(ViewMap<T>& target, const ViewMap<T>& source)
-{ target = source; }
-
 void compose_storage_maps_from_previous(TranslationStorage& target, const TranslationStorage& previous)
 {
-    const auto precompose_objects = target.objects;
-    const auto precompose_types = target.types;
+    const auto precompose_objects = target.maps.get<formalism::Object>();
+    const auto precompose_types = target.maps.get<formalism::Type>();
     auto builder = formalism::Builder {};
     remap_object_type_metadata(target, builder, previous, precompose_objects, precompose_types);
 
-    compose_map(target.requirements, previous.requirements, target.requirements);
-    compose_map(target.types, previous.types, target.types);
-    compose_map(target.objects, previous.objects, target.objects);
-    compose_map(target.variables, previous.variables, target.variables);
-    compose_map(target.parameters, previous.parameters, target.parameters);
-    compose_map(target.predicates, previous.predicates, target.predicates);
-    compose_map(target.functions, previous.functions, target.functions);
-    compose_map(target.atoms, previous.atoms, target.atoms);
-    compose_map(target.literals, previous.literals, target.literals);
-    compose_map(target.numbers, previous.numbers, target.numbers);
-    compose_map(target.function_terms, previous.function_terms, target.function_terms);
-    compose_map(target.unary_expressions, previous.unary_expressions, target.unary_expressions);
-    compose_map(target.binary_expressions, previous.binary_expressions, target.binary_expressions);
-    compose_map(target.multi_expressions, previous.multi_expressions, target.multi_expressions);
-    compose_map(target.condition_literals, previous.condition_literals, target.condition_literals);
-    compose_map(target.condition_ands, previous.condition_ands, target.condition_ands);
-    compose_map(target.condition_ors, previous.condition_ors, target.condition_ors);
-    compose_map(target.condition_nots, previous.condition_nots, target.condition_nots);
-    compose_map(target.condition_implies, previous.condition_implies, target.condition_implies);
-    compose_map(target.condition_exists, previous.condition_exists, target.condition_exists);
-    compose_map(target.condition_foralls, previous.condition_foralls, target.condition_foralls);
-    compose_map(target.condition_numeric_constraints, previous.condition_numeric_constraints, target.condition_numeric_constraints);
-    compose_map(target.effect_literals, previous.effect_literals, target.effect_literals);
-    compose_map(target.effect_ands, previous.effect_ands, target.effect_ands);
-    compose_map(target.effect_numerics, previous.effect_numerics, target.effect_numerics);
-    compose_map(target.effect_foralls, previous.effect_foralls, target.effect_foralls);
-    compose_map(target.effect_whens, previous.effect_whens, target.effect_whens);
-    compose_map(target.effect_one_ofs, previous.effect_one_ofs, target.effect_one_ofs);
-    compose_map(target.effect_probabilistic_alternatives, previous.effect_probabilistic_alternatives, target.effect_probabilistic_alternatives);
-    compose_map(target.effect_probabilistics, previous.effect_probabilistics, target.effect_probabilistics);
-    compose_map(target.actions, previous.actions, target.actions);
-    compose_map(target.axioms, previous.axioms, target.axioms);
-    compose_map(target.metrics, previous.metrics, target.metrics);
-    compose_map(target.initial_function_values, previous.initial_function_values, target.initial_function_values);
-    compose_map(target.domains, previous.domains, target.domains);
-    compose_map(target.tasks, previous.tasks, target.tasks);
+    compose_maps(target.maps, previous.maps, target.maps);
+}
+
+/// The kinds of entities a problem's translation takes over from its domain's, besides the domain.
+using DomainKinds = boost::mp11::mp_list<formalism::Requirement, formalism::Type, formalism::Object, formalism::Predicate, formalism::FunctionSkeleton>;
+
+/// Calls `function` with the problem's and the domain's map of each of the DomainKinds.
+template<typename Function>
+static void for_each_domain_kind(ViewMaps& problem, const ViewMaps& domain, Function function)
+{
+    boost::mp11::mp_for_each<boost::mp11::mp_transform<boost::mp11::mp_identity, DomainKinds>>(
+        [&](auto kind)
+        {
+            using T = typename decltype(kind)::type;
+            function(problem.template get<T>(), domain.template get<T>());
+        });
 }
 
 void inherit_domain_mappings(TranslationStorage& problem, const TranslationStorage& domain)
 {
-    copy_map(problem.domains, domain.domains);
-    copy_map(problem.requirements, domain.requirements);
-    copy_map(problem.types, domain.types);
-    copy_map(problem.objects, domain.objects);
-    copy_map(problem.predicates, domain.predicates);
-    copy_map(problem.functions, domain.functions);
+    problem.maps.get<formalism::Domain>() = domain.maps.get<formalism::Domain>();
+    for_each_domain_kind(problem.maps, domain.maps, [](auto& target, const auto& source) { target = source; });
     problem.object_type_views = domain.object_type_views;
     problem.translated_domain = domain.translated_domain;
 }
 
-template<typename T>
-static void copy_identity_map(ViewMap<T>& target, const ViewMap<T>& source)
-{
-    for (const auto& [_, view] : source)
-        target.emplace(view, view);
-}
-
 void inherit_domain_identity_mappings(TranslationStorage& problem, const TranslationStorage& domain)
 {
-    problem.domains.emplace(domain.translated(), domain.translated());
-    copy_identity_map(problem.requirements, domain.requirements);
-    copy_identity_map(problem.types, domain.types);
-    copy_identity_map(problem.objects, domain.objects);
-    copy_identity_map(problem.predicates, domain.predicates);
-    copy_identity_map(problem.functions, domain.functions);
+    remember(problem.maps, domain.translated(), domain.translated());
+    for_each_domain_kind(problem.maps,
+                         domain.maps,
+                         [](auto& target, const auto& source)
+                         {
+                             for (const auto& [_, view] : source)
+                                 target.emplace(view, view);
+                         });
     problem.object_type_views = domain.object_type_views;
     problem.translated_domain = domain.translated_domain;
 }
@@ -219,7 +163,7 @@ std::shared_ptr<TranslationStorage> canonicalize_problem_storage(formalism::Task
     auto canonical = std::make_shared<TranslationStorage>(middle->repository.get_index(), domain);
     inherit_domain_identity_mappings(*canonical, *domain);
     if (middle->translated().index() == domain->translated().index())
-        remember(canonical->domains, middle->translated(), domain->translated());
+        remember(canonical->maps, middle->translated(), domain->translated());
     auto context = CanonicalCopyTranslator(canonical);
     copy(middle_task, context);
     compose_storage_maps_from_previous(*canonical, *middle);

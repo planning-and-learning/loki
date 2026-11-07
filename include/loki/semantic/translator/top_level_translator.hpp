@@ -48,11 +48,11 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
         this->copy_context().renaming_enabled = false;
         auto out = this->self().copy(renamed);
         this->copy_context().renaming_enabled = previous;
-        remember(this->copy_context().storage->actions, source, out);
+        remember(this->copy_context().storage->maps, source, out);
         return out;
     }
 
-    if (auto mapped = find_mapped(this->copy_context().storage->actions, source))
+    if (auto mapped = find_mapped(this->copy_context().storage->maps, source))
         return *mapped;
     const auto& data = source.data();
     this->copy_context().num_quantifications.clear();
@@ -76,7 +76,7 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
         this->self().prepend_type_conditions(precondition, source.get_parameters());
     auto effect = cista::optional<formalism::EffectVariant> {};
     if (const auto effect_view = source.get_effect())
-        effect = as_index(this->self().copy(effect_view.value()));
+        effect = urd::to_stored(this->self().copy(effect_view.value()));
     auto result = formalism::checkout<formalism::Action>(this->copy_context().builder);
     result->name = data.name;
     result->original_name = data.original_name;
@@ -87,11 +87,11 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
             result->parameters.push_back(parameter.index());
     result->original_arity = data.original_arity;
     if (precondition)
-        result->precondition = as_index(*precondition);
+        result->precondition = urd::to_stored(*precondition);
     result->effect = effect;
     auto out = formalism::insert(this->copy_context().storage->repository, *result).first;
     this->self().leave_scope();
-    remember(this->copy_context().storage->actions, source, out);
+    remember(this->copy_context().storage->maps, source, out);
     return out;
 }
 
@@ -105,11 +105,11 @@ formalism::AxiomView TopLevelTranslator<Derived>::copy(formalism::AxiomView sour
         this->copy_context().renaming_enabled = false;
         auto out = this->self().copy(renamed);
         this->copy_context().renaming_enabled = previous;
-        remember(this->copy_context().storage->axioms, source, out);
+        remember(this->copy_context().storage->maps, source, out);
         return out;
     }
 
-    if (auto mapped = find_mapped(this->copy_context().storage->axioms, source))
+    if (auto mapped = find_mapped(this->copy_context().storage->maps, source))
         return *mapped;
     const auto& data = source.data();
     this->copy_context().num_quantifications.clear();
@@ -121,7 +121,7 @@ formalism::AxiomView TopLevelTranslator<Derived>::copy(formalism::AxiomView sour
         copied_condition = this->self().lift_top_level_exists(parameter_views, copied_condition, std::nullopt);
     if (this->copy_context().phase == TranslationPhase::CompileTyping)
         this->self().prepend_type_conditions(copied_condition, source.get_parameters());
-    const auto head = as_index(this->self().copy(source.get_head()));
+    const auto head = urd::to_stored(this->self().copy(source.get_head()));
     auto result = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
     if (this->self().compiles_typing_now())
         this->self().copy_parameters_without_types(source.get_parameters(), result->parameters);
@@ -130,39 +130,39 @@ formalism::AxiomView TopLevelTranslator<Derived>::copy(formalism::AxiomView sour
             result->parameters.push_back(parameter.index());
     result->original_arity = data.original_arity;
     result->head = head;
-    result->condition = as_index(copied_condition);
+    result->condition = urd::to_stored(copied_condition);
     auto out = formalism::insert(this->copy_context().storage->repository, *result).first;
     this->self().leave_scope();
-    remember(this->copy_context().storage->axioms, source, out);
+    remember(this->copy_context().storage->maps, source, out);
     return out;
 }
 
 template<typename Derived>
 formalism::MetricView TopLevelTranslator<Derived>::copy(formalism::MetricView source)
 {
-    if (auto mapped = find_mapped(this->copy_context().storage->metrics, source))
+    if (auto mapped = find_mapped(this->copy_context().storage->maps, source))
         return *mapped;
-    const auto expression = as_index(this->self().copy(source.get_expression()));
+    const auto expression = urd::to_stored(this->self().copy(source.get_expression()));
     auto data = formalism::checkout<formalism::Metric>(this->copy_context().builder);
     data->optimization_direction = source.get_optimization_direction();
     data->expression = expression;
     auto out = formalism::insert(this->copy_context().storage->repository, *data).first;
-    remember(this->copy_context().storage->metrics, source, out);
+    remember(this->copy_context().storage->maps, source, out);
     return out;
 }
 
 template<typename Derived>
 formalism::InitialFunctionValueView TopLevelTranslator<Derived>::copy(formalism::InitialFunctionValueView source)
 {
-    if (auto mapped = find_mapped(this->copy_context().storage->initial_function_values, source))
+    if (auto mapped = find_mapped(this->copy_context().storage->maps, source))
         return *mapped;
-    const auto function = as_index(this->self().copy(source.get_function()));
-    const auto value = as_index(this->self().copy(source.get_value()));
+    const auto function = urd::to_stored(this->self().copy(source.get_function()));
+    const auto value = urd::to_stored(this->self().copy(source.get_value()));
     auto data = formalism::checkout<formalism::InitialFunctionValue>(this->copy_context().builder);
     data->function = function;
     data->value = value;
     auto out = formalism::insert(this->copy_context().storage->repository, *data).first;
-    remember(this->copy_context().storage->initial_function_values, source, out);
+    remember(this->copy_context().storage->maps, source, out);
     return out;
 }
 

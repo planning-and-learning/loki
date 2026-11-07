@@ -16,7 +16,7 @@
  */
 
 #include "bindings.hpp"
-#include <yggdrasil/python/type_casters.hpp>
+#include "pypddl/formalism/module.hpp"
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 #include <urd/python/sequences/sequence.hpp>

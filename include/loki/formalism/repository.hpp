@@ -41,11 +41,6 @@ template<typename T>
 void prepare_for_insert(Repository& repository, urd::data<T>& data)
 { canonicalize(repository, data); }
 
-/// The stored form of a function expression, condition or effect read through the repository.
-inline FunctionExpressionVariant as_index(const FunctionExpressionView& view) { return urd::to_stored(view); }
-inline ConditionVariant as_index(const ConditionView& view) { return urd::to_stored(view); }
-inline EffectVariant as_index(const EffectView& view) { return urd::to_stored(view); }
-
 }
 
 extern template class ygg::formalism::BasicSymbolRepository<loki::formalism::Requirement>;

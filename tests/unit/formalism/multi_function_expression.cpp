@@ -8,7 +8,7 @@
 
 using Index = urd::index<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>;
 using Data = urd::data<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>;
-using View = urd::view<loki::formalism::FunctionExpression<loki::formalism::MultiTag>, loki::formalism::Repository>;
+using View = urd::index_view<loki::formalism::FunctionExpression<loki::formalism::MultiTag>, loki::formalism::Repository>;
 
 static_assert(std::constructible_from<Index, ygg::uint_t>);
 static_assert(std::totally_ordered<Index>);
@@ -62,16 +62,16 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
                                                                                                      {
                                                                                                          data.op =
                                                                                                              loki::formalism::BinaryArithmeticOperator::Add;
-                                                                                                         data.left = loki::formalism::as_index(one);
-                                                                                                         data.right = loki::formalism::as_index(two);
+                                                                                                         data.left = urd::to_stored(one);
+                                                                                                         data.right = urd::to_stored(two);
                                                                                                      }));
     const auto multi = wrap(intern<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>(repository,
                                                                                                    builder,
                                                                                                    [&](auto& data)
                                                                                                    {
                                                                                                        data.op = loki::formalism::MultiArithmeticOperator::Add;
-                                                                                                       data.args.push_back(loki::formalism::as_index(one));
-                                                                                                       data.args.push_back(loki::formalism::as_index(two));
+                                                                                                       data.args.push_back(urd::to_stored(one));
+                                                                                                       data.args.push_back(urd::to_stored(two));
                                                                                                    }));
     ASSERT_NE(binary, multi);
 
@@ -82,8 +82,8 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
                                                                                       [&](auto& data)
                                                                                       {
                                                                                           data.op = loki::formalism::MultiArithmeticOperator::Mul;
-                                                                                          data.args.push_back(loki::formalism::as_index(left));
-                                                                                          data.args.push_back(loki::formalism::as_index(right));
+                                                                                          data.args.push_back(urd::to_stored(left));
+                                                                                          data.args.push_back(urd::to_stored(right));
                                                                                       });
     };
     const auto first = make_product(binary, multi);

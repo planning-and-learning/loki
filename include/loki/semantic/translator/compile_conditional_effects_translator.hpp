@@ -79,7 +79,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 if (const auto effect_when = this->self().template as_effect<formalism::Effect<formalism::WhenTag>>(effect))
                     conditional.push_back({ *effect_when, effect_when->get_condition(), effect_when->get_effect() });
                 else
-                    unconditional.push_back(as_index(effect));
+                    unconditional.push_back(urd::to_stored(effect));
             }
         }
 
@@ -110,7 +110,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 if (selected)
                 {
                     this->self().append_conjunct(*condition_data, conditional[i].condition);
-                    effect_data->effects.push_back(as_index(conditional[i].effect));
+                    effect_data->effects.push_back(urd::to_stored(conditional[i].effect));
                 }
                 else
                 {
@@ -122,7 +122,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
             if (condition_data->conditions.size() == 1)
                 precondition = condition_data->conditions.front();
             else if (!condition_data->conditions.empty())
-                precondition = as_index(this->self().make_conjunction(*condition_data));
+                precondition = urd::to_stored(this->self().make_conjunction(*condition_data));
 
             auto effect = cista::optional<formalism::EffectVariant> {};
             if (effect_data->effects.size() == 1)

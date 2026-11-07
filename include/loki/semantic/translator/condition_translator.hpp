@@ -53,7 +53,7 @@ template<typename Derived>
 formalism::EntityView<formalism::Condition<formalism::LiteralTag>>
 ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source)
 {
-    const auto literal = as_index(this->self().copy(source.get_literal()));
+    const auto literal = urd::to_stored(this->self().copy(source.get_literal()));
     auto data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
     data->literal = literal;
     return formalism::insert(this->copy_context().storage->repository, *data).first;
@@ -65,7 +65,7 @@ ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<fo
 {
     auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
     for (auto condition : source.get_conditions())
-        data->conditions.push_back(as_index(this->self().copy(condition)));
+        data->conditions.push_back(urd::to_stored(this->self().copy(condition)));
     return formalism::insert(this->copy_context().storage->repository, *data).first;
 }
 
@@ -75,7 +75,7 @@ ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<fo
 {
     auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
     for (auto condition : source.get_conditions())
-        data->conditions.push_back(as_index(this->self().copy(condition)));
+        data->conditions.push_back(urd::to_stored(this->self().copy(condition)));
     return formalism::insert(this->copy_context().storage->repository, *data).first;
 }
 
@@ -83,7 +83,7 @@ template<typename Derived>
 formalism::EntityView<formalism::Condition<formalism::NotTag>>
 ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
 {
-    const auto condition = as_index(this->self().copy(source.get_condition()));
+    const auto condition = urd::to_stored(this->self().copy(source.get_condition()));
     auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(this->copy_context().builder);
     data->condition = condition;
     return formalism::insert(this->copy_context().storage->repository, *data).first;
@@ -93,8 +93,8 @@ template<typename Derived>
 formalism::EntityView<formalism::Condition<formalism::ImplyTag>>
 ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
 {
-    const auto left = as_index(this->self().copy(source.get_left()));
-    const auto right = as_index(this->self().copy(source.get_right()));
+    const auto left = urd::to_stored(this->self().copy(source.get_left()));
+    const auto right = urd::to_stored(this->self().copy(source.get_right()));
     auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(this->copy_context().builder);
     data->left = left;
     data->right = right;
@@ -119,7 +119,7 @@ ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<fo
     else
         for (auto parameter : parameter_views)
             data->parameters.push_back(parameter.index());
-    data->condition = as_index(typed_condition);
+    data->condition = urd::to_stored(typed_condition);
     return formalism::insert(this->copy_context().storage->repository, *data).first;
 }
 
@@ -141,7 +141,7 @@ ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<fo
     else
         for (auto parameter : parameter_views)
             data->parameters.push_back(parameter.index());
-    data->condition = as_index(typed_condition);
+    data->condition = urd::to_stored(typed_condition);
     return formalism::insert(this->copy_context().storage->repository, *data).first;
 }
 
@@ -150,8 +150,8 @@ formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>
 ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source)
 {
     const auto& data = source.data();
-    const auto left = as_index(this->self().copy(source.get_left()));
-    const auto right = as_index(this->self().copy(source.get_right()));
+    const auto left = urd::to_stored(this->self().copy(source.get_left()));
+    const auto right = urd::to_stored(this->self().copy(source.get_right()));
     auto result = formalism::checkout<formalism::Condition<formalism::NumericConstraintTag>>(this->copy_context().builder);
     result->comparator = data.comparator;
     result->left = left;

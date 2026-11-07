@@ -64,11 +64,11 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                             if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
                             {
                                 for (auto part : flat_node.get_conditions())
-                                    data->conditions.push_back(as_index(part));
+                                    data->conditions.push_back(urd::to_stored(part));
                             }
                             else
                             {
-                                data->conditions.push_back(as_index(flat));
+                                data->conditions.push_back(urd::to_stored(flat));
                             }
                         },
                         flat);
@@ -87,11 +87,11 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                             if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
                             {
                                 for (auto part : flat_node.get_conditions())
-                                    data->conditions.push_back(as_index(part));
+                                    data->conditions.push_back(urd::to_stored(part));
                             }
                             else
                             {
-                                data->conditions.push_back(as_index(flat));
+                                data->conditions.push_back(urd::to_stored(flat));
                             }
                         },
                         flat);
@@ -111,7 +111,7 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                                 data->parameters.push_back(parameter.index());
                             for (auto parameter : flat_node.get_parameters())
                                 data->parameters.push_back(parameter.index());
-                            data->condition = as_index(flat_node.get_condition());
+                            data->condition = urd::to_stored(flat_node.get_condition());
                             return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
                         }
                         else
@@ -119,7 +119,7 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                             auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
                             for (auto parameter : node.get_parameters())
                                 data->parameters.push_back(parameter.index());
-                            data->condition = as_index(flat);
+                            data->condition = urd::to_stored(flat);
                             return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
                         }
                     },
@@ -138,7 +138,7 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                                 data->parameters.push_back(parameter.index());
                             for (auto parameter : flat_node.get_parameters())
                                 data->parameters.push_back(parameter.index());
-                            data->condition = as_index(flat_node.get_condition());
+                            data->condition = urd::to_stored(flat_node.get_condition());
                             return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
                         }
                         else
@@ -146,7 +146,7 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                             auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
                             for (auto parameter : node.get_parameters())
                                 data->parameters.push_back(parameter.index());
-                            data->condition = as_index(flat);
+                            data->condition = urd::to_stored(flat);
                             return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first);
                         }
                     },
@@ -173,7 +173,7 @@ void ConditionBuilderTranslator<Derived>::append_conjunct(urd::data<formalism::C
             }
             else
             {
-                data.conditions.push_back(as_index(this->self().flatten_condition(condition)));
+                data.conditions.push_back(urd::to_stored(this->self().flatten_condition(condition)));
             }
         },
         condition);
@@ -192,7 +192,7 @@ void ConditionBuilderTranslator<Derived>::append_disjunct(urd::data<formalism::C
             }
             else
             {
-                data.conditions.push_back(as_index(this->self().flatten_condition(condition)));
+                data.conditions.push_back(urd::to_stored(this->self().flatten_condition(condition)));
             }
         },
         condition);

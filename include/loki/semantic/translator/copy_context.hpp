@@ -40,8 +40,8 @@ struct CopyContext
     formalism::Builder builder;
     std::shared_ptr<TranslationStorage> storage;
     urd::Store<urd::map<formalism::VariableView, size_t>> num_quantifications;
-    urd::Store<urd::sequence<urd::Store<urd::sequence<formalism::ParameterView>>>> active_parameters;
-    urd::Store<urd::sequence<urd::Store<urd::sequence<formalism::VariableView>>>> active_parameter_variables;
+    /// The parameters in scope with their variables, a sequence per scope, innermost last.
+    urd::Store<urd::sequence<urd::Store<urd::sequence<ScopedFreeParameter>>>> active_parameters;
     urd::Store<urd::sequence<urd::Store<urd::map<formalism::VariableView, formalism::VariableView>>>> variable_bindings;
     urd::Store<urd::set<std::string>> renamed_variable_names;
     urd::Store<urd::set<std::string>> used_predicate_names;

@@ -27,7 +27,7 @@
 #include <nanobind/stl/vector.h>
 #include <yggdrasil/python/bindings.hpp>
 #include <urd/python/owner.hpp>
-#include <yggdrasil/python/type_casters.hpp>
+#include "pypddl/formalism/module.hpp"
 
 namespace loki::formalism
 {

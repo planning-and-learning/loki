@@ -64,7 +64,7 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(fo
                     for (auto parameter : data.parameters)
                         action_data->parameters.push_back(parameter);
                     action_data->original_arity = data.original_arity;
-                    action_data->precondition = as_index(part);
+                    action_data->precondition = urd::to_stored(part);
                     action_data->effect = data.effect;
                     this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *action_data).first);
                 }
@@ -94,7 +94,7 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_axioms(for
                     axiom_data->parameters.push_back(parameter);
                 axiom_data->original_arity = data.original_arity;
                 axiom_data->head = data.head;
-                axiom_data->condition = as_index(part);
+                axiom_data->condition = urd::to_stored(part);
                 this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *axiom_data).first);
             }
         }
