@@ -522,10 +522,10 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     effect = make_effect(repository, literal)
 
     parameter_builder = pypddl.ParameterData(variable)
-    assert parameter_builder.variable == variable.get_index()
+    assert parameter_builder.variable == variable.index()
     assert parameter_builder.types == []
-    parameter_builder.types = [object_type.get_index()]
-    assert parameter_builder.types == [object_type.get_index()]
+    parameter_builder.types = [object_type.index()]
+    assert parameter_builder.types == [object_type.index()]
 
     action_builder = pypddl.ActionData("a")
     assert action_builder.name == "a"
@@ -538,16 +538,16 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     )
     assert explicit_action_builder.name == "generated-action"
     assert explicit_action_builder.original_name == "original-action"
-    assert explicit_action_builder.parameters == [parameter.get_index()]
+    assert explicit_action_builder.parameters == [parameter.index()]
     assert explicit_action_builder.original_arity == 3
-    assert explicit_action_builder.precondition == condition.get_index()
-    assert explicit_action_builder.effect == effect.get_index()
+    assert explicit_action_builder.precondition == condition.index()
+    assert explicit_action_builder.effect == effect.index()
 
     action_builder.name = "mutated-action"
-    action_builder.parameters = [parameter.get_index()]
+    action_builder.parameters = [parameter.index()]
     action_builder.original_arity = len(action_builder.parameters)
-    action_builder.precondition = condition.get_index()
-    action_builder.effect = effect.get_index()
+    action_builder.precondition = condition.index()
+    action_builder.effect = effect.index()
     action, _ = repository.insert(action_builder)
 
     domain_builder = pypddl.DomainData("d")
@@ -559,14 +559,14 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     assert domain_builder.actions == []
     assert domain_builder.axioms == []
     domain_builder.name = "mutated-domain"
-    domain_builder.types = [object_type.get_index()]
-    domain_builder.predicates = [predicate.get_index()]
-    domain_builder.actions = [action.get_index()]
+    domain_builder.types = [object_type.index()]
+    domain_builder.predicates = [predicate.index()]
+    domain_builder.actions = [action.index()]
     domain, _ = repository.insert(domain_builder)
 
     task_builder = pypddl.TaskData("t", domain)
     assert task_builder.name == "t"
-    assert task_builder.domain == domain.get_index()
+    assert task_builder.domain == domain.index()
     assert task_builder.requirements == []
     assert task_builder.objects == []
     assert task_builder.initial_literals == []
@@ -577,7 +577,7 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     assert task_builder.predicates == []
     assert task_builder.axioms == []
     task_builder.name = "mutated-task"
-    task_builder.goal = condition.get_index()
+    task_builder.goal = condition.index()
     task, _ = repository.insert(task_builder)
 
     assert action.get_name() == "mutated-action"
@@ -671,7 +671,7 @@ def test_views_expose_typed_indices() -> None:
     parser = pypddl.Parser(fixture_text("facade-format"), pypddl.ParserOptions())
     domain = parser.domain()
 
-    domain_index = domain.get_index()
+    domain_index = domain.index()
     next_domain_index = pypddl.DomainIndex(1)
 
     assert isinstance(domain_index, pypddl.DomainIndex)
@@ -679,14 +679,14 @@ def test_views_expose_typed_indices() -> None:
     assert operator.index(domain_index) == 0
     assert str(domain_index) == repr(domain_index) == "DomainIndex(0)"
     assert hash(domain_index) == 0
-    assert domain_index == domain.get_index()
+    assert domain_index == domain.index()
     assert domain_index != next_domain_index
     assert domain_index < next_domain_index
-    assert domain_index <= domain.get_index()
+    assert domain_index <= domain.index()
     assert next_domain_index > domain_index
     assert next_domain_index >= domain_index
 
-    predicate_index = domain.get_predicates()[0].get_index()
+    predicate_index = domain.get_predicates()[0].index()
     assert isinstance(predicate_index, pypddl.PredicateIndex)
     assert int(predicate_index) == 0
     assert str(predicate_index) == repr(predicate_index) == "PredicateIndex(0)"

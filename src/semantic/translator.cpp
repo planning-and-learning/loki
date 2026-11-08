@@ -16,13 +16,14 @@
  */
 
 #include "loki/semantic/translator.hpp"
+#include "loki/formalism/detail/repository_instantiations.hpp"
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 
 #include "loki/semantic/errors.hpp"
 #include "loki/semantic/options.hpp"
-#include "loki/semantic/translator/common.hpp"
-#include "loki/semantic/translator/copy_translator.hpp"
+#include "translator/common.hpp"
+#include "translator/copy_translator.hpp"
 
 #include <utility>
 

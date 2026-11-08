@@ -16,6 +16,7 @@
  */
 
 #include "loki/semantic/parser.hpp"
+#include "loki/formalism/detail/repository_instantiations.hpp"
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
@@ -27,8 +28,8 @@
 #include "loki/parser/parser.hpp"
 #include "loki/semantic/errors.hpp"
 #include "loki/semantic/options.hpp"
-#include "loki/semantic/translator/canonical_copy_translator.hpp"
-#include "loki/semantic/translator/common.hpp"
+#include "translator/canonical_copy_translator.hpp"
+#include "translator/common.hpp"
 #include "mappings.hpp"
 
 #include <cassert>

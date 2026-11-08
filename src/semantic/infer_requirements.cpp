@@ -15,7 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "loki/semantic/translator/infer_requirements.hpp"
+#include "translator/infer_requirements.hpp"
 
 #include "mappings.hpp"
 

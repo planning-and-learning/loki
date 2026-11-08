@@ -20,7 +20,7 @@
 #include <urd/store.hpp>
 
 #include "loki/formalism/repository.hpp"
-#include "loki/semantic/translator/common.hpp"
+#include "translator/common.hpp"
 #include "mappings.hpp"
 
 #include <string_view>

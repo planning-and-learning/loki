@@ -60,6 +60,9 @@ add_gtest(semantic_negative_suite "semantic/negative_suite.cpp")
 add_gtest(semantic_invariant_suite "semantic/invariant_suite.cpp")
 add_gtest(semantic_translation_counts_suite "semantic/translation_counts_suite.cpp")
 add_gtest(formalism_translator_tests "formalism/translator_tests.cpp")
+# The translator headers are the library's detail code (src/semantic/translator).
+target_include_directories(semantic_translator_tests PRIVATE "${CMAKE_SOURCE_DIR}/src")
+target_include_directories(formalism_translator_tests PRIVATE "${CMAKE_SOURCE_DIR}/src")
 add_gtest(
     formalism_repository_types
     "formalism/action.cpp"

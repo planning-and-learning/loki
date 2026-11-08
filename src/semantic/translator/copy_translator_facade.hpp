@@ -1,0 +1,235 @@
+/*
+ * Copyright (C) 2024-2026 Dominik Drexler
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef LOKI_SEMANTIC_TRANSLATOR_COPY_TRANSLATOR_FACADE_HPP_
+#define LOKI_SEMANTIC_TRANSLATOR_COPY_TRANSLATOR_FACADE_HPP_
+
+#include "loki/semantic/errors.hpp"
+#include "copy_translator_component.hpp"
+#include "infer_requirements.hpp"
+
+#include <algorithm>
+#include <limits>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/repr/values/unordered_flat_set.hpp>
+#include <urd/store.hpp>
+
+namespace loki::semantic::detail
+{
+
+template<typename Derived>
+class CopyTranslatorFacade : public CopyTranslatorComponent<Derived, CopyTranslatorFacade<Derived>>
+{
+public:
+    explicit CopyTranslatorFacade(CopyContext& context) : CopyTranslatorComponent<Derived, CopyTranslatorFacade<Derived>>(context) {}
+
+    template<typename T>
+    void push_unique(urd::flat_vector<urd::index<T>>& list, urd::Store<urd::set<formalism::EntityView<T>>>& seen, formalism::EntityView<T> value);
+
+    [[nodiscard]] urd::Store<urd::set<std::string>> used_predicate_names() const;
+
+    std::string next_generated_predicate_name(std::string_view prefix);
+
+    std::pair<formalism::DomainView, bool> copy(formalism::DomainView domain);
+
+    std::pair<formalism::TaskView, bool> copy(formalism::TaskView task);
+};
+
+template<typename Derived>
+template<typename T>
+void CopyTranslatorFacade<Derived>::push_unique(urd::flat_vector<urd::index<T>>& list, urd::Store<urd::set<formalism::EntityView<T>>>& seen, formalism::EntityView<T> value)
+{
+    if (seen.insert(value).second)
+        list.push_back(value.index());
+}
+
+template<typename Derived>
+urd::Store<urd::set<std::string>> CopyTranslatorFacade<Derived>::used_predicate_names() const
+{
+    auto names = this->copy_context().used_predicate_names;
+    if (this->copy_context().storage->translated_domain)
+    {
+        for (auto predicate : this->copy_context().storage->translated().get_predicates())
+            names.insert(std::string(predicate.get_name()));
+    }
+    return names;
+}
+
+template<typename Derived>
+std::string CopyTranslatorFacade<Derived>::next_generated_predicate_name(std::string_view prefix)
+{
+    auto used = this->self().used_predicate_names();
+    while (true)
+    {
+        auto name = std::string(prefix) + std::to_string(this->copy_context().num_generated_axioms++);
+        if (used.insert(name).second)
+        {
+            this->copy_context().used_predicate_names.insert(name);
+            return name;
+        }
+    }
+}
+
+template<typename Derived>
+std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(formalism::DomainView domain)
+{
+    if (auto mapped = find_mapped(this->copy_context().storage->maps, domain))
+        return { *mapped, false };
+    auto data = formalism::checkout<formalism::Domain>(this->copy_context().builder);
+    data->name = domain.data().name;
+    this->self().template copy_list<formalism::Requirement>(domain.get_requirements(), data->requirements);
+    this->self().template copy_list<formalism::Type>(domain.get_types(), data->types);
+    this->self().template copy_list<formalism::Object>(domain.get_constants(), data->constants);
+    this->self().template copy_list<formalism::Predicate>(domain.get_predicates(), data->predicates);
+    this->self().template copy_list<formalism::FunctionSkeleton>(domain.get_functions(), data->functions);
+    this->self().template copy_list<formalism::Action>(domain.get_actions(), data->actions);
+    this->self().template copy_list<formalism::Axiom>(domain.get_axioms(), data->axioms);
+
+    auto [copied_domain, copied_inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    this->copy_context().storage->translated_domain = copied_domain;
+    data->index = {};
+
+    switch (this->copy_context().phase)
+    {
+        case TranslationPhase::RemoveUniversalQuantifiers:
+            this->self().append_generated_domain_objects(*data);
+            break;
+        case TranslationPhase::SplitDisjunctiveConditions:
+            this->self().split_disjunctive_actions(copied_domain.get_actions(), data->actions);
+            this->self().split_disjunctive_axioms(copied_domain.get_axioms(), data->axioms);
+            break;
+        case TranslationPhase::CompileConditionalEffects:
+            this->self().compile_conditional_effect_actions(copied_domain.get_actions(), data->actions);
+            break;
+        case TranslationPhase::CompileTyping:
+            this->self().compile_typing_to_domain(*data, copied_domain);
+            break;
+        case TranslationPhase::MaterializeEquality:
+            this->self().add_equality_predicate_to_domain(*data, copied_domain);
+            break;
+        case TranslationPhase::InferRequirements:
+            this->self().set_requirements(infer_requirements(copied_domain), data->requirements);
+            break;
+        default:
+            // data is unchanged since the first insert, so a second insert would only re-canonicalize it.
+            remember(this->copy_context().storage->maps, domain, copied_domain);
+            return { copied_domain, copied_inserted };
+    }
+
+    auto [view, inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    this->copy_context().storage->translated_domain = view;
+    remember(this->copy_context().storage->maps, domain, view);
+    return { view, inserted || (copied_inserted && view == copied_domain) };
+}
+
+template<typename Derived>
+std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formalism::TaskView task)
+{
+    if (auto mapped = find_mapped(this->copy_context().storage->maps, task))
+        return { *mapped, false };
+    auto data = formalism::checkout<formalism::Task>(this->copy_context().builder);
+    data->name = task.data().name;
+    data->domain = this->copy_context().storage->translated().index();
+    this->self().template copy_list<formalism::Requirement>(task.get_requirements(), data->requirements);
+    this->self().template copy_list<formalism::Object>(task.get_objects(), data->objects);
+    this->self().template copy_list<formalism::Literal>(task.get_initial_literals(), data->initial_literals);
+    this->self().template copy_list<formalism::InitialFunctionValue>(task.get_initial_function_values(), data->initial_function_values);
+
+    if (const auto goal = task.get_goal())
+    {
+        if (this->copy_context().phase == TranslationPhase::RenameQuantifiedVariables)
+        {
+            this->copy_context().num_quantifications.clear();
+            this->self().enter_variable_scope();
+            const auto renamed_goal = this->self().rename_variables(goal.value());
+            this->self().leave_variable_scope();
+            const auto previous = this->copy_context().renaming_enabled;
+            this->copy_context().renaming_enabled = false;
+            data->goal = urd::to_stored(this->self().copy(renamed_goal));
+            this->copy_context().renaming_enabled = previous;
+        }
+        else
+        {
+            data->goal = urd::to_stored(this->self().copy(goal.value()));
+        }
+    }
+    else
+    {
+        data->goal = {};
+    }
+
+    if (const auto metric = task.get_metric())
+        data->metric = urd::to_stored(this->self().copy(metric.value()));
+    else
+        data->metric = {};
+    this->self().template copy_list<formalism::Predicate>(task.get_predicates(), data->predicates);
+    this->self().template copy_list<formalism::Axiom>(task.get_axioms(), data->axioms);
+    this->self().template copy_list<formalism::Type>(task.get_types(), data->types);
+
+    auto [copied_task, copied_inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    data->index = {};
+
+    switch (this->copy_context().phase)
+    {
+        case TranslationPhase::RemoveUniversalQuantifiers:
+        case TranslationPhase::SimplifyGoal:
+        {
+            if (this->copy_context().phase == TranslationPhase::SimplifyGoal && data->goal)
+                data->goal = urd::to_stored(this->self().simplify_goal_condition(copied_task.get_goal().value()));
+
+            auto existing_predicates = urd::Store<urd::set<formalism::PredicateView>> {};
+            for (auto predicate : copied_task.get_predicates())
+                existing_predicates.insert(predicate);
+            for (auto predicate : this->copy_context().generated_predicates)
+                if (existing_predicates.insert(predicate).second)
+                    data->predicates.push_back(predicate.index());
+
+            auto existing_axioms = urd::Store<urd::set<formalism::AxiomView>> {};
+            for (auto axiom : copied_task.get_axioms())
+                existing_axioms.insert(axiom);
+            for (auto axiom : this->copy_context().generated_axioms)
+                if (existing_axioms.insert(axiom).second)
+                    data->axioms.push_back(axiom.index());
+            break;
+        }
+        case TranslationPhase::SplitDisjunctiveConditions:
+            this->self().split_disjunctive_axioms(copied_task.get_axioms(), data->axioms);
+            break;
+        case TranslationPhase::MaterializeEquality:
+            this->self().materialize_equality(*data, task);
+            break;
+        case TranslationPhase::CompileTyping:
+            this->self().initialize_type_literals(*data, task);
+            break;
+        case TranslationPhase::InferRequirements:
+            this->self().set_requirements(infer_requirements(copied_task, this->copy_context().storage->translated()), data->requirements);
+            break;
+        default:
+            // data is unchanged since the first insert, so a second insert would only re-canonicalize it.
+            remember(this->copy_context().storage->maps, task, copied_task);
+            return { copied_task, copied_inserted };
+    }
+
+    auto [view, inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    remember(this->copy_context().storage->maps, task, view);
+    return { view, inserted || (copied_inserted && view == copied_task) };
+}
+
+}  // namespace loki::semantic::detail
+
+#endif

@@ -16,8 +16,9 @@
  */
 
 #include "loki/formalism/repository.hpp"
-#include "loki/semantic/translator/canonical_copy_translator.hpp"
-#include "loki/semantic/translator/common.hpp"
+#include "loki/formalism/detail/repository_instantiations.hpp"
+#include "translator/canonical_copy_translator.hpp"
+#include "translator/common.hpp"
 
 #include <utility>
 

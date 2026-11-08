@@ -34,52 +34,7 @@ namespace loki::formalism
 
 using RepositoryBinding = nanobind::class_<Repository>;
 
-
-template<typename T>
-void bind_insert(RepositoryBinding& repository)
-{
-    namespace nb = nanobind;
-    repository.def("insert", [](Repository& self, urd::data<T> data) { return formalism::insert(self, data); }, nb::arg("data"));
-}
-
 void bind_formalism(nanobind::module_& m);
-
-void bind_requirement(nanobind::module_& m, RepositoryBinding& repository);
-void bind_type(nanobind::module_& m, RepositoryBinding& repository);
-void bind_object(nanobind::module_& m, RepositoryBinding& repository);
-void bind_variable(nanobind::module_& m, RepositoryBinding& repository);
-void bind_parameter(nanobind::module_& m, RepositoryBinding& repository);
-void bind_predicate(nanobind::module_& m, RepositoryBinding& repository);
-void bind_function_skeleton(nanobind::module_& m, RepositoryBinding& repository);
-void bind_atom(nanobind::module_& m, RepositoryBinding& repository);
-void bind_literal(nanobind::module_& m, RepositoryBinding& repository);
-void bind_function_expression_number(nanobind::module_& m, RepositoryBinding& repository);
-void bind_function_term(nanobind::module_& m, RepositoryBinding& repository);
-void bind_unary_function_expression(nanobind::module_& m, RepositoryBinding& repository);
-void bind_binary_function_expression(nanobind::module_& m, RepositoryBinding& repository);
-void bind_multi_function_expression(nanobind::module_& m, RepositoryBinding& repository);
-void bind_condition_literal(nanobind::module_& m, RepositoryBinding& repository);
-void bind_condition_and(nanobind::module_& m, RepositoryBinding& repository);
-void bind_condition_or(nanobind::module_& m, RepositoryBinding& repository);
-void bind_condition_not(nanobind::module_& m, RepositoryBinding& repository);
-void bind_condition_imply(nanobind::module_& m, RepositoryBinding& repository);
-void bind_condition_exists(nanobind::module_& m, RepositoryBinding& repository);
-void bind_condition_forall(nanobind::module_& m, RepositoryBinding& repository);
-void bind_condition_numeric_constraint(nanobind::module_& m, RepositoryBinding& repository);
-void bind_effect_literal(nanobind::module_& m, RepositoryBinding& repository);
-void bind_effect_and(nanobind::module_& m, RepositoryBinding& repository);
-void bind_effect_numeric(nanobind::module_& m, RepositoryBinding& repository);
-void bind_effect_forall(nanobind::module_& m, RepositoryBinding& repository);
-void bind_effect_when(nanobind::module_& m, RepositoryBinding& repository);
-void bind_effect_one_of(nanobind::module_& m, RepositoryBinding& repository);
-void bind_effect_probabilistic_alternative(nanobind::module_& m, RepositoryBinding& repository);
-void bind_effect_probabilistic(nanobind::module_& m, RepositoryBinding& repository);
-void bind_action(nanobind::module_& m, RepositoryBinding& repository);
-void bind_axiom(nanobind::module_& m, RepositoryBinding& repository);
-void bind_metric(nanobind::module_& m, RepositoryBinding& repository);
-void bind_initial_function_value(nanobind::module_& m, RepositoryBinding& repository);
-void bind_domain(nanobind::module_& m, RepositoryBinding& repository);
-void bind_task(nanobind::module_& m, RepositoryBinding& repository);
 
 }  // namespace loki::formalism
 

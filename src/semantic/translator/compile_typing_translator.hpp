@@ -1,0 +1,254 @@
+/*
+ * Copyright (C) 2024-2026 Dominik Drexler
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef LOKI_SEMANTIC_TRANSLATOR_COMPILE_TYPING_TRANSLATOR_HPP_
+#define LOKI_SEMANTIC_TRANSLATOR_COMPILE_TYPING_TRANSLATOR_HPP_
+
+#include "copy_translator_component.hpp"
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+
+namespace loki::semantic::detail
+{
+
+template<typename Derived>
+class CompileTypingTranslator : public CopyTranslatorComponent<Derived, CompileTypingTranslator<Derived>>
+{
+public:
+    explicit CompileTypingTranslator(CopyContext& context) : CopyTranslatorComponent<Derived, CompileTypingTranslator<Derived>>(context) {}
+
+    [[nodiscard]] bool compiles_typing_now() const noexcept;
+    urd::Store<urd::sequence<formalism::TypeView>> collect_type_hierarchy(formalism::TypeView type);
+    void copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, urd::flat_vector<urd::index<formalism::Type>>& result);
+    void copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters, urd::flat_vector<urd::index<formalism::Parameter>>& result);
+    formalism::PredicateView type_predicate(formalism::TypeView type);
+    formalism::LiteralView type_literal(formalism::TypeView type, formalism::TermView term);
+    formalism::ConditionView type_condition(formalism::TypeView type, formalism::VariableView variable);
+    void type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters, urd::data<formalism::Condition<formalism::AndTag>>& data);
+    void prepend_type_conditions(std::optional<formalism::ConditionView>& condition, formalism::EntityListView<formalism::Parameter> parameters);
+    void prepend_type_conditions(formalism::ConditionView& condition, formalism::EntityListView<formalism::Parameter> parameters);
+    void compile_typing_to_domain(urd::data<formalism::Domain>& data, formalism::DomainView domain);
+    void add_type_literals_for_object(urd::flat_vector<urd::index<formalism::Literal>>& literals, formalism::ObjectView object);
+    void initialize_type_literals(urd::data<formalism::Task>& data, formalism::TaskView task);
+};
+
+template<typename Derived>
+bool CompileTypingTranslator<Derived>::compiles_typing_now() const noexcept
+{ return this->copy_context().compile_typing && this->copy_context().phase == TranslationPhase::CompileTyping; }
+
+template<typename Derived>
+urd::Store<urd::sequence<formalism::TypeView>> CompileTypingTranslator<Derived>::collect_type_hierarchy(formalism::TypeView type)
+{
+    auto result = urd::Store<urd::sequence<formalism::TypeView>> {};
+    auto seen = urd::Store<urd::set<formalism::TypeView>> {};
+    auto visit = [&](auto&& self, formalism::TypeView current) -> void
+    {
+        if (!seen.insert(current).second)
+            return;
+        result.push_back(current);
+        for (auto base : current.get_bases())
+            self(self, base);
+    };
+    visit(visit, type);
+    return result;
+}
+
+template<typename Derived>
+void CompileTypingTranslator<Derived>::copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, urd::flat_vector<urd::index<formalism::Type>>& result)
+{
+    auto seen = urd::Store<urd::set<formalism::TypeView>> {};
+    for (auto type : types)
+    {
+        for (auto collected : this->self().collect_type_hierarchy(type))
+        {
+            if (seen.insert(collected).second)
+                result.push_back(urd::to_stored(this->self().copy(collected)));
+        }
+    }
+}
+
+template<typename Derived>
+void CompileTypingTranslator<Derived>::copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters,
+                                                                     urd::flat_vector<urd::index<formalism::Parameter>>& result)
+{
+    for (auto parameter : parameters)
+    {
+        const auto variable = urd::to_stored(this->self().copy(parameter.get_variable()));
+        auto data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
+        data->variable = variable;
+        result.push_back(formalism::insert(this->copy_context().storage->repository, *data).first.index());
+    }
+}
+
+template<typename Derived>
+formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formalism::TypeView type)
+{
+    if (auto it = this->copy_context().type_predicates.find(type); it != this->copy_context().type_predicates.end())
+        return it->second;
+
+    auto parameter_data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
+    // A type predicate tests any object for membership, so its argument has the root of the type's hierarchy (object, or number).
+    if (!this->self().compiles_typing_now())
+        for (auto ancestor : this->self().collect_type_hierarchy(type))
+            if (ancestor.get_bases().empty())
+            {
+                parameter_data->types.push_back(urd::to_stored(this->self().copy(ancestor)));
+                break;
+            }
+    auto variable_data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
+    variable_data->name = urd::flat_string("?arg");
+    parameter_data->variable = formalism::insert(this->copy_context().storage->repository, *variable_data).first.index();
+    auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
+    predicate_data->name = type.get_name();
+    predicate_data->parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first.index());
+    auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first;
+    this->copy_context().type_predicates.emplace(type, predicate);
+    this->copy_context().used_predicate_names.insert(std::string(type.get_name()));
+    return predicate;
+}
+
+template<typename Derived>
+formalism::LiteralView CompileTypingTranslator<Derived>::type_literal(formalism::TypeView type, formalism::TermView term)
+{
+    const auto predicate = urd::to_stored(this->self().type_predicate(type));
+    auto atom_data = formalism::checkout<formalism::Atom>(this->copy_context().builder);
+    atom_data->predicate = predicate;
+    atom_data->terms.push_back(urd::to_stored(term));
+    const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
+    auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
+    literal_data->atom = atom;
+    literal_data->m_polarity = true;
+    return formalism::insert(this->copy_context().storage->repository, *literal_data).first;
+}
+
+template<typename Derived>
+formalism::ConditionView CompileTypingTranslator<Derived>::type_condition(formalism::TypeView type, formalism::VariableView variable)
+{
+    const auto literal = urd::to_stored(this->self().type_literal(type, this->self().copy(variable)));
+    auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
+    condition_data->literal = literal;
+    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
+}
+
+template<typename Derived>
+void CompileTypingTranslator<Derived>::type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters,
+                                                                      urd::data<formalism::Condition<formalism::AndTag>>& data)
+{
+    auto add_conditions = [&](auto&& self, formalism::TypeView type, formalism::VariableView variable) -> void
+    {
+        this->self().append_conjunct(data, this->self().type_condition(type, variable));
+        for (auto base : type.get_bases())
+            self(self, base, variable);
+    };
+    for (auto parameter : parameters)
+        for (auto type : parameter.get_types())
+            add_conditions(add_conditions, type, parameter.get_variable());
+}
+
+template<typename Derived>
+void CompileTypingTranslator<Derived>::prepend_type_conditions(std::optional<formalism::ConditionView>& condition,
+                                                               formalism::EntityListView<formalism::Parameter> parameters)
+{
+    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
+    this->self().type_conditions_for_parameters(parameters, *data);
+    if (data->conditions.empty())
+        return;
+    if (condition)
+        this->self().append_conjunct(*data, *condition);
+    condition = this->self().make_conjunction(*data);
+}
+
+template<typename Derived>
+void CompileTypingTranslator<Derived>::prepend_type_conditions(formalism::ConditionView& condition, formalism::EntityListView<formalism::Parameter> parameters)
+{
+    auto optional = std::optional { condition };
+    this->self().prepend_type_conditions(optional, parameters);
+    condition = *optional;
+}
+
+template<typename Derived>
+void CompileTypingTranslator<Derived>::compile_typing_to_domain(urd::data<formalism::Domain>& data, formalism::DomainView domain)
+{
+    auto existing = urd::Store<urd::set<formalism::PredicateView>> {};
+    for (auto predicate : domain.get_predicates())
+        existing.insert(predicate);
+
+    auto add_type = [&](auto&& self, formalism::TypeView type) -> void
+    {
+        const auto predicate = this->self().type_predicate(type);
+        if (existing.insert(predicate).second)
+            data.predicates.push_back(predicate.index());
+        for (auto base : type.get_bases())
+            self(self, base);
+    };
+
+    for (auto type : domain.get_types())
+        add_type(add_type, type);
+    for (auto object : domain.get_constants())
+        for (auto type : object.get_types())
+            add_type(add_type, type);
+
+    if (this->self().compiles_typing_now())
+        data.types.clear();
+}
+
+template<typename Derived>
+void CompileTypingTranslator<Derived>::add_type_literals_for_object(urd::flat_vector<urd::index<formalism::Literal>>& literals, formalism::ObjectView object)
+{
+    const auto copied_object = this->self().copy(object);
+    auto add_literal = [&](auto&& self, formalism::TypeView type) -> void
+    {
+        literals.push_back(urd::to_stored(this->self().type_literal(type, copied_object)));
+        for (auto base : type.get_bases())
+            self(self, base);
+    };
+    auto has_source_types = false;
+    for (auto type : object.get_types())
+    {
+        has_source_types = true;
+        add_literal(add_literal, type);
+    }
+    if (!has_source_types)
+    {
+        if (auto it = this->copy_context().storage->object_type_views.find(copied_object); it != this->copy_context().storage->object_type_views.end())
+        {
+            for (auto type : it->second)
+                add_literal(add_literal, type);
+        }
+    }
+}
+
+template<typename Derived>
+void CompileTypingTranslator<Derived>::initialize_type_literals(urd::data<formalism::Task>& data, formalism::TaskView task)
+{
+    for (auto object : this->copy_context().storage->translated().get_constants())
+        this->self().add_type_literals_for_object(data.initial_literals, object);
+    for (auto object : task.get_objects())
+        this->self().add_type_literals_for_object(data.initial_literals, object);
+
+    // The task's own types need type predicates; a reparsed translation may declare them already.
+    auto existing = urd::Store<urd::set<urd::index<formalism::Predicate>>>(data.predicates.begin(), data.predicates.end());
+    for (auto type : task.get_types())
+        if (const auto predicate = this->self().type_predicate(type).index(); existing.insert(predicate).second)
+            data.predicates.push_back(predicate);
+    if (this->self().compiles_typing_now())
+        data.types.clear();
+}
+
+}  // namespace loki::semantic::detail
+
+#endif
