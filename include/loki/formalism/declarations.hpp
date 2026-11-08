@@ -53,10 +53,6 @@ struct ObjectTag
 };
 
 using ObjectBinding = ::ygg::formalism::Object<ObjectTag>;
-using Row = ::ygg::formalism::Row;
-
-template<typename T>
-using RelationBinding = ::ygg::formalism::RelationBinding<T, ObjectTag>;
 
 struct Requirement
 {
@@ -81,6 +77,7 @@ struct FunctionSkeleton
 };
 struct Atom
 {
+    using object_tag = ObjectTag;  ///< its rows (ygg::Row<Atom>) are objects
 };
 struct Literal
 {
