@@ -32,8 +32,8 @@ private:
     [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
 public:
-    auto get_variable() const noexcept { return self().template get<&urd::record_of<V>::variable>(); }
-    auto get_types() const noexcept { return self().template get<&urd::record_of<V>::types>(); }
+    auto get_variable() const noexcept { return self().template member<&urd::record_of<V>::variable>(); }
+    auto get_types() const noexcept { return self().template member<&urd::record_of<V>::types>(); }
 };
 }  // namespace urd
 

@@ -33,7 +33,7 @@ private:
 
 public:
     [[nodiscard]] bool get_polarity() const noexcept { return self().data().m_polarity; }
-    auto get_atom() const noexcept { return self().template get<&urd::record_of<V>::atom>(); }
+    auto get_atom() const noexcept { return self().template member<&urd::record_of<V>::atom>(); }
 };
 }  // namespace urd
 

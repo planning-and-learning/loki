@@ -32,11 +32,11 @@ private:
     [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
 public:
-    auto get_parameters() const noexcept { return self().template get<&urd::record_of<V>::parameters>(); }
+    auto get_parameters() const noexcept { return self().template member<&urd::record_of<V>::parameters>(); }
     auto get_arity() const noexcept { return self().data().parameters.size(); }
     auto get_original_arity() const noexcept { return self().data().original_arity; }
-    auto get_head() const noexcept { return self().template get<&urd::record_of<V>::head>(); }
-    auto get_condition() const noexcept { return self().template get<&urd::record_of<V>::condition>(); }
+    auto get_head() const noexcept { return self().template member<&urd::record_of<V>::head>(); }
+    auto get_condition() const noexcept { return self().template member<&urd::record_of<V>::condition>(); }
 };
 }  // namespace urd
 

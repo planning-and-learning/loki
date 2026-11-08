@@ -33,7 +33,7 @@ private:
 
 public:
     auto get_probability() const noexcept { return self().data().probability; }
-    auto get_effect() const noexcept { return self().template get<&urd::record_of<V>::effect>(); }
+    auto get_effect() const noexcept { return self().template member<&urd::record_of<V>::effect>(); }
 };
 }  // namespace urd
 

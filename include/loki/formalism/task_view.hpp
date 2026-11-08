@@ -33,16 +33,16 @@ private:
 
 public:
     const auto& get_name() const noexcept { return self().data().name; }
-    auto get_domain() const noexcept { return self().template get<&urd::record_of<V>::domain>(); }
-    auto get_requirements() const noexcept { return self().template get<&urd::record_of<V>::requirements>(); }
-    auto get_types() const noexcept { return self().template get<&urd::record_of<V>::types>(); }
-    auto get_predicates() const noexcept { return self().template get<&urd::record_of<V>::predicates>(); }
-    auto get_objects() const noexcept { return self().template get<&urd::record_of<V>::objects>(); }
-    auto get_initial_literals() const noexcept { return self().template get<&urd::record_of<V>::initial_literals>(); }
-    auto get_initial_function_values() const noexcept { return self().template get<&urd::record_of<V>::initial_function_values>(); }
-    auto get_goal() const noexcept { return self().template get<&urd::record_of<V>::goal>(); }
-    auto get_metric() const noexcept { return self().template get<&urd::record_of<V>::metric>(); }
-    auto get_axioms() const noexcept { return self().template get<&urd::record_of<V>::axioms>(); }
+    auto get_domain() const noexcept { return self().template member<&urd::record_of<V>::domain>(); }
+    auto get_requirements() const noexcept { return self().template member<&urd::record_of<V>::requirements>(); }
+    auto get_types() const noexcept { return self().template member<&urd::record_of<V>::types>(); }
+    auto get_predicates() const noexcept { return self().template member<&urd::record_of<V>::predicates>(); }
+    auto get_objects() const noexcept { return self().template member<&urd::record_of<V>::objects>(); }
+    auto get_initial_literals() const noexcept { return self().template member<&urd::record_of<V>::initial_literals>(); }
+    auto get_initial_function_values() const noexcept { return self().template member<&urd::record_of<V>::initial_function_values>(); }
+    auto get_goal() const noexcept { return self().template member<&urd::record_of<V>::goal>(); }
+    auto get_metric() const noexcept { return self().template member<&urd::record_of<V>::metric>(); }
+    auto get_axioms() const noexcept { return self().template member<&urd::record_of<V>::axioms>(); }
 };
 }  // namespace urd
 

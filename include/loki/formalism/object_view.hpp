@@ -33,7 +33,7 @@ private:
 
 public:
     const auto& get_name() const noexcept { return self().data().name; }
-    auto get_types() const noexcept { return self().template get<&urd::record_of<V>::types>(); }
+    auto get_types() const noexcept { return self().template member<&urd::record_of<V>::types>(); }
 };
 }  // namespace urd
 

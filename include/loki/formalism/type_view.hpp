@@ -33,7 +33,7 @@ private:
 
 public:
     const auto& get_name() const noexcept { return self().data().name; }
-    auto get_bases() const noexcept { return self().template get<&urd::record_of<V>::bases>(); }
+    auto get_bases() const noexcept { return self().template member<&urd::record_of<V>::bases>(); }
 };
 }  // namespace urd
 
