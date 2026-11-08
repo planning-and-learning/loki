@@ -430,9 +430,9 @@ TEST(LokiSemanticTranslator, TaskCannotChangeDomainTypes)
 
 TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
 {
-    auto original = formalism::Repository(0);
-    auto previous = semantic::detail::TranslationStorage(1);
-    auto target = semantic::detail::TranslationStorage(2);
+    auto original = formalism::Repository();
+    auto previous = semantic::detail::TranslationStorage();
+    auto target = semantic::detail::TranslationStorage();
     auto builder = formalism::Builder {};
     const auto original_base = intern<formalism::Type>(original, builder, [](auto& data) { data.name = "parent"; });
     const auto original_type = intern<formalism::Type>(original,
@@ -490,11 +490,11 @@ TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
 
 TEST(LokiSemanticTranslator, TranslationStorageRetainsParent)
 {
-    auto parent = std::make_shared<semantic::detail::TranslationStorage>(1);
+    auto parent = std::make_shared<semantic::detail::TranslationStorage>();
     const auto lifetime = std::weak_ptr<const semantic::detail::TranslationStorage>(parent);
     auto builder = formalism::Builder {};
     const auto object = intern<formalism::Object>(parent->repository, builder, [](auto& data) { data.name = "inherited"; });
-    auto child = std::make_shared<semantic::detail::TranslationStorage>(2, parent);
+    auto child = std::make_shared<semantic::detail::TranslationStorage>(parent);
 
     parent.reset();
     ASSERT_FALSE(lifetime.expired());
@@ -563,7 +563,7 @@ TEST(LokiSemanticTranslator, InitializesEqualityForConstantsAndTaskObjects)
 
     EXPECT_TRUE(has_equality_predicate(translated.get_domain()));
     EXPECT_EQ(count_equality_literals(translated.get_initial_literals()), count_unique_object_names(translation.get_translated_domain(), translated));
-    EXPECT_EQ(&translated.get_domain().context().get_root(), &translation.get_translated_domain().context().get_root());
+    EXPECT_TRUE(ygg::formalism::contains(translated.get_domain().context(), translation.get_translated_domain()));
 }
 
 TEST(LokiSemanticTranslator, SkipsEqualityInitializationWhenDisabled)
@@ -627,7 +627,7 @@ TEST(LokiSemanticTranslator, RenamesTaskGoalVariablesBeforeGoalSimplificationOnl
 
 TEST(LokiSemanticTranslator, NormalizesArithmeticExpressionsModuloAcu)
 {
-    auto repository = formalism::Repository(0);
+    auto repository = formalism::Repository();
     auto builder = formalism::Builder {};
     const auto zero = number_expression(repository, builder, 0.0);
     const auto one = number_expression(repository, builder, 1.0);
@@ -644,7 +644,7 @@ TEST(LokiSemanticTranslator, NormalizesArithmeticExpressionsModuloAcu)
                                           two,
                                           multi_expression(repository, builder, formalism::MultiArithmeticOperator::Add, { two, three, zero }));
 
-    auto storage = std::make_shared<semantic::detail::TranslationStorage>(1);
+    auto storage = std::make_shared<semantic::detail::TranslationStorage>();
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::NormalizeArithmeticExpressions);
     const auto normalized_first = translator.copy(first);
     const auto normalized_second = translator.copy(second);
@@ -691,21 +691,21 @@ TEST(LokiSemanticTranslator, NormalizesArithmeticExpressionsModuloAcu)
 TEST(LokiSemanticTranslator, FlattensDeepArithmeticBeforeMaterializing)
 {
     constexpr auto operand_count = std::size_t { 256 };
-    auto repository = formalism::Repository(0);
+    auto repository = formalism::Repository();
     auto builder = formalism::Builder {};
     const auto two = number_expression(repository, builder, 2.0);
     auto source = two;
     for (auto i = std::size_t { 1 }; i < operand_count; ++i)
         source = binary_expression(repository, builder, formalism::BinaryArithmeticOperator::Add, source, two);
 
-    auto storage = std::make_shared<semantic::detail::TranslationStorage>(1);
+    auto storage = std::make_shared<semantic::detail::TranslationStorage>();
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::NormalizeArithmeticExpressions);
     const auto normalized = translator.copy(source);
 
     ASSERT_TRUE(std::holds_alternative<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized));
     const auto multi = std::get<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized);
     EXPECT_EQ(multi.get_args().size(), operand_count);
-    EXPECT_EQ(storage->repository.size<formalism::FunctionExpression<formalism::MultiTag>>(), 1);
+    EXPECT_EQ(storage->repository.symbols().size<formalism::FunctionExpression<formalism::MultiTag>>(), 1);
 }
 
 TEST(LokiSemanticTranslator, AppliesArithmeticNormalizationAfterEffectNormalFormWhenEnabled)
@@ -756,7 +756,7 @@ TEST(LokiSemanticTranslator, AppliesArithmeticNormalizationAfterEffectNormalForm
 
 TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInterning)
 {
-    auto repository = formalism::Repository(0);
+    auto repository = formalism::Repository();
     auto builder = formalism::Builder {};
     const auto make_predicate = [&](const char* name)
     { return intern<formalism::Predicate>(repository, builder, [&](auto& data) { data.name = urd::flat_string(name); }); };

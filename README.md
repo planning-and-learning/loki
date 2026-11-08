@@ -137,7 +137,7 @@ Programmatic construction inserts mutable data into a repository and returns
 The returned Python view keeps its repository alive after the tuple is unpacked.
 
 ```python
-repository = pddl.RepositoryFactory().create()
+repository = pddl.Repository()
 object_type, inserted = repository.insert(pddl.TypeData("object"))
 same_type, inserted_again = repository.insert(pddl.TypeData("object"))
 assert inserted and not inserted_again and object_type == same_type

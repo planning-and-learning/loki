@@ -273,7 +273,7 @@ void expect_contiguous_indices(Views views, const Context& context, const std::s
     auto local = urd::Store<urd::sequence<View>> {};
     local.reserve(views.size());
     for (auto view : views)
-        if (&context.get_canonical_context(view.index()) == &context)
+        if (context.owner(view.index()) == &context)
             local.push_back(view);
     if (local.empty())
         return;

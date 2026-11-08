@@ -127,7 +127,6 @@ DomainTranslationResult translate(formalism::DomainView domain, const Translator
 {
     auto current_domain = domain;
     auto current_storage = std::shared_ptr<detail::TranslationStorage> {};
-    auto phase_index = size_t { 1 };
 
     for (const auto& step : detail::domain_phase_steps())
     {
@@ -138,7 +137,7 @@ DomainTranslationResult translate(formalism::DomainView domain, const Translator
         if (step.phase == TranslationPhase::NormalizeArithmeticExpressions && !options.normalize_arithmetic_expressions)
             continue;
 
-        auto phase_storage = std::make_shared<detail::TranslationStorage>(phase_index++);
+        auto phase_storage = std::make_shared<detail::TranslationStorage>();
         auto semantic_copier = detail::CopyTranslator(phase_storage, options.compile_typing, step.phase);
         current_domain = detail::copy(current_domain, semantic_copier).first;
         if (current_storage)
@@ -153,12 +152,11 @@ ProblemTranslationResult translate(formalism::TaskView task, const DomainTransla
 {
     const auto expected_domain = result.get_original_domain();
     const auto task_domain = task.get_domain();
-    if (task_domain.index() != expected_domain.index() || &task_domain.context().get_root() != &expected_domain.context().get_root())
+    if (task_domain != expected_domain)
         throw MismatchedDomainError(std::string(expected_domain.get_name()), std::string(task_domain.get_name()));
 
     auto current_task = task;
     auto current_storage = std::shared_ptr<detail::TranslationStorage> {};
-    auto phase_index = size_t { 1 };
 
     for (const auto& step : detail::task_phase_steps())
     {
@@ -169,7 +167,7 @@ ProblemTranslationResult translate(formalism::TaskView task, const DomainTransla
 
         // Chain onto the previous phase so entities a phase leaves unchanged hit the parent layer instead of being re-interned.
         auto parent_storage = current_storage ? std::shared_ptr<const detail::TranslationStorage>(current_storage) : result.m_storage;
-        auto phase_storage = std::make_shared<detail::TranslationStorage>(phase_index++, std::move(parent_storage));
+        auto phase_storage = std::make_shared<detail::TranslationStorage>(std::move(parent_storage));
         if (current_storage)
             detail::inherit_domain_identity_mappings(*phase_storage, *result.m_storage);
         else

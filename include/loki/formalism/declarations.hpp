@@ -43,9 +43,6 @@ class RelationRepository;
 template<typename SymbolRepo, typename RelationRepo>
 class Repository;
 
-template<typename SymbolRepo, typename RelationRepo>
-class RepositoryFactory;
-
 }
 
 namespace loki::formalism
@@ -231,8 +228,6 @@ using RelationRepository = ::ygg::formalism::RelationRepository<ObjectTag, Atom>
 
 using Repository = ::ygg::formalism::Repository<SymbolRepository, RelationRepository>;
 using RepositoryPtr = std::shared_ptr<Repository>;
-using RepositoryFactory = ::ygg::formalism::RepositoryFactory<SymbolRepository, RelationRepository>;
-using RepositoryFactoryPtr = std::shared_ptr<RepositoryFactory>;
 
 template<typename T>
 using EntityView = urd::index_view<T, Repository>;

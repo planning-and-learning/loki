@@ -26,7 +26,6 @@
 #include <yggdrasil/formalism/interning.hpp>
 #include <yggdrasil/formalism/relation_repository.hpp>
 #include <yggdrasil/formalism/repository.hpp>
-#include <yggdrasil/formalism/repository_factory.hpp>
 #include <yggdrasil/formalism/symbol_repository.hpp>
 
 namespace loki::formalism

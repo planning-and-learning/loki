@@ -58,7 +58,7 @@ def make_effect_and(
 
 def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypddl.Task]:
     """Build the gripper domain and two of its tasks."""
-    repository = pypddl.RepositoryFactory().create()
+    repository = pypddl.Repository()
     strips, _ = repository.insert(pypddl.RequirementData(pypddl.RequirementKind.Strips))
     typing, _ = repository.insert(pypddl.RequirementData(pypddl.RequirementKind.Typing))
 

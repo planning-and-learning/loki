@@ -183,8 +183,8 @@ TEST(LokiSemanticParser, ParsesAndTranslatesDistinctTasksAfterOneDomain)
 
     EXPECT_NE(first_translated.context().layer(), translation.get_translated_domain().context().layer());
     EXPECT_NE(second_translated.context().layer(), translation.get_translated_domain().context().layer());
-    EXPECT_EQ(&first_translated.get_domain().context().get_root(), &translation.get_translated_domain().context().get_root());
-    EXPECT_EQ(&second_translated.get_domain().context().get_root(), &translation.get_translated_domain().context().get_root());
+    EXPECT_TRUE(ygg::formalism::contains(first_translated.get_domain().context(), translation.get_translated_domain()));
+    EXPECT_TRUE(ygg::formalism::contains(second_translated.get_domain().context(), translation.get_translated_domain()));
     EXPECT_TRUE(has_object(first_translated, "a"));
     EXPECT_TRUE(has_object(second_translated, "b"));
     EXPECT_NE(&first_translated.context(), &second_translated.context());

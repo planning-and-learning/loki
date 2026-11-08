@@ -16,7 +16,7 @@ def test_top_level_package_exports_public_helpers_and_formalism_module() -> None
     assert callable(pypddl.native_include_dir)
     assert callable(pypddl.native_lib_dir)
     assert pypddl.formalism.Parser is not None
-    assert pypddl.formalism.RepositoryFactory is not None
+    assert pypddl.formalism.Repository is not None
 
 
 def test_source_version_reads_the_project_table(tmp_path: Path) -> None:

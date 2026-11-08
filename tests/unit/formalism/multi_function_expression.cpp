@@ -40,7 +40,7 @@ static loki::formalism::EntityView<T> intern(loki::formalism::Repository& reposi
 
 TEST(LokiTests, FunctionExpressionMultiAllowsAnyArity)
 {
-    auto repository = loki::formalism::Repository(0);
+    auto repository = loki::formalism::Repository();
     auto data = Data {};
     const auto [expression, created] = loki::formalism::insert(repository, data);
     EXPECT_TRUE(created);
@@ -49,7 +49,7 @@ TEST(LokiTests, FunctionExpressionMultiAllowsAnyArity)
 
 TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
 {
-    auto repository = loki::formalism::Repository(0);
+    auto repository = loki::formalism::Repository();
     auto builder = loki::formalism::Builder {};
     const auto wrap = [](auto node) { return loki::formalism::FunctionExpressionView(node); };
     const auto make_number = [&](double value)

@@ -297,7 +297,7 @@ TEST(LokiSemanticInvariantSuite, TranslatorOptionCombinationsKeepInvariants)
                     const auto task_translation = semantic::translate(*task, domain_translation, options);
                     const auto translated_task = task_translation.get_translated_task();
 
-                    EXPECT_EQ(&translated_task.get_domain().context().get_root(), &translated_domain.context().get_root());
+                    EXPECT_TRUE(ygg::formalism::contains(translated_task.get_domain().context(), translated_domain));
                     expect_task_invariants(translated_domain, translated_task);
 
                     if (materialize_equality)

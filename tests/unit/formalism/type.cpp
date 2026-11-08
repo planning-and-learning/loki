@@ -58,7 +58,7 @@ static_assert(requires(const View& view) {
 
 TEST(LokiTests, SharedInterningCanonicalizesTypeBasesUsingTheRepository)
 {
-    auto repository = loki::formalism::Repository(0);
+    auto repository = loki::formalism::Repository();
     auto builder = loki::formalism::Builder {};
     auto zebra_data = Data(urd::flat_string("zebra"));
     auto alpha_data = Data(urd::flat_string("alpha"));
@@ -90,7 +90,7 @@ TEST(LokiTests, SharedInterningCanonicalizesTypeBasesUsingTheRepository)
 
 TEST(LokiTests, SymbolViewsUseTheRepositoryOfTheirContext)
 {
-    auto repository = loki::formalism::Repository(13);
+    auto repository = loki::formalism::Repository();
     auto data = Data(urd::flat_string("type"));
     const auto original = loki::formalism::insert(repository, data).first;
     const auto again = repository.view(original.index());
@@ -98,7 +98,7 @@ TEST(LokiTests, SymbolViewsUseTheRepositoryOfTheirContext)
     EXPECT_EQ(again.get_name(), original.get_name());
     EXPECT_EQ(urd::detail::identity(again), urd::detail::identity(original));
 
-    auto child = loki::formalism::Repository(14, &repository);
+    auto child = loki::formalism::Repository(&repository);
     const auto [inherited, inserted] = loki::formalism::insert(child, data);
     EXPECT_FALSE(inserted);
     EXPECT_EQ(&inherited.context(), &repository);

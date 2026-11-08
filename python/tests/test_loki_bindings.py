@@ -300,8 +300,8 @@ def test_high_level_bindings_expose_useful_docstrings() -> None:
     assert "Translate and normalize" in (pypddl.translate_domain.__doc__ or "")
     assert "matching domain translation" in (pypddl.translate_task.__doc__ or "")
     assert "reparseable PDDL" in (pypddl.format_domain.__doc__ or "")
-    assert "Factory for creating" in (pypddl.RepositoryFactory.__doc__ or "")
-    assert "Create a repository" in (pypddl.RepositoryFactory.create.__doc__ or "")
+    assert "Owns interned formalism objects" in (pypddl.Repository.__doc__ or "")
+    assert "Create a repository" in (pypddl.Repository.__init__.__doc__ or "")
 
 
 def test_parser_views_keep_temporary_parser_alive() -> None:
@@ -421,7 +421,7 @@ def test_arithmetic_normalization_binding_flattens_sorts_and_removes_units() -> 
 
 
 def test_repository_view_keeps_temporary_repository_alive() -> None:
-    view, inserted = pypddl.RepositoryFactory().create().insert(pypddl.TypeData("temporary-type"))
+    view, inserted = pypddl.Repository().insert(pypddl.TypeData("temporary-type"))
     gc.collect()
 
     assert inserted is True
@@ -429,7 +429,7 @@ def test_repository_view_keeps_temporary_repository_alive() -> None:
 
 
 def test_insert_returns_flag_and_retains_repository_on_extracted_view() -> None:
-    repository = pypddl.RepositoryFactory().create()
+    repository = pypddl.Repository()
     assert not hasattr(repository, "get_or_create")
     before = sys.getrefcount(repository)
     result = repository.insert(pypddl.TypeData("retained-type"))
@@ -510,7 +510,7 @@ def make_number_expression(repository: pypddl.Repository, value: float) -> pypdd
 
 
 def test_builders_expose_defaulted_mutable_fields() -> None:
-    repository = pypddl.RepositoryFactory().create()
+    repository = pypddl.Repository()
 
     object_type, _ = repository.insert(pypddl.TypeData("object"))
     variable, _ = repository.insert(pypddl.VariableData("?x"))
@@ -596,7 +596,7 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
 
 
 def test_repository_constructs_numeric_function_task_bits() -> None:
-    repository = pypddl.RepositoryFactory().create()
+    repository = pypddl.Repository()
     numeric, _ = repository.insert(pypddl.RequirementData(pypddl.RequirementKind.NumericFluents))
     object_type, _ = repository.insert(pypddl.TypeData("object"))
     number_type, _ = repository.insert(pypddl.TypeData("number"))
@@ -782,7 +782,7 @@ def test_recursive_variant_views_are_inspectable() -> None:
 
 
 def test_numeric_expression_variant_views_are_inspectable() -> None:
-    repository = pypddl.RepositoryFactory().create()
+    repository = pypddl.Repository()
     number = make_number_expression(repository, 2.0)
 
     variant = number
@@ -792,7 +792,7 @@ def test_numeric_expression_variant_views_are_inspectable() -> None:
 
 def test_multi_args_keep_repository_alive() -> None:
     def make_args() -> list[pypddl.FunctionExpressionNumber]:
-        repository = pypddl.RepositoryFactory().create()
+        repository = pypddl.Repository()
         operands = [make_number_expression(repository, value) for value in (1.0, 2.0, 3.0)]
         multi, _ = repository.insert(
             pypddl.MultiFunctionExpressionData(
@@ -811,7 +811,7 @@ def test_multi_args_keep_repository_alive() -> None:
 
 
 def test_repository_exposes_recursive_constructors_and_accessors() -> None:
-    repository = pypddl.RepositoryFactory().create()
+    repository = pypddl.Repository()
     object_type, _ = repository.insert(pypddl.TypeData("object"))
     number_type, _ = repository.insert(pypddl.TypeData("number"))
     variable, _ = repository.insert(pypddl.VariableData("?x"))

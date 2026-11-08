@@ -81,7 +81,7 @@ static void remap_object_type_metadata(TranslationStorage& target,
 
 std::shared_ptr<TranslationStorage> canonicalize_domain_storage(formalism::DomainView original_domain, const std::shared_ptr<TranslationStorage>& middle)
 {
-    auto canonical = std::make_shared<TranslationStorage>(middle->repository.layer());
+    auto canonical = std::make_shared<TranslationStorage>();
     const auto middle_domain = middle->maps.get<formalism::Domain>().at(original_domain);
     auto context = CanonicalCopyTranslator(canonical);
     const auto canonical_domain = copy(middle_domain, context).first;
@@ -149,7 +149,7 @@ std::shared_ptr<TranslationStorage> canonicalize_problem_storage(formalism::Task
                                                                  const std::shared_ptr<TranslationStorage>& middle,
                                                                  const std::shared_ptr<const TranslationStorage>& domain)
 {
-    auto canonical = std::make_shared<TranslationStorage>(middle->repository.layer(), domain);
+    auto canonical = std::make_shared<TranslationStorage>(domain);
     inherit_domain_identity_mappings(*canonical, *domain);
     if (middle->translated().index() == domain->translated().index())
         remember(canonical->maps, middle->translated(), domain->translated());

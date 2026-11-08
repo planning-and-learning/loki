@@ -1096,12 +1096,9 @@ void bind_formalism(nb::module_& m)
     bind_formalism_enums(m);
 
     auto repository = RepositoryBinding(m, "Repository", "Owns interned formalism objects created from builder data.");
+    repository.def(nb::init<>(), "Create a repository that owns interned formalism objects.");
     boost::mp11::mp_for_each<boost::mp11::mp_transform<boost::mp11::mp_identity, SymbolRepositoryTypes>>(
         [&](auto type) { bind_symbol<typename decltype(type)::type>(m, repository); });
-
-    nb::class_<RepositoryFactory>(m, "RepositoryFactory", "Factory for creating shared formalism repositories.")
-        .def(nb::init<>())
-        .def("create", [](RepositoryFactory& self) { return self.create_shared(); }, "Create a repository that owns interned formalism objects.");
 }
 
 }  // namespace loki::formalism

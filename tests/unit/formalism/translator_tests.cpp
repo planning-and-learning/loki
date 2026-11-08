@@ -42,7 +42,7 @@ static_assert(!CanonicalCopyRoot<formalism::TypeView>);
 
 TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
 {
-    auto source = formalism::Repository(101);
+    auto source = formalism::Repository();
     auto type_data = urd::data<formalism::Type>(urd::flat_string("type"));
     const auto type = formalism::insert(source, type_data).first;
     auto domain_data = urd::data<formalism::Domain>();
@@ -54,7 +54,7 @@ TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
     task_data.domain = domain.index();
     const auto task = formalism::insert(source, task_data).first;
 
-    auto destination = std::make_shared<semantic::detail::TranslationStorage>(102);
+    auto destination = std::make_shared<semantic::detail::TranslationStorage>();
     auto occupied_data = urd::data<formalism::Type>(urd::flat_string("occupied"));
     static_cast<void>(formalism::insert(destination->repository, occupied_data));
     auto context = semantic::detail::CanonicalCopyTranslator(destination);
@@ -72,13 +72,14 @@ TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
     EXPECT_EQ(semantic::detail::copy(copied_domain, context), std::make_pair(copied_domain, false));
     EXPECT_EQ(semantic::detail::copy(copied_task, context), std::make_pair(copied_task, false));
 
-    auto phase_storage = std::make_shared<semantic::detail::TranslationStorage>(103);
+    auto phase_storage = std::make_shared<semantic::detail::TranslationStorage>();
     auto phase = semantic::detail::CopyTranslator(phase_storage, false);
     const auto [phase_domain, phase_inserted] = semantic::detail::copy(domain, phase);
     EXPECT_TRUE(phase_inserted);
     EXPECT_EQ(semantic::detail::copy(domain, phase), std::make_pair(phase_domain, false));
 
-    source.clear();
+    source.symbols().clear();
+    source.relations().clear();
     EXPECT_EQ(std::string_view(copied_task.get_name()), "task");
     EXPECT_EQ(std::string_view(copied_task.get_domain().get_types()[0].get_name()), "type");
 }
@@ -159,7 +160,7 @@ TEST(LokiTests, ExistentialConditionalEffectBecomesUniversalEffect)
 TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
 {
     auto parser = semantic::Parser(fixture_path("dnf-forall"));
-    auto storage = std::make_shared<semantic::detail::TranslationStorage>(1);
+    auto storage = std::make_shared<semantic::detail::TranslationStorage>();
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::ToDisjunctiveNormalForm);
     const auto domain = semantic::detail::copy(parser.get_domain(), translator).first;
 
@@ -256,7 +257,7 @@ TEST(LokiTests, RemoveTypingStripsPersistentParameters)
 TEST(LokiTests, RenameQuantifiedVariablesSeparatesNestedBinders)
 {
     auto parser = semantic::Parser(fixture_path("variable-renaming"));
-    auto storage = std::make_shared<semantic::detail::TranslationStorage>(1);
+    auto storage = std::make_shared<semantic::detail::TranslationStorage>();
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::RenameQuantifiedVariables);
     const auto domain = semantic::detail::copy(parser.get_domain(), translator).first;
     const auto variable_name = [](formalism::ParameterView parameter) { return std::string(parameter.get_variable().get_name()); };

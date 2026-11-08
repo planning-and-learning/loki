@@ -93,9 +93,9 @@ struct TranslationStorage
     ViewMaps maps;
     urd::Store<urd::map<formalism::ObjectView, urd::Store<urd::sequence<formalism::TypeView>>>> object_type_views;
 
-    explicit TranslationStorage(size_t index = 1, std::shared_ptr<const TranslationStorage> parent_ = {}) :
+    explicit TranslationStorage(std::shared_ptr<const TranslationStorage> parent_ = {}) :
         parent(std::move(parent_)),
-        repository(index, parent ? &parent->repository : nullptr)
+        repository(parent ? &parent->repository : nullptr)
     {
     }
 };

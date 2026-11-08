@@ -125,7 +125,6 @@ from pypddl._pypddl.formalism import (
     ProblemTranslationResult as ProblemTranslationResult,
     RedundantRequirementError as RedundantRequirementError,
     Repository as Repository,
-    RepositoryFactory as RepositoryFactory,
     Requirement as Requirement,
     RequirementData as RequirementData,
     RequirementIndex as RequirementIndex,

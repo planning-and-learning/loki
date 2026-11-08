@@ -26,24 +26,22 @@ static_assert(requires(const View& view) {
     { view < view } -> std::same_as<bool>;
 });
 
-TEST(LokiTests, VariableViewIdentityUsesRepositoryIndex)
+TEST(LokiTests, VariableViewIdentityUsesTheOwningLayer)
 {
-    auto first_repository = loki::formalism::Repository(0);
-    auto second_repository = loki::formalism::Repository(1);
-    auto equivalent_repository = loki::formalism::Repository(0);
+    auto first_repository = loki::formalism::Repository();
+    auto second_repository = loki::formalism::Repository();
     auto first_data = Data(urd::flat_string("?x"));
     auto second_data = Data(urd::flat_string("?x"));
-    auto equivalent_data = Data(urd::flat_string("?x"));
 
     const auto [first, first_created] = first_repository.insert(first_data);
     const auto [second, second_created] = second_repository.insert(second_data);
-    const auto [equivalent, equivalent_created] = equivalent_repository.insert(equivalent_data);
 
     ASSERT_TRUE(first_created);
     ASSERT_TRUE(second_created);
-    ASSERT_TRUE(equivalent_created);
+    ASSERT_EQ(first.index(), second.index());
     EXPECT_NE(first, second);
     EXPECT_NE(urd::Hash<View> {}(first), urd::Hash<View> {}(second));
-    EXPECT_EQ(first, equivalent);
-    EXPECT_EQ(urd::Hash<View> {}(first), urd::Hash<View> {}(equivalent));
+    const auto again = first_repository.view(first.index());
+    EXPECT_EQ(first, again);
+    EXPECT_EQ(urd::Hash<View> {}(first), urd::Hash<View> {}(again));
 }
