@@ -38,7 +38,7 @@
 #include <urd/repr/values/unordered_flat_set.hpp>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
-#include <urd/utils/family.hpp>
+#include <yggdrasil/core/family.hpp>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -71,7 +71,7 @@ template<typename T>
 using ViewMap = urd::Store<urd::map<formalism::EntityView<T>, formalism::EntityView<T>>>;
 
 template<typename... Ts>
-using ViewMapFamily = urd::utils::Family<ViewMap, Ts...>;
+using ViewMapFamily = ygg::Family<ViewMap, Ts...>;
 
 /// One source-to-target map per kind of entity in the repository.
 using ViewMaps = boost::mp11::mp_apply<ViewMapFamily, formalism::SymbolRepositoryTypes>;
