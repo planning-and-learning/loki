@@ -77,7 +77,6 @@ struct FunctionSkeleton
 };
 struct Atom
 {
-    using object_tag = ObjectTag;  ///< its rows (ygg::Row<Atom>) are objects
 };
 struct Literal
 {
@@ -217,11 +216,11 @@ using SymbolRepositoryTypes =
                                         InitialFunctionValue,
                                         Domain,
                                         Task>>;
-using RelationRepositoryTypes = boost::mp11::mp_list<Atom>;
 
 using SymbolRepository = boost::mp11::mp_apply<::ygg::formalism::SymbolRepository, SymbolRepositoryTypes>;
 
-using RelationRepository = ::ygg::formalism::RelationRepository<ObjectTag, Atom>;
+/// No family has rows in loki.
+using RelationRepository = ::ygg::formalism::RelationRepository<ObjectTag>;
 
 using Repository = ::ygg::formalism::Repository<SymbolRepository, RelationRepository>;
 using RepositoryPtr = std::shared_ptr<Repository>;
