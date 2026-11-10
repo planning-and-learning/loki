@@ -117,7 +117,7 @@ endif()
 
 # Dependencies
 
-set(LOKI_YGGDRASIL_REQUIRED_VERSION 0.6.0)
+set(LOKI_YGGDRASIL_REQUIRED_VERSION 0.6.1)
 
 brokkr_find_python_native_prefix(pyurd URD_NATIVE_PREFIX)
 brokkr_find_python_native_prefix(pyyggdrasil YGGDRASIL_NATIVE_PREFIX)
