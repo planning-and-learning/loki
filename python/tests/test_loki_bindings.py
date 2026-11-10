@@ -717,9 +717,10 @@ def test_views_are_hashable_and_compare_by_identity() -> None:
 
     assert domain == same_domain
     assert hash(domain) == hash(same_domain)
-    assert domain == equivalent_domain
-    assert hash(domain) == hash(equivalent_domain)
-    assert len({domain, same_domain, equivalent_domain}) == 1
+    # A view is what it refers to in its repository: the same text parsed again is another domain.
+    assert domain != equivalent_domain
+    assert len({domain, same_domain, equivalent_domain}) == 2
+    assert str(domain) == str(equivalent_domain)
     assert str(domain) == repr(domain)
     assert "facade-format" in str(domain)
 
