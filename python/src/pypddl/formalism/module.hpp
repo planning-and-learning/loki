@@ -27,6 +27,7 @@
 #include <urd/python/maps/ordered_map.hpp>
 #include <urd/python/maps/parallel_hash_map.hpp>
 #include <urd/python/maps/unordered_flat_map.hpp>
+#include <urd/python/owner.hpp>
 #include <urd/python/ranges.hpp>
 #include <urd/python/sequences/segmented.hpp>
 #include <urd/python/sequences/sequence.hpp>

@@ -158,10 +158,8 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             this->self().enter_variable_scope();
             const auto renamed_goal = this->self().rename_variables(goal.value());
             this->self().leave_variable_scope();
-            const auto previous = this->copy_context().renaming_enabled;
-            this->copy_context().renaming_enabled = false;
+            const auto renaming_disabled = RenamingDisabled(this->copy_context());
             data->goal = urd::to_stored(this->self().copy(renamed_goal));
-            this->copy_context().renaming_enabled = previous;
         }
         else
         {

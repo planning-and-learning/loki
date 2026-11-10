@@ -44,6 +44,9 @@ private:
     formalism::EntityView<T> copy_child(formalism::EntityView<T> source);
     /// A task's domain: the translated domain once there is one.
     formalism::DomainView copy_child(formalism::DomainView source);
+    /// The copy of a domain or a task and whether it is new: itself where the storage's repository already holds it.
+    template<typename T>
+    std::pair<formalism::EntityView<T>, bool> copy_root(formalism::EntityView<T> source);
 };
 
 inline auto copy(formalism::DomainView source, CanonicalCopyTranslator& context) { return context.copy(source); }

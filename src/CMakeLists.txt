@@ -40,7 +40,6 @@ target_link_libraries(
     parsers
     PUBLIC
         yggdrasil::yggdrasil
-        gtl::gtl
         fmt::fmt
 )
 

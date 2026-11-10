@@ -44,13 +44,13 @@ void bind_semantic_translator(nb::module_& m)
                 "Normalize addition and multiplication modulo associativity, commutativity, and identity elements.");
 
     nb::class_<semantic::DomainTranslationResult>(m, "DomainTranslationResult", "Owns the original and translated domain views produced by translate_domain.")
-        .def_prop_ro("original_domain", &semantic::DomainTranslationResult::get_original_domain, nb::keep_alive<0, 1>())
-        .def_prop_ro("translated_domain", &semantic::DomainTranslationResult::get_translated_domain, nb::keep_alive<0, 1>())
+        .def_prop_ro("original_domain", &semantic::DomainTranslationResult::get_original_domain)
+        .def_prop_ro("translated_domain", &semantic::DomainTranslationResult::get_translated_domain)
         .def("repository", nb::overload_cast<>(&semantic::DomainTranslationResult::get_repository), nb::rv_policy::reference_internal);
 
     nb::class_<semantic::ProblemTranslationResult>(m, "ProblemTranslationResult", "Owns the original and translated task views produced by translate_task.")
-        .def_prop_ro("original_task", &semantic::ProblemTranslationResult::get_original_task, nb::keep_alive<0, 1>())
-        .def_prop_ro("translated_task", &semantic::ProblemTranslationResult::get_translated_task, nb::keep_alive<0, 1>())
+        .def_prop_ro("original_task", &semantic::ProblemTranslationResult::get_original_task)
+        .def_prop_ro("translated_task", &semantic::ProblemTranslationResult::get_translated_task)
         .def("repository", nb::overload_cast<>(&semantic::ProblemTranslationResult::get_repository), nb::rv_policy::reference_internal);
 
     m.def(

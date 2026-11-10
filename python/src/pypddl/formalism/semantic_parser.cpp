@@ -42,7 +42,7 @@ void bind_semantic_parser(nb::module_& m)
     nb::class_<semantic::Parser>(m, "Parser", "Parse a PDDL domain once and parse matching tasks against it.")
         .def(nb::init<const std::string&, semantic::ParserOptions>(), "domain_source"_a, "options"_a, "Parse a PDDL domain from a source string.")
         .def(nb::init<const std::filesystem::path&, semantic::ParserOptions>(), "domain_path"_a, "options"_a, "Parse a PDDL domain from a filesystem path.")
-        .def("domain", &semantic::Parser::get_domain, nb::keep_alive<0, 1>(), "Return the parsed domain view.")
+        .def("domain", &semantic::Parser::get_domain, "Return the parsed domain view.")
         .def("repository",
              nb::overload_cast<>(&semantic::Parser::repository),
              nb::rv_policy::reference_internal,
@@ -50,12 +50,10 @@ void bind_semantic_parser(nb::module_& m)
         .def("parse_task",
              nb::overload_cast<const std::string&>(&semantic::Parser::parse_task),
              "source"_a,
-             nb::keep_alive<0, 1>(),
              "Parse a PDDL problem from a source string using this parser domain.")
         .def("parse_task",
              nb::overload_cast<const std::filesystem::path&>(&semantic::Parser::parse_task),
              "path"_a,
-             nb::keep_alive<0, 1>(),
              "Parse a PDDL problem from a filesystem path using this parser domain.");
 }
 

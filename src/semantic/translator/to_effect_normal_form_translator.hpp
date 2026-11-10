@@ -19,11 +19,12 @@
 #define LOKI_SEMANTIC_TRANSLATOR_TO_EFFECT_NORMAL_FORM_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
-#include <urd/repr/sequences/sequence.hpp>
+#include <urd/repr/maps/ordered_map.hpp>
+#include <urd/repr/values/indexed.hpp>
 #include <urd/store.hpp>
 
-#include <algorithm>
 #include <optional>
+#include <utility>
 
 namespace loki::semantic::detail
 {
@@ -68,36 +69,18 @@ template<typename Derived>
 formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView,
                                                                                    formalism::EntityView<formalism::Effect<formalism::AndTag>> node)
 {
-    struct NumericGroup
-    {
-        formalism::NumericEffectOperator op {};
-        urd::index<formalism::FunctionTerm> function;
-        formalism::FunctionExpressionList expressions;
-    };
+    /// The expressions of the numeric effects with one operator on one function term, in the order of their first effect.
+    using NumericGroupKey = std::pair<formalism::NumericEffectOperator, urd::index<formalism::FunctionTerm>>;
 
     auto result = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
-    auto numeric_groups = urd::Store<urd::sequence<NumericGroup>> {};
+    auto numeric_groups = urd::Store<urd::map<NumericGroupKey, formalism::FunctionExpressionList>, urd::insertion_ordered> {};
 
     auto push_effect = [&](formalism::EffectView effect)
     {
         if (const auto numeric = this->self().template as_effect<formalism::Effect<formalism::NumericTag>>(effect))
         {
             const auto& data = numeric->data();
-            auto it = std::find_if(numeric_groups.begin(),
-                                   numeric_groups.end(),
-                                   [&](const NumericGroup& group) { return group.op == data.op && group.function == data.function; });
-            if (it == numeric_groups.end())
-            {
-                auto group = NumericGroup {};
-                group.op = data.op;
-                group.function = data.function;
-                group.expressions.push_back(data.expression);
-                numeric_groups.push_back(std::move(group));
-            }
-            else
-            {
-                it->expressions.push_back(data.expression);
-            }
+            numeric_groups[NumericGroupKey(data.op, data.function)].push_back(data.expression);
             return;
         }
         result->effects.push_back(urd::to_stored(effect));
@@ -117,22 +100,22 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
         }
     }
 
-    for (const auto& group : numeric_groups)
+    for (const auto& [key, expressions] : numeric_groups)
     {
         // A single expression stays as-is; only genuine aggregations get a sum, keeping
         // normalization idempotent across repeated translations.
-        auto sum = group.expressions.front();
-        if (group.expressions.size() > 1)
+        auto sum = expressions.front();
+        if (expressions.size() > 1)
         {
             auto multi_data = formalism::checkout<formalism::FunctionExpression<formalism::MultiTag>>(this->copy_context().builder);
             multi_data->op = formalism::MultiArithmeticOperator::Add;
-            for (const auto expression : group.expressions)
+            for (const auto expression : expressions)
                 multi_data->args.push_back(expression);
             sum = formalism::insert(this->copy_context().storage->repository, *multi_data).first.index();
         }
         auto numeric_data = formalism::checkout<formalism::Effect<formalism::NumericTag>>(this->copy_context().builder);
-        numeric_data->op = group.op;
-        numeric_data->function = group.function;
+        numeric_data->op = key.first;
+        numeric_data->function = key.second;
         numeric_data->expression = sum;
         result->effects.push_back(formalism::insert(this->copy_context().storage->repository, *numeric_data).first.index());
     }

@@ -36,42 +36,30 @@ formalism::EntityView<T> CanonicalCopyTranslator::copy_child(formalism::EntityVi
 formalism::DomainView CanonicalCopyTranslator::copy_child(formalism::DomainView source)
 { return m_storage->translated_domain ? m_storage->translated() : copy(source).first; }
 
-std::pair<formalism::DomainView, bool> CanonicalCopyTranslator::copy(formalism::DomainView domain)
+template<typename T>
+std::pair<formalism::EntityView<T>, bool> CanonicalCopyTranslator::copy_root(formalism::EntityView<T> source)
 {
-    if (auto mapped = find_mapped(m_storage->maps, domain))
-    {
-        m_storage->translated_domain = *mapped;
+    if (auto mapped = find_mapped(m_storage->maps, source))
         return { *mapped, false };
-    }
-    if (&domain.context() == &m_storage->repository)
+    if (&source.context() == &m_storage->repository)
     {
-        m_storage->translated_domain = domain;
-        remember(m_storage->maps, domain, domain);
-        return { domain, false };
+        remember(m_storage->maps, source, source);
+        return { source, false };
     }
-    auto data = urd::map_children<formalism::SymbolRepositoryTypes, formalism::Domain>(domain.data(),
-                                                                                        domain.context(),
-                                                                                        [&](auto child) { return urd::to_stored(copy_child(child)); });
+    auto data =
+        urd::map_children<formalism::SymbolRepositoryTypes, T>(source.data(), source.context(), [&](auto child) { return urd::to_stored(copy_child(child)); });
     auto [view, inserted] = formalism::insert(m_storage->repository, data);
-    m_storage->translated_domain = view;
-    remember(m_storage->maps, domain, view);
+    remember(m_storage->maps, source, view);
     return { view, inserted };
 }
 
-std::pair<formalism::TaskView, bool> CanonicalCopyTranslator::copy(formalism::TaskView task)
+std::pair<formalism::DomainView, bool> CanonicalCopyTranslator::copy(formalism::DomainView domain)
 {
-    if (auto mapped = find_mapped(m_storage->maps, task))
-        return { *mapped, false };
-    if (&task.context() == &m_storage->repository)
-    {
-        remember(m_storage->maps, task, task);
-        return { task, false };
-    }
-    auto data =
-        urd::map_children<formalism::SymbolRepositoryTypes, formalism::Task>(task.data(), task.context(), [&](auto child) { return urd::to_stored(copy_child(child)); });
-    auto [view, inserted] = formalism::insert(m_storage->repository, data);
-    remember(m_storage->maps, task, view);
-    return { view, inserted };
+    const auto result = copy_root(domain);
+    m_storage->translated_domain = result.first;
+    return result;
 }
+
+std::pair<formalism::TaskView, bool> CanonicalCopyTranslator::copy(formalism::TaskView task) { return copy_root(task); }
 
 }  // namespace loki::semantic::detail

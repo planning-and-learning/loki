@@ -34,8 +34,6 @@ namespace loki::formalism
 
 using RepositoryBinding = nanobind::class_<Repository>;
 
-void bind_formalism(nanobind::module_& m);
-
 }  // namespace loki::formalism
 
 #endif

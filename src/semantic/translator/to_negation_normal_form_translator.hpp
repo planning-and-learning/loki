@@ -20,6 +20,9 @@
 
 #include "copy_translator_component.hpp"
 
+#include <concepts>
+#include <type_traits>
+
 namespace loki::semantic::detail
 {
 
@@ -36,8 +39,10 @@ public:
     formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<formalism::OrTag>> source);
     formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source);
     formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source);
-    formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source);
-    formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source);
+    /// The negation of a quantifier: the dual quantifier over the negated condition.
+    template<typename Tag>
+        requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
+    formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<Tag>> source);
     formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source);
     formalism::ConditionView copy_condition_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source);
     formalism::ConditionView copy_condition_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source);
@@ -119,31 +124,18 @@ formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_conditi
 }
 
 template<typename Derived>
-formalism::ConditionView
-ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
+template<typename Tag>
+    requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
+formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<Tag>> source)
 {
-    this->self().increment_quantifications(source.get_parameters());
-    auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
-    this->self().enter_scope(parameter_views);
-    auto condition = urd::to_stored(this->self().negate_condition(source.get_condition()));
-    this->self().leave_scope();
-    auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
-    for (auto parameter : parameter_views)
-        data->parameters.push_back(parameter.index());
-    data->condition = condition;
-    return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
-}
+    using Dual = std::conditional_t<std::same_as<Tag, formalism::ExistsTag>, formalism::ForallTag, formalism::ExistsTag>;
 
-template<typename Derived>
-formalism::ConditionView
-ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
-{
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
     auto condition = urd::to_stored(this->self().negate_condition(source.get_condition()));
     this->self().leave_scope();
-    auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
+    auto data = formalism::checkout<formalism::Condition<Dual>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.index());
     data->condition = condition;

@@ -196,7 +196,7 @@ struct Symbol<Parameter>
     static void view(auto& cls)
     {
         using V = ParameterView;
-        cls.def("get_variable", &V::get_variable, nb::keep_alive<0, 1>()).def("get_types", &V::get_types);
+        cls.def("get_variable", &V::get_variable).def("get_types", &V::get_types);
     }
 };
 
@@ -241,10 +241,7 @@ struct Symbol<FunctionSkeleton>
     static void view(auto& cls)
     {
         using V = FunctionSkeletonView;
-        cls.def("get_name", &V::get_name)
-            .def("get_parameters", &V::get_parameters)
-            .def("get_arity", &V::get_arity)
-            .def("get_type", &V::get_type, nb::keep_alive<0, 1>());
+        cls.def("get_name", &V::get_name).def("get_parameters", &V::get_parameters).def("get_arity", &V::get_arity).def("get_type", &V::get_type);
     }
 };
 
@@ -265,7 +262,7 @@ struct Symbol<Atom>
     static void view(auto& cls)
     {
         using V = AtomView;
-        cls.def("get_predicate", &V::get_predicate, nb::keep_alive<0, 1>()).def("get_terms", &V::get_terms);
+        cls.def("get_predicate", &V::get_predicate).def("get_terms", &V::get_terms);
     }
 };
 
@@ -286,7 +283,7 @@ struct Symbol<Literal>
     static void view(auto& cls)
     {
         using V = LiteralView;
-        cls.def("get_atom", &V::get_atom, nb::keep_alive<0, 1>()).def("get_polarity", &V::get_polarity);
+        cls.def("get_atom", &V::get_atom).def("get_polarity", &V::get_polarity);
     }
 };
 
@@ -329,7 +326,7 @@ struct Symbol<FunctionTerm>
     static void view(auto& cls)
     {
         using V = FunctionTermView;
-        cls.def("get_function", &V::get_function, nb::keep_alive<0, 1>()).def("get_terms", &V::get_terms);
+        cls.def("get_function", &V::get_function).def("get_terms", &V::get_terms);
     }
 };
 
@@ -350,7 +347,7 @@ struct Symbol<FunctionExpression<UnaryTag>>
     static void view(auto& cls)
     {
         using V = EntityView<FunctionExpression<UnaryTag>>;
-        cls.def("get_operator", &V::get_operator).def("get_expression", &V::get_expression, nb::keep_alive<0, 1>());
+        cls.def("get_operator", &V::get_operator).def("get_expression", &V::get_expression);
     }
 };
 
@@ -378,9 +375,7 @@ struct Symbol<FunctionExpression<BinaryTag>>
     static void view(auto& cls)
     {
         using V = EntityView<FunctionExpression<BinaryTag>>;
-        cls.def("get_operator", &V::get_operator)
-            .def("get_left", &V::get_left, nb::keep_alive<0, 1>())
-            .def("get_right", &V::get_right, nb::keep_alive<0, 1>());
+        cls.def("get_operator", &V::get_operator).def("get_left", &V::get_left).def("get_right", &V::get_right);
     }
 };
 
@@ -436,7 +431,7 @@ struct Symbol<Condition<LiteralTag>>
     static void view(auto& cls)
     {
         using V = EntityView<Condition<LiteralTag>>;
-        cls.def("get_literal", &V::get_literal, nb::keep_alive<0, 1>());
+        cls.def("get_literal", &V::get_literal);
     }
 };
 
@@ -496,7 +491,7 @@ struct Symbol<Condition<NotTag>>
     static void view(auto& cls)
     {
         using V = EntityView<Condition<NotTag>>;
-        cls.def("get_condition", &V::get_condition, nb::keep_alive<0, 1>());
+        cls.def("get_condition", &V::get_condition);
     }
 };
 
@@ -517,7 +512,7 @@ struct Symbol<Condition<ImplyTag>>
     static void view(auto& cls)
     {
         using V = EntityView<Condition<ImplyTag>>;
-        cls.def("get_left", &V::get_left, nb::keep_alive<0, 1>()).def("get_right", &V::get_right, nb::keep_alive<0, 1>());
+        cls.def("get_left", &V::get_left).def("get_right", &V::get_right);
     }
 };
 
@@ -538,7 +533,7 @@ struct Symbol<Condition<ExistsTag>>
     static void view(auto& cls)
     {
         using V = EntityView<Condition<ExistsTag>>;
-        cls.def("get_parameters", &V::get_parameters).def("get_condition", &V::get_condition, nb::keep_alive<0, 1>());
+        cls.def("get_parameters", &V::get_parameters).def("get_condition", &V::get_condition);
     }
 };
 
@@ -559,7 +554,7 @@ struct Symbol<Condition<ForallTag>>
     static void view(auto& cls)
     {
         using V = EntityView<Condition<ForallTag>>;
-        cls.def("get_parameters", &V::get_parameters).def("get_condition", &V::get_condition, nb::keep_alive<0, 1>());
+        cls.def("get_parameters", &V::get_parameters).def("get_condition", &V::get_condition);
     }
 };
 
@@ -587,9 +582,7 @@ struct Symbol<Condition<NumericConstraintTag>>
     static void view(auto& cls)
     {
         using V = EntityView<Condition<NumericConstraintTag>>;
-        cls.def("get_comparator", &V::get_comparator)
-            .def("get_left", &V::get_left, nb::keep_alive<0, 1>())
-            .def("get_right", &V::get_right, nb::keep_alive<0, 1>());
+        cls.def("get_comparator", &V::get_comparator).def("get_left", &V::get_left).def("get_right", &V::get_right);
     }
 };
 
@@ -609,7 +602,7 @@ struct Symbol<Effect<LiteralTag>>
     static void view(auto& cls)
     {
         using V = EntityView<Effect<LiteralTag>>;
-        cls.def("get_literal", &V::get_literal, nb::keep_alive<0, 1>());
+        cls.def("get_literal", &V::get_literal);
     }
 };
 
@@ -657,9 +650,7 @@ struct Symbol<Effect<NumericTag>>
     static void view(auto& cls)
     {
         using V = EntityView<Effect<NumericTag>>;
-        cls.def("get_operator", &V::get_operator)
-            .def("get_function", &V::get_function, nb::keep_alive<0, 1>())
-            .def("get_expression", &V::get_expression, nb::keep_alive<0, 1>());
+        cls.def("get_operator", &V::get_operator).def("get_function", &V::get_function).def("get_expression", &V::get_expression);
     }
 };
 
@@ -680,7 +671,7 @@ struct Symbol<Effect<ForallTag>>
     static void view(auto& cls)
     {
         using V = EntityView<Effect<ForallTag>>;
-        cls.def("get_parameters", &V::get_parameters).def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
+        cls.def("get_parameters", &V::get_parameters).def("get_effect", &V::get_effect);
     }
 };
 
@@ -701,8 +692,7 @@ struct Symbol<Effect<WhenTag>>
     static void view(auto& cls)
     {
         using V = EntityView<Effect<WhenTag>>;
-        cls.def("get_condition", &V::get_condition, nb::keep_alive<0, 1>())
-            .def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
+        cls.def("get_condition", &V::get_condition).def("get_effect", &V::get_effect);
     }
 };
 
@@ -743,7 +733,7 @@ struct Symbol<EffectProbabilisticAlternative>
     static void view(auto& cls)
     {
         using V = EffectProbabilisticAlternativeView;
-        cls.def("get_probability", &V::get_probability).def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
+        cls.def("get_probability", &V::get_probability).def("get_effect", &V::get_effect);
     }
 };
 
@@ -831,8 +821,8 @@ struct Symbol<Action>
             .def("get_parameters", &V::get_parameters)
             .def("get_arity", &V::get_arity)
             .def("get_original_arity", &V::get_original_arity)
-            .def("get_precondition", &V::get_precondition, nb::keep_alive<0, 1>())
-            .def("get_effect", &V::get_effect, nb::keep_alive<0, 1>());
+            .def("get_precondition", &V::get_precondition)
+            .def("get_effect", &V::get_effect);
     }
 };
 
@@ -874,8 +864,8 @@ struct Symbol<Axiom>
         cls.def("get_parameters", &V::get_parameters)
             .def("get_arity", &V::get_arity)
             .def("get_original_arity", &V::get_original_arity)
-            .def("get_head", &V::get_head, nb::keep_alive<0, 1>())
-            .def("get_condition", &V::get_condition, nb::keep_alive<0, 1>());
+            .def("get_head", &V::get_head)
+            .def("get_condition", &V::get_condition);
     }
 };
 
@@ -896,8 +886,7 @@ struct Symbol<Metric>
     static void view(auto& cls)
     {
         using V = MetricView;
-        cls.def("get_optimization_direction", &V::get_optimization_direction)
-            .def("get_expression", &V::get_expression, nb::keep_alive<0, 1>());
+        cls.def("get_optimization_direction", &V::get_optimization_direction).def("get_expression", &V::get_expression);
     }
 };
 
@@ -918,8 +907,7 @@ struct Symbol<InitialFunctionValue>
     static void view(auto& cls)
     {
         using V = InitialFunctionValueView;
-        cls.def("get_function", &V::get_function, nb::keep_alive<0, 1>())
-            .def("get_value", &V::get_value, nb::keep_alive<0, 1>());
+        cls.def("get_function", &V::get_function).def("get_value", &V::get_value);
     }
 };
 
@@ -1056,15 +1044,15 @@ struct Symbol<Task>
     {
         using V = TaskView;
         cls.def("get_name", &V::get_name)
-            .def("get_domain", &V::get_domain, nb::keep_alive<0, 1>())
+            .def("get_domain", &V::get_domain)
             .def("get_requirements", &V::get_requirements)
             .def("get_types", &V::get_types)
             .def("get_predicates", &V::get_predicates)
             .def("get_objects", &V::get_objects)
             .def("get_initial_literals", &V::get_initial_literals)
             .def("get_initial_function_values", &V::get_initial_function_values)
-            .def("get_goal", &V::get_goal, nb::keep_alive<0, 1>())
-            .def("get_metric", &V::get_metric, nb::keep_alive<0, 1>())
+            .def("get_goal", &V::get_goal)
+            .def("get_metric", &V::get_metric)
             .def("get_axioms", &V::get_axioms);
     }
 };

@@ -99,13 +99,10 @@ ConditionAnalysisTranslator<Derived>::free_parameters_in_scope(formalism::Condit
     this->self().collect_free_variables(condition, bound, free);
 
     auto result = urd::Store<urd::sequence<std::pair<formalism::ParameterView, formalism::VariableView>>> {};
-    for (const auto& scope : this->copy_context().active_parameters)
+    for (const auto& parameter : this->copy_context().active_parameters)
     {
-        for (const auto& parameter : scope)
-        {
-            if (free.contains(parameter.second))
-                result.push_back(parameter);
-        }
+        if (free.contains(parameter.second))
+            result.push_back(parameter);
     }
     std::sort(result.begin(), result.end());
     return result;

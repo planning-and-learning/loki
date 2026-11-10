@@ -16,6 +16,7 @@
  */
 
 #include "../benchmark_utils.hpp"
+#include <urd/repr/maps/unordered_flat_map.hpp>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 
@@ -232,7 +233,7 @@ TEST(LokiSemanticParser, FlattensTypedGroupsAndInterleavedDeclarations)
     };
     const auto expected_constants = std::map<std::string, std::set<std::string>> { { "one", { "child" } }, { "two", { "child" } }, { "loose", { "object" } } };
     EXPECT_EQ(object_types(domain.get_constants()), expected_constants);
-    auto type_bases = std::map<std::string, std::string> {};
+    auto type_bases = urd::Store<urd::map<std::string, std::string>> {};
     for (const auto type : domain.get_types())
         if (type.get_bases().size() == 1)
             type_bases.emplace(std::string(type.get_name()), std::string(type.get_bases()[0].get_name()));

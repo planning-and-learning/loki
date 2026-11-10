@@ -144,11 +144,6 @@ if(Boost_FOUND)
     message(STATUS "Found Boost: ${Boost_DIR} (found version ${Boost_VERSION})")
 endif()
 
-find_package(gtl CONFIG REQUIRED PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
-if(gtl_FOUND)
-    message(STATUS "Found gtl: ${gtl_DIR}")
-endif()
-
 find_package(fmt CONFIG REQUIRED PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
 if(fmt_FOUND)
     message(STATUS "Found fmt: ${fmt_DIR} (found version ${fmt_VERSION})")

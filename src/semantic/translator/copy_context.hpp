@@ -28,6 +28,7 @@
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/repr/wrappers/scoped.hpp>
 #include <urd/store.hpp>
+#include <utility>
 
 
 namespace loki::semantic::detail
@@ -41,8 +42,10 @@ struct CopyContext
     formalism::Builder builder;
     std::shared_ptr<TranslationStorage> storage;
     urd::Store<urd::map<formalism::VariableView, size_t>> num_quantifications;
-    /// The parameters in scope with their variables, a sequence per scope, innermost last.
-    urd::Store<urd::sequence<urd::Store<urd::sequence<ScopedFreeParameter>>>> active_parameters;
+    /// The parameters in scope with their variables, innermost scope last.
+    urd::Store<urd::sequence<ScopedFreeParameter>> active_parameters;
+    /// The size of active_parameters at the start of each open scope, innermost last.
+    urd::Store<urd::sequence<size_t>> active_parameter_scopes;
     /// The renamed variables in force: an inner quantifier's binding shadows an outer one until its scope ends.
     urd::Store<urd::map<formalism::VariableView, formalism::VariableView>, urd::scoped> variable_bindings;
     /// The targets of the bindings shadowed in the open scopes, by name: still taken while their scope is open.
@@ -57,6 +60,20 @@ struct CopyContext
     bool compile_typing = true;
     bool renaming_enabled = true;
     TranslationPhase phase = TranslationPhase::ToNegationNormalForm;
+};
+
+/// Turns renaming_enabled off until the end of its scope, then restores what it was.
+class RenamingDisabled
+{
+public:
+    explicit RenamingDisabled(CopyContext& context) : m_context(context), m_previous(std::exchange(context.renaming_enabled, false)) {}
+    RenamingDisabled(const RenamingDisabled&) = delete;
+    RenamingDisabled& operator=(const RenamingDisabled&) = delete;
+    ~RenamingDisabled() { m_context.renaming_enabled = m_previous; }
+
+private:
+    CopyContext& m_context;
+    bool m_previous;
 };
 
 class CopyContextOwner

@@ -22,6 +22,8 @@
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 
+#include <concepts>
+
 namespace loki::semantic::detail
 {
 
@@ -34,8 +36,10 @@ public:
     formalism::ConditionView to_dnf(formalism::ConditionView condition);
     formalism::ConditionView to_dnf_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::OrTag>> node);
     formalism::ConditionView to_dnf_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::AndTag>> node);
-    formalism::ConditionView to_dnf_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node);
-    formalism::ConditionView to_dnf_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::ForallTag>> node);
+    /// A quantifier over a disjunction: the disjunction of the quantifier over each disjunct.
+    template<typename Tag>
+        requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
+    formalism::ConditionView to_dnf_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<Tag>> node);
     template<typename T>
     formalism::ConditionView to_dnf_node(formalism::ConditionView condition, T);
 };
@@ -105,8 +109,10 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
 }
 
 template<typename Derived>
+template<typename Tag>
+    requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
 formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView,
-                                                                                 formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node)
+                                                                                 formalism::EntityView<formalism::Condition<Tag>> node)
 {
     const auto& data = node.data();
     const auto child = this->self().to_dnf(node.get_condition());
@@ -115,49 +121,21 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
         auto condition_data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
         for (auto nested : child_or->get_conditions())
         {
-            auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
+            auto result = formalism::checkout<formalism::Condition<Tag>>(this->copy_context().builder);
             for (auto parameter : data.parameters)
                 result->parameters.push_back(parameter);
             result->condition = urd::to_stored(nested);
-            const auto exists = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
-            this->self().append_disjunct(*condition_data, exists);
+            const auto quantified = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
+            this->self().append_disjunct(*condition_data, quantified);
         }
         return this->self().to_dnf(this->self().make_disjunction(*condition_data));
     }
-    auto result = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
+    auto result = formalism::checkout<formalism::Condition<Tag>>(this->copy_context().builder);
     for (auto parameter : data.parameters)
         result->parameters.push_back(parameter);
     result->condition = urd::to_stored(child);
-    const auto exists = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
-    return this->self().flatten_condition(exists);
-}
-
-template<typename Derived>
-formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node(formalism::ConditionView,
-                                                                                 formalism::EntityView<formalism::Condition<formalism::ForallTag>> node)
-{
-    const auto& data = node.data();
-    const auto child = this->self().to_dnf(node.get_condition());
-    if (const auto child_or = this->self().as_or(child))
-    {
-        auto condition_data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
-        for (auto nested : child_or->get_conditions())
-        {
-            auto result = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
-            for (auto parameter : data.parameters)
-                result->parameters.push_back(parameter);
-            result->condition = urd::to_stored(nested);
-            const auto forall = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
-            this->self().append_disjunct(*condition_data, forall);
-        }
-        return this->self().to_dnf(this->self().make_disjunction(*condition_data));
-    }
-    auto result = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
-    for (auto parameter : data.parameters)
-        result->parameters.push_back(parameter);
-    result->condition = urd::to_stored(child);
-    const auto forall = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
-    return this->self().flatten_condition(forall);
+    const auto quantified = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
+    return this->self().flatten_condition(quantified);
 }
 
 template<typename Derived>

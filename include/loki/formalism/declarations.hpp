@@ -223,7 +223,6 @@ using SymbolRepository = boost::mp11::mp_apply<::ygg::formalism::SymbolRepositor
 using RelationRepository = ::ygg::formalism::RelationRepository<ObjectTag>;
 
 using Repository = ::ygg::formalism::Repository<SymbolRepository, RelationRepository>;
-using RepositoryPtr = std::shared_ptr<Repository>;
 
 template<typename T>
 using EntityView = urd::index_view<T, Repository>;
