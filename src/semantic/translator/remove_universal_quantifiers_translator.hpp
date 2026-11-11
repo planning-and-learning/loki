@@ -124,7 +124,8 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
 template<typename Derived>
 template<typename Tag>
     requires std::same_as<Tag, formalism::NotTag> || std::same_as<Tag, formalism::ImplyTag>
-formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<Tag>> source)
+formalism::ConditionView
+RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<Tag>> source)
 {
     auto data = urd::map_variant_children<formalism::SymbolRepositoryTypes, formalism::Condition<Tag>>(
         source.data(),
@@ -162,8 +163,7 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.index());
     data->condition = negated;
-    const auto exists_not =
-        this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
+    const auto exists_not = this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
     const auto translated_exists_not = this->self().remove_universal_quantifiers(exists_not);
     return this->self().make_generated_axiom_condition(translated_exists_not);
 }

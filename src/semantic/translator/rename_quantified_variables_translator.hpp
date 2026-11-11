@@ -152,7 +152,9 @@ formalism::EntityView<T> RenameQuantifiedVariablesTranslator<Derived>::rename_va
 template<typename Derived>
 template<typename... Vs>
 std::variant<Vs...> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(const std::variant<Vs...>& source)
-{ return std::visit([&](auto alternative) -> std::variant<Vs...> { return this->self().rename_variables(alternative); }, source); }
+{
+    return std::visit([&](auto alternative) -> std::variant<Vs...> { return this->self().rename_variables(alternative); }, source);
+}
 
 template<typename Derived>
 formalism::ActionView RenameQuantifiedVariablesTranslator<Derived>::rename_action_variables(formalism::ActionView source)

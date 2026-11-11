@@ -77,8 +77,7 @@ formalism::ConditionView ConditionTranslator<Derived>::copy(formalism::Condition
             return this->self().flatten_condition(this->self().to_dnf(copied));
         }
         default:
-            return this->self().flatten_condition(
-                std::visit([&](const auto& arg) { return formalism::ConditionView(this->self().copy(arg)); }, source));
+            return this->self().flatten_condition(std::visit([&](const auto& arg) { return formalism::ConditionView(this->self().copy(arg)); }, source));
     }
 }
 

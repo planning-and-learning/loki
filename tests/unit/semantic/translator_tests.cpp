@@ -17,6 +17,7 @@
 
 #include "../benchmark_utils.hpp"
 #include "../formalism_utils.hpp"
+#include "semantic/translator/copy_translator.hpp"
 
 #include <algorithm>
 #include <gtest/gtest.h>
@@ -27,16 +28,15 @@
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
 #include <loki/semantic/translator.hpp>
-#include "semantic/translator/copy_translator.hpp"
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
 #include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/sequences/sequence.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
-#include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 #include <utility>
 #include <vector>
@@ -92,13 +92,13 @@ formalism::FunctionExpressionView binary_expression(formalism::Repository& repos
                                                     formalism::FunctionExpressionView right)
 {
     return intern<formalism::FunctionExpression<formalism::BinaryTag>>(repository,
-                                                                                       builder,
-                                                                                       [&](auto& data)
-                                                                                       {
-                                                                                           data.op = op;
-                                                                                           data.left = urd::to_stored(left);
-                                                                                           data.right = urd::to_stored(right);
-                                                                                       });
+                                                                       builder,
+                                                                       [&](auto& data)
+                                                                       {
+                                                                           data.op = op;
+                                                                           data.left = urd::to_stored(left);
+                                                                           data.right = urd::to_stored(right);
+                                                                       });
 }
 
 formalism::FunctionExpressionView multi_expression(formalism::Repository& repository,
@@ -107,13 +107,13 @@ formalism::FunctionExpressionView multi_expression(formalism::Repository& reposi
                                                    std::initializer_list<formalism::FunctionExpressionView> expressions)
 {
     return intern<formalism::FunctionExpression<formalism::MultiTag>>(repository,
-                                                                                      builder,
-                                                                                      [&](auto& data)
-                                                                                      {
-                                                                                          data.op = op;
-                                                                                          for (const auto expression : expressions)
-                                                                                              data.args.push_back(urd::to_stored(expression));
-                                                                                      });
+                                                                      builder,
+                                                                      [&](auto& data)
+                                                                      {
+                                                                          data.op = op;
+                                                                          for (const auto expression : expressions)
+                                                                              data.args.push_back(urd::to_stored(expression));
+                                                                      });
 }
 
 bool contains_binary_add_or_multiply(formalism::FunctionExpressionView expression)
@@ -782,10 +782,7 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
     const auto p_literal = make_literal(p_atom);
     const auto q_literal = make_literal(q_atom);
     const auto make_condition = [&](auto literal)
-    {
-        return formalism::ConditionView(
-            intern<formalism::Condition<formalism::LiteralTag>>(repository, builder, [&](auto& data) { data.literal = literal; }));
-    };
+    { return formalism::ConditionView(intern<formalism::Condition<formalism::LiteralTag>>(repository, builder, [&](auto& data) { data.literal = literal; })); };
     const auto p_condition_view = make_condition(p_literal);
     const auto q_condition_view = make_condition(q_literal);
     const auto p_condition = urd::to_stored(p_condition_view);

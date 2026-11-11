@@ -19,6 +19,7 @@
 #define LOKI_SEMANTIC_TRANSLATOR_MOVE_EXISTENTIAL_QUANTIFIERS_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 
@@ -41,8 +42,9 @@ public:
     formalism::ConditionView move_existentials_node(formalism::ConditionView condition, formalism::EntityView<formalism::Condition<formalism::OrTag>> node);
     template<typename T>
     formalism::ConditionView move_existentials_node(formalism::ConditionView condition, formalism::EntityView<T>);
-    formalism::ConditionView
-    lift_top_level_exists(urd::Store<urd::sequence<formalism::ParameterView>>& parameters, formalism::ConditionView condition, std::optional<formalism::EffectView> effect);
+    formalism::ConditionView lift_top_level_exists(urd::Store<urd::sequence<formalism::ParameterView>>& parameters,
+                                                   formalism::ConditionView condition,
+                                                   std::optional<formalism::EffectView> effect);
 
 private:
     // Collects the names of all binders occurring in a subtree; lifted parameters must avoid
@@ -51,7 +53,9 @@ private:
     void collect_binder_names(formalism::EntityView<T> node, urd::Store<urd::set<std::string>>& names) const;
     template<typename... Vs>
     void collect_binder_names(const std::variant<Vs...>& node, urd::Store<urd::set<std::string>>& names) const
-    { std::visit([&](auto alternative) { collect_binder_names(alternative, names); }, node); }
+    {
+        std::visit([&](auto alternative) { collect_binder_names(alternative, names); }, node);
+    }
     /// Below a condition or an effect, the parameters are those of its binders.
     void collect_binder_names(formalism::ParameterView parameter, urd::Store<urd::set<std::string>>& names) const
     { names.insert(std::string(parameter.get_variable().get_name())); }

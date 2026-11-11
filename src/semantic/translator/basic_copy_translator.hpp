@@ -19,6 +19,7 @@
 #define LOKI_SEMANTIC_TRANSLATOR_BASIC_COPY_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 
@@ -135,7 +136,8 @@ void BasicCopyTranslator<Derived>::append_generated_domain_objects(urd::data<for
 }
 
 template<typename Derived>
-void BasicCopyTranslator<Derived>::set_requirements(const urd::Store<urd::sequence<formalism::RequirementKind>>& kinds, urd::flat_vector<urd::index<formalism::Requirement>>& result)
+void BasicCopyTranslator<Derived>::set_requirements(const urd::Store<urd::sequence<formalism::RequirementKind>>& kinds,
+                                                    urd::flat_vector<urd::index<formalism::Requirement>>& result)
 {
     result.clear();
     auto data = formalism::checkout<formalism::Requirement>(this->copy_context().builder);
@@ -150,7 +152,8 @@ template<typename Derived>
 template<typename T>
 formalism::EntityView<T> BasicCopyTranslator<Derived>::copy(formalism::EntityView<T> source)
 {
-    auto data = urd::map_variant_children<formalism::SymbolRepositoryTypes, T>(source.data(), source.context(), [&](auto child) { return this->self().copy(child); });
+    auto data =
+        urd::map_variant_children<formalism::SymbolRepositoryTypes, T>(source.data(), source.context(), [&](auto child) { return this->self().copy(child); });
     return formalism::insert(this->copy_context().storage->repository, data).first;
 }
 
@@ -246,7 +249,9 @@ formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>
 BasicCopyTranslator<Derived>::copy(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source)
 {
     // Memoized: the translation maps record these copies.
-    return memoized(this->copy_context().storage->maps, source, [&] { return this->template copy<formalism::FunctionExpression<formalism::NumberTag>>(source); });
+    return memoized(this->copy_context().storage->maps,
+                    source,
+                    [&] { return this->template copy<formalism::FunctionExpression<formalism::NumberTag>>(source); });
 }
 
 template<typename Derived>

@@ -23,10 +23,10 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <urd/elements/flat.hpp>
 #include <utility>
 #include <variant>
 #include <vector>
-#include <urd/elements/flat.hpp>
 
 namespace urd
 {
@@ -39,12 +39,7 @@ struct data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
     ::loki::formalism::EffectVariant effect;
 
     data() = default;
-    data(::loki::formalism::ConditionVariant condition_, ::loki::formalism::EffectVariant effect_) :
-        index(),
-        condition(condition_),
-        effect(effect_)
-    {
-    }
+    data(::loki::formalism::ConditionVariant condition_, ::loki::formalism::EffectVariant effect_) : index(), condition(condition_), effect(effect_) {}
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::condition, &data::effect> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::condition, &data::effect> {}; }

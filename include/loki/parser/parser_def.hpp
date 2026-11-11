@@ -19,13 +19,13 @@
 #define LOKI_PARSER_PARSER_DEF_HPP_
 
 #include "loki/parser/ast_adapted.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 #include "loki/parser/parser.hpp"
 
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/utility/annotate_on_success.hpp>
 #include <string>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
 
 // X3 grammars combine sequences (>>) with expectations (>) by design; clang's request for parentheses around
@@ -267,27 +267,28 @@ constexpr auto effect_def = detail::effect_and | detail::effect_forall | detail:
                             | detail::effect_numeric | detail::effect_literal;
 constexpr auto predicate_declaration_def = context("predicate declaration")['(' >> identifier >> typed_variable_list > ')'];
 constexpr auto function_declaration_def = context("function declaration")['(' >> identifier >> typed_variable_list > ')'] >> -(lit('-') >> type_expression);
-constexpr auto action_def = context(
-    "action")[('(' >> keyword(":action") > identifier > keyword(":parameters") > context("action parameters")['(' >> typed_variable_list > ')'])
-              >> -(keyword(":precondition") > condition) >> -(keyword(":effect") > effect) > ')'];
+constexpr auto action_def =
+    context("action")[('(' >> keyword(":action") > identifier > keyword(":parameters") > context("action parameters")['(' >> typed_variable_list > ')'])
+                      >> -(keyword(":precondition") > condition) >> -(keyword(":effect") > effect) > ')'];
 constexpr auto axiom_def = context("derived predicate")['(' >> keyword(":derived") > predicate_declaration > condition > ')'];
 constexpr auto metric_def = context("metric")['(' >> keyword(":metric") > identifier > function_expression > ')'];
 // '=' also introduces object equality; a function term distinguishes a numeric initial value.
 constexpr auto initial_function_value_def = context("initial function value")['(' >> keyword("=") >> function_term > function_expression > ')'];
-constexpr auto domain_def = context(
-    "domain definition")['(' >> keyword("define") >> context("domain header")['(' >> keyword("domain") > identifier > ')']
-                         >> (detail::requirement_section | attr(urd::Store<urd::sequence<ast::Requirement>> {}))
-                         >> (detail::type_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {})) >> (detail::constant_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
-                         >> (detail::predicate_section | attr(urd::Store<urd::sequence<ast::PredicateDeclaration>> {}))
-                         >> (detail::function_section | attr(urd::Store<urd::sequence<ast::FunctionDeclaration>> {})) >> *(axiom | action) > ')'];
-constexpr auto task_def =
-    context("problem definition")[('(' >> keyword("define") >> context("problem header")['(' >> keyword("problem") > identifier > ')']
-                                   > context("problem domain")['(' >> keyword(":domain") > identifier > ')'])
-                                  >> (detail::requirement_section | attr(urd::Store<urd::sequence<ast::Requirement>> {}))
-                                  >> (detail::type_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
-                                  >> (detail::predicate_section | attr(urd::Store<urd::sequence<ast::PredicateDeclaration>> {}))
-                                  >> (detail::object_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {})) >> boost::spirit::x3::expect[detail::initial_section]
-                                  >> -context("goal")['(' >> keyword(":goal") > condition > ')'] >> -metric >> *axiom > ')'];
+constexpr auto domain_def =
+    context("domain definition")['(' >> keyword("define") >> context("domain header")['(' >> keyword("domain") > identifier > ')']
+                                 >> (detail::requirement_section | attr(urd::Store<urd::sequence<ast::Requirement>> {}))
+                                 >> (detail::type_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
+                                 >> (detail::constant_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
+                                 >> (detail::predicate_section | attr(urd::Store<urd::sequence<ast::PredicateDeclaration>> {}))
+                                 >> (detail::function_section | attr(urd::Store<urd::sequence<ast::FunctionDeclaration>> {})) >> *(axiom | action) > ')'];
+constexpr auto task_def = context("problem definition")[('(' >> keyword("define") >> context("problem header")['(' >> keyword("problem") > identifier > ')']
+                                                         > context("problem domain")['(' >> keyword(":domain") > identifier > ')'])
+                                                        >> (detail::requirement_section | attr(urd::Store<urd::sequence<ast::Requirement>> {}))
+                                                        >> (detail::type_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
+                                                        >> (detail::predicate_section | attr(urd::Store<urd::sequence<ast::PredicateDeclaration>> {}))
+                                                        >> (detail::object_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
+                                                        >> boost::spirit::x3::expect[detail::initial_section]
+                                                        >> -context("goal")['(' >> keyword(":goal") > condition > ')'] >> -metric >> *axiom > ')'];
 constexpr auto file_def = domain | task;
 
 BOOST_SPIRIT_DEFINE(identifier,
@@ -315,8 +316,8 @@ namespace detail
 {
 constexpr auto variable_identifier_def = boost::spirit::x3::raw['?' >> identifier];
 constexpr auto type_reference_def = identifier;
-constexpr auto type_expressions = boost::spirit::x3::rule<class TypeExpressionsClass, urd::Store<urd::sequence<ast::TypeExpression>>> { "one or more type expressions" } =
-    +type_expression;
+constexpr auto type_expressions =
+    boost::spirit::x3::rule<class TypeExpressionsClass, urd::Store<urd::sequence<ast::TypeExpression>>> { "one or more type expressions" } = +type_expression;
 constexpr auto either_type_def = context("either type")['(' >> keyword("either") > type_expressions > ')'];
 constexpr auto function_expression_number_def = double_;
 constexpr auto function_expression_function_def = function_term;

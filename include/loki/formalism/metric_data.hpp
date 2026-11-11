@@ -22,8 +22,8 @@
 #include "loki/formalism/enums.hpp"
 
 #include <tuple>
-#include <utility>
 #include <urd/elements/flat.hpp>
+#include <utility>
 
 namespace urd
 {

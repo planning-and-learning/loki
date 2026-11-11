@@ -16,14 +16,14 @@
  */
 
 #include "utils.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include <benchmark/benchmark.h>
 #include <cmath>
 #include <iostream>
 #include <numeric>
 #include <random>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 namespace loki::benchmarks
 {

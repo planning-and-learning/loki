@@ -16,8 +16,6 @@
  */
 
 #include "mappings.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include "ast_mappings.hpp"
 #include "diagnostics.hpp"
@@ -28,6 +26,8 @@
 #include <cctype>
 #include <optional>
 #include <string_view>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <utility>
 
 namespace loki::semantic

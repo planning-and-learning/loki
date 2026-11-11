@@ -19,14 +19,14 @@
 #define LOKI_SEMANTIC_TRANSLATOR_CONDITION_ANALYSIS_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include <algorithm>
 #include <concepts>
 #include <urd/elements/children.hpp>
-#include <variant>
 #include <urd/elements/less.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
+#include <variant>
 
 namespace loki::semantic::detail
 {
@@ -54,7 +54,8 @@ public:
     void collect_free_variables(formalism::FunctionSkeletonView, VariableSet&, VariableSet&) const {}
     void collect_free_variables(formalism::ObjectView, VariableSet&, VariableSet&) const {}
 
-    [[nodiscard]] urd::Store<urd::sequence<std::pair<formalism::ParameterView, formalism::VariableView>>> free_parameters_in_scope(formalism::ConditionView condition) const;
+    [[nodiscard]] urd::Store<urd::sequence<std::pair<formalism::ParameterView, formalism::VariableView>>>
+    free_parameters_in_scope(formalism::ConditionView condition) const;
 };
 
 template<typename Derived>
@@ -69,7 +70,9 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ent
 template<typename Derived>
 template<typename... Vs>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(const std::variant<Vs...>& node, VariableSet& bound, VariableSet& free) const
-{ std::visit([&](auto alternative) { this->self().collect_free_variables(alternative, bound, free); }, node); }
+{
+    std::visit([&](auto alternative) { this->self().collect_free_variables(alternative, bound, free); }, node);
+}
 
 template<typename Derived>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::VariableView variable, VariableSet& bound, VariableSet& free) const
@@ -81,7 +84,9 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Var
 template<typename Derived>
 template<typename Tag>
     requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
-void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<Tag>> node, VariableSet& bound, VariableSet& free) const
+void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<formalism::Condition<Tag>> node,
+                                                                  VariableSet& bound,
+                                                                  VariableSet& free) const
 {
     for (auto parameter : node.get_parameters())
         bound.insert(parameter.get_variable());

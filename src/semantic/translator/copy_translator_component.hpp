@@ -18,8 +18,8 @@
 #ifndef LOKI_SEMANTIC_TRANSLATOR_COPY_TRANSLATOR_COMPONENT_HPP_
 #define LOKI_SEMANTIC_TRANSLATOR_COPY_TRANSLATOR_COMPONENT_HPP_
 
-#include "loki/formalism/repository.hpp"
 #include "copy_context.hpp"
+#include "loki/formalism/repository.hpp"
 
 namespace loki::semantic::detail
 {

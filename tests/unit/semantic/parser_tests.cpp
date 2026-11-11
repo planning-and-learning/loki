@@ -16,9 +16,6 @@
  */
 
 #include "../benchmark_utils.hpp"
-#include <urd/repr/maps/unordered_flat_map.hpp>
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include <cstddef>
 #include <gtest/gtest.h>
@@ -33,6 +30,9 @@
 #include <set>
 #include <string>
 #include <type_traits>
+#include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
 
 namespace loki::tests
@@ -249,8 +249,10 @@ TEST(LokiSemanticParser, FlattensTypedGroupsAndInterleavedDeclarations)
                 ASSERT_EQ(parameter.get_types().size(), 1);
                 parameters.emplace_back(std::string(parameter.get_variable().get_name()), std::string(parameter.get_types()[0].get_name()));
             }
-            const auto expected =
-                urd::Store<urd::sequence<std::pair<std::string, std::string>>> { { "?x", "child" }, { "?y", "child" }, { "?z", "parent" }, { "?tail", "object" } };
+            const auto expected = urd::Store<urd::sequence<std::pair<std::string, std::string>>> { { "?x", "child" },
+                                                                                                   { "?y", "child" },
+                                                                                                   { "?z", "parent" },
+                                                                                                   { "?tail", "object" } };
             EXPECT_EQ(parameters, expected);
         }
     auto found_grouped_axiom = false;

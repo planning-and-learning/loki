@@ -17,14 +17,14 @@
 
 #include "../benchmark_utils.hpp"
 #include "../formalism_utils.hpp"
+#include "semantic/translator/canonical_copy_translator.hpp"
+#include "semantic/translator/copy_translator.hpp"
 
 #include <gtest/gtest.h>
 #include <loki/semantic/errors.hpp>
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
 #include <loki/semantic/translator.hpp>
-#include "semantic/translator/canonical_copy_translator.hpp"
-#include "semantic/translator/copy_translator.hpp"
 #include <memory>
 #include <string>
 #include <string_view>

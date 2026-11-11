@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "loki/formalism/repository.hpp"
 #include "loki/formalism/detail/repository_instantiations.hpp"
+#include "loki/formalism/repository.hpp"
 #include "translator/canonical_copy_translator.hpp"
 #include "translator/common.hpp"
 

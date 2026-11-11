@@ -15,7 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef LOKI_FORMALISM_DETAIL_REPOSITORY_INSTANTIATIONS_HPP_
 #define LOKI_FORMALISM_DETAIL_REPOSITORY_INSTANTIATIONS_HPP_
 

@@ -16,24 +16,24 @@
  */
 
 #include "loki/semantic/parser.hpp"
-#include "loki/formalism/detail/repository_instantiations.hpp"
-#include <urd/repr/values/std_set.hpp>
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include "builder.hpp"
 #include "context.hpp"
 #include "diagnostics.hpp"
 #include "loki/ast/ast.hpp"
+#include "loki/formalism/detail/repository_instantiations.hpp"
 #include "loki/parser/parser.hpp"
 #include "loki/semantic/errors.hpp"
 #include "loki/semantic/options.hpp"
+#include "mappings.hpp"
 #include "translator/canonical_copy_translator.hpp"
 #include "translator/common.hpp"
-#include "mappings.hpp"
 
 #include <cassert>
 #include <sstream>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/store.hpp>
 #include <utility>
 #include <yggdrasil/io/project_path.hpp>
 

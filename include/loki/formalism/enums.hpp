@@ -93,10 +93,23 @@ inline constexpr std::array<const char*, 2> multi_arithmetic_operator_names = { 
 inline constexpr std::array<const char*, 5> numeric_effect_operator_names = { "assign", "increase", "decrease", "scale-up", "scale-down" };
 inline constexpr std::array<const char*, 2> optimization_direction_names = { "minimize", "maximize" };
 inline constexpr std::array<const char*, 17> requirement_kind_names = {
-    ":strips",           ":typing",           ":negative-preconditions", ":disjunctive-preconditions", ":equality",
-    ":existential-preconditions", ":universal-preconditions", ":quantified-preconditions", ":adl", ":conditional-effects",
-    ":fluents",          ":numeric-fluents",  ":action-costs",           ":durative-actions",          ":derived-predicates",
-    ":non-deterministic", ":probabilistic-effects",
+    ":strips",
+    ":typing",
+    ":negative-preconditions",
+    ":disjunctive-preconditions",
+    ":equality",
+    ":existential-preconditions",
+    ":universal-preconditions",
+    ":quantified-preconditions",
+    ":adl",
+    ":conditional-effects",
+    ":fluents",
+    ":numeric-fluents",
+    ":action-costs",
+    ":durative-actions",
+    ":derived-predicates",
+    ":non-deterministic",
+    ":probabilistic-effects",
 };
 
 inline const char* to_string(BinaryComparator op) { return binary_comparator_names.at(static_cast<std::size_t>(op)); }

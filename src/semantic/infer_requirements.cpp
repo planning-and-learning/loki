@@ -22,12 +22,12 @@
 #include <optional>
 #include <string_view>
 #include <urd/elements/children.hpp>
-#include <variant>
 #include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/sequences/sequence.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
-#include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
+#include <variant>
 
 namespace loki::semantic::detail
 {
@@ -82,7 +82,9 @@ struct RequirementCollector
 
     template<typename... Vs>
     void visit(const std::variant<Vs...>& node)
-    { std::visit([&](auto alternative) { visit(alternative); }, node); }
+    {
+        std::visit([&](auto alternative) { visit(alternative); }, node);
+    }
 
     void visit(ParameterView parameter)
     {

@@ -27,14 +27,14 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <urd/elements/flat.hpp>
 #include <urd/repr/maps/std_map.hpp>
 #include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/sequences/sequence.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
-#include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 #include <vector>
-#include <urd/elements/flat.hpp>
 
 namespace loki::semantic
 {
@@ -97,8 +97,8 @@ private:
     urd::Store<urd::sequence<formalism::TypeView>> parse_type_expression_node(const ast::TypeReference& node);
     urd::Store<urd::sequence<formalism::TypeView>> parse_type_expression_node(const ast::EitherType& node);
     urd::Store<urd::sequence<formalism::ObjectView>> parse_objects(const urd::Store<urd::sequence<ast::TypedGroup>>& groups,
-                                                     urd::Store<urd::map<std::string, formalism::ObjectView>>& table,
-                                                     urd::Store<urd::set<std::string>>& declared_objects);
+                                                                   urd::Store<urd::map<std::string, formalism::ObjectView>>& table,
+                                                                   urd::Store<urd::set<std::string>>& declared_objects);
     urd::Store<urd::sequence<formalism::ParameterView>> parse_parameters(const urd::Store<urd::sequence<ast::TypedGroup>>& groups);
     urd::Store<urd::sequence<formalism::PredicateView>> parse_predicates(const urd::Store<urd::sequence<ast::PredicateDeclaration>>& nodes);
     urd::Store<urd::sequence<formalism::FunctionSkeletonView>> parse_functions(const urd::Store<urd::sequence<ast::FunctionDeclaration>>& nodes);
@@ -139,7 +139,9 @@ private:
     formalism::EffectView parse_effect_node(const ast::EffectProbabilistic& node);
     formalism::ActionView parse_action(const ast::Action& node);
     formalism::AxiomView parse_axiom(const ast::Axiom& node);
-    void parse_initial_element(const ast::Literal& literal, urd::Store<urd::sequence<formalism::LiteralView>>& literals, urd::Store<urd::sequence<formalism::InitialFunctionValueView>>&);
+    void parse_initial_element(const ast::Literal& literal,
+                               urd::Store<urd::sequence<formalism::LiteralView>>& literals,
+                               urd::Store<urd::sequence<formalism::InitialFunctionValueView>>&);
     void parse_initial_element(const ast::InitialFunctionValue& value,
                                urd::Store<urd::sequence<formalism::LiteralView>>&,
                                urd::Store<urd::sequence<formalism::InitialFunctionValueView>>& values);

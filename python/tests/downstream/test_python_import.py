@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 import pyurd
+import pyurd_native
 import pyyggdrasil
 
 import pypddl
@@ -29,10 +30,11 @@ def test_downstream_python_binding_links_installed_loki(tmp_path: Path) -> None:
     pypddl_prefix = Path(pypddl.native_prefix())
     pyyggdrasil_prefix = Path(pyyggdrasil.native_prefix())
     pyurd_prefix = Path(pyurd.native_prefix())
+    pyurd_native_prefix = Path(pyurd_native.native_prefix())
     dependency_library_dirs = [
         pypddl_prefix / "lib",
         pyyggdrasil_prefix / "lib",
-        pyurd_prefix / "lib",
+        pyurd_native_prefix / "lib",
     ]
 
     if not list((pypddl_prefix / "lib").glob("libloki_parsers.*")):
@@ -53,7 +55,7 @@ def test_downstream_python_binding_links_installed_loki(tmp_path: Path) -> None:
             str(project_dir),
             "-B",
             str(build_dir),
-            f"-DCMAKE_PREFIX_PATH={pypddl_prefix};{pyyggdrasil_prefix};{pyurd_prefix}",
+            f"-DCMAKE_PREFIX_PATH={pypddl_prefix};{pyyggdrasil_prefix};{pyurd_prefix};{pyurd_native_prefix}",
             f"-Dloki_DIR={loki_cmake_dir}",
             f"-DPython_EXECUTABLE={sys.executable}",
             f"-DDOWNSTREAM_RUNTIME_LIBRARY_DIRS={';'.join(str(path) for path in dependency_library_dirs)}",

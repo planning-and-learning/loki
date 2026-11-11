@@ -18,6 +18,8 @@
 #ifndef PYPDDL_FORMALISM_BINDINGS_HPP_
 #define PYPDDL_FORMALISM_BINDINGS_HPP_
 
+#include "pypddl/formalism/module.hpp"
+
 #include <loki/formalism/formatter.hpp>
 #include <loki/formalism/repository.hpp>
 #include <nanobind/nanobind.h>
@@ -25,9 +27,8 @@
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
-#include <yggdrasil/python/bindings.hpp>
 #include <urd/python/owner.hpp>
-#include "pypddl/formalism/module.hpp"
+#include <yggdrasil/python/bindings.hpp>
 
 namespace loki::formalism
 {

@@ -19,9 +19,9 @@
 #define LOKI_SEMANTIC_TRANSLATOR_INFER_REQUIREMENTS_HPP_
 
 #include "loki/formalism/repository.hpp"
+
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
-
 #include <vector>
 
 namespace loki::semantic::detail

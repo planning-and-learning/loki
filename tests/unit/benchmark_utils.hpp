@@ -19,10 +19,10 @@
 #define LOKI_TESTS_BENCHMARK_UTILS_HPP_
 
 #include <filesystem>
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 #include <optional>
 #include <string>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <utility>
 #include <vector>
 #include <yggdrasil/serialization/json_suite.hpp>
@@ -37,7 +37,8 @@ struct SuiteCase
     std::optional<std::filesystem::path> task_file;
 };
 
-inline urd::Store<urd::sequence<SuiteCase>> load_suite_cases(const std::filesystem::path& suite_json, const std::optional<std::filesystem::path>& prefix = std::nullopt)
+inline urd::Store<urd::sequence<SuiteCase>> load_suite_cases(const std::filesystem::path& suite_json,
+                                                             const std::optional<std::filesystem::path>& prefix = std::nullopt)
 {
     const auto suite_value = ygg::common::load_json_file(suite_json);
     const auto& suite = ygg::common::as_object(suite_value, "suite");

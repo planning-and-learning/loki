@@ -16,8 +16,6 @@
  */
 
 #include "../benchmark_utils.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -28,6 +26,8 @@
 #include <optional>
 #include <string>
 #include <typeinfo>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
 #include <yggdrasil/serialization/json_suite.hpp>
 

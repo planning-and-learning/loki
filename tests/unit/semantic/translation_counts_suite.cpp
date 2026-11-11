@@ -16,8 +16,6 @@
  */
 
 #include <filesystem>
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 #include <gtest/gtest.h>
 #include <loki/formalism/formatter.hpp>
 #include <loki/formalism/repository.hpp>
@@ -25,6 +23,8 @@
 #include <loki/semantic/parser.hpp>
 #include <loki/semantic/translator.hpp>
 #include <string>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
 #include <yggdrasil/io/project_path.hpp>
 #include <yggdrasil/serialization/json.hpp>

@@ -28,9 +28,9 @@
 #include <type_traits>
 #include <urd/elements/children.hpp>
 #include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/sequences/sequence.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
-#include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 #include <variant>
 #include <vector>
@@ -49,13 +49,12 @@ std::size_t count_nodes(formalism::EntityView<T> node)
 
 template<typename Target, typename... Vs>
 std::size_t count_nodes(const std::variant<Vs...>& node)
-{ return std::visit([](auto alternative) { return count_nodes<Target>(alternative); }, node); }
+{
+    return std::visit([](auto alternative) { return count_nodes<Target>(alternative); }, node);
+}
 
 inline bool contains_not_or_imply(formalism::ConditionView condition)
-{
-    return count_nodes<formalism::Condition<formalism::NotTag>>(condition) > 0
-           || count_nodes<formalism::Condition<formalism::ImplyTag>>(condition) > 0;
-}
+{ return count_nodes<formalism::Condition<formalism::NotTag>>(condition) > 0 || count_nodes<formalism::Condition<formalism::ImplyTag>>(condition) > 0; }
 
 inline bool contains_forall(formalism::ConditionView condition) { return count_nodes<formalism::Condition<formalism::ForallTag>>(condition) > 0; }
 
@@ -85,12 +84,16 @@ template<typename T>
 bool mentions_predicate(formalism::EntityView<T> node, const std::string& name)
 {
     auto found = false;
-    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { found = found || mentions_predicate(child, name); });
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(),
+                                                             node.context(),
+                                                             [&](auto child) { found = found || mentions_predicate(child, name); });
     return found;
 }
 
 inline bool condition_mentions_predicate(formalism::ConditionView condition, const std::string& name)
-{ return std::visit([&](auto node) { return mentions_predicate(node, name); }, condition); }
+{
+    return std::visit([&](auto node) { return mentions_predicate(node, name); }, condition);
+}
 
 // Conjunction of literals and numeric constraints; what grounding-based consumers require.
 inline bool is_conjunctive(formalism::ConditionView condition)
@@ -123,12 +126,16 @@ template<typename T>
 bool writes_function_named(formalism::EntityView<T> node, std::string_view name)
 {
     auto found = false;
-    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { found = found || writes_function_named(child, name); });
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(),
+                                                             node.context(),
+                                                             [&](auto child) { found = found || writes_function_named(child, name); });
     return found;
 }
 
 inline bool writes_function_named(formalism::EffectView effect, std::string_view name)
-{ return std::visit([&](auto node) { return writes_function_named(node, name); }, effect); }
+{
+    return std::visit([&](auto node) { return writes_function_named(node, name); }, effect);
+}
 
 inline bool has_predicate_named(formalism::DomainView domain, std::string_view name)
 {
@@ -278,10 +285,7 @@ void expect_contiguous_indices(Views views, const Context& context, const std::s
     if (local.empty())
         return;
 
-    auto follows = [](auto previous, auto current)
-    {
-        return current.index().value == previous.index().value + 1;
-    };
+    auto follows = [](auto previous, auto current) { return current.index().value == previous.index().value + 1; };
 
     auto sorted = local;
     std::sort(sorted.begin(), sorted.end(), [](auto lhs, auto rhs) { return lhs.index() < rhs.index(); });
@@ -289,8 +293,7 @@ void expect_contiguous_indices(Views views, const Context& context, const std::s
     {
         if (!follows(sorted[i - 1], sorted[i]))
         {
-            ADD_FAILURE() << label << " has a local index gap between " << sorted[i - 1].index().value << " and "
-                          << sorted[i].index().value;
+            ADD_FAILURE() << label << " has a local index gap between " << sorted[i - 1].index().value << " and " << sorted[i].index().value;
             break;
         }
     }
@@ -302,8 +305,8 @@ void expect_contiguous_indices(Views views, const Context& context, const std::s
     {
         if (!follows(local[i - 1], local[i]))
         {
-            ADD_FAILURE() << label << " is not stored in contiguous local canonical index order at offset " << i
-                          << ": previous=" << local[i - 1].index().value << ", current=" << local[i].index().value;
+            ADD_FAILURE() << label << " is not stored in contiguous local canonical index order at offset " << i << ": previous=" << local[i - 1].index().value
+                          << ", current=" << local[i].index().value;
             break;
         }
     }

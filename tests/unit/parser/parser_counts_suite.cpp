@@ -16,8 +16,6 @@
  */
 
 #include "../benchmark_utils.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -32,6 +30,8 @@
 #include <loki/semantic/parser.hpp>
 #include <set>
 #include <string>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <utility>
 #include <vector>
 #include <yggdrasil/serialization/json_suite.hpp>

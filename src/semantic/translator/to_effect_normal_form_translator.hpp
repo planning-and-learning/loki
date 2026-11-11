@@ -19,11 +19,11 @@
 #define LOKI_SEMANTIC_TRANSLATOR_TO_EFFECT_NORMAL_FORM_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+
+#include <optional>
 #include <urd/repr/maps/ordered_map.hpp>
 #include <urd/repr/values/indexed.hpp>
 #include <urd/store.hpp>
-
-#include <optional>
 #include <utility>
 
 namespace loki::semantic::detail

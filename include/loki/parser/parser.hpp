@@ -19,11 +19,11 @@
 #define LOKI_PARSER_PARSER_HPP_
 
 #include "loki/ast/ast.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 #include "loki/parser/config.hpp"
 
 #include <boost/spirit/home/x3.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 namespace loki::parser
 {
@@ -157,9 +157,11 @@ rules::file_type const& file();
 inline bool parse_domain(const std::string& source, ast::Domain& out, ErrorHandlerType& error_handler)
 { return ygg::diagnostics::parse_full(source, domain(), out, error_handler); }
 
-inline bool parse_task(const std::string& source, ast::Task& out, ErrorHandlerType& error_handler) { return ygg::diagnostics::parse_full(source, task(), out, error_handler); }
+inline bool parse_task(const std::string& source, ast::Task& out, ErrorHandlerType& error_handler)
+{ return ygg::diagnostics::parse_full(source, task(), out, error_handler); }
 
-inline bool parse_file(const std::string& source, ast::File& out, ErrorHandlerType& error_handler) { return ygg::diagnostics::parse_full(source, file(), out, error_handler); }
+inline bool parse_file(const std::string& source, ast::File& out, ErrorHandlerType& error_handler)
+{ return ygg::diagnostics::parse_full(source, file(), out, error_handler); }
 
 }
 

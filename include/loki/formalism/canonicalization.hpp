@@ -23,18 +23,17 @@
 #include "loki/formalism/formatter.hpp"
 #include "loki/formalism/views.hpp"
 
-#include <yggdrasil/formalism/relation_repository.hpp>
-#include <yggdrasil/formalism/repository.hpp>
-#include <yggdrasil/formalism/symbol_repository.hpp>
-#include <yggdrasil/formatting/cista_formatters.hpp>
-#include <yggdrasil/semantics/canonicalization.hpp>
-
 #include <algorithm>
 #include <fmt/format.h>
 #include <string>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 #include <utility>
+#include <yggdrasil/formalism/relation_repository.hpp>
+#include <yggdrasil/formalism/repository.hpp>
+#include <yggdrasil/formalism/symbol_repository.hpp>
+#include <yggdrasil/formatting/cista_formatters.hpp>
+#include <yggdrasil/semantics/canonicalization.hpp>
 
 namespace loki::formalism
 {
@@ -75,7 +74,6 @@ void canonicalize(const C& context, List& list)
 }
 
 }  // namespace detail
-
 
 template<typename T>
 inline void canonicalize(Repository&, urd::data<T>&) noexcept

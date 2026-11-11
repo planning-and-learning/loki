@@ -27,7 +27,8 @@ DiagnosticContext::Scope::Scope(DiagnosticContext& diagnostics_, const parser::E
 
 DiagnosticContext::Scope::~Scope() { diagnostics.active = previous; }
 
-ygg::diagnostics::ParseError DiagnosticContext::parse_error(const parser::ErrorHandlerType& error_handler, const std::string& fallback, parser::Iterator position)
+ygg::diagnostics::ParseError
+DiagnosticContext::parse_error(const parser::ErrorHandlerType& error_handler, const std::string& fallback, parser::Iterator position)
 {
     auto error = ygg::diagnostics::ParseError(fallback);
     error.set_diagnostic(error_handler.diagnostic(fallback, position));

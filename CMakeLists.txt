@@ -117,9 +117,10 @@ endif()
 
 # Dependencies
 
-set(LOKI_YGGDRASIL_REQUIRED_VERSION 0.6.1)
+set(LOKI_YGGDRASIL_REQUIRED_VERSION 0.7.0)
 
-brokkr_find_python_native_prefix(pyurd URD_NATIVE_PREFIX)
+brokkr_find_python_native_prefix(pyurd URD_PREFIX)
+brokkr_find_python_native_prefix(pyurd_native URD_NATIVE_PREFIX)
 brokkr_find_python_native_prefix(pyyggdrasil YGGDRASIL_NATIVE_PREFIX)
 
 find_package(
@@ -133,9 +134,10 @@ if(yggdrasil_FOUND)
 endif()
 
 brokkr_register_native_dependency_prefix("${YGGDRASIL_NATIVE_PREFIX}")
+brokkr_register_native_dependency_prefix("${URD_PREFIX}")
 brokkr_register_native_dependency_prefix("${URD_NATIVE_PREFIX}")
 brokkr_register_python_native_runtime_prefix("pyyggdrasil" "${YGGDRASIL_NATIVE_PREFIX}")
-brokkr_register_python_native_runtime_prefix("pyurd" "${URD_NATIVE_PREFIX}")
+brokkr_register_python_native_runtime_prefix("pyurd_native" "${URD_NATIVE_PREFIX}")
 
 # Find Boost headers only according to https://cmake.org/cmake/help/latest/module/FindBoost.html
 find_package(Boost 1.74.0 REQUIRED PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)

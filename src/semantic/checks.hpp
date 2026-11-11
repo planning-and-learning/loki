@@ -34,9 +34,9 @@
 #include <cstddef>
 #include <string>
 #include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/sequences/sequence.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
-#include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 #include <vector>
 
@@ -158,7 +158,8 @@ struct SemanticChecks
         return urd::Store<urd::sequence<formalism::TypeView>> { domain_context->types.at("object") };
     }
 
-    [[nodiscard]] bool types_compatible(const urd::Store<urd::sequence<formalism::TypeView>>& actual_types, formalism::EntityListView<formalism::Type> expected_types) const
+    [[nodiscard]] bool types_compatible(const urd::Store<urd::sequence<formalism::TypeView>>& actual_types,
+                                        formalism::EntityListView<formalism::Type> expected_types) const
     {
         if (expected_types.empty() || actual_types.empty())
             return true;

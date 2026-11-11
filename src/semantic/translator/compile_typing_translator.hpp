@@ -19,6 +19,7 @@
 #define LOKI_SEMANTIC_TRANSLATOR_COMPILE_TYPING_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 
@@ -68,7 +69,8 @@ urd::Store<urd::sequence<formalism::TypeView>> CompileTypingTranslator<Derived>:
 }
 
 template<typename Derived>
-void CompileTypingTranslator<Derived>::copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, urd::flat_vector<urd::index<formalism::Type>>& result)
+void CompileTypingTranslator<Derived>::copy_type_hierarchy(formalism::EntityListView<formalism::Type> types,
+                                                           urd::flat_vector<urd::index<formalism::Type>>& result)
 {
     auto seen = urd::Store<urd::set<formalism::TypeView>> {};
     for (auto type : types)

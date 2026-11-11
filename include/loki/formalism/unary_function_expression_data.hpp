@@ -23,10 +23,10 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <urd/elements/flat.hpp>
 #include <utility>
 #include <variant>
 #include <vector>
-#include <urd/elements/flat.hpp>
 
 namespace urd
 {
@@ -39,10 +39,7 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
     ::loki::formalism::FunctionExpressionVariant expression;
 
     data() = default;
-    data(::loki::formalism::UnaryArithmeticOperator op_, ::loki::formalism::FunctionExpressionVariant expression_) :
-        index(),
-        op(op_),
-        expression(expression_)
+    data(::loki::formalism::UnaryArithmeticOperator op_, ::loki::formalism::FunctionExpressionVariant expression_) : index(), op(op_), expression(expression_)
     {
     }
 

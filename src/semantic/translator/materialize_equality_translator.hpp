@@ -18,8 +18,8 @@
 #ifndef LOKI_SEMANTIC_TRANSLATOR_MATERIALIZE_EQUALITY_TRANSLATOR_HPP_
 #define LOKI_SEMANTIC_TRANSLATOR_MATERIALIZE_EQUALITY_TRANSLATOR_HPP_
 
-#include "loki/semantic/errors.hpp"
 #include "copy_translator_component.hpp"
+#include "loki/semantic/errors.hpp"
 
 namespace loki::semantic::detail
 {

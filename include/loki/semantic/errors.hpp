@@ -62,7 +62,10 @@ public:
 class LOKI_SEMANTIC_ERROR_API RedundantRequirementError : public ygg::diagnostics::SemanticError
 {
 public:
-    explicit RedundantRequirementError(const std::string& requirement) : ygg::diagnostics::SemanticError("Task requirement already declared by the domain: :" + requirement) {}
+    explicit RedundantRequirementError(const std::string& requirement) :
+        ygg::diagnostics::SemanticError("Task requirement already declared by the domain: :" + requirement)
+    {
+    }
 };
 
 class LOKI_SEMANTIC_ERROR_API UndefinedTypeError : public ygg::diagnostics::SemanticError
@@ -98,7 +101,9 @@ public:
 class LOKI_SEMANTIC_ERROR_API DuplicateDefinitionError : public ygg::diagnostics::SemanticError
 {
 protected:
-    DuplicateDefinitionError(const std::string& kind, const std::string& name) : ygg::diagnostics::SemanticError("Duplicate " + kind + " definition: " + name) {}
+    DuplicateDefinitionError(const std::string& kind, const std::string& name) : ygg::diagnostics::SemanticError("Duplicate " + kind + " definition: " + name)
+    {
+    }
 };
 
 class LOKI_SEMANTIC_ERROR_API DuplicateTypeError : public DuplicateDefinitionError

@@ -19,10 +19,10 @@
 #define LOKI_SEMANTIC_TRANSLATOR_TO_DISJUNCTIVE_NORMAL_FORM_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include <concepts>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 
 namespace loki::semantic::detail
 {

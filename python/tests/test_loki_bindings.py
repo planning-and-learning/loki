@@ -484,14 +484,22 @@ def test_semantic_exceptions_have_expected_hierarchy() -> None:
 
 
 def make_literal(
-    repository: pypddl.Repository, predicate: pypddl.Predicate, terms: Iterable[pypddl.Variable | pypddl.Object], *, positive: bool = True
+    repository: pypddl.Repository,
+    predicate: pypddl.Predicate,
+    terms: Iterable[pypddl.Variable | pypddl.Object],
+    *,
+    positive: bool = True,
 ) -> pypddl.Literal:
     atom, _ = repository.insert(pypddl.AtomData(predicate, list(terms)))
     return repository.insert(pypddl.LiteralData(atom, positive))[0]
 
 
 def make_condition(
-    repository: pypddl.Repository, predicate: pypddl.Predicate, terms: Iterable[pypddl.Variable | pypddl.Object], *, positive: bool = True
+    repository: pypddl.Repository,
+    predicate: pypddl.Predicate,
+    terms: Iterable[pypddl.Variable | pypddl.Object],
+    *,
+    positive: bool = True,
 ) -> pypddl.ConditionLiteral:
     condition_literal, _ = repository.insert(
         pypddl.ConditionLiteralData(make_literal(repository, predicate, terms, positive=positive))

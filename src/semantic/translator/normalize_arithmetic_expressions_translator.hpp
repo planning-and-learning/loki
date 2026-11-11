@@ -24,8 +24,8 @@
 #include <optional>
 #include <stdexcept>
 #include <type_traits>
-#include <utility>
 #include <urd/config.hpp>
+#include <utility>
 
 namespace loki::semantic::detail
 {
@@ -42,7 +42,6 @@ public:
     formalism::FunctionExpressionView normalize_arithmetic_expression(formalism::FunctionExpressionView source);
 
 private:
-
     formalism::FunctionExpressionView normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source);
     formalism::FunctionExpressionView normalize_node(formalism::FunctionTermView source);
     formalism::FunctionExpressionView normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source);

@@ -19,17 +19,17 @@
 #define LOKI_FORMALISM_OBJECT_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include <cista/containers/string.h>
 #include <optional>
 #include <string>
 #include <tuple>
+#include <urd/elements/flat.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <utility>
 #include <variant>
 #include <vector>
-#include <urd/elements/flat.hpp>
 
 namespace urd
 {
@@ -42,7 +42,9 @@ struct data<::loki::formalism::Object>
     urd::flat_vector<urd::index<::loki::formalism::Type>> types;
 
     data() = default;
-    data(urd::flat_string name_, urd::flat_vector<urd::index<::loki::formalism::Type>> types_ = {}) : index(), name(std::move(name_)), types(std::move(types_)) {}
+    data(urd::flat_string name_, urd::flat_vector<urd::index<::loki::formalism::Type>> types_ = {}) : index(), name(std::move(name_)), types(std::move(types_))
+    {
+    }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name, &data::types> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::name, &data::types> {}; }

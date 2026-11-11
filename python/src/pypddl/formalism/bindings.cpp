@@ -16,6 +16,7 @@
  */
 
 #include "bindings.hpp"
+
 #include "pypddl/formalism/module.hpp"
 
 #include <boost/mp11/algorithm.hpp>
@@ -89,7 +90,6 @@ void bind_formalism_enums(nb::module_& m)
         .value("ProbabilisticEffects", formalism::RequirementKind::ProbabilisticEffects);
 }
 
-
 template<typename T>
 void bind_insert(RepositoryBinding& repository)
 {
@@ -128,7 +128,9 @@ struct Symbol<Type>
     {
         using V = urd::data<Type>;
         cls.def(nb::init<std::string, urd::flat_vector<urd::index<Type>>>(), "name"_a, "bases"_a = urd::flat_vector<urd::index<Type>> {})
-            .def(urd::python::init_from_views<const std::string&, const urd::Store<urd::sequence<TypeView>>&>(), "name"_a, "bases"_a = urd::Store<urd::sequence<TypeView>> {})
+            .def(urd::python::init_from_views<const std::string&, const urd::Store<urd::sequence<TypeView>>&>(),
+                 "name"_a,
+                 "bases"_a = urd::Store<urd::sequence<TypeView>> {})
             .def_rw("name", &V::name)
             .def_rw("bases", &V::bases);
     }
@@ -149,7 +151,9 @@ struct Symbol<Object>
     {
         using V = urd::data<Object>;
         cls.def(nb::init<std::string, urd::flat_vector<urd::index<Type>>>(), "name"_a, "types"_a = urd::flat_vector<urd::index<Type>> {})
-            .def(urd::python::init_from_views<const std::string&, const urd::Store<urd::sequence<TypeView>>&>(), "name"_a, "types"_a = urd::Store<urd::sequence<TypeView>> {})
+            .def(urd::python::init_from_views<const std::string&, const urd::Store<urd::sequence<TypeView>>&>(),
+                 "name"_a,
+                 "types"_a = urd::Store<urd::sequence<TypeView>> {})
             .def_rw("name", &V::name)
             .def_rw("types", &V::types);
     }
@@ -188,7 +192,9 @@ struct Symbol<Parameter>
     {
         using V = urd::data<Parameter>;
         cls.def(nb::init<urd::index<Variable>, urd::flat_vector<urd::index<Type>>>(), "variable"_a, "types"_a = urd::flat_vector<urd::index<Type>> {})
-            .def(urd::python::init_from_views<VariableView, const urd::Store<urd::sequence<TypeView>>&>(), "variable"_a, "types"_a = urd::Store<urd::sequence<TypeView>> {})
+            .def(urd::python::init_from_views<VariableView, const urd::Store<urd::sequence<TypeView>>&>(),
+                 "variable"_a,
+                 "types"_a = urd::Store<urd::sequence<TypeView>> {})
             .def_rw("variable", &V::variable)
             .def_rw("types", &V::types);
     }
@@ -232,7 +238,10 @@ struct Symbol<FunctionSkeleton>
     {
         using V = urd::data<FunctionSkeleton>;
         cls.def(nb::init<std::string, urd::flat_vector<urd::index<Parameter>>, urd::index<Type>>(), "name"_a, "parameters"_a, "type"_a)
-            .def(urd::python::init_from_views<const std::string&, const urd::Store<urd::sequence<ParameterView>>&, TypeView>(), "name"_a, "parameters"_a, "type"_a)
+            .def(urd::python::init_from_views<const std::string&, const urd::Store<urd::sequence<ParameterView>>&, TypeView>(),
+                 "name"_a,
+                 "parameters"_a,
+                 "type"_a)
             .def_rw("name", &V::name)
             .def_rw("parameters", &V::parameters)
             .def_rw("type", &V::type);
@@ -254,7 +263,9 @@ struct Symbol<Atom>
     {
         using V = urd::data<Atom>;
         cls.def(nb::init<urd::index<Predicate>, TermList>(), "predicate"_a, "terms"_a = TermList {})
-            .def(urd::python::init_from_views<PredicateView, const urd::Store<urd::sequence<TermView>>&>(), "predicate"_a, "terms"_a = urd::Store<urd::sequence<TermView>> {})
+            .def(urd::python::init_from_views<PredicateView, const urd::Store<urd::sequence<TermView>>&>(),
+                 "predicate"_a,
+                 "terms"_a = urd::Store<urd::sequence<TermView>> {})
             .def_rw("predicate", &V::predicate)
             .def_rw("terms", &V::terms);
     }
@@ -313,9 +324,7 @@ struct Symbol<FunctionTerm>
     static void data(auto& cls)
     {
         using V = urd::data<FunctionTerm>;
-        cls.def(nb::init<urd::index<FunctionSkeleton>, TermList>(),
-                 "function"_a,
-                 "terms"_a = TermList {})
+        cls.def(nb::init<urd::index<FunctionSkeleton>, TermList>(), "function"_a, "terms"_a = TermList {})
             .def(urd::python::init_from_views<FunctionSkeletonView, const urd::Store<urd::sequence<TermView>>&>(),
                  "function"_a,
                  "terms"_a = urd::Store<urd::sequence<TermView>> {})
@@ -359,14 +368,8 @@ struct Symbol<FunctionExpression<BinaryTag>>
     static void data(auto& cls)
     {
         using V = urd::data<FunctionExpression<BinaryTag>>;
-        cls.def(nb::init<BinaryArithmeticOperator, FunctionExpressionVariant, FunctionExpressionVariant>(),
-                 "operator"_a,
-                 "left"_a,
-                 "right"_a)
-            .def(urd::python::init_from_views<BinaryArithmeticOperator, FunctionExpressionView, FunctionExpressionView>(),
-                 "operator"_a,
-                 "left"_a,
-                 "right"_a)
+        cls.def(nb::init<BinaryArithmeticOperator, FunctionExpressionVariant, FunctionExpressionVariant>(), "operator"_a, "left"_a, "right"_a)
+            .def(urd::python::init_from_views<BinaryArithmeticOperator, FunctionExpressionView, FunctionExpressionView>(), "operator"_a, "left"_a, "right"_a)
             .def_rw("operator", &V::op)
             .def_rw("left", &V::left)
             .def_rw("right", &V::right);
@@ -423,9 +426,7 @@ struct Symbol<Condition<LiteralTag>>
     static void data(auto& cls)
     {
         using V = urd::data<Condition<LiteralTag>>;
-        cls.def(nb::init<urd::index<Literal>>(), "literal"_a)
-            .def(urd::python::init_from_views<LiteralView>(), "literal"_a)
-            .def_rw("literal", &V::literal);
+        cls.def(nb::init<urd::index<Literal>>(), "literal"_a).def(urd::python::init_from_views<LiteralView>(), "literal"_a).def_rw("literal", &V::literal);
     }
 
     static void view(auto& cls)
@@ -566,14 +567,8 @@ struct Symbol<Condition<NumericConstraintTag>>
     static void data(auto& cls)
     {
         using V = urd::data<Condition<NumericConstraintTag>>;
-        cls.def(nb::init<BinaryComparator, FunctionExpressionVariant, FunctionExpressionVariant>(),
-                 "comparator"_a,
-                 "left"_a,
-                 "right"_a)
-            .def(urd::python::init_from_views<BinaryComparator, FunctionExpressionView, FunctionExpressionView>(),
-                 "comparator"_a,
-                 "left"_a,
-                 "right"_a)
+        cls.def(nb::init<BinaryComparator, FunctionExpressionVariant, FunctionExpressionVariant>(), "comparator"_a, "left"_a, "right"_a)
+            .def(urd::python::init_from_views<BinaryComparator, FunctionExpressionView, FunctionExpressionView>(), "comparator"_a, "left"_a, "right"_a)
             .def_rw("comparator", &V::comparator)
             .def_rw("left", &V::left)
             .def_rw("right", &V::right);
@@ -594,9 +589,7 @@ struct Symbol<Effect<LiteralTag>>
     static void data(auto& cls)
     {
         using V = urd::data<Effect<LiteralTag>>;
-        cls.def(nb::init<urd::index<Literal>>(), "literal"_a)
-            .def(urd::python::init_from_views<LiteralView>(), "literal"_a)
-            .def_rw("literal", &V::literal);
+        cls.def(nb::init<urd::index<Literal>>(), "literal"_a).def(urd::python::init_from_views<LiteralView>(), "literal"_a).def_rw("literal", &V::literal);
     }
 
     static void view(auto& cls)
@@ -634,14 +627,8 @@ struct Symbol<Effect<NumericTag>>
     static void data(auto& cls)
     {
         using V = urd::data<Effect<NumericTag>>;
-        cls.def(nb::init<NumericEffectOperator, urd::index<FunctionTerm>, FunctionExpressionVariant>(),
-                 "operator"_a,
-                 "function"_a,
-                 "expression"_a)
-            .def(urd::python::init_from_views<NumericEffectOperator, FunctionTermView, FunctionExpressionView>(),
-                 "operator"_a,
-                 "function"_a,
-                 "expression"_a)
+        cls.def(nb::init<NumericEffectOperator, urd::index<FunctionTerm>, FunctionExpressionVariant>(), "operator"_a, "function"_a, "expression"_a)
+            .def(urd::python::init_from_views<NumericEffectOperator, FunctionTermView, FunctionExpressionView>(), "operator"_a, "function"_a, "expression"_a)
             .def_rw("operator", &V::op)
             .def_rw("function", &V::function)
             .def_rw("expression", &V::expression);
@@ -765,14 +752,11 @@ struct Symbol<Action>
     static void data(auto& cls)
     {
         using V = urd::data<Action>;
-        cls.def(nb::init<std::string,
-                          urd::flat_vector<urd::index<Parameter>>,
-                          urd::flat_optional<ConditionVariant>,
-                          urd::flat_optional<EffectVariant>>(),
-                 "name"_a,
-                 "parameters"_a = urd::flat_vector<urd::index<Parameter>> {},
-                 "precondition"_a.none() = urd::flat_optional<ConditionVariant> {},
-                 "effect"_a.none() = urd::flat_optional<EffectVariant> {})
+        cls.def(nb::init<std::string, urd::flat_vector<urd::index<Parameter>>, urd::flat_optional<ConditionVariant>, urd::flat_optional<EffectVariant>>(),
+                "name"_a,
+                "parameters"_a = urd::flat_vector<urd::index<Parameter>> {},
+                "precondition"_a.none() = urd::flat_optional<ConditionVariant> {},
+                "effect"_a.none() = urd::flat_optional<EffectVariant> {})
             .def(nb::init<std::string,
                           std::string,
                           urd::flat_vector<urd::index<Parameter>>,
@@ -786,19 +770,19 @@ struct Symbol<Action>
                  "precondition"_a.none() = urd::flat_optional<ConditionVariant> {},
                  "effect"_a.none() = urd::flat_optional<EffectVariant> {})
             .def(urd::python::init_from_views<const std::string&,
-                          const urd::Store<urd::sequence<ParameterView>>&,
-                          const std::optional<ConditionView>&,
-                          const std::optional<EffectView>&>(),
+                                              const urd::Store<urd::sequence<ParameterView>>&,
+                                              const std::optional<ConditionView>&,
+                                              const std::optional<EffectView>&>(),
                  "name"_a,
                  "parameters"_a = urd::Store<urd::sequence<ParameterView>> {},
                  "precondition"_a = std::optional<ConditionView> {},
                  "effect"_a = std::optional<EffectView> {})
             .def(urd::python::init_from_views<const std::string&,
-                          const std::string&,
-                          const urd::Store<urd::sequence<ParameterView>>&,
-                          ygg::uint_t,
-                          const std::optional<ConditionView>&,
-                          const std::optional<EffectView>&>(),
+                                              const std::string&,
+                                              const urd::Store<urd::sequence<ParameterView>>&,
+                                              ygg::uint_t,
+                                              const std::optional<ConditionView>&,
+                                              const std::optional<EffectView>&>(),
                  "name"_a,
                  "original_name"_a,
                  "parameters"_a,
@@ -834,10 +818,7 @@ struct Symbol<Axiom>
     static void data(auto& cls)
     {
         using V = urd::data<Axiom>;
-        cls.def(nb::init<urd::flat_vector<urd::index<Parameter>>, urd::index<Literal>, ConditionVariant>(),
-                 "parameters"_a,
-                 "head"_a,
-                 "condition"_a)
+        cls.def(nb::init<urd::flat_vector<urd::index<Parameter>>, urd::index<Literal>, ConditionVariant>(), "parameters"_a, "head"_a, "condition"_a)
             .def(nb::init<urd::flat_vector<urd::index<Parameter>>, ygg::uint_t, urd::index<Literal>, ConditionVariant>(),
                  "parameters"_a,
                  "original_arity"_a,
@@ -920,29 +901,29 @@ struct Symbol<Domain>
     {
         using V = urd::data<Domain>;
         cls.def(nb::init<std::string,
-                          urd::flat_vector<urd::index<Requirement>>,
-                          urd::flat_vector<urd::index<Type>>,
-                          urd::flat_vector<urd::index<Object>>,
-                          urd::flat_vector<urd::index<Predicate>>,
-                          urd::flat_vector<urd::index<FunctionSkeleton>>,
-                          urd::flat_vector<urd::index<Action>>,
-                          urd::flat_vector<urd::index<Axiom>>>(),
-                 "name"_a,
-                 "requirements"_a = urd::flat_vector<urd::index<Requirement>> {},
-                 "types"_a = urd::flat_vector<urd::index<Type>> {},
-                 "constants"_a = urd::flat_vector<urd::index<Object>> {},
-                 "predicates"_a = urd::flat_vector<urd::index<Predicate>> {},
-                 "functions"_a = urd::flat_vector<urd::index<FunctionSkeleton>> {},
-                 "actions"_a = urd::flat_vector<urd::index<Action>> {},
-                 "axioms"_a = urd::flat_vector<urd::index<Axiom>> {})
+                         urd::flat_vector<urd::index<Requirement>>,
+                         urd::flat_vector<urd::index<Type>>,
+                         urd::flat_vector<urd::index<Object>>,
+                         urd::flat_vector<urd::index<Predicate>>,
+                         urd::flat_vector<urd::index<FunctionSkeleton>>,
+                         urd::flat_vector<urd::index<Action>>,
+                         urd::flat_vector<urd::index<Axiom>>>(),
+                "name"_a,
+                "requirements"_a = urd::flat_vector<urd::index<Requirement>> {},
+                "types"_a = urd::flat_vector<urd::index<Type>> {},
+                "constants"_a = urd::flat_vector<urd::index<Object>> {},
+                "predicates"_a = urd::flat_vector<urd::index<Predicate>> {},
+                "functions"_a = urd::flat_vector<urd::index<FunctionSkeleton>> {},
+                "actions"_a = urd::flat_vector<urd::index<Action>> {},
+                "axioms"_a = urd::flat_vector<urd::index<Axiom>> {})
             .def(urd::python::init_from_views<const std::string&,
-                          const urd::Store<urd::sequence<RequirementView>>&,
-                          const urd::Store<urd::sequence<TypeView>>&,
-                          const urd::Store<urd::sequence<ObjectView>>&,
-                          const urd::Store<urd::sequence<PredicateView>>&,
-                          const urd::Store<urd::sequence<FunctionSkeletonView>>&,
-                          const urd::Store<urd::sequence<ActionView>>&,
-                          const urd::Store<urd::sequence<AxiomView>>&>(),
+                                              const urd::Store<urd::sequence<RequirementView>>&,
+                                              const urd::Store<urd::sequence<TypeView>>&,
+                                              const urd::Store<urd::sequence<ObjectView>>&,
+                                              const urd::Store<urd::sequence<PredicateView>>&,
+                                              const urd::Store<urd::sequence<FunctionSkeletonView>>&,
+                                              const urd::Store<urd::sequence<ActionView>>&,
+                                              const urd::Store<urd::sequence<AxiomView>>&>(),
                  "name"_a,
                  "requirements"_a = urd::Store<urd::sequence<RequirementView>> {},
                  "types"_a = urd::Store<urd::sequence<TypeView>> {},
@@ -984,38 +965,38 @@ struct Symbol<Task>
     {
         using V = urd::data<Task>;
         cls.def(nb::init<std::string,
-                          urd::index<Domain>,
-                          urd::flat_vector<urd::index<Requirement>>,
-                          urd::flat_vector<urd::index<Type>>,
-                          urd::flat_vector<urd::index<Predicate>>,
-                          urd::flat_vector<urd::index<Object>>,
-                          urd::flat_vector<urd::index<Literal>>,
-                          urd::flat_vector<urd::index<InitialFunctionValue>>,
-                          urd::flat_optional<ConditionVariant>,
-                          urd::flat_optional<urd::index<Metric>>,
-                          urd::flat_vector<urd::index<Axiom>>>(),
-                 "name"_a,
-                 "domain"_a,
-                 "requirements"_a = urd::flat_vector<urd::index<Requirement>> {},
-                 "types"_a = urd::flat_vector<urd::index<Type>> {},
-                 "predicates"_a = urd::flat_vector<urd::index<Predicate>> {},
-                 "objects"_a = urd::flat_vector<urd::index<Object>> {},
-                 "initial_literals"_a = urd::flat_vector<urd::index<Literal>> {},
-                 "initial_function_values"_a = urd::flat_vector<urd::index<InitialFunctionValue>> {},
-                 "goal"_a.none() = urd::flat_optional<ConditionVariant> {},
-                 "metric"_a.none() = urd::flat_optional<urd::index<Metric>> {},
-                 "axioms"_a = urd::flat_vector<urd::index<Axiom>> {})
+                         urd::index<Domain>,
+                         urd::flat_vector<urd::index<Requirement>>,
+                         urd::flat_vector<urd::index<Type>>,
+                         urd::flat_vector<urd::index<Predicate>>,
+                         urd::flat_vector<urd::index<Object>>,
+                         urd::flat_vector<urd::index<Literal>>,
+                         urd::flat_vector<urd::index<InitialFunctionValue>>,
+                         urd::flat_optional<ConditionVariant>,
+                         urd::flat_optional<urd::index<Metric>>,
+                         urd::flat_vector<urd::index<Axiom>>>(),
+                "name"_a,
+                "domain"_a,
+                "requirements"_a = urd::flat_vector<urd::index<Requirement>> {},
+                "types"_a = urd::flat_vector<urd::index<Type>> {},
+                "predicates"_a = urd::flat_vector<urd::index<Predicate>> {},
+                "objects"_a = urd::flat_vector<urd::index<Object>> {},
+                "initial_literals"_a = urd::flat_vector<urd::index<Literal>> {},
+                "initial_function_values"_a = urd::flat_vector<urd::index<InitialFunctionValue>> {},
+                "goal"_a.none() = urd::flat_optional<ConditionVariant> {},
+                "metric"_a.none() = urd::flat_optional<urd::index<Metric>> {},
+                "axioms"_a = urd::flat_vector<urd::index<Axiom>> {})
             .def(urd::python::init_from_views<const std::string&,
-                          DomainView,
-                          const urd::Store<urd::sequence<RequirementView>>&,
-                          const urd::Store<urd::sequence<TypeView>>&,
-                          const urd::Store<urd::sequence<PredicateView>>&,
-                          const urd::Store<urd::sequence<ObjectView>>&,
-                          const urd::Store<urd::sequence<LiteralView>>&,
-                          const urd::Store<urd::sequence<InitialFunctionValueView>>&,
-                          const std::optional<ConditionView>&,
-                          const std::optional<MetricView>&,
-                          const urd::Store<urd::sequence<AxiomView>>&>(),
+                                              DomainView,
+                                              const urd::Store<urd::sequence<RequirementView>>&,
+                                              const urd::Store<urd::sequence<TypeView>>&,
+                                              const urd::Store<urd::sequence<PredicateView>>&,
+                                              const urd::Store<urd::sequence<ObjectView>>&,
+                                              const urd::Store<urd::sequence<LiteralView>>&,
+                                              const urd::Store<urd::sequence<InitialFunctionValueView>>&,
+                                              const std::optional<ConditionView>&,
+                                              const std::optional<MetricView>&,
+                                              const urd::Store<urd::sequence<AxiomView>>&>(),
                  "name"_a,
                  "domain"_a,
                  "requirements"_a = urd::Store<urd::sequence<RequirementView>> {},

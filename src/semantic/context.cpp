@@ -16,14 +16,14 @@
  */
 
 #include "context.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include "loki/formalism/repository.hpp"
-#include "translator/common.hpp"
 #include "mappings.hpp"
+#include "translator/common.hpp"
 
 #include <string_view>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <utility>
 
 namespace loki::semantic

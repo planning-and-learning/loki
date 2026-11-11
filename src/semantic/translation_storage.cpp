@@ -16,13 +16,13 @@
  */
 
 #include "loki/formalism/repository.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 #include "translator/canonical_copy_translator.hpp"
 #include "translator/common.hpp"
 
 #include <boost/mp11/algorithm.hpp>
 #include <type_traits>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <utility>
 
 namespace loki::semantic::detail

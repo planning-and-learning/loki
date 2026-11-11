@@ -16,10 +16,6 @@
  */
 
 #include "ast_mappings.hpp"
-#include <urd/repr/maps/std_map.hpp>
-#include <urd/repr/values/std_set.hpp>
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 #include "builder.hpp"
 #include "checks.hpp"
 #include "context.hpp"
@@ -36,6 +32,10 @@
 #include <set>
 #include <string>
 #include <type_traits>
+#include <urd/repr/maps/std_map.hpp>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/repr/values/std_set.hpp>
+#include <urd/store.hpp>
 #include <utility>
 #include <vector>
 
@@ -88,8 +88,9 @@ std::optional<formalism::TypeView> AstBuilder::union_type(const urd::Store<urd::
         return m_domain_context.types.at(it->second);
     // parse_type_hierarchy creates union types only over the types it declares, since a task cannot change its domain's types.
     if (m_parse_context.union_types.contains(alternatives))
-        m_diagnostics.throw_at(identifier,
-                               ygg::diagnostics::SemanticError("Type " + union_type_name(alternatives) + " over types of the domain must also type a variable in the domain"));
+        m_diagnostics.throw_at(
+            identifier,
+            ygg::diagnostics::SemanticError("Type " + union_type_name(alternatives) + " over types of the domain must also type a variable in the domain"));
     // A union type must be a base of its alternatives when they are built, so the parser builds the domain or task again with it.
     m_parse_context.missing_union_types.insert(alternatives);
     return std::nullopt;
@@ -323,8 +324,8 @@ urd::Store<urd::sequence<formalism::TypeView>> AstBuilder::parse_type_expression
 }
 
 urd::Store<urd::sequence<formalism::ObjectView>> AstBuilder::parse_objects(const urd::Store<urd::sequence<ast::TypedGroup>>& groups,
-                                                             urd::Store<urd::map<std::string, formalism::ObjectView>>& table,
-                                                             urd::Store<urd::set<std::string>>& declared_objects)
+                                                                           urd::Store<urd::map<std::string, formalism::ObjectView>>& table,
+                                                                           urd::Store<urd::set<std::string>>& declared_objects)
 {
     auto result = urd::Store<urd::sequence<formalism::ObjectView>> {};
     for (const auto& group : groups)

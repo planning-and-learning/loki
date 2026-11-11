@@ -18,18 +18,17 @@
 #ifndef LOKI_SEMANTIC_TRANSLATOR_COPY_CONTEXT_HPP_
 #define LOKI_SEMANTIC_TRANSLATOR_COPY_CONTEXT_HPP_
 
-#include "loki/formalism/repository.hpp"
 #include "common.hpp"
+#include "loki/formalism/repository.hpp"
 
 #include <urd/repr/maps/std_map.hpp>
 #include <urd/repr/maps/unordered_flat_map.hpp>
+#include <urd/repr/sequences/sequence.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
-#include <urd/repr/sequences/sequence.hpp>
 #include <urd/repr/wrappers/scoped.hpp>
 #include <urd/store.hpp>
 #include <utility>
-
 
 namespace loki::semantic::detail
 {

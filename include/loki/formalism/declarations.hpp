@@ -20,15 +20,15 @@
 
 #include "loki/formalism/enums.hpp"
 
+#include <boost/mp11.hpp>
 #include <cista/containers/variant.h>
 #include <cista/containers/vector.h>
 #include <concepts>
 #include <cstdint>
 #include <memory>
 #include <tuple>
-#include <variant>
-#include <boost/mp11.hpp>
 #include <urd/elements/flat.hpp>
+#include <variant>
 #include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg::formalism
@@ -169,7 +169,7 @@ struct Effect
 };
 
 using FunctionExpressionTypes = boost::mp11::mp_append<boost::mp11::mp_list<FunctionExpression<NumberTag>, FunctionTerm>,
-                                                      boost::mp11::mp_transform<FunctionExpression, boost::mp11::mp_list<UnaryTag, BinaryTag, MultiTag>>>;
+                                                       boost::mp11::mp_transform<FunctionExpression, boost::mp11::mp_list<UnaryTag, BinaryTag, MultiTag>>>;
 
 /// A function expression, condition or effect: one of the family's records. Stored as it is, not interned.
 using FunctionExpressionVariant = urd::index_variant<FunctionExpressionTypes>;
@@ -200,22 +200,22 @@ struct Task
 
 using SymbolRepositoryTypes =
     boost::mp11::mp_append<boost::mp11::mp_list<Requirement, Type, Object, Variable, Parameter, Predicate, FunctionSkeleton, Atom, Literal>,
-                          FunctionExpressionTypes,
-                          boost::mp11::mp_transform<Condition, ConditionTags>,
-                          boost::mp11::mp_list<Effect<LiteralTag>,
-                                        Effect<AndTag>,
-                                        Effect<NumericTag>,
-                                        Effect<ForallTag>,
-                                        Effect<WhenTag>,
-                                        Effect<OneOfTag>,
-                                        EffectProbabilisticAlternative,
-                                        Effect<ProbabilisticTag>,
-                                        Action,
-                                        Axiom,
-                                        Metric,
-                                        InitialFunctionValue,
-                                        Domain,
-                                        Task>>;
+                           FunctionExpressionTypes,
+                           boost::mp11::mp_transform<Condition, ConditionTags>,
+                           boost::mp11::mp_list<Effect<LiteralTag>,
+                                                Effect<AndTag>,
+                                                Effect<NumericTag>,
+                                                Effect<ForallTag>,
+                                                Effect<WhenTag>,
+                                                Effect<OneOfTag>,
+                                                EffectProbabilisticAlternative,
+                                                Effect<ProbabilisticTag>,
+                                                Action,
+                                                Axiom,
+                                                Metric,
+                                                InitialFunctionValue,
+                                                Domain,
+                                                Task>>;
 
 using SymbolRepository = boost::mp11::mp_apply<::ygg::formalism::SymbolRepository, SymbolRepositoryTypes>;
 

@@ -16,10 +16,10 @@
  */
 
 #include "utils.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include <string>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <utility>
 #include <vector>
 
@@ -62,10 +62,7 @@ AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repo
                                                           }));
 
     const auto term = [&](formalism::ObjectView object)
-    {
-        return intern<formalism::Term>(repository, builder, [&](auto& data) { data.variant = urd::data<formalism::Term>::Variant(object.index()); })
-            .index();
-    };
+    { return intern<formalism::Term>(repository, builder, [&](auto& data) { data.variant = urd::data<formalism::Term>::Variant(object.index()); }).index(); };
     auto atoms = AtomList {};
     atoms.reserve(num_objects * num_objects * num_predicates);
     for (const auto& predicate : predicates)
@@ -76,7 +73,8 @@ AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repo
                                                         [&](auto& data)
                                                         {
                                                             data.predicate = predicate.index();
-                                                            data.terms = urd::flat_vector<urd::index<formalism::Term>> { term(object_left), term(object_right) };
+                                                            data.terms =
+                                                                urd::flat_vector<urd::index<formalism::Term>> { term(object_left), term(object_right) };
                                                         }));
     return atoms;
 }

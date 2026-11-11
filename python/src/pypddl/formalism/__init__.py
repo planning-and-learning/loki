@@ -4,6 +4,11 @@
 
 # Import public formalism bindings explicitly for better IDE support.
 
+from pyyggdrasil.diagnostics import (
+    ParseError as ParseError,
+    SemanticError as SemanticError,
+)
+
 from pypddl._pypddl.formalism import (
     Action as Action,
     ActionData as ActionData,
@@ -155,8 +160,4 @@ from pypddl._pypddl.formalism import (
     format_task as format_task,
     translate_domain as translate_domain,
     translate_task as translate_task,
-)
-from pyyggdrasil.diagnostics import (
-    ParseError as ParseError,
-    SemanticError as SemanticError,
 )

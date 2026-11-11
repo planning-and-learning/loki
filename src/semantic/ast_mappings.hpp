@@ -19,10 +19,10 @@
 #define LOKI_SEMANTIC_AST_MAPPINGS_HPP_
 
 #include "loki/ast/ast_fwd.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 #include "loki/formalism/enums.hpp"
 
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <vector>
 
 namespace loki::semantic

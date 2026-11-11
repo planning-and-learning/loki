@@ -16,8 +16,6 @@
  */
 
 #include "builder.hpp"
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
 
 #include "ast_mappings.hpp"
 #include "checks.hpp"
@@ -29,6 +27,8 @@
 #include "mappings.hpp"
 
 #include <algorithm>
+#include <urd/repr/sequences/sequence.hpp>
+#include <urd/store.hpp>
 #include <utility>
 
 namespace loki::semantic

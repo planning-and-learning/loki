@@ -5,11 +5,13 @@ include(CMakeFindDependencyMacro)
 # Dependencies
 
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/brokkrLocate.cmake")
-brokkr_find_python_native_prefix(pyurd URD_NATIVE_PREFIX)
+brokkr_find_python_native_prefix(pyurd URD_PREFIX)
+brokkr_find_python_native_prefix(pyurd_native URD_NATIVE_PREFIX)
 brokkr_find_python_native_prefix(pyyggdrasil YGGDRASIL_NATIVE_PREFIX)
 
 find_dependency(yggdrasil @LOKI_YGGDRASIL_REQUIRED_VERSION@ CONFIG PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
 brokkr_register_native_dependency_prefix("${YGGDRASIL_NATIVE_PREFIX}")
+brokkr_register_native_dependency_prefix("${URD_PREFIX}")
 brokkr_register_native_dependency_prefix("${URD_NATIVE_PREFIX}")
 
 # Components

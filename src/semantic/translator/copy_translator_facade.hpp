@@ -18,9 +18,9 @@
 #ifndef LOKI_SEMANTIC_TRANSLATOR_COPY_TRANSLATOR_FACADE_HPP_
 #define LOKI_SEMANTIC_TRANSLATOR_COPY_TRANSLATOR_FACADE_HPP_
 
-#include "loki/semantic/errors.hpp"
 #include "copy_translator_component.hpp"
 #include "infer_requirements.hpp"
+#include "loki/semantic/errors.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -52,7 +52,9 @@ public:
 
 template<typename Derived>
 template<typename T>
-void CopyTranslatorFacade<Derived>::push_unique(urd::flat_vector<urd::index<T>>& list, urd::Store<urd::set<formalism::EntityView<T>>>& seen, formalism::EntityView<T> value)
+void CopyTranslatorFacade<Derived>::push_unique(urd::flat_vector<urd::index<T>>& list,
+                                                urd::Store<urd::set<formalism::EntityView<T>>>& seen,
+                                                formalism::EntityView<T> value)
 {
     if (seen.insert(value).second)
         list.push_back(value.index());
