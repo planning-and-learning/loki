@@ -145,7 +145,7 @@ assert inserted and not inserted_again and object_type == same_type
 
 ## Template and include rules
 
-Headers and templates follow the [template and include rules](https://github.com/planning-and-learning/yggdrasil/blob/main/docs/TEMPLATE_RULES.md) maintained in yggdrasil.
+Headers and templates follow the [template and include rules](https://planning-and-learning.github.io/brokkr/template_rules.html).
 
 ## C++ API
 

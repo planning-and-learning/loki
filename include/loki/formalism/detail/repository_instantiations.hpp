@@ -19,8 +19,8 @@
 #define LOKI_FORMALISM_DETAIL_REPOSITORY_INSTANTIATIONS_HPP_
 
 /// Extern declarations of intern for every symbol type of the repository, instantiated in the library
-/// (src/formalism/repository.cpp). Include only from sources that intern many of these types; see yggdrasil's
-/// docs/TEMPLATE_RULES.md, rule 9.
+/// (src/formalism/repository.cpp). Include only from sources that intern many of these types; see rule 9 of the
+/// template rules (https://planning-and-learning.github.io/brokkr/template_rules.html).
 
 #include "loki/formalism/declarations.hpp"
 
