@@ -99,7 +99,7 @@ jobs:
           CIBW_BUILD: "cp311-*"
           CIBW_ARCHS: arm64
           CIBW_BUILD_VERBOSITY: "1"
-          CIBW_ENVIRONMENT: "CMAKE_BUILD_PARALLEL_LEVEL=2 LOKI_JOBS=2 YGGDRASIL_JOBS=2 PIP_NO_CACHE_DIR=1 PIP_INDEX_URL=https://test.pypi.org/simple/ PIP_EXTRA_INDEX_URL=https://pypi.org/simple/"
+          CIBW_ENVIRONMENT: "CMAKE_BUILD_PARALLEL_LEVEL=2 LOKI_JOBS=2 YGGDRASIL_JOBS=2 PIP_NO_CACHE_DIR=1 PIP_INDEX_URL=https://test.pypi.org/simple/ PIP_EXTRA_INDEX_URL=https://pypi.org/simple/ MACOSX_DEPLOYMENT_TARGET=11.0"
 
       - name: Upload macOS wheel artifact
         uses: actions/upload-artifact@v5

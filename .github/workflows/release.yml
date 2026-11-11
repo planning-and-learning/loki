@@ -104,7 +104,7 @@ jobs:
           CIBW_BUILD: "${{ matrix.python-version }}-*"
           CIBW_ARCHS: "${{ matrix.architecture }}"
           CIBW_BUILD_VERBOSITY: "1"
-          CIBW_ENVIRONMENT: "CMAKE_BUILD_PARALLEL_LEVEL=2 LOKI_JOBS=2 YGGDRASIL_JOBS=2 PIP_NO_CACHE_DIR=1"
+          CIBW_ENVIRONMENT: "CMAKE_BUILD_PARALLEL_LEVEL=2 LOKI_JOBS=2 YGGDRASIL_JOBS=2 PIP_NO_CACHE_DIR=1 MACOSX_DEPLOYMENT_TARGET=11.0"
 
       - name: Upload macOS wheels artifact
         uses: actions/upload-artifact@v5
