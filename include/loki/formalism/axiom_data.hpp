@@ -51,7 +51,7 @@ struct data<::loki::formalism::Axiom>
         parameters(std::move(parameters_)),
         original_arity(parameters.size()),
         head(head_),
-        condition(condition_)
+        condition(std::move(condition_))
     {
     }
     data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
@@ -62,7 +62,7 @@ struct data<::loki::formalism::Axiom>
         parameters(std::move(parameters_)),
         original_arity(original_arity_),
         head(head_),
-        condition(condition_)
+        condition(std::move(condition_))
     {
     }
 

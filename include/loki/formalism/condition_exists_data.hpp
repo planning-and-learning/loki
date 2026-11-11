@@ -44,7 +44,7 @@ struct data<::loki::formalism::Condition<::loki::formalism::ExistsTag>>
     data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_, ::loki::formalism::ConditionVariant condition_) :
         index(),
         parameters(std::move(parameters_)),
-        condition(condition_)
+        condition(std::move(condition_))
     {
     }
 

@@ -32,7 +32,7 @@ static void BM_ConstructAtoms(benchmark::State& state)
 
     for ([[maybe_unused]] auto _ : state)
     {
-        auto repository = loki::formalism::Repository(0);
+        auto repository = loki::formalism::Repository();
         auto builder = loki::formalism::Builder {};
 
         auto atoms = create_atoms(num_objects, num_predicates, repository, builder);

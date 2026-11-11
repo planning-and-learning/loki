@@ -42,7 +42,7 @@ struct data<::loki::formalism::InitialFunctionValue>
     data(urd::index<::loki::formalism::FunctionTerm> function_, ::loki::formalism::FunctionExpressionVariant value_) :
         index(),
         function(function_),
-        value(value_)
+        value(std::move(value_))
     {
     }
 

@@ -82,7 +82,7 @@ private:
     ParseContext& m_parse_context;
 
     formalism::Repository& repo() noexcept;
-    SemanticChecks checks() const;
+    [[nodiscard]] SemanticChecks checks() const;
 
     // Symbol lookup with auto-declaration in non-strict mode.
     formalism::PredicateView predicate(const ast::Identifier& identifier, size_t arity);

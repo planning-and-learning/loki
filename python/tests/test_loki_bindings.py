@@ -548,8 +548,12 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     assert explicit_action_builder.original_name == "original-action"
     assert explicit_action_builder.parameters == [parameter.index()]
     assert explicit_action_builder.original_arity == 3
-    assert explicit_action_builder.precondition == condition.index()
-    assert explicit_action_builder.effect == effect.index()
+    explicit_precondition = explicit_action_builder.precondition
+    assert isinstance(explicit_precondition, pypddl.ConditionLiteralIndex)
+    assert explicit_precondition == condition.index()
+    explicit_effect = explicit_action_builder.effect
+    assert isinstance(explicit_effect, pypddl.EffectLiteralIndex)
+    assert explicit_effect == effect.index()
 
     action_builder.name = "mutated-action"
     action_builder.parameters = [parameter.index()]
@@ -800,7 +804,13 @@ def test_numeric_expression_variant_views_are_inspectable() -> None:
 
 
 def test_multi_args_keep_repository_alive() -> None:
-    def make_args() -> list[pypddl.FunctionExpressionNumber]:
+    def make_args() -> list[
+        pypddl.FunctionExpressionNumber
+        | pypddl.FunctionTerm
+        | pypddl.UnaryFunctionExpression
+        | pypddl.BinaryFunctionExpression
+        | pypddl.MultiFunctionExpression
+    ]:
         repository = pypddl.Repository()
         operands = [make_number_expression(repository, value) for value in (1.0, 2.0, 3.0)]
         multi, _ = repository.insert(
@@ -890,8 +900,12 @@ def test_repository_exposes_recursive_constructors_and_accessors() -> None:
     assert len(condition_forall_variant.get_parameters()) == 1
     condition_imply_variant = condition_imply
     assert isinstance(condition_imply_variant, pypddl.ConditionImply)
-    assert condition_imply_variant.get_left() == base_condition
-    assert condition_imply_variant.get_right() == condition_or
+    imply_left = condition_imply_variant.get_left()
+    assert isinstance(imply_left, pypddl.ConditionLiteral)
+    assert imply_left == base_condition
+    imply_right = condition_imply_variant.get_right()
+    assert isinstance(imply_right, pypddl.ConditionOr)
+    assert imply_right == condition_or
     condition_exists_variant = condition_exists
     assert isinstance(condition_exists_variant, pypddl.ConditionExists)
     assert len(condition_exists_variant.get_parameters()) == 1

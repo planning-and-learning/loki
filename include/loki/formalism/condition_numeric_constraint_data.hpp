@@ -45,8 +45,8 @@ struct data<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag
          ::loki::formalism::FunctionExpressionVariant right_) :
         index(),
         comparator(comparator_),
-        left(left_),
-        right(right_)
+        left(std::move(left_)),
+        right(std::move(right_))
     {
     }
 

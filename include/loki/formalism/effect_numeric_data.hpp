@@ -46,7 +46,7 @@ struct data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
         index(),
         op(op_),
         function(function_),
-        expression(expression_)
+        expression(std::move(expression_))
     {
     }
 

@@ -109,7 +109,7 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
         {
             auto multi_data = formalism::checkout<formalism::FunctionExpression<formalism::MultiTag>>(this->copy_context().builder);
             multi_data->op = formalism::MultiArithmeticOperator::Add;
-            for (const auto expression : expressions)
+            for (const auto& expression : expressions)
                 multi_data->args.push_back(expression);
             sum = formalism::insert(this->copy_context().storage->repository, *multi_data).first.index();
         }

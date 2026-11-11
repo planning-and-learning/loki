@@ -44,7 +44,7 @@ struct data<::loki::formalism::Effect<::loki::formalism::ForallTag>>
     data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_, ::loki::formalism::EffectVariant effect_) :
         index(),
         parameters(std::move(parameters_)),
-        effect(effect_)
+        effect(std::move(effect_))
     {
     }
 

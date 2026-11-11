@@ -33,6 +33,7 @@
 #include <boost/optional.hpp>
 #include <cstddef>
 #include <string>
+#include <string_view>
 #include <urd/repr/maps/unordered_flat_map.hpp>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/repr/values/std_set.hpp>
@@ -102,7 +103,7 @@ struct SemanticChecks
         if (!options->strict)
             return;
         if (!parse_context->active_requirements.contains(kind))
-            diagnostics->throw_at(node, MissingRequirementError(formalism::to_string(kind) + 1));
+            diagnostics->throw_at(node, MissingRequirementError(std::string(std::string_view(formalism::to_string(kind)).substr(1))));
     }
 
     void require_typing_if_needed(const boost::optional<ast::TypeExpression>& type, const boost::spirit::x3::position_tagged& node) const
@@ -122,7 +123,7 @@ struct SemanticChecks
         for (auto i = std::size_t { 0 }; i < terms.size(); ++i)
         {
             const auto actual = term_types(terms[i]);
-            if (!types_compatible(actual, parameters[i].get_types()))
+            if (!types_compatible(actual, parameters[static_cast<std::ptrdiff_t>(i)].get_types()))
                 diagnostics->throw_at(node, TypeMismatchError(name));
         }
     }

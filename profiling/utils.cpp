@@ -61,8 +61,7 @@ AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repo
                                                               data.parameters = parameters;
                                                           }));
 
-    const auto term = [&](formalism::ObjectView object)
-    { return intern<formalism::Term>(repository, builder, [&](auto& data) { data.variant = urd::data<formalism::Term>::Variant(object.index()); }).index(); };
+    const auto term = [](formalism::ObjectView object) { return formalism::Term(object.index()); };
     auto atoms = AtomList {};
     atoms.reserve(num_objects * num_objects * num_predicates);
     for (const auto& predicate : predicates)
@@ -73,8 +72,7 @@ AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repo
                                                         [&](auto& data)
                                                         {
                                                             data.predicate = predicate.index();
-                                                            data.terms =
-                                                                urd::flat_vector<urd::index<formalism::Term>> { term(object_left), term(object_right) };
+                                                            data.terms = formalism::TermList { term(object_left), term(object_right) };
                                                         }));
     return atoms;
 }

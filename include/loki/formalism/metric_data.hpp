@@ -39,7 +39,7 @@ struct data<::loki::formalism::Metric>
     data(::loki::formalism::OptimizationDirection optimization_direction_, ::loki::formalism::FunctionExpressionVariant expression_) :
         index(),
         optimization_direction(optimization_direction_),
-        expression(expression_)
+        expression(std::move(expression_))
     {
     }
 

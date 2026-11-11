@@ -4,7 +4,7 @@ requires = [
     "nanobind-backend>=1.0",
     "pyyggdrasil>=0.7.0,<0.8",
     "pyurd>=0.1.0,<0.2",
-    "pybrokkr>=0.1.1,<0.2",
+    "pybrokkr>=0.1.2,<0.2",
 ]
 build-backend = "pypddl_build_backend"
 backend-path = ["python"]
@@ -23,7 +23,7 @@ dependencies = [
     "nanobind-backend>=1.0",
     "pyyggdrasil>=0.7.0,<0.8",
     "pyurd>=0.1.0,<0.2",
-    "pybrokkr>=0.1.1,<0.2",
+    "pybrokkr>=0.1.2,<0.2",
 ]
 
 [project.optional-dependencies]

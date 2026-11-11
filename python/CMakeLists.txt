@@ -140,4 +140,17 @@ brokkr_install_python_stubs(
     RENAME_PACKAGES pypddl pyyggdrasil
 )
 
+# pypddl/formalism/__init__.py re-exports pyyggdrasil's ParseError and SemanticError. nanobind's stub
+# generator leaves out names that another package defines, so the installed stub, which type checkers
+# read instead of __init__.py, gets the same re-export (once: an existing stub is kept on reinstall).
+install(CODE [[
+    set(pypddl_formalism_stub "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/pypddl/formalism/__init__.pyi")
+    set(pypddl_reexport "from pyyggdrasil.diagnostics import ParseError as ParseError, SemanticError as SemanticError")
+    file(READ "${pypddl_formalism_stub}" pypddl_formalism_stub_content)
+    string(FIND "${pypddl_formalism_stub_content}" "${pypddl_reexport}" pypddl_reexport_position)
+    if(pypddl_reexport_position EQUAL -1)
+        file(APPEND "${pypddl_formalism_stub}" "\n${pypddl_reexport}\n")
+    endif()
+]] COMPONENT pypddl)
+
 add_custom_target(pypddl_wheel DEPENDS _pypddl parsers)

@@ -39,7 +39,10 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
     ::loki::formalism::FunctionExpressionVariant expression;
 
     data() = default;
-    data(::loki::formalism::UnaryArithmeticOperator op_, ::loki::formalism::FunctionExpressionVariant expression_) : index(), op(op_), expression(expression_)
+    data(::loki::formalism::UnaryArithmeticOperator op_, ::loki::formalism::FunctionExpressionVariant expression_) :
+        index(),
+        op(op_),
+        expression(std::move(expression_))
     {
     }
 

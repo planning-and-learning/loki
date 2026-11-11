@@ -32,7 +32,7 @@ namespace
 {
 struct AtomAccessResult
 {
-    size_t atom_identifier;
+    size_t atom_identifier = 0;
     loki::formalism::PredicateView atom_predicate;
     urd::Store<urd::sequence<loki::formalism::TermView>> atom_terms;
 };
@@ -40,7 +40,7 @@ struct AtomAccessResult
 
 static AtomAccessResult access_atom_data(loki::formalism::AtomView atom)
 {
-    const auto atom_identifier = atom.index().get_value();
+    const auto atom_identifier = atom.index().value;
     const auto atom_predicate = atom.get_predicate();
     auto atom_terms = urd::Store<urd::sequence<loki::formalism::TermView>>();
     for (const auto& term : atom.get_terms())
@@ -62,7 +62,7 @@ static void BM_IterateAtoms(benchmark::State& state)
     const size_t num_predicates = 100;
     // Choose num_objects sufficiently large, we cast to size_t to stay slightly below to fit into the cache
     const size_t num_objects = static_cast<size_t>(std::sqrt(static_cast<double>(num_atoms) / static_cast<double>(num_predicates)));
-    auto repository = loki::formalism::Repository(0);
+    auto repository = loki::formalism::Repository();
     auto builder = loki::formalism::Builder {};
     auto atoms = create_atoms(num_objects, num_predicates, repository, builder);
     benchmark::DoNotOptimize(atoms);
@@ -84,7 +84,7 @@ static void BM_RandomlyIterateAtoms(benchmark::State& state)
     const size_t num_atoms = state.range(0);
     const size_t num_predicates = 100;
     const size_t num_objects = static_cast<size_t>(std::sqrt(static_cast<double>(num_atoms) / static_cast<double>(num_predicates)));
-    auto repository = loki::formalism::Repository(0);
+    auto repository = loki::formalism::Repository();
     auto builder = loki::formalism::Builder {};
     auto atoms = create_atoms(num_objects, num_predicates, repository, builder);
     benchmark::DoNotOptimize(atoms);

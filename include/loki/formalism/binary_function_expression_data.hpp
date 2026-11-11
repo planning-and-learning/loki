@@ -45,8 +45,8 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
          ::loki::formalism::FunctionExpressionVariant right_) :
         index(),
         op(op_),
-        left(left_),
-        right(right_)
+        left(std::move(left_)),
+        right(std::move(right_))
     {
     }
 

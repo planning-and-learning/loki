@@ -27,6 +27,7 @@
 #include <yggdrasil/formalism/intern_instantiations.hpp>
 
 /// The instantiations (PREFIX extern: declarations).
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage): expands to explicit template instantiations at namespace scope, which no function can produce
 #define LOKI_FORMALISM_INTERNS(PREFIX) YGG_FORMALISM_INTERNS(PREFIX, 36, false, loki::formalism::SymbolRepositoryTypes)
 
 LOKI_FORMALISM_INTERNS(extern)

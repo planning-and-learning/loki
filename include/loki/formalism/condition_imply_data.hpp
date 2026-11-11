@@ -39,7 +39,7 @@ struct data<::loki::formalism::Condition<::loki::formalism::ImplyTag>>
     ::loki::formalism::ConditionVariant right;
 
     data() = default;
-    data(::loki::formalism::ConditionVariant left_, ::loki::formalism::ConditionVariant right_) : index(), left(left_), right(right_) {}
+    data(::loki::formalism::ConditionVariant left_, ::loki::formalism::ConditionVariant right_) : index(), left(std::move(left_)), right(std::move(right_)) {}
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::left, &data::right> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::left, &data::right> {}; }
