@@ -20,98 +20,31 @@
 
 #include "loki/formalism/datas.hpp"
 #include "loki/formalism/declarations.hpp"
-#include "loki/formalism/formatter.hpp"
-#include "loki/formalism/views.hpp"
-
-#include <algorithm>
-#include <fmt/format.h>
-#include <string>
-#include <urd/repr/sequences/sequence.hpp>
-#include <urd/store.hpp>
-#include <utility>
-#include <yggdrasil/formalism/relation_repository.hpp>
-#include <yggdrasil/formalism/repository.hpp>
-#include <yggdrasil/formalism/symbol_repository.hpp>
-#include <yggdrasil/formatting/cista_formatters.hpp>
-#include <yggdrasil/semantics/canonicalization.hpp>
 
 namespace loki::formalism
 {
 
-namespace detail
-{
-/// The text an element reads as through the context: the order canonical lists are sorted by.
-template<typename C, typename Element>
-    requires urd::resolving<Element> || urd::variant_value<Element>
-std::string fmt_key(const C& context, const Element& element)
-{ return fmt::format("{}", urd::resolve(element, context)); }
-
-template<bool Deduplicate = true, typename C, typename List>
-void canonicalize(const C& context, List& list)
-{
-    using Element = typename List::value_type;
-
-    if (list.size() < 2)
-        return;
-
-    auto keyed = urd::Store<urd::sequence<std::pair<std::string, Element>>> {};
-    keyed.reserve(list.size());
-    for (auto& element : list)
-        keyed.emplace_back(fmt_key(context, element), std::move(element));
-
-    if (!std::is_sorted(keyed.begin(), keyed.end()))
-        std::sort(keyed.begin(), keyed.end());
-
-    auto size = std::size_t { 0 };
-    for (std::size_t i = 0; i < keyed.size(); ++i)
-    {
-        if constexpr (Deduplicate)
-            if (i > 0 && keyed[i - 1].first == keyed[i].first)
-                continue;
-        list[size++] = std::move(keyed[i].second);
-    }
-    list.resize(size);
-}
-
-}  // namespace detail
-
+/// Brings a record into canonical form before it is interned: its lists sorted by how their elements read, and
+/// deduplicated where order and repetition carry no meaning. Records without such lists are left as they are.
 template<typename T>
 inline void canonicalize(Repository&, urd::data<T>&) noexcept
 {
 }
 
-inline void canonicalize(Repository& repository, urd::data<Type>& data) { detail::canonicalize(repository, data.bases); }
-inline void canonicalize(Repository& repository, urd::data<Object>& data) { detail::canonicalize(repository, data.types); }
-inline void canonicalize(Repository& repository, urd::data<Parameter>& data) { detail::canonicalize(repository, data.types); }
-inline void canonicalize(Repository& repository, urd::data<FunctionExpression<MultiTag>>& data) { detail::canonicalize<false>(repository, data.args); }
-inline void canonicalize(Repository& repository, urd::data<Condition<AndTag>>& data) { detail::canonicalize(repository, data.conditions); }
-inline void canonicalize(Repository& repository, urd::data<Condition<OrTag>>& data) { detail::canonicalize(repository, data.conditions); }
-inline void canonicalize(Repository& repository, urd::data<Condition<ExistsTag>>& data) { detail::canonicalize(repository, data.parameters); }
-inline void canonicalize(Repository& repository, urd::data<Condition<ForallTag>>& data) { detail::canonicalize(repository, data.parameters); }
-inline void canonicalize(Repository& repository, urd::data<Effect<AndTag>>& data) { detail::canonicalize(repository, data.effects); }
-inline void canonicalize(Repository& repository, urd::data<Effect<OneOfTag>>& data) { detail::canonicalize(repository, data.effects); }
-inline void canonicalize(Repository& repository, urd::data<Effect<ProbabilisticTag>>& data) { detail::canonicalize(repository, data.alternatives); }
-
-inline void canonicalize(Repository& repository, urd::data<Domain>& data)
-{
-    detail::canonicalize(repository, data.requirements);
-    detail::canonicalize(repository, data.types);
-    detail::canonicalize(repository, data.constants);
-    detail::canonicalize(repository, data.predicates);
-    detail::canonicalize(repository, data.functions);
-    detail::canonicalize(repository, data.actions);
-    detail::canonicalize(repository, data.axioms);
-}
-
-inline void canonicalize(Repository& repository, urd::data<Task>& data)
-{
-    detail::canonicalize(repository, data.requirements);
-    detail::canonicalize(repository, data.objects);
-    detail::canonicalize(repository, data.initial_literals);
-    detail::canonicalize(repository, data.initial_function_values);
-    detail::canonicalize(repository, data.predicates);
-    detail::canonicalize(repository, data.axioms);
-}
+// Defined in src/formalism/canonicalization.cpp, which alone formats the elements to sort them.
+void canonicalize(Repository& repository, urd::data<Type>& data);
+void canonicalize(Repository& repository, urd::data<Object>& data);
+void canonicalize(Repository& repository, urd::data<Parameter>& data);
+void canonicalize(Repository& repository, urd::data<FunctionExpression<MultiTag>>& data);
+void canonicalize(Repository& repository, urd::data<Condition<AndTag>>& data);
+void canonicalize(Repository& repository, urd::data<Condition<OrTag>>& data);
+void canonicalize(Repository& repository, urd::data<Condition<ExistsTag>>& data);
+void canonicalize(Repository& repository, urd::data<Condition<ForallTag>>& data);
+void canonicalize(Repository& repository, urd::data<Effect<AndTag>>& data);
+void canonicalize(Repository& repository, urd::data<Effect<OneOfTag>>& data);
+void canonicalize(Repository& repository, urd::data<Effect<ProbabilisticTag>>& data);
+void canonicalize(Repository& repository, urd::data<Domain>& data);
+void canonicalize(Repository& repository, urd::data<Task>& data);
 
 }  // namespace loki::formalism
 

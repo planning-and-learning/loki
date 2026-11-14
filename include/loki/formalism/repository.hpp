@@ -21,6 +21,7 @@
 #include "loki/formalism/canonicalization.hpp"
 #include "loki/formalism/datas.hpp"
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/views.hpp"
 
 #include <yggdrasil/formalism/builder.hpp>
 #include <yggdrasil/formalism/interning.hpp>

@@ -74,7 +74,7 @@ def test_formalism_package_reexports_native_public_symbols() -> None:
 
 
 def test_programmatic_gripper_example_uses_public_api() -> None:
-    example_path = Path(__file__).resolve().parents[1] / "example" / "programmatic_gripper.py"
+    example_path = Path(__file__).resolve().parents[1] / "examples" / "programmatic_gripper.py"
     spec = importlib.util.spec_from_file_location("programmatic_gripper", example_path)
     assert spec is not None
     assert spec.loader is not None

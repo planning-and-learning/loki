@@ -34,9 +34,6 @@
 namespace ygg::formalism
 {
 
-template<typename... Ts>
-class SymbolRepository;
-
 template<typename ObjectTag, typename... Ts>
 class RelationRepository;
 
@@ -216,8 +213,6 @@ using SymbolRepositoryTypes =
                                                 InitialFunctionValue,
                                                 Domain,
                                                 Task>>;
-
-using SymbolRepository = boost::mp11::mp_apply<::ygg::formalism::SymbolRepository, SymbolRepositoryTypes>;
 
 /// No family has rows in loki.
 using RelationRepository = ::ygg::formalism::RelationRepository<ObjectTag>;
