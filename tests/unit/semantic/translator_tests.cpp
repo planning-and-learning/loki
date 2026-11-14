@@ -705,7 +705,7 @@ TEST(LokiSemanticTranslator, FlattensDeepArithmeticBeforeMaterializing)
     ASSERT_TRUE(std::holds_alternative<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized));
     const auto multi = std::get<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized);
     EXPECT_EQ(multi.get_args().size(), operand_count);
-    EXPECT_EQ(storage->repository.symbols().size<formalism::FunctionExpression<formalism::MultiTag>>(), 1);
+    EXPECT_EQ(storage->repository.size<formalism::FunctionExpression<formalism::MultiTag>>(), 1);
 }
 
 TEST(LokiSemanticTranslator, AppliesArithmeticNormalizationAfterEffectNormalFormWhenEnabled)

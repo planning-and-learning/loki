@@ -2,7 +2,7 @@ find_package(GTest "1.11.0" REQUIRED COMPONENTS GTest PATHS ${CMAKE_PREFIX_PATH}
 find_library(Boost_JSON_LIBRARY boost_json PATHS ${CMAKE_PREFIX_PATH} PATH_SUFFIXES lib NO_DEFAULT_PATH REQUIRED)
 
 function(add_gtest test_name)
-    add_executable(${test_name} ${ARGN} main.cpp)
+    add_executable(${test_name} ${ARGN} "${PROJECT_SOURCE_DIR}/tests/support/main.cpp")
     target_compile_definitions(${test_name} PRIVATE ROOT_DIR="${CMAKE_SOURCE_DIR}")
     target_link_libraries(
         ${test_name}

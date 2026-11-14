@@ -21,6 +21,7 @@
 #include "semantic/translator/copy_translator.hpp"
 
 #include <gtest/gtest.h>
+#include <loki/formalism/repository.hpp>
 #include <loki/semantic/errors.hpp>
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
@@ -78,8 +79,7 @@ TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
     EXPECT_TRUE(phase_inserted);
     EXPECT_EQ(semantic::detail::copy(domain, phase), std::make_pair(phase_domain, false));
 
-    source.symbols().clear();
-    source.relations().clear();
+    source.clear_all();
     EXPECT_EQ(std::string_view(copied_task.get_name()), "task");
     EXPECT_EQ(std::string_view(copied_task.get_domain().get_types()[0].get_name()), "type");
 }

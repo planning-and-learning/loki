@@ -222,7 +222,9 @@ using SymbolRepository = boost::mp11::mp_apply<::ygg::formalism::SymbolRepositor
 /// No family has rows in loki.
 using RelationRepository = ::ygg::formalism::RelationRepository<ObjectTag>;
 
-using Repository = ::ygg::formalism::Repository<SymbolRepository, RelationRepository>;
+/// Named by what it holds (yggdrasil's Symbols and Relations), not by its stores: a call with a repository argument
+/// then never instantiates them (yggdrasil/formalism/declarations.hpp).
+using Repository = ::ygg::formalism::Repository<boost::mp11::mp_apply<::ygg::formalism::Symbols, SymbolRepositoryTypes>, ::ygg::formalism::Relations<ObjectTag>>;
 
 template<typename T>
 using EntityView = urd::index_view<T, Repository>;
