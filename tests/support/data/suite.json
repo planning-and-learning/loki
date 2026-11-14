@@ -1,0 +1,279 @@
+{
+    "prefix": "tests/support/data",
+    "cases": [
+        {
+            "name": "nnf",
+            "domain_file": "nnf/domain.pddl"
+        },
+        {
+            "name": "rename-exists",
+            "domain_file": "rename_exists/domain.pddl"
+        },
+        {
+            "name": "sibling-exists",
+            "domain_file": "sibling_exists/domain.pddl"
+        },
+        {
+            "name": "lift-capture",
+            "domain_file": "lift_capture/domain.pddl"
+        },
+        {
+            "name": "rename-once",
+            "domain_file": "rename_once/domain.pddl"
+        },
+        {
+            "name": "universal",
+            "domain_file": "universal/domain.pddl"
+        },
+        {
+            "name": "negated-exists",
+            "domain_file": "negated_exists/domain.pddl"
+        },
+        {
+            "name": "universal-cache",
+            "domain_file": "universal_cache/domain.pddl"
+        },
+        {
+            "name": "split-precondition",
+            "domain_file": "split_precondition/domain.pddl"
+        },
+        {
+            "name": "exists-precondition",
+            "domain_file": "exists_precondition/domain.pddl"
+        },
+        {
+            "name": "when-or-effect",
+            "domain_file": "when_or_effect/domain.pddl"
+        },
+        {
+            "name": "compile-typing",
+            "domain_file": "compile_typing/domain.pddl",
+            "task_file": "compile_typing/task.pddl"
+        },
+        {
+            "name": "adl-equality",
+            "domain_file": "adl_equality/domain.pddl",
+            "task_file": "adl_equality/task.pddl"
+        },
+        {
+            "name": "equality-constants",
+            "domain_file": "equality_constants/domain.pddl",
+            "task_file": "equality_constants/task.pddl"
+        },
+        {
+            "name": "equality-negated",
+            "domain_file": "equality_negated/domain.pddl",
+            "task_file": "equality_negated/task.pddl"
+        },
+        {
+            "name": "goal-name-collision",
+            "domain_file": "goal_name_collision/domain.pddl",
+            "task_file": "goal_name_collision/task.pddl"
+        },
+        {
+            "name": "disjunctive-goal",
+            "domain_file": "disjunctive_goal/domain.pddl",
+            "task_file": "disjunctive_goal/task.pddl"
+        },
+        {
+            "name": "task-rename-once",
+            "domain_file": "task_rename_once/domain.pddl",
+            "task_file": "task_rename_once/task.pddl"
+        },
+        {
+            "name": "duplicate-action-name",
+            "domain_file": "duplicate_action_name/domain.pddl"
+        },
+        {
+            "name": "missing-disjunctive-requirement",
+            "domain_file": "missing_disjunctive_requirement/domain.pddl"
+        },
+        {
+            "name": "adl-requirements",
+            "domain_file": "adl_requirements/domain.pddl"
+        },
+        {
+            "name": "permissive-type-mismatch",
+            "domain_file": "permissive_type_mismatch/domain.pddl"
+        },
+        {
+            "name": "action-costs",
+            "domain_file": "action_costs/domain.pddl",
+            "task_file": "action_costs/task.pddl"
+        },
+        {
+            "name": "action-costs-implicit-function",
+            "domain_file": "action_costs_implicit_function/domain.pddl"
+        },
+        {
+            "name": "unit-cost-injection",
+            "domain_file": "unit_cost_injection/domain.pddl",
+            "task_file": "unit_cost_injection/task.pddl"
+        },
+        {
+            "name": "mixed-costs",
+            "domain_file": "mixed_costs/domain.pddl"
+        },
+        {
+            "name": "action-costs-reads",
+            "domain_file": "action_costs_reads/domain.pddl"
+        },
+        {
+            "name": "complementary-literals",
+            "domain_file": "complementary_literals/domain.pddl"
+        },
+        {
+            "name": "numeric-fluents",
+            "domain_file": "numeric_fluents/domain.pddl",
+            "task_file": "numeric_fluents/task.pddl"
+        },
+        {
+            "name": "permissive-implicit",
+            "domain_file": "permissive_implicit/domain.pddl"
+        },
+        {
+            "name": "many-tasks",
+            "domain_file": "many_tasks/domain.pddl",
+            "task_file": "many_tasks/task.pddl"
+        },
+        {
+            "name": "repo-mismatch",
+            "domain_file": "repo_mismatch/domain.pddl",
+            "task_file": "repo_mismatch/task.pddl"
+        },
+        {
+            "name": "numeric-universal",
+            "domain_file": "numeric_universal/domain.pddl"
+        },
+        {
+            "name": "universal-name-collision",
+            "domain_file": "universal_name_collision/domain.pddl"
+        },
+        {
+            "name": "conditional-multiply",
+            "domain_file": "conditional_multiply/domain.pddl"
+        },
+        {
+            "name": "conditional-exists",
+            "domain_file": "conditional_exists/domain.pddl"
+        },
+        {
+            "name": "nested-universal",
+            "domain_file": "nested_universal/domain.pddl"
+        },
+        {
+            "name": "dnf-forall",
+            "domain_file": "dnf_forall/domain.pddl"
+        },
+        {
+            "name": "split-conditional-effect",
+            "domain_file": "split_conditional_effect/domain.pddl"
+        },
+        {
+            "name": "split-action-precondition",
+            "domain_file": "split_action_precondition/domain.pddl"
+        },
+        {
+            "name": "split-axiom-condition",
+            "domain_file": "split_axiom_condition/domain.pddl"
+        },
+        {
+            "name": "numeric-aggregate",
+            "domain_file": "numeric_aggregate/domain.pddl"
+        },
+        {
+            "name": "duplicate-flattening",
+            "domain_file": "duplicate_flattening/domain.pddl"
+        },
+        {
+            "name": "nested-conditional-effects",
+            "domain_file": "nested_conditional_effects/domain.pddl"
+        },
+        {
+            "name": "universal-effect-conjunction",
+            "domain_file": "universal_effect_conjunction/domain.pddl"
+        },
+        {
+            "name": "untyped-universal-effect",
+            "domain_file": "untyped_universal_effect/domain.pddl"
+        },
+        {
+            "name": "existing-derived",
+            "domain_file": "existing_derived/domain.pddl"
+        },
+        {
+            "name": "typed-signatures",
+            "domain_file": "typed_signatures/domain.pddl"
+        },
+        {
+            "name": "variable-renaming",
+            "domain_file": "variable_renaming/domain.pddl"
+        },
+        {
+            "name": "facade",
+            "domain_file": "facade/domain.pddl",
+            "task_file": "facade/task.pddl"
+        },
+        {
+            "name": "typed-facade",
+            "domain_file": "typed_facade/domain.pddl",
+            "task_file": "typed_facade/task.pddl"
+        },
+        {
+            "name": "numeric-facade",
+            "domain_file": "numeric_facade/domain.pddl",
+            "task_file": "numeric_facade/task.pddl"
+        },
+        {
+            "name": "facade-format",
+            "domain_file": "facade_format/domain.pddl",
+            "task_file": "facade_format/task.pddl"
+        },
+        {
+            "name": "alternative-effects",
+            "domain_file": "alternative_effects/domain.pddl"
+        },
+        {
+            "name": "facade-format-numeric",
+            "domain_file": "facade_format_numeric/domain.pddl",
+            "task_file": "facade_format_numeric/task.pddl"
+        },
+        {
+            "name": "strips-minimal",
+            "domain_file": "strips_minimal/domain.pddl"
+        },
+        {
+            "name": "sibling-universal-when",
+            "domain_file": "sibling_universal_when/domain.pddl"
+        },
+        {
+            "name": "mixed-case",
+            "domain_file": "mixed_case/domain.pddl",
+            "task_file": "mixed_case/task.pddl"
+        },
+        {
+            "name": "forward-types",
+            "domain_file": "forward_types/domain.pddl"
+        },
+        {
+            "name": "quantified-types",
+            "domain_file": "quantified_types/domain.pddl",
+            "task_file": "quantified_types/task.pddl"
+        },
+        {
+            "name": "task-isolation",
+            "domain_file": "task_isolation/domain.pddl",
+            "task_file": "task_isolation/task.pddl"
+        },
+        {
+            "name": "many-tasks-2",
+            "domain_file": "many_tasks/domain.pddl",
+            "task_file": "many_tasks/task2.pddl"
+        },
+        {
+            "name": "task-object-types",
+            "domain_file": "task_object_types/domain.pddl",
+            "task_file": "task_object_types/task.pddl"
+        }
+    ]
+}

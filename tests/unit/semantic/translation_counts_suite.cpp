@@ -73,7 +73,7 @@ ParserSuiteCase parse_parser_case(const boost::json::object& object)
 
 urd::Store<urd::sequence<ParserSuiteCase>> load_parser_cases()
 {
-    const auto suite_value = ygg::common::load_json_file(ygg::common::root_path() / "tests/fixtures/parser_counts_suite.json");
+    const auto suite_value = ygg::common::load_json_file(ygg::common::root_path() / "tests/support/data/parser_counts_suite.json");
     const auto& suite = ygg::common::as_object(suite_value, "suite");
     auto result = urd::Store<urd::sequence<ParserSuiteCase>> {};
     for (const auto& case_value : ygg::common::as_array(suite, "cases", "suite"))
@@ -116,7 +116,7 @@ TranslationCountExpectation parse_expectation(const boost::json::object& object)
 
 urd::Store<urd::sequence<TranslationCountExpectation>> load_expectations()
 {
-    const auto suite_value = ygg::common::load_json_file(ygg::common::root_path() / "tests/fixtures/translation_counts_suite.json");
+    const auto suite_value = ygg::common::load_json_file(ygg::common::root_path() / "tests/support/data/translation_counts_suite.json");
     const auto& suite = ygg::common::as_object(suite_value, "suite");
     auto result = urd::Store<urd::sequence<TranslationCountExpectation>> {};
     for (const auto& case_value : ygg::common::as_array(suite, "cases", "suite"))

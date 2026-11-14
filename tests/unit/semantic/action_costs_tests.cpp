@@ -30,8 +30,8 @@ namespace loki::tests
 
 TEST(LokiSemanticActionCosts, AddsActionCostsDefaultsInPermissiveMode)
 {
-    auto parser = semantic::Parser(fixture_path("action-costs"));
-    const auto parsed_task = parser.parse_task(fixture_path("action-costs", "task.pddl"));
+    auto parser = semantic::Parser(fixture_path("action_costs"));
+    const auto parsed_task = parser.parse_task(fixture_path("action_costs", "task.pddl"));
 
     ASSERT_TRUE(parsed_task.get_metric().has_value());
     EXPECT_EQ(parsed_task.get_metric().value().get_optimization_direction(), formalism::OptimizationDirection::Minimize);
@@ -69,14 +69,14 @@ TEST(LokiSemanticActionCosts, AddActionCostsOptionInjectsUnitCosts)
 {
     auto options = semantic::ParserOptions {};
     options.add_action_costs = true;
-    auto parser = semantic::Parser(fixture_path("unit-cost-injection"), options);
+    auto parser = semantic::Parser(fixture_path("unit_cost_injection"), options);
 
     const auto domain_text = formalism::format::to_string(parser.get_domain());
     EXPECT_NE(domain_text.find(":action-costs"), std::string::npos);
     EXPECT_NE(domain_text.find("(total-cost)"), std::string::npos);
     EXPECT_NE(domain_text.find("(increase (total-cost) 1)"), std::string::npos);
 
-    const auto parsed_task = parser.parse_task(fixture_path("unit-cost-injection", "task.pddl"));
+    const auto parsed_task = parser.parse_task(fixture_path("unit_cost_injection", "task.pddl"));
     ASSERT_TRUE(parsed_task.get_metric().has_value());
     EXPECT_EQ(parsed_task.get_metric().value().get_optimization_direction(), formalism::OptimizationDirection::Minimize);
     ASSERT_EQ(parsed_task.get_initial_function_values().size(), 1);
@@ -87,7 +87,7 @@ TEST(LokiSemanticActionCosts, AddActionCostsOptionSkipsActionsAlreadyWritingTota
 {
     auto options = semantic::ParserOptions {};
     options.add_action_costs = true;
-    auto parser = semantic::Parser(fixture_path("mixed-costs"), options);
+    auto parser = semantic::Parser(fixture_path("mixed_costs"), options);
 
     const auto domain_text = formalism::format::to_string(parser.get_domain());
     const auto count = [&](const std::string& needle)
@@ -107,8 +107,8 @@ TEST(LokiSemanticActionCosts, AddActionCostsOptionCompletesInsteadOfStrictErrors
     auto options = semantic::ParserOptions {};
     options.strict = true;
     options.add_action_costs = true;
-    auto parser = semantic::Parser(fixture_path("action-costs"), options);
-    const auto parsed_task = parser.parse_task(fixture_path("action-costs", "task.pddl"));
+    auto parser = semantic::Parser(fixture_path("action_costs"), options);
+    const auto parsed_task = parser.parse_task(fixture_path("action_costs", "task.pddl"));
 
     ASSERT_TRUE(parsed_task.get_metric().has_value());
     ASSERT_EQ(parsed_task.get_initial_function_values().size(), 1);
@@ -124,10 +124,10 @@ TEST(LokiSemanticActionCosts, NumericFluentsTaskWithoutMetricKeepsMetricAbsent)
             auto options = semantic::ParserOptions {};
             options.strict = strict;
             options.add_action_costs = add_action_costs;
-            auto parser = semantic::Parser(fixture_path("numeric-fluents"), options);
+            auto parser = semantic::Parser(fixture_path("numeric_fluents"), options);
             EXPECT_FALSE(has_function_named(parser.get_domain(), "total-cost"));
             EXPECT_FALSE(has_requirement_kind(parser.get_domain(), formalism::RequirementKind::ActionCosts));
-            const auto parsed_task = parser.parse_task(fixture_path("numeric-fluents", "task.pddl"));
+            const auto parsed_task = parser.parse_task(fixture_path("numeric_fluents", "task.pddl"));
             EXPECT_FALSE(parsed_task.get_metric().has_value());
             ASSERT_EQ(parsed_task.get_initial_function_values().size(), 1);
             EXPECT_EQ(parsed_task.get_initial_function_values()[0].get_function().get_function().get_name(), "fuel");

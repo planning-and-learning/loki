@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Regenerate parser_counts_suite.json from all packaged benchmark problems.
 
-Usage: uv run python tests/fixtures/generate_parser_counts_suite.py
+Usage: uv run python tests/support/generators/generate_parser_counts_suite.py
 """
 
 import json
@@ -13,7 +13,7 @@ import pypddl_datasets
 
 from pypddl import formalism as pypddl
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 CONFIGURATIONS: list[dict[str, bool]] = [
     {"strict": strict, "add_action_costs": add_action_costs}
     for strict in (False, True)
@@ -103,7 +103,7 @@ def main() -> None:
             )
         case["configurations"] = configurations
 
-    out = ROOT / "tests/fixtures/parser_counts_suite.json"
+    out = ROOT / "tests/support/data/parser_counts_suite.json"
     out.write_text(json.dumps({"cases": cases}, indent=4) + "\n")
     print(f"Wrote {len(cases)} cases x {len(CONFIGURATIONS)} configurations to {out}")
 

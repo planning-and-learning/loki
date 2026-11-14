@@ -42,6 +42,6 @@ combine-as-imports = true
 # loaded first, so the formalism import follows that call.
 "python/src/pypddl/__init__.py" = ["E402"]
 # Command-line entry points and scripts print their output.
-"{python/src/pypddl/__main__.py,profiling/combine_results.py,tests/fixtures/*.py,python/example/*.py}" = ["T201"]
+"{python/src/pypddl/__main__.py,benchmarks/tools/combine_results.py,tests/support/generators/*.py,python/examples/*.py}" = ["T201"]
 # Standalone scripts, run by the build frontend and by hand, not packages.
-"{python/pypddl_build_backend.py,profiling/combine_results.py,tests/fixtures/*.py,python/example/*.py}" = ["INP001"]
+"{python/pypddl_build_backend.py,benchmarks/tools/combine_results.py,tests/support/generators/*.py,python/examples/*.py}" = ["INP001"]

@@ -34,7 +34,7 @@ TEST(LokiSemanticDiagnostics, ReportsSyntaxFailureMessage)
 {
     try
     {
-        auto parser = semantic::Parser(ygg::common::read_file(fixture_path("broken-syntax")));
+        auto parser = semantic::Parser(ygg::common::read_file(fixture_path("broken_syntax")));
         FAIL() << "Expected parse error";
     }
     catch (const ygg::diagnostics::ParseError& error)
@@ -50,7 +50,7 @@ TEST(LokiSemanticDiagnostics, ReportsSyntaxFailureMessage)
 
 TEST(LokiSemanticDiagnostics, IncludesFileNameForPathDiagnostics)
 {
-    const auto domain_path = fixture_path("broken-syntax");
+    const auto domain_path = fixture_path("broken_syntax");
     try
     {
         auto parser = semantic::Parser(domain_path);
@@ -65,7 +65,7 @@ TEST(LokiSemanticDiagnostics, IncludesFileNameForPathDiagnostics)
         EXPECT_EQ(error.diagnostic().location->source()->filename(), domain_path.string());
     }
 
-    const auto task_path = fixture_path("repo-mismatch", "task.pddl");
+    const auto task_path = fixture_path("repo_mismatch", "task.pddl");
     try
     {
         auto parser = semantic::Parser(fixture_path("facade"));

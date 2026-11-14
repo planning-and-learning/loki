@@ -212,7 +212,7 @@ ConfigurationExpectation parse_configuration(const boost::json::object& configur
 
 urd::Store<urd::sequence<ParserCountExpectation>> load_expectations()
 {
-    const auto suite_value = ygg::common::load_json_file(ygg::common::root_path() / "tests/fixtures/parser_counts_suite.json");
+    const auto suite_value = ygg::common::load_json_file(ygg::common::root_path() / "tests/support/data/parser_counts_suite.json");
     const auto& suite = ygg::common::as_object(suite_value, "suite");
     const auto benchmark_root = std::filesystem::path(std::string(BENCHMARKS_DIR));
     auto result = urd::Store<urd::sequence<ParserCountExpectation>> {};

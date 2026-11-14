@@ -147,7 +147,7 @@ bool contains_binary_add_or_multiply(formalism::FunctionExpressionView expressio
 
 TEST(LokiSemanticTranslator, RenamesQuantifiedVariablesDeterministically)
 {
-    semantic::Parser parser(fixture_path("rename-exists"));
+    semantic::Parser parser(fixture_path("rename_exists"));
 
     const auto translation = semantic::translate(parser.get_domain());
     const auto translated_domain = translation.get_translated_domain();
@@ -162,7 +162,7 @@ TEST(LokiSemanticTranslator, RenamesQuantifiedVariablesDeterministically)
 
 TEST(LokiSemanticTranslator, SeparatesSiblingExistentialsOverSameVariable)
 {
-    semantic::Parser parser(fixture_path("sibling-exists"));
+    semantic::Parser parser(fixture_path("sibling_exists"));
     const auto translation = semantic::translate(parser.get_domain());
     const auto action = translation.get_translated_domain().get_actions()[0];
 
@@ -186,7 +186,7 @@ TEST(LokiSemanticTranslator, LiftedParameterAvoidsFreeVariablesWhenRenaming)
 {
     // The second sibling collides on ?p; its fresh name must avoid the action parameter ?p_0,
     // which occurs free in the sibling body.
-    semantic::Parser parser(fixture_path("lift-capture"));
+    semantic::Parser parser(fixture_path("lift_capture"));
     const auto translation = semantic::translate(parser.get_domain());
     const auto action = translation.get_translated_domain().get_actions()[0];
 
@@ -206,7 +206,7 @@ TEST(LokiSemanticTranslator, LiftedParameterAvoidsFreeVariablesWhenRenaming)
 
 TEST(LokiSemanticTranslator, RenamesBeforeNegationNormalFormOnlyOnce)
 {
-    semantic::Parser parser(fixture_path("rename-once"));
+    semantic::Parser parser(fixture_path("rename_once"));
 
     const auto translation = semantic::translate(parser.get_domain());
     const auto translated_domain = translation.get_translated_domain();
@@ -223,7 +223,7 @@ TEST(LokiSemanticTranslator, RenamesBeforeNegationNormalFormOnlyOnce)
 
 TEST(LokiSemanticTranslator, LowersNegatedExistsWithoutNegatingInnerCondition)
 {
-    semantic::Parser parser(fixture_path("negated-exists"));
+    semantic::Parser parser(fixture_path("negated_exists"));
 
     const auto translation = semantic::translate(parser.get_domain());
     const auto translated_domain = translation.get_translated_domain();
@@ -239,7 +239,7 @@ TEST(LokiSemanticTranslator, LowersNegatedExistsWithoutNegatingInnerCondition)
 
 TEST(LokiSemanticTranslator, GeneratesFreshAxiomsForIdenticalUniversalConditions)
 {
-    semantic::Parser parser(fixture_path("universal-cache"));
+    semantic::Parser parser(fixture_path("universal_cache"));
 
     const auto translation = semantic::translate(parser.get_domain(), semantic::TranslatorOptions { .compile_typing = false });
     const auto translated_domain = translation.get_translated_domain();
@@ -272,7 +272,7 @@ TEST(LokiSemanticTranslator, GeneratesFreshAxiomsForIdenticalUniversalConditions
 
 TEST(LokiSemanticTranslator, MovesExistentialPreconditionVariablesToActionParameters)
 {
-    semantic::Parser parser(fixture_path("exists-precondition"));
+    semantic::Parser parser(fixture_path("exists_precondition"));
 
     const auto translation = semantic::translate(parser.get_domain());
     const auto translated_domain = translation.get_translated_domain();
@@ -287,7 +287,7 @@ TEST(LokiSemanticTranslator, MovesExistentialPreconditionVariablesToActionParame
 
 TEST(LokiSemanticTranslator, CompilesTypingWhenEnabled)
 {
-    semantic::Parser parser(fixture_path("compile-typing"));
+    semantic::Parser parser(fixture_path("compile_typing"));
 
     const auto options = semantic::TranslatorOptions { .compile_typing = true };
     const auto translation = semantic::translate(parser.get_domain(), options);
@@ -304,7 +304,7 @@ TEST(LokiSemanticTranslator, CompilesTypingWhenEnabled)
     ASSERT_TRUE(action.get_precondition().has_value());
     EXPECT_TRUE(condition_mentions_predicate(action.get_precondition().value(), "thing"));
 
-    const auto task = parser.parse_task(fixture_path("compile-typing", "task.pddl"));
+    const auto task = parser.parse_task(fixture_path("compile_typing", "task.pddl"));
     const auto translated_task_result = semantic::translate(task, translation, options);
     const auto translated_task = translated_task_result.get_translated_task();
     EXPECT_GE(count_initial_literals_for_predicate(translated_task.get_initial_literals(), "thing"), 2);
@@ -317,7 +317,7 @@ TEST(LokiSemanticTranslator, CompilesTypingWhenEnabled)
 
 TEST(LokiSemanticTranslator, CompilesEitherTypesIntoUnionTypes)
 {
-    semantic::Parser parser(fixture_path("either-typing"));
+    semantic::Parser parser(fixture_path("either_typing"));
 
     const auto options = semantic::TranslatorOptions { .compile_typing = true };
     const auto translation = semantic::translate(parser.get_domain(), options);
@@ -335,7 +335,7 @@ TEST(LokiSemanticTranslator, CompilesEitherTypesIntoUnionTypes)
     ASSERT_EQ(translated_domain.get_axioms().size(), 1);
     EXPECT_TRUE(condition_mentions_predicate(translated_domain.get_axioms().front().get_condition(), "either_a_b"));
 
-    const auto task = parser.parse_task(fixture_path("either-typing", "task.pddl"));
+    const auto task = parser.parse_task(fixture_path("either_typing", "task.pddl"));
     const auto translated_task_result = semantic::translate(task, translation, options);
     const auto translated_task = translated_task_result.get_translated_task();
     // oa - a, ob - b, oc - c and the constant k - c, with c a subtype of a; ou - u is in neither.
@@ -370,12 +370,12 @@ TEST(LokiSemanticTranslator, DeclaresTypesInTask)
     for (const auto compile_typing : { false, true })
     {
         SCOPED_TRACE("compile_typing=" + std::to_string(compile_typing));
-        semantic::Parser parser(fixture_path("either-typing"));
+        semantic::Parser parser(fixture_path("either_typing"));
         const auto options = semantic::TranslatorOptions { .compile_typing = compile_typing };
         const auto domain_translation = semantic::translate(parser.get_domain(), options);
 
         // The task declares special and vip below the domain type u, and its goal uses (either special vip).
-        const auto task = parser.parse_task(fixture_path("either-typing", "task-extension.pddl"));
+        const auto task = parser.parse_task(fixture_path("either_typing", "task-extension.pddl"));
         ASSERT_EQ(task.get_predicates().size(), 1);
         EXPECT_EQ(std::string(task.get_predicates().front().get_name()), "marked");
         const auto task_translation = semantic::translate(task, domain_translation, options);
@@ -418,7 +418,7 @@ TEST(LokiSemanticTranslator, ConstantMetricUsesNumericFluents)
 
 TEST(LokiSemanticTranslator, TaskCannotChangeDomainTypes)
 {
-    semantic::Parser parser(fixture_path("either-typing"));
+    semantic::Parser parser(fixture_path("either_typing"));
     const auto task = [](const std::string& sections)
     { return "(define (problem q) (:domain either-typing) " + sections + " (:objects o - u) (:init) (:goal (r o)))"; };
 
@@ -506,8 +506,8 @@ TEST(LokiSemanticTranslator, TranslationStorageRetainsParent)
 
 TEST(LokiSemanticTranslator, ProblemTranslationRetainsDomainStorage)
 {
-    semantic::Parser parser(fixture_path("task-object-types"));
-    const auto task = parser.parse_task(fixture_path("task-object-types", "task.pddl"));
+    semantic::Parser parser(fixture_path("task_object_types"));
+    const auto task = parser.parse_task(fixture_path("task_object_types", "task.pddl"));
     const auto translated_result = [&]
     {
         const auto domain_translation = semantic::translate(parser.get_domain());
@@ -525,9 +525,9 @@ TEST(LokiSemanticTranslator, ProblemTranslationRetainsDomainStorage)
 
 TEST(LokiSemanticTranslator, PreservesTaskObjectTypesAfterDomainCanonicalization)
 {
-    semantic::Parser parser(fixture_path("task-object-types"));
+    semantic::Parser parser(fixture_path("task_object_types"));
     const auto domain_translation = semantic::translate(parser.get_domain());
-    const auto translated_result = semantic::translate(parser.parse_task(fixture_path("task-object-types", "task.pddl")), domain_translation);
+    const auto translated_result = semantic::translate(parser.parse_task(fixture_path("task_object_types", "task.pddl")), domain_translation);
     const auto translated = translated_result.get_translated_task();
 
     EXPECT_TRUE(has_initial_unary_literal(translated.get_initial_literals(), "bread-portion", "bread1"));
@@ -538,12 +538,12 @@ TEST(LokiSemanticTranslator, PreservesTaskObjectTypesAfterDomainCanonicalization
 
 TEST(LokiSemanticTranslator, AddsEqualityPredicateWhenAdlDomainUsesEquality)
 {
-    semantic::Parser parser(fixture_path("adl-equality"));
+    semantic::Parser parser(fixture_path("adl_equality"));
     const auto options = semantic::TranslatorOptions { .materialize_equality = true };
     const auto translation = semantic::translate(parser.get_domain(), options);
     EXPECT_TRUE(has_equality_predicate(translation.get_translated_domain()));
 
-    const auto translated_result = semantic::translate(parser.parse_task(fixture_path("adl-equality", "task.pddl")), translation, options);
+    const auto translated_result = semantic::translate(parser.parse_task(fixture_path("adl_equality", "task.pddl")), translation, options);
     const auto translated = translated_result.get_translated_task();
     EXPECT_TRUE(has_equality_predicate(translated.get_domain()));
     EXPECT_EQ(count_equality_literals(translated.get_initial_literals()), count_unique_object_names(translation.get_translated_domain(), translated));
@@ -551,13 +551,13 @@ TEST(LokiSemanticTranslator, AddsEqualityPredicateWhenAdlDomainUsesEquality)
 
 TEST(LokiSemanticTranslator, InitializesEqualityForConstantsAndTaskObjects)
 {
-    semantic::Parser parser(fixture_path("equality-constants"));
+    semantic::Parser parser(fixture_path("equality_constants"));
 
     const auto options = semantic::TranslatorOptions { .materialize_equality = true };
     const auto translation = semantic::translate(parser.get_domain(), options);
     EXPECT_TRUE(has_equality_predicate(translation.get_translated_domain()));
 
-    const auto task = parser.parse_task(fixture_path("equality-constants", "task.pddl"));
+    const auto task = parser.parse_task(fixture_path("equality_constants", "task.pddl"));
     const auto translated_result = semantic::translate(task, translation, options);
     const auto translated = translated_result.get_translated_task();
 
@@ -568,14 +568,14 @@ TEST(LokiSemanticTranslator, InitializesEqualityForConstantsAndTaskObjects)
 
 TEST(LokiSemanticTranslator, SkipsEqualityInitializationWhenDisabled)
 {
-    semantic::Parser parser(fixture_path("equality-negated"));
+    semantic::Parser parser(fixture_path("equality_negated"));
 
     auto options = semantic::TranslatorOptions {};
     options.materialize_equality = false;
     const auto translation = semantic::translate(parser.get_domain(), options);
     EXPECT_FALSE(has_equality_predicate(translation.get_translated_domain()));
 
-    const auto translated_result = semantic::translate(parser.parse_task(fixture_path("equality-negated", "task.pddl")), translation, options);
+    const auto translated_result = semantic::translate(parser.parse_task(fixture_path("equality_negated", "task.pddl")), translation, options);
     const auto translated = translated_result.get_translated_task();
     EXPECT_FALSE(has_equality_predicate(translated.get_domain()));
     EXPECT_EQ(count_equality_literals(translated.get_initial_literals()), 0);
@@ -584,10 +584,10 @@ TEST(LokiSemanticTranslator, SkipsEqualityInitializationWhenDisabled)
 TEST(LokiSemanticTranslator, RejectsTaskFromDifferentDomainTranslationRepository)
 {
     auto first_parser = semantic::Parser(fixture_path("nnf"));
-    auto second_parser = semantic::Parser(fixture_path("repo-mismatch"));
+    auto second_parser = semantic::Parser(fixture_path("repo_mismatch"));
 
     const auto first_translation = semantic::translate(first_parser.get_domain());
-    const auto second_task = second_parser.parse_task(fixture_path("repo-mismatch", "task.pddl"));
+    const auto second_task = second_parser.parse_task(fixture_path("repo_mismatch", "task.pddl"));
 
     try
     {
@@ -604,20 +604,20 @@ TEST(LokiSemanticTranslator, RejectsTaskFromDifferentDomainTranslationRepository
 
 TEST(LokiSemanticTranslator, TaskEqualityRequiresTranslatedDomainEqualityPredicate)
 {
-    semantic::Parser parser(fixture_path("task-only-equality"));
+    semantic::Parser parser(fixture_path("task_only_equality"));
     const auto options = semantic::TranslatorOptions { .materialize_equality = true };
     const auto translation = semantic::translate(parser.get_domain(), options);
     ASSERT_FALSE(has_equality_predicate(translation.get_translated_domain()));
 
-    const auto task = parser.parse_task(fixture_path("task-only-equality", "task.pddl"));
+    const auto task = parser.parse_task(fixture_path("task_only_equality", "task.pddl"));
     EXPECT_THROW(static_cast<void>(semantic::translate(task, translation, options)), semantic::InvalidEqualityError);
 }
 
 TEST(LokiSemanticTranslator, RenamesTaskGoalVariablesBeforeGoalSimplificationOnlyOnce)
 {
-    semantic::Parser parser(fixture_path("task-rename-once"));
+    semantic::Parser parser(fixture_path("task_rename_once"));
     const auto domain_translation = semantic::translate(parser.get_domain());
-    const auto translated_result = semantic::translate(parser.parse_task(fixture_path("task-rename-once", "task.pddl")), domain_translation);
+    const auto translated_result = semantic::translate(parser.parse_task(fixture_path("task_rename_once", "task.pddl")), domain_translation);
     const auto translated = translated_result.get_translated_task();
     ASSERT_EQ(translated.get_axioms().size(), 1);
     const auto axiom = translated.get_axioms().front();

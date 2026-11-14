@@ -1,18 +1,18 @@
 {
-    "prefix": "tests/fixtures/negative",
+    "prefix": "tests/support/data/negative",
     "cases": [
         {
             "name": "strict undefined predicate",
             "expected_error": "UndefinedPredicateError",
             "expected_message": "Undefined predicate: missing",
             "strict": true,
-            "domain_file": "strict-undefined-predicate/domain.pddl"
+            "domain_file": "strict_undefined_predicate/domain.pddl"
         },
         {
             "name": "duplicate predicate",
             "expected_error": "DuplicatePredicateError",
             "expected_message": "Duplicate predicate definition: p",
-            "domain_file": "duplicate-predicate/domain.pddl"
+            "domain_file": "duplicate_predicate/domain.pddl"
         },
         {
             "name": "strict missing disjunction requirement",
@@ -21,7 +21,7 @@
             "expected_message": "Missing required PDDL requirement: :disjunctive-preconditions",
             "expected_line": 4,
             "expected_column": 43,
-            "domain_file": "strict-missing-disjunction-requirement/domain.pddl"
+            "domain_file": "strict_missing_disjunction_requirement/domain.pddl"
         },
         {
             "name": "strict missing implication requirement",
@@ -30,14 +30,14 @@
             "expected_message": "Missing required PDDL requirement: :disjunctive-preconditions",
             "expected_line": 3,
             "expected_column": 43,
-            "domain_file": "strict-missing-implication-requirement/domain.pddl"
+            "domain_file": "strict_missing_implication_requirement/domain.pddl"
         },
         {
             "name": "strict missing equality requirement",
             "expected_error": "MissingRequirementError",
             "expected_message": "Missing required PDDL requirement: :equality",
             "strict": true,
-            "domain_file": "strict-missing-equality-requirement/domain.pddl"
+            "domain_file": "strict_missing_equality_requirement/domain.pddl"
         },
         {
             "name": "strict unused typing requirement",
@@ -46,46 +46,46 @@
             "strict": true,
             "expected_line": 2,
             "expected_column": 27,
-            "domain_file": "strict-unused-typing-requirement/domain.pddl"
+            "domain_file": "strict_unused_typing_requirement/domain.pddl"
         },
         {
             "name": "invalid equality arity",
             "expected_error": "InvalidEqualityError",
             "expected_message": "Invalid equality expression: expected 2 terms, got 3",
-            "domain_file": "invalid-equality-arity/domain.pddl"
+            "domain_file": "invalid_equality_arity/domain.pddl"
         },
         {
             "name": "strict predicate type mismatch",
             "expected_error": "TypeMismatchError",
             "strict": true,
-            "domain_file": "strict-predicate-type-mismatch/domain.pddl"
+            "domain_file": "strict_predicate_type_mismatch/domain.pddl"
         },
         {
             "name": "invalid metric optimization",
             "expected_error": "InvalidMetricError",
             "expected_message": "Invalid metric optimization: smallest",
-            "domain_file": "invalid-metric-optimization/domain.pddl",
-            "task_file": "invalid-metric-optimization/task.pddl"
+            "domain_file": "invalid_metric_optimization/domain.pddl",
+            "task_file": "invalid_metric_optimization/task.pddl"
         },
         {
             "name": "invalid numeric effect operator",
             "expected_error": "InvalidNumericEffectError",
-            "domain_file": "invalid-numeric-effect-operator/domain.pddl"
+            "domain_file": "invalid_numeric_effect_operator/domain.pddl"
         },
         {
             "name": "invalid numeric constraint comparator",
             "expected_error": "InvalidNumericConstraintError",
-            "domain_file": "invalid-numeric-constraint-comparator/domain.pddl"
+            "domain_file": "invalid_numeric_constraint_comparator/domain.pddl"
         },
         {
             "name": "probability out of range",
             "expected_error": "InvalidProbabilisticEffectError",
-            "domain_file": "probability-out-of-range/domain.pddl"
+            "domain_file": "probability_out_of_range/domain.pddl"
         },
         {
             "name": "probability total above one",
             "expected_error": "InvalidProbabilisticEffectError",
-            "domain_file": "probability-total-above-one/domain.pddl"
+            "domain_file": "probability_total_above_one/domain.pddl"
         },
         {
             "name": "mismatched task domain",
@@ -93,107 +93,107 @@
             "expected_message": "Task references domain 'other-domain' but parser holds domain 'expected-domain'.",
             "expected_line": 2,
             "expected_column": 12,
-            "domain_file": "mismatched-task-domain/domain.pddl",
-            "task_file": "mismatched-task-domain/task.pddl"
+            "domain_file": "mismatched_task_domain/domain.pddl",
+            "task_file": "mismatched_task_domain/task.pddl"
         },
         {
             "name": "strict numeric write requires numeric-fluents under bare action-costs",
             "expected_error": "MissingRequirementError",
             "expected_message": "Missing required PDDL requirement: :numeric-fluents",
             "strict": true,
-            "domain_file": "strict-numeric-write-requires-numeric-fluents-under-bare-action-costs/domain.pddl"
+            "domain_file": "strict_numeric_write_requires_numeric_fluents_under_bare_action_costs/domain.pddl"
         },
         {
             "name": "strict increase of non-total-cost requires numeric-fluents under bare action-costs",
             "expected_error": "MissingRequirementError",
             "expected_message": "Missing required PDDL requirement: :numeric-fluents",
             "strict": true,
-            "domain_file": "strict-increase-of-non-total-cost-requires-numeric-fluents-under-bare-action-costs/domain.pddl"
+            "domain_file": "strict_increase_of_non_total_cost_requires_numeric_fluents_under_bare_action_costs/domain.pddl"
         },
         {
             "name": "strict function declaration requires a numeric requirement",
             "expected_error": "MissingRequirementError",
             "expected_message": "Missing required PDDL requirement: :numeric-fluents",
             "strict": true,
-            "domain_file": "strict-function-declaration-requires-a-numeric-requirement/domain.pddl"
+            "domain_file": "strict_function_declaration_requires_a_numeric_requirement/domain.pddl"
         },
         {
             "name": "strict numeric read in init requires a numeric requirement",
             "expected_error": "MissingRequirementError",
             "expected_message": "Missing required PDDL requirement: :numeric-fluents",
             "strict": true,
-            "domain_file": "strict-numeric-read-in-init-requires-a-numeric-requirement/domain.pddl",
-            "task_file": "strict-numeric-read-in-init-requires-a-numeric-requirement/task.pddl"
+            "domain_file": "strict_numeric_read_in_init_requires_a_numeric_requirement/domain.pddl",
+            "task_file": "strict_numeric_read_in_init_requires_a_numeric_requirement/task.pddl"
         },
         {
             "name": "strict function type mismatch",
             "expected_error": "TypeMismatchError",
             "strict": true,
-            "domain_file": "strict-function-type-mismatch/domain.pddl"
+            "domain_file": "strict_function_type_mismatch/domain.pddl"
         },
         {
             "name": "declared predicate arity mismatch",
             "expected_error": "ArityMismatchError",
-            "domain_file": "declared-predicate-arity-mismatch/domain.pddl"
+            "domain_file": "declared_predicate_arity_mismatch/domain.pddl"
         },
         {
             "name": "strict action-costs requires metric",
             "expected_error": "SemanticError",
             "expected_message": "Missing total-cost metric for :action-costs",
             "strict": true,
-            "domain_file": "strict-action-costs-requires-metric/domain.pddl",
-            "task_file": "strict-action-costs-requires-metric/task.pddl"
+            "domain_file": "strict_action_costs_requires_metric/domain.pddl",
+            "task_file": "strict_action_costs_requires_metric/task.pddl"
         },
         {
             "name": "strict action-costs requires initial value",
             "expected_error": "SemanticError",
             "expected_message": "Missing initial value for total-cost for :action-costs",
             "strict": true,
-            "domain_file": "strict-action-costs-requires-initial-value/domain.pddl",
-            "task_file": "strict-action-costs-requires-initial-value/task.pddl"
+            "domain_file": "strict_action_costs_requires_initial_value/domain.pddl",
+            "task_file": "strict_action_costs_requires_initial_value/task.pddl"
         },
         {
             "name": "strict action-costs requires total-cost function",
             "expected_error": "SemanticError",
             "expected_message": "Missing total-cost function for :action-costs",
             "strict": true,
-            "domain_file": "strict-action-costs-requires-total-cost-function/domain.pddl"
+            "domain_file": "strict_action_costs_requires_total_cost_function/domain.pddl"
         },
         {
             "name": "strict rejects aggregate :adl",
             "expected_error": "AggregateRequirementError",
             "expected_message": "Aggregate PDDL requirement must be declared atomically: :adl",
             "strict": true,
-            "domain_file": "strict-rejects-aggregate-adl/domain.pddl"
+            "domain_file": "strict_rejects_aggregate_adl/domain.pddl"
         },
         {
             "name": "strict rejects aggregate :fluents",
             "expected_error": "AggregateRequirementError",
             "expected_message": "Aggregate PDDL requirement must be declared atomically: :fluents",
             "strict": true,
-            "domain_file": "strict-rejects-aggregate-fluents/domain.pddl"
+            "domain_file": "strict_rejects_aggregate_fluents/domain.pddl"
         },
         {
             "name": "strict rejects aggregate :quantified-preconditions",
             "expected_error": "AggregateRequirementError",
             "expected_message": "Aggregate PDDL requirement must be declared atomically: :quantified-preconditions",
             "strict": true,
-            "domain_file": "strict-rejects-aggregate-quantified-preconditions/domain.pddl"
+            "domain_file": "strict_rejects_aggregate_quantified_preconditions/domain.pddl"
         },
         {
             "name": "strict requires :strips declaration",
             "expected_error": "MissingRequirementError",
             "expected_message": "Missing required PDDL requirement: :strips",
             "strict": true,
-            "domain_file": "strict-requires-strips-declaration/domain.pddl"
+            "domain_file": "strict_requires_strips_declaration/domain.pddl"
         },
         {
             "name": "strict task requirement redundant with domain",
             "expected_error": "RedundantRequirementError",
             "expected_message": "Task requirement already declared by the domain: :typing",
             "strict": true,
-            "domain_file": "strict-task-requirement-redundant-with-domain/domain.pddl",
-            "task_file": "strict-task-requirement-redundant-with-domain/task.pddl"
+            "domain_file": "strict_task_requirement_redundant_with_domain/domain.pddl",
+            "task_file": "strict_task_requirement_redundant_with_domain/task.pddl"
         }
     ]
 }

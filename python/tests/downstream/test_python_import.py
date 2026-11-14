@@ -17,9 +17,9 @@ import pypddl
 
 DOWNSTREAM_PACKAGE_DIR = Path(__file__).resolve().parent / "minimal_downstream_package"
 
-DOMAIN_SOURCE = (Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "facade" / "domain.pddl").read_text(
-    encoding="utf-8"
-)
+DOMAIN_SOURCE = (
+    Path(__file__).resolve().parents[3] / "tests" / "support" / "data" / "facade" / "domain.pddl"
+).read_text(encoding="utf-8")
 
 
 def test_downstream_python_binding_links_installed_loki(tmp_path: Path) -> None:

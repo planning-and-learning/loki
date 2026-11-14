@@ -16,7 +16,7 @@ from pyyggdrasil.diagnostics import Diagnostic, format_diagnostic
 from pypddl import formalism as pypddl
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE_DIR = ROOT / "tests" / "fixtures"
+FIXTURE_DIR = ROOT / "tests" / "support" / "data"
 
 
 def fixture_path(case_dir: str, file_name: str = "domain.pddl") -> Path:
@@ -79,7 +79,7 @@ def test_negative_fixture_suite_replays() -> None:
 
 
 def test_parse_error_keeps_owned_diagnostic_context_and_filename() -> None:
-    path = fixture_path("broken-syntax")
+    path = fixture_path("broken_syntax")
     with pytest.raises(pypddl.ParseError) as raised:
         pypddl.Parser(path, pypddl.ParserOptions())
     error = raised.value
@@ -954,8 +954,8 @@ if __name__ == "__main__":
 
 
 def test_task_declares_types_and_predicates_and_translation_reparses_strictly() -> None:
-    parser = pypddl.Parser(fixture_path("either-typing"), pypddl.ParserOptions())
-    task = parser.parse_task(fixture_path("either-typing", "task-extension.pddl"))
+    parser = pypddl.Parser(fixture_path("either_typing"), pypddl.ParserOptions())
+    task = parser.parse_task(fixture_path("either_typing", "task-extension.pddl"))
     assert sorted(str(t.get_name()) for t in task.get_types()) == ["either_special_vip", "special", "vip"]
     assert [str(p.get_name()) for p in task.get_predicates()] == ["marked"]
 

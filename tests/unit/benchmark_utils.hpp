@@ -58,9 +58,9 @@ inline urd::Store<urd::sequence<SuiteCase>> load_suite_cases(const std::filesyst
 }
 
 inline urd::Store<urd::sequence<SuiteCase>> benchmark_suite_cases()
-{ return load_suite_cases(ygg::common::root_path() / "tests/fixtures/parser_counts_suite.json", std::filesystem::path(BENCHMARKS_DIR)); }
+{ return load_suite_cases(ygg::common::root_path() / "tests/support/data/parser_counts_suite.json", std::filesystem::path(BENCHMARKS_DIR)); }
 
-inline urd::Store<urd::sequence<SuiteCase>> fixture_suite_cases() { return load_suite_cases(ygg::common::root_path() / "tests/fixtures/suite.json"); }
+inline urd::Store<urd::sequence<SuiteCase>> fixture_suite_cases() { return load_suite_cases(ygg::common::root_path() / "tests/support/data/suite.json"); }
 
 // Benchmark cases plus the loki mini-corpus: the exhaustive input set for positive invariants.
 inline urd::Store<urd::sequence<SuiteCase>> all_positive_cases()
@@ -72,7 +72,7 @@ inline urd::Store<urd::sequence<SuiteCase>> all_positive_cases()
 }
 
 inline std::filesystem::path fixture_path(const std::string& case_dir, const std::string& file = "domain.pddl")
-{ return ygg::common::root_path() / "tests/fixtures" / case_dir / file; }
+{ return ygg::common::root_path() / "tests/support/data" / case_dir / file; }
 
 }  // namespace loki::tests
 

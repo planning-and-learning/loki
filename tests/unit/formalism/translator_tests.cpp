@@ -86,7 +86,7 @@ TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
 
 TEST(LokiTests, GeneratedUniversalPredicateKeepsNumericFreeVariables)
 {
-    auto parser = semantic::Parser(fixture_path("numeric-universal"));
+    auto parser = semantic::Parser(fixture_path("numeric_universal"));
     const auto translation = semantic::translate(parser.get_domain());
     const auto domain = translation.get_translated_domain();
 
@@ -105,7 +105,7 @@ TEST(LokiTests, GeneratedUniversalPredicateKeepsNumericFreeVariables)
 
 TEST(LokiTests, CompileConditionalEffectsSplitsActions)
 {
-    auto parser = semantic::Parser(fixture_path("conditional-multiply"));
+    auto parser = semantic::Parser(fixture_path("conditional_multiply"));
     auto options = semantic::TranslatorOptions {};
     options.compile_conditional_effects = true;
 
@@ -130,7 +130,7 @@ TEST(LokiTests, CompileConditionalEffectsSplitsActions)
 
 TEST(LokiTests, CompileConditionalEffectsThrowsOnOverflow)
 {
-    auto parser = semantic::Parser(fixture_path("conditional-overflow"));
+    auto parser = semantic::Parser(fixture_path("conditional_overflow"));
     auto options = semantic::TranslatorOptions {};
     options.compile_conditional_effects = true;
 
@@ -139,7 +139,7 @@ TEST(LokiTests, CompileConditionalEffectsThrowsOnOverflow)
 
 TEST(LokiTests, ExistentialConditionalEffectBecomesUniversalEffect)
 {
-    auto parser = semantic::Parser(fixture_path("conditional-exists"));
+    auto parser = semantic::Parser(fixture_path("conditional_exists"));
     const auto translation = semantic::translate(parser.get_domain());
     const auto domain = translation.get_translated_domain();
 
@@ -159,7 +159,7 @@ TEST(LokiTests, ExistentialConditionalEffectBecomesUniversalEffect)
 
 TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
 {
-    auto parser = semantic::Parser(fixture_path("dnf-forall"));
+    auto parser = semantic::Parser(fixture_path("dnf_forall"));
     auto storage = std::make_shared<semantic::detail::TranslationStorage>();
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::ToDisjunctiveNormalForm);
     const auto domain = semantic::detail::copy(parser.get_domain(), translator).first;
@@ -184,7 +184,7 @@ TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
 
 TEST(LokiTests, UntypedUniversalEffectKeepsEmptyGuardWhen)
 {
-    auto parser = semantic::Parser(fixture_path("untyped-universal-effect"));
+    auto parser = semantic::Parser(fixture_path("untyped_universal_effect"));
     const auto translation = semantic::translate(parser.get_domain());
     const auto domain = translation.get_translated_domain();
 
@@ -197,7 +197,7 @@ TEST(LokiTests, UntypedUniversalEffectKeepsEmptyGuardWhen)
 
 TEST(LokiTests, KeepTypingPreservesPersistentParameters)
 {
-    auto parser = semantic::Parser(fixture_path("typed-signatures"));
+    auto parser = semantic::Parser(fixture_path("typed_signatures"));
     const auto translation = semantic::translate(parser.get_domain(), semantic::TranslatorOptions { .compile_typing = false });
     const auto domain = translation.get_translated_domain();
 
@@ -230,7 +230,7 @@ TEST(LokiTests, KeepTypingPreservesPersistentParameters)
 
 TEST(LokiTests, RemoveTypingStripsPersistentParameters)
 {
-    auto parser = semantic::Parser(fixture_path("typed-signatures"));
+    auto parser = semantic::Parser(fixture_path("typed_signatures"));
     const auto translation = semantic::translate(parser.get_domain(), semantic::TranslatorOptions { .compile_typing = true });
     const auto domain = translation.get_translated_domain();
     EXPECT_TRUE(domain.get_types().empty());
@@ -256,7 +256,7 @@ TEST(LokiTests, RemoveTypingStripsPersistentParameters)
 
 TEST(LokiTests, RenameQuantifiedVariablesSeparatesNestedBinders)
 {
-    auto parser = semantic::Parser(fixture_path("variable-renaming"));
+    auto parser = semantic::Parser(fixture_path("variable_renaming"));
     auto storage = std::make_shared<semantic::detail::TranslationStorage>();
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::RenameQuantifiedVariables);
     const auto domain = semantic::detail::copy(parser.get_domain(), translator).first;

@@ -77,7 +77,7 @@ CMake options:
 | --- | --- | --- |
 | `LOKI_BUILD_TESTS` | `OFF` | Build Loki tests. |
 | `LOKI_BUILD_EXECUTABLES` | `OFF` | Build Loki executables. |
-| `LOKI_BUILD_PROFILING` | `OFF` | Build Loki profiling targets. |
+| `LOKI_BUILD_BENCHMARKS` | `OFF` | Build Loki benchmark targets. |
 | `LOKI_BUILD_PYPDDL` | `OFF` | Build Loki for the `pypddl` Python wheel. |
 | `LOKI_USE_LLD` | `ON` | Use LLVM `lld` with Clang when available. |
 | `LOKI_ENABLE_LTO` | `ON` | Enable link-time optimization for Release builds. |

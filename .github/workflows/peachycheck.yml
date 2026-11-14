@@ -31,7 +31,7 @@ jobs:
             PREFIX="$(.venv/bin/python -c 'import pyyggdrasil; print(pyyggdrasil.native_prefix())')"
             cmake -S . -B build/peachycheck -G Ninja -DCMAKE_MAKE_PROGRAM="$PWD/.venv/bin/ninja" \
                   -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-                  -DLOKI_BUILD_TESTS=ON -DLOKI_BUILD_EXECUTABLES=ON -DLOKI_BUILD_PROFILING=ON -DLOKI_BUILD_PYPDDL=ON \
+                  -DLOKI_BUILD_TESTS=ON -DLOKI_BUILD_EXECUTABLES=ON -DLOKI_BUILD_BENCHMARKS=ON -DLOKI_BUILD_PYPDDL=ON \
                   -DCMAKE_PREFIX_PATH="$PREFIX" -DCMAKE_INSTALL_LIBDIR=lib \
                   -DPython_EXECUTABLE="$PWD/.venv/bin/python" -DPython3_EXECUTABLE="$PWD/.venv/bin/python"
             .venv/bin/python -m pip install --no-build-isolation ".[test]"

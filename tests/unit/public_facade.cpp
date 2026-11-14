@@ -56,10 +56,10 @@ TEST(LokiPublicFacade, ExposesParserAndTranslator)
 
 TEST(LokiPublicFacade, ViewConvenienceMethodsCoverTypedSymbolsAndLiterals)
 {
-    auto parser = loki::semantic::Parser(fixture_path("typed-facade"));
+    auto parser = loki::semantic::Parser(fixture_path("typed_facade"));
 
     const auto domain = parser.get_domain();
-    const auto task = parser.parse_task(fixture_path("typed-facade", "task.pddl"));
+    const auto task = parser.parse_task(fixture_path("typed_facade", "task.pddl"));
 
     ASSERT_GE(domain.get_types().size(), 2);
     auto saw_item_type = false;
@@ -97,10 +97,10 @@ TEST(LokiPublicFacade, ViewConvenienceMethodsCoverTypedSymbolsAndLiterals)
 
 TEST(LokiPublicFacade, ViewConvenienceMethodsCoverNumericEffectsAndMetrics)
 {
-    auto parser = loki::semantic::Parser(fixture_path("numeric-facade"));
+    auto parser = loki::semantic::Parser(fixture_path("numeric_facade"));
 
     const auto domain = parser.get_domain();
-    const auto task = parser.parse_task(fixture_path("numeric-facade", "task.pddl"));
+    const auto task = parser.parse_task(fixture_path("numeric_facade", "task.pddl"));
 
     ASSERT_EQ(domain.get_functions().size(), 1);
     ASSERT_EQ(domain.get_actions().size(), 1);
@@ -169,10 +169,10 @@ TEST(LokiPublicFacade, ViewConvenienceMethodsCoverNumericEffectsAndMetrics)
 
 TEST(LokiPublicFacade, FormatsSemanticDomainAndTaskAsReparseablePddl)
 {
-    auto parser = loki::semantic::Parser(fixture_path("facade-format"));
+    auto parser = loki::semantic::Parser(fixture_path("facade_format"));
 
     const auto domain = parser.get_domain();
-    const auto task = parser.parse_task(fixture_path("facade-format", "task.pddl"));
+    const auto task = parser.parse_task(fixture_path("facade_format", "task.pddl"));
 
     const auto domain_text = loki::formalism::format::to_string(domain);
     const auto task_text = loki::formalism::format::to_string(task);
@@ -189,7 +189,7 @@ TEST(LokiPublicFacade, FormatsSemanticDomainAndTaskAsReparseablePddl)
 
 TEST(LokiPublicFacade, FormatsAlternativeEffectsAsReparseablePddl)
 {
-    auto parser = loki::semantic::Parser(fixture_path("alternative-effects"), loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
+    auto parser = loki::semantic::Parser(fixture_path("alternative_effects"), loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
 
     const auto domain = parser.get_domain();
     const auto domain_text = loki::formalism::format::to_string(domain);
@@ -219,10 +219,10 @@ TEST(LokiPublicFacade, FormatsAlternativeEffectsAsReparseablePddl)
 
 TEST(LokiPublicFacade, FormatsTypedNumericTaskSectionsAsReparseablePddl)
 {
-    auto parser = loki::semantic::Parser(fixture_path("facade-format-numeric"), loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
+    auto parser = loki::semantic::Parser(fixture_path("facade_format_numeric"), loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
 
     const auto domain = parser.get_domain();
-    const auto task = parser.parse_task(fixture_path("facade-format-numeric", "task.pddl"));
+    const auto task = parser.parse_task(fixture_path("facade_format_numeric", "task.pddl"));
 
     const auto domain_text = loki::formalism::format::to_string(domain);
     const auto task_text = loki::formalism::format::to_string(task);

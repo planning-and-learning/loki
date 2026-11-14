@@ -76,7 +76,7 @@ Checks: >
   -bugprone-easily-swappable-parameters,
   -bugprone-crtp-constructor-accessibility,
   -bugprone-chained-comparison
-HeaderFilterRegex: '.*/(include/loki|tests|profiling|python/src|exe)/.*'
+HeaderFilterRegex: '.*/(include/loki|tests|benchmarks|python/src|exe)/.*'
 ExcludeHeaderFilterRegex: '.*/(dependencies-install|dependencies-build|build|site-packages|_deps)/.*'
 CheckOptions:
   # Member initializers are written `= value`, as elsewhere in the code.

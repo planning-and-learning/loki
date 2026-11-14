@@ -5,7 +5,7 @@
 Runs every parser-suite fixture through each parser/translator configuration and records
 entity counts of the translated domain and task.
 
-Usage: uv run python tests/fixtures/generate_translation_counts_suite.py
+Usage: uv run python tests/support/generators/generate_translation_counts_suite.py
 """
 
 import json
@@ -16,7 +16,7 @@ import pypddl_datasets
 
 from pypddl import formalism as pypddl
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 _Options = TypeVar("_Options")
 
@@ -51,7 +51,7 @@ def make_options(cls: type[_Options], config: dict[str, bool]) -> _Options:
 
 def main() -> None:
     """Write the translation counts suite."""
-    parser_suite: dict[str, Any] = json.loads((ROOT / "tests/fixtures/parser_counts_suite.json").read_text())
+    parser_suite: dict[str, Any] = json.loads((ROOT / "tests/support/data/parser_counts_suite.json").read_text())
 
     prefix = pypddl_datasets.data_root()
 
@@ -88,7 +88,7 @@ def main() -> None:
             )
         cases.append({"name": case["name"], "configurations": configurations})
 
-    out = ROOT / "tests/fixtures/translation_counts_suite.json"
+    out = ROOT / "tests/support/data/translation_counts_suite.json"
     out.write_text(json.dumps({"cases": cases}, indent=4) + "\n")
     print(f"Wrote {len(cases)} cases x {len(CONFIGURATIONS)} configurations to {out}")
 

@@ -34,7 +34,7 @@ option(LOKI_ENABLE_LTO "Enable link-time optimization for Release builds." ON)
 option(LOKI_BUILD_PYPDDL "Build Loki for the pypddl Python wheel." OFF)
 option(LOKI_BUILD_TESTS "Build Loki tests." OFF)
 option(LOKI_BUILD_EXECUTABLES "Build Loki executables." OFF)
-option(LOKI_BUILD_PROFILING "Build Loki profiling targets." OFF)
+option(LOKI_BUILD_BENCHMARKS "Build Loki benchmark targets." OFF)
 option(LOKI_STDLIB_ASSERTIONS "Check bounds and preconditions of the standard library in Debug builds." ON)
 
 # Build configuration
@@ -195,8 +195,8 @@ if(LOKI_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-if(LOKI_BUILD_PROFILING)
-    add_subdirectory(profiling)
+if(LOKI_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
 endif()
 
 # Installation and package export

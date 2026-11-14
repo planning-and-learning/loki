@@ -35,7 +35,7 @@ Stage: build
     cmake -S . -B build \
         -DCMAKE_BUILD_TYPE=Release \
         -DLOKI_BUILD_TESTS=OFF \
-        -DLOKI_BUILD_PROFILING=OFF \
+        -DLOKI_BUILD_BENCHMARKS=OFF \
         -DLOKI_BUILD_EXECUTABLES=ON
     cmake --build build -j2
 

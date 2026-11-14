@@ -40,7 +40,7 @@ namespace loki::tests
 
 TEST(LokiSemanticParser, AllowsDuplicateActionNamesAndInternsIdenticalBodies)
 {
-    auto parser = semantic::Parser(fixture_path("duplicate-action-name"));
+    auto parser = semantic::Parser(fixture_path("duplicate_action_name"));
 
     EXPECT_EQ(parser.get_domain().get_actions().size(), 2);
 }
@@ -49,13 +49,13 @@ TEST(LokiSemanticParser, LowercasesSourceBeforeParsing)
 {
     auto options = semantic::ParserOptions {};
     options.add_action_costs = false;
-    auto parser = semantic::Parser(ygg::common::read_file(fixture_path("mixed-case")), options);
+    auto parser = semantic::Parser(ygg::common::read_file(fixture_path("mixed_case")), options);
 
     EXPECT_EQ(parser.get_domain().get_name(), "mixed-domain");
     ASSERT_EQ(parser.get_domain().get_predicates().size(), 1);
     EXPECT_EQ(parser.get_domain().get_predicates()[0].get_name(), "ready");
 
-    const auto task = parser.parse_task(ygg::common::read_file(fixture_path("mixed-case", "task.pddl")));
+    const auto task = parser.parse_task(ygg::common::read_file(fixture_path("mixed_case", "task.pddl")));
     EXPECT_EQ(task.get_name(), "mixed-task");
     ASSERT_EQ(task.get_objects().size(), 1);
     EXPECT_EQ(task.get_objects()[0].get_name(), "item");
@@ -65,7 +65,7 @@ TEST(LokiSemanticParser, ReturnedRequirementsAreDeclaredVerbatim)
 {
     auto options = semantic::ParserOptions {};
     options.add_action_costs = false;
-    auto parser = semantic::Parser(fixture_path("adl-requirements"), options);
+    auto parser = semantic::Parser(fixture_path("adl_requirements"), options);
 
     // Permissive mode neither validates nor rewrites requirements: the domain
     // declares :adl, so :adl is what comes back.
@@ -82,7 +82,7 @@ TEST(LokiSemanticParser, StrictModeAllowsForwardTypeReferences)
     auto options = semantic::ParserOptions {};
     options.strict = true;
     options.add_action_costs = false;
-    auto parser = semantic::Parser(fixture_path("forward-types"), options);
+    auto parser = semantic::Parser(fixture_path("forward_types"), options);
 
     auto saw_child = false;
     auto saw_parent = false;
@@ -110,16 +110,16 @@ TEST(LokiSemanticParser, StrictModeChecksTaskQuantifierTypesAcrossRepositories)
     auto options = semantic::ParserOptions {};
     options.strict = true;
     options.add_action_costs = false;
-    auto parser = semantic::Parser(fixture_path("quantified-types"), options);
+    auto parser = semantic::Parser(fixture_path("quantified_types"), options);
 
-    EXPECT_NO_THROW(parser.parse_task(fixture_path("quantified-types", "task.pddl")));
+    EXPECT_NO_THROW(parser.parse_task(fixture_path("quantified_types", "task.pddl")));
 }
 
 TEST(LokiSemanticParser, PreservesComplementaryLiteralsInConjunctions)
 {
     auto options = semantic::ParserOptions {};
     options.add_action_costs = false;
-    auto parser = semantic::Parser(fixture_path("complementary-literals"), options);
+    auto parser = semantic::Parser(fixture_path("complementary_literals"), options);
     const auto action = parser.get_domain().get_actions()[0];
     ASSERT_TRUE(action.get_precondition().has_value());
     auto conjuncts = std::size_t { 0 };
@@ -162,15 +162,15 @@ TEST(LokiSemanticParser, NormalizesMultiExpressionArityAndSortsOperandsWithoutDe
 
 TEST(LokiSemanticParser, ParsesAndTranslatesDistinctTasksAfterOneDomain)
 {
-    semantic::Parser parser(fixture_path("many-tasks"));
+    semantic::Parser parser(fixture_path("many_tasks"));
 
     const auto domain = parser.get_domain();
     const auto translation = semantic::translate(domain);
 
-    const auto first_task = parser.parse_task(fixture_path("many-tasks", "task.pddl"));
+    const auto first_task = parser.parse_task(fixture_path("many_tasks", "task.pddl"));
     const auto first_translated_result = semantic::translate(first_task, translation);
     const auto first_translated = first_translated_result.get_translated_task();
-    const auto second_task = parser.parse_task(fixture_path("many-tasks", "task2.pddl"));
+    const auto second_task = parser.parse_task(fixture_path("many_tasks", "task2.pddl"));
     const auto second_translated_result = semantic::translate(second_task, translation);
     const auto second_translated = second_translated_result.get_translated_task();
 
@@ -196,13 +196,13 @@ TEST(LokiSemanticParser, FailedTaskDoesNotLeakVariableScopes)
 {
     auto options = semantic::ParserOptions {};
     options.add_action_costs = false;
-    auto parser = semantic::Parser(fixture_path("task-isolation"), options);
+    auto parser = semantic::Parser(fixture_path("task_isolation"), options);
 
-    EXPECT_THROW(parser.parse_task(fixture_path("task-isolation", "bad-task.pddl")), semantic::UndefinedVariableError);
+    EXPECT_THROW(parser.parse_task(fixture_path("task_isolation", "bad-task.pddl")), semantic::UndefinedVariableError);
 
-    EXPECT_THROW(parser.parse_task(fixture_path("task-isolation", "leaked-variable-task.pddl")), semantic::UndefinedVariableError);
+    EXPECT_THROW(parser.parse_task(fixture_path("task_isolation", "leaked-variable-task.pddl")), semantic::UndefinedVariableError);
 
-    const auto task = parser.parse_task(fixture_path("task-isolation", "task.pddl"));
+    const auto task = parser.parse_task(fixture_path("task_isolation", "task.pddl"));
     EXPECT_EQ(task.get_name(), "good");
 }
 
