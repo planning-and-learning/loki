@@ -19,8 +19,8 @@
 
 #include "loki/formalism/detail/repository_instantiations.hpp"
 
-#include <yggdrasil/formalism/repository_instantiations.hpp>
 #include <yggdrasil/formalism/builder_instantiations.hpp>
+#include <yggdrasil/formalism/repository_instantiations.hpp>
 
 LOKI_FORMALISM_INTERNS()
 

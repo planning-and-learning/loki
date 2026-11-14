@@ -37,6 +37,8 @@ namespace loki::formalism
 
 namespace detail
 {
+namespace
+{
 /// The text an element reads as through the context: the order canonical lists are sorted by.
 template<typename C, typename Element>
     requires urd::resolving<Element> || urd::variant_value<Element>
@@ -70,6 +72,7 @@ void canonicalize(const C& context, List& list)
     list.resize(size);
 }
 
+}  // namespace
 }  // namespace detail
 
 void canonicalize(Repository& repository, urd::data<Type>& data) { detail::canonicalize(repository, data.bases); }
