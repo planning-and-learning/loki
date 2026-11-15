@@ -20,6 +20,7 @@
 
 #include "loki/formalism/declarations.hpp"
 #include "loki/formalism/enums.hpp"
+#include "loki/formalism/function_expressions.hpp"
 
 #include <tuple>
 #include <urd/elements/flat.hpp>
@@ -42,9 +43,16 @@ struct data<::loki::formalism::Metric>
         expression(std::move(expression_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::optimization_direction, &data::expression> {}; }
+    static constexpr auto fields() noexcept
+    { return urd::Fields<urd::field<"optimization_direction", &data::optimization_direction>, urd::field<"expression", &data::expression>> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::optimization_direction, &data::expression> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::optimization_direction, &data::expression> {}; }
 };
 
 }

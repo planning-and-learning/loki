@@ -21,14 +21,8 @@
 #include "loki/formalism/enums.hpp"
 
 #include <boost/mp11.hpp>
-#include <cista/containers/variant.h>
-#include <cista/containers/vector.h>
-#include <concepts>
-#include <cstdint>
-#include <memory>
-#include <tuple>
-#include <urd/elements/flat.hpp>
-#include <variant>
+#include <string_view>
+#include <urd/elements/index.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg::formalism
@@ -45,104 +39,121 @@ class Repository;
 namespace loki::formalism
 {
 
-struct ObjectTag
-{
-};
-
-using ObjectBinding = ::ygg::formalism::Object<ObjectTag>;
-
 struct Requirement
 {
+    static constexpr std::string_view name = "Requirement";
 };
 struct Type
 {
+    static constexpr std::string_view name = "Type";
 };
 struct Object
 {
+    static constexpr std::string_view name = "Object";
 };
 struct Variable
 {
+    static constexpr std::string_view name = "Variable";
 };
 struct Parameter
 {
+    static constexpr std::string_view name = "Parameter";
 };
 struct Predicate
 {
+    static constexpr std::string_view name = "Predicate";
 };
 struct FunctionSkeleton
 {
+    static constexpr std::string_view name = "FunctionSkeleton";
 };
 struct Atom
 {
+    static constexpr std::string_view name = "Atom";
 };
 struct Literal
 {
+    static constexpr std::string_view name = "Literal";
 };
 struct FunctionTerm
 {
+    static constexpr std::string_view name = "FunctionTerm";
 };
 struct EffectProbabilisticAlternative
 {
+    static constexpr std::string_view name = "EffectProbabilisticAlternative";
 };
-
-/// A term: a variable or an object. Stored as it is, not interned.
-using Term = urd::flat_variant<urd::index<Variable>, urd::index<Object>>;
-using TermList = urd::flat_vector<Term>;
 
 // Shared tags
 struct LiteralTag
 {
+    static constexpr std::string_view name = "Literal";
 };
 struct AndTag
 {
+    static constexpr std::string_view name = "And";
 };
 struct ForallTag
 {
+    static constexpr std::string_view name = "Forall";
 };
 
 // Condition-only tags
 struct OrTag
 {
+    static constexpr std::string_view name = "Or";
 };
 struct NotTag
 {
+    static constexpr std::string_view name = "Not";
 };
 struct ImplyTag
 {
+    static constexpr std::string_view name = "Imply";
 };
 struct ExistsTag
 {
+    static constexpr std::string_view name = "Exists";
 };
 struct NumericConstraintTag
 {
+    static constexpr std::string_view name = "NumericConstraint";
 };
 
 // Effect-only tags
 struct NumericTag
 {
+    static constexpr std::string_view name = "Numeric";
 };
 struct WhenTag
 {
+    static constexpr std::string_view name = "When";
 };
 struct OneOfTag
 {
+    static constexpr std::string_view name = "OneOf";
 };
 struct ProbabilisticTag
 {
+    static constexpr std::string_view name = "Probabilistic";
 };
 
 // FunctionExpression tags
 struct NumberTag
 {
+    static constexpr std::string_view name = "Number";
 };
 struct UnaryTag
 {
+    static constexpr std::string_view name = "Unary";
 };
 struct BinaryTag
 {
+    static constexpr std::string_view name = "Binary";
 };
 struct MultiTag
 {
+    static constexpr std::string_view name = "Multi";
 };
 
 using FunctionExpressionTags = boost::mp11::mp_list<NumberTag, UnaryTag, BinaryTag, MultiTag>;
@@ -153,46 +164,47 @@ template<typename Tag>
     requires boost::mp11::mp_contains<FunctionExpressionTags, Tag>::value
 struct FunctionExpression
 {
+    static constexpr std::string_view name = "FunctionExpression";
 };
 template<typename Tag>
     requires boost::mp11::mp_contains<ConditionTags, Tag>::value
 struct Condition
 {
+    static constexpr std::string_view name = "Condition";
 };
 template<typename Tag>
     requires boost::mp11::mp_contains<EffectTags, Tag>::value
 struct Effect
 {
+    static constexpr std::string_view name = "Effect";
 };
 
 using FunctionExpressionTypes = boost::mp11::mp_append<boost::mp11::mp_list<FunctionExpression<NumberTag>, FunctionTerm>,
                                                        boost::mp11::mp_transform<FunctionExpression, boost::mp11::mp_list<UnaryTag, BinaryTag, MultiTag>>>;
 
-/// A function expression, condition or effect: one of the family's records. Stored as it is, not interned.
-using FunctionExpressionVariant = urd::index_variant<FunctionExpressionTypes>;
-using FunctionExpressionList = urd::flat_vector<FunctionExpressionVariant>;
-using ConditionVariant = urd::index_variant<boost::mp11::mp_transform<Condition, ConditionTags>>;
-using ConditionList = urd::flat_vector<ConditionVariant>;
-using EffectVariant = urd::index_variant<boost::mp11::mp_transform<Effect, EffectTags>>;
-using EffectList = urd::flat_vector<EffectVariant>;
-
 struct Action
 {
+    static constexpr std::string_view name = "Action";
 };
 struct Axiom
 {
+    static constexpr std::string_view name = "Axiom";
 };
 struct Metric
 {
+    static constexpr std::string_view name = "Metric";
 };
 struct InitialFunctionValue
 {
+    static constexpr std::string_view name = "InitialFunctionValue";
 };
 struct Domain
 {
+    static constexpr std::string_view name = "Domain";
 };
 struct Task
 {
+    static constexpr std::string_view name = "Task";
 };
 
 using SymbolRepositoryTypes =
@@ -215,18 +227,14 @@ using SymbolRepositoryTypes =
                                                 Task>>;
 
 /// No family has rows in loki.
-using RelationRepository = ::ygg::formalism::RelationRepository<ObjectTag>;
+using RelationRepository = ::ygg::formalism::RelationRepository<Object>;
 
 /// Named by what it holds (yggdrasil's Symbols and Relations), not by its stores: a call with a repository argument
 /// then never instantiates them (yggdrasil/formalism/declarations.hpp).
-using Repository =
-    ::ygg::formalism::Repository<boost::mp11::mp_apply<::ygg::formalism::Symbols, SymbolRepositoryTypes>, ::ygg::formalism::Relations<ObjectTag>>;
+using Repository = ::ygg::formalism::Repository<boost::mp11::mp_apply<::ygg::formalism::Symbols, SymbolRepositoryTypes>, ::ygg::formalism::Relations<Object>>;
 
 template<typename T>
 using EntityView = urd::index_view<T, Repository>;
-
-template<typename T>
-using EntityListView = urd::resolved_range<urd::flat_vector<urd::index<T>>, Repository>;
 
 using RequirementView = EntityView<Requirement>;
 using TypeView = EntityView<Type>;
@@ -235,20 +243,10 @@ using VariableView = EntityView<Variable>;
 using ParameterView = EntityView<Parameter>;
 using PredicateView = EntityView<Predicate>;
 using FunctionSkeletonView = EntityView<FunctionSkeleton>;
-/// A term read through the repository: its variable's or its object's view.
-using TermView = std::variant<VariableView, ObjectView>;
-using TermListView = urd::resolved_range<TermList, Repository>;
 using AtomView = EntityView<Atom>;
 using LiteralView = EntityView<Literal>;
 using FunctionTermView = EntityView<FunctionTerm>;
-/// A function expression, condition or effect read through the repository: the view of the record it holds.
-using FunctionExpressionView = boost::mp11::mp_apply<std::variant, boost::mp11::mp_transform<EntityView, FunctionExpressionTypes>>;
-using FunctionExpressionListView = urd::resolved_range<FunctionExpressionList, Repository>;
-using ConditionView = boost::mp11::mp_apply<std::variant, boost::mp11::mp_transform<EntityView, boost::mp11::mp_transform<Condition, ConditionTags>>>;
-using ConditionListView = urd::resolved_range<ConditionList, Repository>;
 using EffectProbabilisticAlternativeView = EntityView<EffectProbabilisticAlternative>;
-using EffectView = boost::mp11::mp_apply<std::variant, boost::mp11::mp_transform<EntityView, boost::mp11::mp_transform<Effect, EffectTags>>>;
-using EffectListView = urd::resolved_range<EffectList, Repository>;
 using ActionView = EntityView<Action>;
 using AxiomView = EntityView<Axiom>;
 using MetricView = EntityView<Metric>;

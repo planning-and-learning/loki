@@ -421,7 +421,7 @@ def test_arithmetic_normalization_binding_flattens_sorts_and_removes_units() -> 
 
 
 def test_repository_view_keeps_temporary_repository_alive() -> None:
-    view, inserted = pypddl.Repository().insert(pypddl.TypeData("temporary-type"))
+    view, inserted = pypddl.Repository().insert(pypddl.TypeData("temporary-type", []))
     gc.collect()
 
     assert inserted is True
@@ -432,11 +432,11 @@ def test_insert_returns_flag_and_retains_repository_on_extracted_view() -> None:
     repository = pypddl.Repository()
     assert not hasattr(repository, "get_or_create")
     before = sys.getrefcount(repository)
-    result = repository.insert(pypddl.TypeData("retained-type"))
+    result = repository.insert(pypddl.TypeData("retained-type", []))
     assert isinstance(result, tuple)
     view, inserted = result
     assert inserted is True
-    duplicate, duplicate_inserted = repository.insert(pypddl.TypeData("retained-type"))
+    duplicate, duplicate_inserted = repository.insert(pypddl.TypeData("retained-type", []))
     assert duplicate_inserted is False
     assert duplicate == view
     del duplicate, result
@@ -520,22 +520,22 @@ def make_number_expression(repository: pypddl.Repository, value: float) -> pypdd
 def test_builders_expose_defaulted_mutable_fields() -> None:
     repository = pypddl.Repository()
 
-    object_type, _ = repository.insert(pypddl.TypeData("object"))
+    object_type, _ = repository.insert(pypddl.TypeData("object", []))
     variable, _ = repository.insert(pypddl.VariableData("?x"))
-    parameter, _ = repository.insert(pypddl.ParameterData(variable))
-    predicate, _ = repository.insert(pypddl.PredicateData("p"))
+    parameter, _ = repository.insert(pypddl.ParameterData(variable, []))
+    predicate, _ = repository.insert(pypddl.PredicateData("p", []))
     term = variable
     literal = make_literal(repository, predicate, [term])
     condition = make_condition(repository, predicate, [term])
     effect = make_effect(repository, literal)
 
-    parameter_builder = pypddl.ParameterData(variable)
+    parameter_builder = pypddl.ParameterData(variable, [])
     assert parameter_builder.variable == variable.index()
     assert parameter_builder.types == []
     parameter_builder.types = [object_type.index()]
     assert parameter_builder.types == [object_type.index()]
 
-    action_builder = pypddl.ActionData("a")
+    action_builder = pypddl.ActionData("a", "a", [], 0, None, None)
     assert action_builder.name == "a"
     assert action_builder.parameters == []
     assert action_builder.precondition is None
@@ -562,7 +562,7 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     action_builder.effect = effect.index()
     action, _ = repository.insert(action_builder)
 
-    domain_builder = pypddl.DomainData("d")
+    domain_builder = pypddl.DomainData("d", [], [], [], [], [], [], [])
     assert domain_builder.requirements == []
     assert domain_builder.types == []
     assert domain_builder.constants == []
@@ -576,7 +576,7 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     domain_builder.actions = [action.index()]
     domain, _ = repository.insert(domain_builder)
 
-    task_builder = pypddl.TaskData("t", domain)
+    task_builder = pypddl.TaskData("t", domain, [], [], [], [], [], [], None, None, [])
     assert task_builder.name == "t"
     assert task_builder.domain == domain.index()
     assert task_builder.requirements == []
@@ -610,8 +610,8 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
 def test_repository_constructs_numeric_function_task_bits() -> None:
     repository = pypddl.Repository()
     numeric, _ = repository.insert(pypddl.RequirementData(pypddl.RequirementKind.NumericFluents))
-    object_type, _ = repository.insert(pypddl.TypeData("object"))
-    number_type, _ = repository.insert(pypddl.TypeData("number"))
+    object_type, _ = repository.insert(pypddl.TypeData("object", []))
+    number_type, _ = repository.insert(pypddl.TypeData("number", []))
     variable, _ = repository.insert(pypddl.VariableData("?x"))
     parameter, _ = repository.insert(pypddl.ParameterData(variable, [object_type]))
     location, _ = repository.insert(pypddl.ObjectData("l1", [object_type]))
@@ -626,7 +626,7 @@ def test_repository_constructs_numeric_function_task_bits() -> None:
         pypddl.EffectNumericData(pypddl.NumericEffectOperator.Assign, function_term, one)
     )
     effect = numeric_effect_node
-    action, _ = repository.insert(pypddl.ActionData("refuel", [parameter], condition, effect))
+    action, _ = repository.insert(pypddl.ActionData("refuel", "refuel", [parameter], 1, condition, effect))
     initial_value, _ = repository.insert(pypddl.InitialFunctionValueData(function_term, zero))
     metric, _ = repository.insert(pypddl.MetricData(pypddl.OptimizationDirection.Minimize, one))
     domain, _ = repository.insert(
@@ -634,18 +634,26 @@ def test_repository_constructs_numeric_function_task_bits() -> None:
             "numeric-programmatic",
             requirements=[numeric],
             types=[object_type, number_type],
+            constants=[],
+            predicates=[],
             functions=[fluent],
             actions=[action],
+            axioms=[],
         ),
     )
     task, _ = repository.insert(
         pypddl.TaskData(
             "numeric-programmatic-task",
             domain,
+            requirements=[],
+            types=[],
+            predicates=[],
             objects=[location],
+            initial_literals=[],
             initial_function_values=[initial_value],
             goal=condition,
             metric=metric,
+            axioms=[],
         ),
     )
 
@@ -666,7 +674,7 @@ def test_repository_constructs_numeric_function_task_bits() -> None:
     assert right.get_value() == 0.0
     numeric_effect = effect
     assert isinstance(numeric_effect, pypddl.EffectNumeric)
-    assert numeric_effect.get_operator() == pypddl.NumericEffectOperator.Assign
+    assert numeric_effect.get_operation() == pypddl.NumericEffectOperator.Assign
     numeric_effect_value = numeric_effect.get_expression()
     assert isinstance(numeric_effect_value, pypddl.FunctionExpressionNumber)
     assert numeric_effect_value.get_value() == 1.0
@@ -807,14 +815,14 @@ def test_multi_args_keep_repository_alive() -> None:
     def make_args() -> list[
         pypddl.FunctionExpressionNumber
         | pypddl.FunctionTerm
-        | pypddl.UnaryFunctionExpression
-        | pypddl.BinaryFunctionExpression
-        | pypddl.MultiFunctionExpression
+        | pypddl.FunctionExpressionUnary
+        | pypddl.FunctionExpressionBinary
+        | pypddl.FunctionExpressionMulti
     ]:
         repository = pypddl.Repository()
         operands = [make_number_expression(repository, value) for value in (1.0, 2.0, 3.0)]
         multi, _ = repository.insert(
-            pypddl.MultiFunctionExpressionData(
+            pypddl.FunctionExpressionMultiData(
                 pypddl.MultiArithmeticOperator.Add,
                 operands,
             )
@@ -831,8 +839,8 @@ def test_multi_args_keep_repository_alive() -> None:
 
 def test_repository_exposes_recursive_constructors_and_accessors() -> None:
     repository = pypddl.Repository()
-    object_type, _ = repository.insert(pypddl.TypeData("object"))
-    number_type, _ = repository.insert(pypddl.TypeData("number"))
+    object_type, _ = repository.insert(pypddl.TypeData("object", []))
+    number_type, _ = repository.insert(pypddl.TypeData("number", []))
     variable, _ = repository.insert(pypddl.VariableData("?x"))
     parameter, _ = repository.insert(pypddl.ParameterData(variable, [object_type]))
     predicate, _ = repository.insert(pypddl.PredicateData("p", [parameter]))
@@ -853,14 +861,14 @@ def test_repository_exposes_recursive_constructors_and_accessors() -> None:
     condition_forall = condition_forall_node
 
     number = make_number_expression(repository, 1.0)
-    unary_node, _ = repository.insert(pypddl.UnaryFunctionExpressionData(pypddl.UnaryArithmeticOperator.Sub, number))
+    unary_node, _ = repository.insert(pypddl.FunctionExpressionUnaryData(pypddl.UnaryArithmeticOperator.Sub, number))
     unary = unary_node
     binary_node, _ = repository.insert(
-        pypddl.BinaryFunctionExpressionData(pypddl.BinaryArithmeticOperator.Add, number, unary)
+        pypddl.FunctionExpressionBinaryData(pypddl.BinaryArithmeticOperator.Add, number, unary)
     )
     binary = binary_node
     multi_node, _ = repository.insert(
-        pypddl.MultiFunctionExpressionData(pypddl.MultiArithmeticOperator.Add, [number, binary])
+        pypddl.FunctionExpressionMultiData(pypddl.MultiArithmeticOperator.Add, [number, binary])
     )
     multi = multi_node
 
@@ -881,19 +889,33 @@ def test_repository_exposes_recursive_constructors_and_accessors() -> None:
     alt2, _ = repository.insert(pypddl.EffectProbabilisticAlternativeData(0.6, effect_one_of))
     effect_probabilistic_node, _ = repository.insert(pypddl.EffectProbabilisticData([alt1, alt2]))
     effect_probabilistic = effect_probabilistic_node
-    axiom, _ = repository.insert(pypddl.AxiomData([parameter], literal, condition_forall))
-    action, _ = repository.insert(pypddl.ActionData("a", [parameter], condition_forall, effect_probabilistic))
+    axiom, _ = repository.insert(pypddl.AxiomData([parameter], 1, literal, condition_forall))
+    action, _ = repository.insert(pypddl.ActionData("a", "a", [parameter], 1, condition_forall, effect_probabilistic))
     domain, _ = repository.insert(
         pypddl.DomainData(
             "full-builder",
+            requirements=[],
             types=[object_type, number_type],
+            constants=[],
             predicates=[predicate],
             functions=[fluent],
             actions=[action],
             axioms=[axiom],
         )
     )
-    task, _ = repository.insert(pypddl.TaskData("full-builder-task", domain, goal=condition_forall, axioms=[axiom]))
+    task, _ = repository.insert(pypddl.TaskData(
+            "full-builder-task",
+            domain,
+            requirements=[],
+            types=[],
+            predicates=[],
+            objects=[],
+            initial_literals=[],
+            initial_function_values=[],
+            goal=condition_forall,
+            metric=None,
+            axioms=[axiom],
+        ))
 
     condition_forall_variant = condition_forall
     assert isinstance(condition_forall_variant, pypddl.ConditionForall)
@@ -922,17 +944,17 @@ def test_repository_exposes_recursive_constructors_and_accessors() -> None:
     assert len(effect_probabilistic_variant.get_alternatives()) == 2
     numeric_effect_variant = numeric_effect
     assert isinstance(numeric_effect_variant, pypddl.EffectNumeric)
-    assert numeric_effect_variant.get_operator() == pypddl.NumericEffectOperator.Assign
+    assert numeric_effect_variant.get_operation() == pypddl.NumericEffectOperator.Assign
     assert len(numeric_effect_variant.get_function().get_terms()) == 1
     unary_variant = unary
-    assert isinstance(unary_variant, pypddl.UnaryFunctionExpression)
-    assert unary_variant.get_operator() == pypddl.UnaryArithmeticOperator.Sub
+    assert isinstance(unary_variant, pypddl.FunctionExpressionUnary)
+    assert unary_variant.get_operation() == pypddl.UnaryArithmeticOperator.Sub
     binary_variant = binary
-    assert isinstance(binary_variant, pypddl.BinaryFunctionExpression)
-    assert binary_variant.get_operator() == pypddl.BinaryArithmeticOperator.Add
+    assert isinstance(binary_variant, pypddl.FunctionExpressionBinary)
+    assert binary_variant.get_operation() == pypddl.BinaryArithmeticOperator.Add
     multi_variant = multi
-    assert isinstance(multi_variant, pypddl.MultiFunctionExpression)
-    assert multi_variant.get_operator() == pypddl.MultiArithmeticOperator.Add
+    assert isinstance(multi_variant, pypddl.FunctionExpressionMulti)
+    assert multi_variant.get_operation() == pypddl.MultiArithmeticOperator.Add
     multi_operands = multi_variant.get_args()
     assert len(multi_operands) == 2
     assert number in multi_operands

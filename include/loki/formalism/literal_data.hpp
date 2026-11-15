@@ -36,13 +36,19 @@ struct data<::loki::formalism::Literal>
 {
     urd::index<::loki::formalism::Literal> index;
     urd::index<::loki::formalism::Atom> atom;
-    bool m_polarity = true;
+    bool polarity = true;
 
     data() = default;
-    data(urd::index<::loki::formalism::Atom> atom_, bool polarity_ = true) : index(), atom(atom_), m_polarity(polarity_) {}
+    data(urd::index<::loki::formalism::Atom> atom_, bool polarity_ = true) : index(), atom(atom_), polarity(polarity_) {}
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::atom, &data::m_polarity> {}; }
-    static constexpr auto identifying_members() noexcept { return urd::Members<&data::atom, &data::m_polarity> {}; }
+    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"atom", &data::atom>, urd::field<"polarity", &data::polarity>> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::atom, &data::polarity> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::atom, &data::polarity> {}; }
 };
 
 }

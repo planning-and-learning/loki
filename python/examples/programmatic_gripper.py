@@ -62,7 +62,7 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
     strips, _ = repository.insert(pypddl.RequirementData(pypddl.RequirementKind.Strips))
     typing, _ = repository.insert(pypddl.RequirementData(pypddl.RequirementKind.Typing))
 
-    object_t, _ = repository.insert(pypddl.TypeData("object"))
+    object_t, _ = repository.insert(pypddl.TypeData("object", []))
     room_t, _ = repository.insert(pypddl.TypeData("room", [object_t]))
     ball_t, _ = repository.insert(pypddl.TypeData("ball", [object_t]))
     gripper_t, _ = repository.insert(pypddl.TypeData("gripper", [object_t]))
@@ -90,7 +90,7 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
             make_effect(repository, make_literal(repository, at_robby, [y_term])),
         ],
     )
-    move, _ = repository.insert(pypddl.ActionData("move", [x, y], move_pre, move_eff))
+    move, _ = repository.insert(pypddl.ActionData("move", "move", [x, y], 2, move_pre, move_eff))
 
     pick_pre = make_condition_and(
         repository,
@@ -108,7 +108,7 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
             make_effect(repository, make_literal(repository, carry, [b_term, g_term])),
         ],
     )
-    pick, _ = repository.insert(pypddl.ActionData("pick", [b, x, g], pick_pre, pick_eff))
+    pick, _ = repository.insert(pypddl.ActionData("pick", "pick", [b, x, g], 3, pick_pre, pick_eff))
 
     drop_pre = make_condition_and(
         repository,
@@ -125,15 +125,18 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
             make_effect(repository, make_literal(repository, at, [b_term, x_term])),
         ],
     )
-    drop, _ = repository.insert(pypddl.ActionData("drop", [b, x, g], drop_pre, drop_eff))
+    drop, _ = repository.insert(pypddl.ActionData("drop", "drop", [b, x, g], 3, drop_pre, drop_eff))
 
     domain, _ = repository.insert(
         pypddl.DomainData(
             "gripper",
             requirements=[strips, typing],
             types=[object_t, room_t, ball_t, gripper_t],
+            constants=[],
             predicates=[at_robby, at, free, carry],
+            functions=[],
             actions=[move, pick, drop],
+            axioms=[],
         ),
     )
 
@@ -164,9 +167,15 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
             pypddl.TaskData(
                 name,
                 domain,
+                requirements=[],
+                types=[],
+                predicates=[],
                 objects=[rooma, roomb, left, right, *ball_objects],
                 initial_literals=initial_literals,
+                initial_function_values=[],
                 goal=make_condition_and(repository, goals),
+                metric=None,
+                axioms=[],
             ),
         )[0]
 

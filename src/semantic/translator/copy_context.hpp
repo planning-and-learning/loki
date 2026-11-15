@@ -19,6 +19,7 @@
 #define LOKI_SEMANTIC_TRANSLATOR_COPY_CONTEXT_HPP_
 
 #include "common.hpp"
+#include "loki/formalism/conditions.hpp"
 #include "loki/formalism/repository.hpp"
 
 #include <urd/repr/maps/std_map.hpp>

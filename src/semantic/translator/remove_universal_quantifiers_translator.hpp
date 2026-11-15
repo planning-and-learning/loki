@@ -21,6 +21,7 @@
 #include "copy_translator_component.hpp"
 
 #include <concepts>
+#include <urd/elements/flat.hpp>
 
 namespace loki::semantic::detail
 {
@@ -72,11 +73,11 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
     const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
-    literal_data->m_polarity = true;
+    literal_data->polarity = true;
     const auto positive_head = formalism::insert(this->copy_context().storage->repository, *literal_data).first.index();
     urd::clear_members(*literal_data);
     literal_data->atom = atom;
-    literal_data->m_polarity = false;
+    literal_data->polarity = false;
     const auto negative_literal = formalism::insert(this->copy_context().storage->repository, *literal_data).first.index();
     auto axiom_data = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
     for (auto parameter : predicate_data->parameters)
@@ -127,9 +128,10 @@ template<typename Tag>
 formalism::ConditionView
 RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<Tag>> source)
 {
-    auto data = urd::map_variant_children<formalism::SymbolRepositoryTypes, formalism::Condition<Tag>>(
-        source.data(),
-        source.context(),
+    auto scratch = formalism::checkout<formalism::Condition<Tag>>(this->copy_context().builder);
+    auto& data = urd::map_variant_children<formalism::SymbolRepositoryTypes, formalism::Condition<Tag>>(
+        source,
+        *scratch,
         [&](formalism::ConditionView condition) { return this->self().remove_universal_quantifiers(condition); });
     return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, data).first);
 }

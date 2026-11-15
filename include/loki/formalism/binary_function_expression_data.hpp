@@ -19,6 +19,7 @@
 #define LOKI_FORMALISM_BINARY_FUNCTION_EXPRESSION_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/function_expressions.hpp"
 
 #include <optional>
 #include <string>
@@ -35,23 +36,30 @@ template<>
 struct data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
 {
     urd::index<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>> index;
-    ::loki::formalism::BinaryArithmeticOperator op {};
+    ::loki::formalism::BinaryArithmeticOperator operation {};
     ::loki::formalism::FunctionExpressionVariant left;
     ::loki::formalism::FunctionExpressionVariant right;
 
     data() = default;
-    data(::loki::formalism::BinaryArithmeticOperator op_,
+    data(::loki::formalism::BinaryArithmeticOperator operation_,
          ::loki::formalism::FunctionExpressionVariant left_,
          ::loki::formalism::FunctionExpressionVariant right_) :
         index(),
-        op(op_),
+        operation(operation_),
         left(std::move(left_)),
         right(std::move(right_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::op, &data::left, &data::right> {}; }
-    static constexpr auto identifying_members() noexcept { return urd::Members<&data::op, &data::left, &data::right> {}; }
+    static constexpr auto fields() noexcept
+    { return urd::Fields<urd::field<"operation", &data::operation>, urd::field<"left", &data::left>, urd::field<"right", &data::right>> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::operation, &data::left, &data::right> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::operation, &data::left, &data::right> {}; }
 };
 
 }

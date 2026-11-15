@@ -32,7 +32,7 @@ private:
     [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
 public:
-    auto get_probability() const noexcept { return self().data().probability; }
+    auto get_probability() const noexcept { return self().template member<&urd::record_of<V>::probability>(); }
     auto get_effect() const noexcept { return self().template member<&urd::record_of<V>::effect>(); }
 };
 }  // namespace urd

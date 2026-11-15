@@ -41,9 +41,15 @@ struct data<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>>
 
     data() = default;
     data(urd::flat_vector<urd::index<::loki::formalism::EffectProbabilisticAlternative>> alternatives_) : index(), alternatives(std::move(alternatives_)) {}
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::alternatives> {}; }
+    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"alternatives", &data::alternatives>> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::alternatives> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::alternatives> {}; }
 };
 
 }

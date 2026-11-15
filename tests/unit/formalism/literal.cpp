@@ -16,7 +16,7 @@ static_assert(std::same_as<View, loki::formalism::LiteralView>);
 static_assert(requires(Data& data) {
     data.index;
     data.atom;
-    data.m_polarity;
+    data.polarity;
     { data == data } -> std::same_as<bool>;
 });
 static_assert(requires(const View& view) {

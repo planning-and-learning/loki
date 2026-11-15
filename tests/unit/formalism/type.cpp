@@ -109,7 +109,7 @@ TEST(LokiTests, SymbolViewsUseTheRepositoryOfTheirContext)
     auto data = Data(urd::flat_string("type"));
     const auto original = loki::formalism::insert(repository, data).first;
     const auto again = repository.view(original.index());
-    EXPECT_EQ(&again.data(), &original.data());
+    EXPECT_EQ(&again.get_name(), &original.get_name());
     EXPECT_EQ(again.get_name(), original.get_name());
     EXPECT_EQ(urd::detail::identity(again), urd::detail::identity(original));
 

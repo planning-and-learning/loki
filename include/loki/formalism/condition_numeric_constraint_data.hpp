@@ -19,6 +19,7 @@
 #define LOKI_FORMALISM_CONDITION_NUMERIC_CONSTRAINT_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/function_expressions.hpp"
 
 #include <optional>
 #include <string>
@@ -49,9 +50,16 @@ struct data<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag
         right(std::move(right_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::comparator, &data::left, &data::right> {}; }
+    static constexpr auto fields() noexcept
+    { return urd::Fields<urd::field<"comparator", &data::comparator>, urd::field<"left", &data::left>, urd::field<"right", &data::right>> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::comparator, &data::left, &data::right> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::comparator, &data::left, &data::right> {}; }
 };
 
 }

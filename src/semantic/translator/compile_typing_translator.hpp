@@ -20,6 +20,7 @@
 
 #include "copy_translator_component.hpp"
 
+#include <urd/elements/flat.hpp>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 
@@ -133,7 +134,7 @@ formalism::LiteralView CompileTypingTranslator<Derived>::type_literal(formalism:
     const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
-    literal_data->m_polarity = true;
+    literal_data->polarity = true;
     return formalism::insert(this->copy_context().storage->repository, *literal_data).first;
 }
 

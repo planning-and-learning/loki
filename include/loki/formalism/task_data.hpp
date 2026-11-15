@@ -18,6 +18,7 @@
 #ifndef LOKI_FORMALISM_TASK_DATA_HPP_
 #define LOKI_FORMALISM_TASK_DATA_HPP_
 
+#include "loki/formalism/conditions.hpp"
 #include "loki/formalism/declarations.hpp"
 
 #include <cista/containers/optional.h>
@@ -77,11 +78,29 @@ struct data<::loki::formalism::Task>
         axioms(std::move(axioms_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept
+    static constexpr auto fields() noexcept
     {
-        return urd::Members<&data::index,
-                            &data::name,
+        return urd::Fields<urd::field<"name", &data::name>,
+                           urd::field<"domain", &data::domain>,
+                           urd::field<"requirements", &data::requirements>,
+                           urd::field<"types", &data::types>,
+                           urd::field<"predicates", &data::predicates>,
+                           urd::field<"objects", &data::objects>,
+                           urd::field<"initial_literals", &data::initial_literals>,
+                           urd::field<"initial_function_values", &data::initial_function_values>,
+                           urd::field<"goal", &data::goal>,
+                           urd::field<"metric", &data::metric>,
+                           urd::field<"axioms", &data::axioms>> {};
+    }
+    static constexpr auto identifying_members() noexcept
+    {
+        return urd::Members<&data::name,
                             &data::domain,
                             &data::requirements,
                             &data::types,
@@ -93,9 +112,10 @@ struct data<::loki::formalism::Task>
                             &data::metric,
                             &data::axioms> {};
     }
-    static constexpr auto identifying_members() noexcept
+    static constexpr auto cista_members() noexcept
     {
-        return urd::Members<&data::name,
+        return urd::Members<&data::index,
+                            &data::name,
                             &data::domain,
                             &data::requirements,
                             &data::types,

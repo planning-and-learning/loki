@@ -45,9 +45,15 @@ struct data<::loki::formalism::Type>
     data(urd::flat_string name_, urd::flat_vector<urd::index<::loki::formalism::Type>> bases_ = {}) : index(), name(std::move(name_)), bases(std::move(bases_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name, &data::bases> {}; }
+    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"name", &data::name>, urd::field<"bases", &data::bases>> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::name, &data::bases> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name, &data::bases> {}; }
 };
 
 }

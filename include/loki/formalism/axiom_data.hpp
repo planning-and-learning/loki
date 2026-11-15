@@ -18,6 +18,7 @@
 #ifndef LOKI_FORMALISM_AXIOM_DATA_HPP_
 #define LOKI_FORMALISM_AXIOM_DATA_HPP_
 
+#include "loki/formalism/conditions.hpp"
 #include "loki/formalism/declarations.hpp"
 
 #include <optional>
@@ -45,16 +46,6 @@ struct data<::loki::formalism::Axiom>
 
     data() = default;
     data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
-         urd::index<::loki::formalism::Literal> head_,
-         ::loki::formalism::ConditionVariant condition_) :
-        index(),
-        parameters(std::move(parameters_)),
-        original_arity(parameters.size()),
-        head(head_),
-        condition(std::move(condition_))
-    {
-    }
-    data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
          ygg::uint_t original_arity_,
          urd::index<::loki::formalism::Literal> head_,
          ::loki::formalism::ConditionVariant condition_) :
@@ -65,10 +56,22 @@ struct data<::loki::formalism::Axiom>
         condition(std::move(condition_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
+    static constexpr auto fields() noexcept
+    {
+        return urd::Fields<urd::field<"parameters", &data::parameters>,
+                           urd::field<"original_arity", &data::original_arity>,
+                           urd::field<"head", &data::head>,
+                           urd::field<"condition", &data::condition>> {};
+    }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::parameters, &data::original_arity, &data::head, &data::condition> {}; }
     static constexpr auto cista_members() noexcept
     { return urd::Members<&data::index, &data::parameters, &data::original_arity, &data::head, &data::condition> {}; }
-    static constexpr auto identifying_members() noexcept { return urd::Members<&data::parameters, &data::original_arity, &data::head, &data::condition> {}; }
 };
 
 }

@@ -20,6 +20,7 @@
 
 #include "copy_translator_component.hpp"
 
+#include <urd/elements/flat.hpp>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 
@@ -152,8 +153,8 @@ template<typename Derived>
 template<typename T>
 formalism::EntityView<T> BasicCopyTranslator<Derived>::copy(formalism::EntityView<T> source)
 {
-    auto data =
-        urd::map_variant_children<formalism::SymbolRepositoryTypes, T>(source.data(), source.context(), [&](auto child) { return this->self().copy(child); });
+    auto scratch = formalism::checkout<T>(this->copy_context().builder);
+    auto& data = urd::map_variant_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return this->self().copy(child); });
     return formalism::insert(this->copy_context().storage->repository, data).first;
 }
 

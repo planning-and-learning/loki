@@ -81,6 +81,8 @@ struct TranslationStorage
     // Keep the inherited repository layer alive until this repository is destroyed.
     std::shared_ptr<const TranslationStorage> parent;
     formalism::Repository repository;
+    /// The scratch records rebuild maps a source into before interning it: pooled, so their memory is reused.
+    formalism::Builder builder;
     std::optional<formalism::DomainView> translated_domain;
 
     /// The translated domain; a problem's translation starts from it, so it is set (asserted in Debug).
@@ -135,10 +137,11 @@ formalism::EntityView<T> memoized(ViewMaps& maps, formalism::EntityView<T> sourc
 /// source's record with every child c (urd::map_children) replaced by f(c), interned in repository. f returns a view
 /// of c's own type, so a copy that returns a variant fails to compile here instead of storing its alternative's number.
 template<typename T, typename F>
-formalism::EntityView<T> rebuild(formalism::Repository& repository, formalism::EntityView<T> source, F f)
+formalism::EntityView<T> rebuild(TranslationStorage& storage, formalism::EntityView<T> source, F f)
 {
-    auto data = urd::map_children<formalism::SymbolRepositoryTypes, T>(source.data(), source.context(), [&](auto child) { return urd::to_stored(f(child)); });
-    return formalism::insert(repository, data).first;
+    auto scratch = formalism::checkout<T>(storage.builder);
+    auto& data = urd::map_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return urd::to_stored(f(child)); });
+    return formalism::insert(storage.repository, data).first;
 }
 
 }  // namespace detail

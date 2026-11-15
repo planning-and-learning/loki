@@ -55,4 +55,14 @@
 #include "loki/formalism/unary_function_expression_view.hpp"
 #include "loki/formalism/variable_view.hpp"
 
+#include <urd/elements/flat.hpp>
+#include <urd/elements/view.hpp>
+
+namespace loki::formalism
+{
+/// The views of a list of indices of T, read through the repository.
+template<typename T>
+using EntityListView = urd::resolved_range<urd::flat_vector<urd::index<T>>, Repository>;
+}  // namespace loki::formalism
+
 #endif

@@ -19,6 +19,9 @@
 #define LOKI_SEMANTIC_TRANSLATOR_COMPILE_CONDITIONAL_EFFECTS_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+#include "loki/formalism/conditions.hpp"
+#include "loki/formalism/effects.hpp"
+#include "loki/formalism/views.hpp"
 #include "loki/semantic/errors.hpp"
 
 #include <limits>
@@ -60,7 +63,6 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
 
     for (auto action : actions)
     {
-        const auto& data = action.data();
         auto unconditional = formalism::EffectList {};
         auto conditional = urd::Store<urd::sequence<ConditionalEffect>> {};
 
@@ -132,17 +134,17 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 effect = formalism::insert(this->copy_context().storage->repository, *effect_data).first.index();
             }
 
-            auto name = std::string(data.name) + "_" + std::to_string(action.index().value);
+            auto name = std::string(action.get_name()) + "_" + std::to_string(action.index().value);
             for (const auto& item : conditional)
                 name += "_" + std::to_string(item.when.index().value);
             name += "_" + std::to_string(mask);
 
             auto action_data = formalism::checkout<formalism::Action>(this->copy_context().builder);
             action_data->name = urd::flat_string(name);
-            action_data->original_name = data.original_name;
-            for (auto parameter : data.parameters)
-                action_data->parameters.push_back(parameter);
-            action_data->original_arity = data.original_arity;
+            action_data->original_name = action.get_original_name();
+            for (auto parameter : action.get_parameters())
+                action_data->parameters.push_back(parameter.index());
+            action_data->original_arity = action.get_original_arity();
             action_data->precondition = precondition;
             action_data->effect = effect;
             this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *action_data).first);

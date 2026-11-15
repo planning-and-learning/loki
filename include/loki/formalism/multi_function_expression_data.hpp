@@ -19,6 +19,7 @@
 #define LOKI_FORMALISM_MULTI_FUNCTION_EXPRESSION_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/function_expressions.hpp"
 
 #include <optional>
 #include <string>
@@ -37,14 +38,25 @@ template<>
 struct data<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>
 {
     urd::index<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>> index;
-    ::loki::formalism::MultiArithmeticOperator op {};
+    ::loki::formalism::MultiArithmeticOperator operation {};
     ::loki::formalism::FunctionExpressionList args;
 
     data() = default;
-    data(::loki::formalism::MultiArithmeticOperator op_, ::loki::formalism::FunctionExpressionList args_) : index(), op(op_), args(std::move(args_)) {}
+    data(::loki::formalism::MultiArithmeticOperator operation_, ::loki::formalism::FunctionExpressionList args_) :
+        index(),
+        operation(operation_),
+        args(std::move(args_))
+    {
+    }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::op, &data::args> {}; }
-    static constexpr auto identifying_members() noexcept { return urd::Members<&data::op, &data::args> {}; }
+    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"operation", &data::operation>, urd::field<"args", &data::args>> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::Members<&data::operation, &data::args> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::operation, &data::args> {}; }
 };
 
 }

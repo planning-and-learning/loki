@@ -26,6 +26,7 @@
 #include "loki/formalism/parameter_view.hpp"
 #include "loki/formalism/type_view.hpp"
 #include "loki/formalism/variable_view.hpp"
+#include "loki/formalism/views.hpp"
 #include "loki/semantic/errors.hpp"
 #include "loki/semantic/options.hpp"
 #include "mappings.hpp"

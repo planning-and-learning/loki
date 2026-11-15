@@ -39,9 +39,15 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>
 
     data() = default;
     data(double value_) : index(), value(value_) {}
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::value> {}; }
+    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"value", &data::value>> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::value> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::value> {}; }
 };
 
 }

@@ -15,14 +15,14 @@ static_assert(std::totally_ordered<View>);
 static_assert(std::same_as<View, loki::formalism::EntityView<loki::formalism::Effect<loki::formalism::NumericTag>>>);
 static_assert(requires(Data& data) {
     data.index;
-    data.op;
+    data.operation;
     data.function;
     data.expression;
     { data == data } -> std::same_as<bool>;
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_operator();
+    view.get_operation();
     view.get_function();
     view.get_expression();
     { view == view } -> std::same_as<bool>;

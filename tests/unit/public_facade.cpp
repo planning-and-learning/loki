@@ -123,7 +123,7 @@ TEST(LokiPublicFacade, ViewConvenienceMethodsCoverNumericEffectsAndMetrics)
                             if constexpr (std::is_same_v<NestedEffectHandle, urd::index<loki::formalism::Effect<loki::formalism::NumericTag>>>)
                             {
                                 saw_numeric_effect = true;
-                                EXPECT_EQ(nested_effect_node.get_operator(), loki::formalism::NumericEffectOperator::Increase);
+                                EXPECT_EQ(nested_effect_node.get_operation(), loki::formalism::NumericEffectOperator::Increase);
                                 EXPECT_EQ(nested_effect_node.get_function().get_function().get_name(), "total-cost");
                                 EXPECT_EQ(nested_effect_node.get_function().get_terms().size(), 0);
 

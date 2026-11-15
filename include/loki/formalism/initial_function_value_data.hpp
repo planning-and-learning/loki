@@ -19,6 +19,7 @@
 #define LOKI_FORMALISM_INITIAL_FUNCTION_VALUE_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/function_expressions.hpp"
 
 #include <optional>
 #include <string>
@@ -45,9 +46,15 @@ struct data<::loki::formalism::InitialFunctionValue>
         value(std::move(value_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::function, &data::value> {}; }
+    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"function", &data::function>, urd::field<"value", &data::value>> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::function, &data::value> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::function, &data::value> {}; }
 };
 
 }

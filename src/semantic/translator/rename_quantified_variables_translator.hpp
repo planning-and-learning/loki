@@ -20,6 +20,7 @@
 
 #include "copy_translator_component.hpp"
 
+#include <urd/elements/flat.hpp>
 #include <variant>
 
 namespace loki::semantic::detail
@@ -144,7 +145,7 @@ template<typename T>
 formalism::EntityView<T> RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::EntityView<T> source)
 {
     this->self().enter_variable_scope();
-    const auto target = rebuild(this->copy_context().storage->repository, source, [&](auto child) { return this->self().rename_variables(child); });
+    const auto target = rebuild(*this->copy_context().storage, source, [&](auto child) { return this->self().rename_variables(child); });
     this->self().leave_variable_scope();
     return target;
 }

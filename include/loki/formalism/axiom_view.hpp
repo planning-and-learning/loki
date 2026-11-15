@@ -33,10 +33,10 @@ private:
 
 public:
     auto get_parameters() const noexcept { return self().template member<&urd::record_of<V>::parameters>(); }
-    auto get_arity() const noexcept { return self().data().parameters.size(); }
-    auto get_original_arity() const noexcept { return self().data().original_arity; }
+    auto get_original_arity() const noexcept { return self().template member<&urd::record_of<V>::original_arity>(); }
     auto get_head() const noexcept { return self().template member<&urd::record_of<V>::head>(); }
     auto get_condition() const noexcept { return self().template member<&urd::record_of<V>::condition>(); }
+    auto get_arity() const noexcept { return get_parameters().size(); }
 };
 }  // namespace urd
 

@@ -19,6 +19,7 @@
 #define LOKI_FORMALISM_FUNCTION_TERM_DATA_HPP_
 
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/term.hpp"
 
 #include <optional>
 #include <string>
@@ -47,9 +48,15 @@ struct data<::loki::formalism::FunctionTerm>
         terms(std::move(terms_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::function, &data::terms> {}; }
+    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"function", &data::function>, urd::field<"terms", &data::terms>> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::function, &data::terms> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::function, &data::terms> {}; }
 };
 
 }

@@ -18,7 +18,9 @@
 #ifndef LOKI_FORMALISM_EFFECT_WHEN_DATA_HPP_
 #define LOKI_FORMALISM_EFFECT_WHEN_DATA_HPP_
 
+#include "loki/formalism/conditions.hpp"
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/effects.hpp"
 
 #include <optional>
 #include <string>
@@ -45,9 +47,15 @@ struct data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
         effect(std::move(effect_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::condition, &data::effect> {}; }
+    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"condition", &data::condition>, urd::field<"effect", &data::effect>> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::condition, &data::effect> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::condition, &data::effect> {}; }
 };
 
 }

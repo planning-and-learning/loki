@@ -54,7 +54,6 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
                     source,
                     [&]
                     {
-                        const auto& data = source.data();
                         this->copy_context().num_quantifications.clear();
                         this->self().increment_quantifications(source.get_parameters());
                         auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
@@ -78,14 +77,14 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
                         if (const auto effect_view = source.get_effect())
                             effect = urd::to_stored(this->self().copy(effect_view.value()));
                         auto result = formalism::checkout<formalism::Action>(this->copy_context().builder);
-                        result->name = data.name;
-                        result->original_name = data.original_name;
+                        result->name = source.get_name();
+                        result->original_name = source.get_original_name();
                         if (this->self().compiles_typing_now())
                             this->self().copy_parameters_without_types(source.get_parameters(), result->parameters);
                         else
                             for (auto parameter : parameter_views)
                                 result->parameters.push_back(parameter.index());
-                        result->original_arity = data.original_arity;
+                        result->original_arity = source.get_original_arity();
                         if (precondition)
                             result->precondition = urd::to_stored(*precondition);
                         result->effect = effect;
@@ -111,7 +110,6 @@ formalism::AxiomView TopLevelTranslator<Derived>::copy(formalism::AxiomView sour
                     source,
                     [&]
                     {
-                        const auto& data = source.data();
                         this->copy_context().num_quantifications.clear();
                         this->self().increment_quantifications(source.get_parameters());
                         auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
@@ -128,7 +126,7 @@ formalism::AxiomView TopLevelTranslator<Derived>::copy(formalism::AxiomView sour
                         else
                             for (auto parameter : parameter_views)
                                 result->parameters.push_back(parameter.index());
-                        result->original_arity = data.original_arity;
+                        result->original_arity = source.get_original_arity();
                         result->head = head;
                         result->condition = urd::to_stored(copied_condition);
                         auto out = formalism::insert(this->copy_context().storage->repository, *result).first;

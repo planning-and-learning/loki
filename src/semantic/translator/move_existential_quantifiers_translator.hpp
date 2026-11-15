@@ -20,6 +20,7 @@
 
 #include "copy_translator_component.hpp"
 
+#include <urd/elements/flat.hpp>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 
@@ -90,7 +91,7 @@ template<typename Derived>
 template<typename T>
 void MoveExistentialQuantifiersTranslator<Derived>::collect_binder_names(formalism::EntityView<T> node, urd::Store<urd::set<std::string>>& names) const
 {
-    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { collect_binder_names(child, names); });
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node, [&](auto child) { collect_binder_names(child, names); });
 }
 
 template<typename Derived>
@@ -132,8 +133,8 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::hoist_ex
         claimed.insert(name);
         auto parameter_data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
         parameter_data->variable = fresh.index();
-        for (auto type : parameter.data().types)
-            parameter_data->types.push_back(type);
+        for (auto type : parameter.get_types())
+            parameter_data->types.push_back(type.index());
         parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first);
     }
     return condition;
@@ -175,9 +176,10 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
                                                                       formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node)
 {
     // No child types: the parameters are kept as they are, only the condition slot is mapped.
-    auto data = urd::map_variant_children<boost::mp11::mp_list<>, formalism::Condition<formalism::ExistsTag>>(
-        node.data(),
-        node.context(),
+    auto scratch = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
+    auto& data = urd::map_variant_children<boost::mp11::mp_list<>, formalism::Condition<formalism::ExistsTag>>(
+        node,
+        *scratch,
         [&](formalism::ConditionView condition) { return this->self().move_existentials(condition); });
     return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, data).first));
 }

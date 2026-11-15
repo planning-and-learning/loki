@@ -87,6 +87,7 @@ enum class RequirementKind : std::uint8_t
 };
 
 // One name table per enum, indexed by the enumerator's value.
+inline constexpr std::array<const char*, 1> unary_arithmetic_operator_names = { "-" };
 inline constexpr std::array<const char*, 6> binary_comparator_names = { "=", "!=", "<", "<=", ">", ">=" };
 inline constexpr std::array<const char*, 4> binary_arithmetic_operator_names = { "+", "-", "*", "/" };
 inline constexpr std::array<const char*, 2> multi_arithmetic_operator_names = { "+", "*" };
@@ -118,6 +119,16 @@ inline const char* to_string(MultiArithmeticOperator op) { return multi_arithmet
 inline const char* to_string(NumericEffectOperator op) { return numeric_effect_operator_names.at(static_cast<std::size_t>(op)); }
 inline const char* to_string(OptimizationDirection direction) { return optimization_direction_names.at(static_cast<std::size_t>(direction)); }
 inline const char* to_string(RequirementKind kind) { return requirement_kind_names.at(static_cast<std::size_t>(kind)); }
+inline const char* to_string(UnaryArithmeticOperator op) { return unary_arithmetic_operator_names.at(static_cast<std::size_t>(op)); }
+
+// How fmt writes each (found by ADL): as to_string names it.
+inline const char* format_as(BinaryComparator op) { return to_string(op); }
+inline const char* format_as(UnaryArithmeticOperator op) { return to_string(op); }
+inline const char* format_as(BinaryArithmeticOperator op) { return to_string(op); }
+inline const char* format_as(MultiArithmeticOperator op) { return to_string(op); }
+inline const char* format_as(NumericEffectOperator op) { return to_string(op); }
+inline const char* format_as(OptimizationDirection direction) { return to_string(direction); }
+inline const char* format_as(RequirementKind kind) { return to_string(kind); }
 
 }  // namespace loki::formalism
 

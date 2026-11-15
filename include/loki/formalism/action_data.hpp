@@ -18,7 +18,9 @@
 #ifndef LOKI_FORMALISM_ACTION_DATA_HPP_
 #define LOKI_FORMALISM_ACTION_DATA_HPP_
 
+#include "loki/formalism/conditions.hpp"
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/effects.hpp"
 
 #include <cista/containers/optional.h>
 #include <cista/containers/string.h>
@@ -49,33 +51,6 @@ struct data<::loki::formalism::Action>
 
     data() = default;
     data(urd::flat_string name_,
-         urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
-         urd::flat_optional<::loki::formalism::ConditionVariant> precondition_,
-         urd::flat_optional<::loki::formalism::EffectVariant> effect_) :
-        index(),
-        name(std::move(name_)),
-        original_name(name),
-        parameters(std::move(parameters_)),
-        original_arity(parameters.size()),
-        precondition(std::move(precondition_)),
-        effect(std::move(effect_))
-    {
-    }
-    data(urd::flat_string name_,
-         urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
-         ygg::uint_t original_arity_,
-         urd::flat_optional<::loki::formalism::ConditionVariant> precondition_,
-         urd::flat_optional<::loki::formalism::EffectVariant> effect_) :
-        index(),
-        name(std::move(name_)),
-        original_name(name),
-        parameters(std::move(parameters_)),
-        original_arity(original_arity_),
-        precondition(std::move(precondition_)),
-        effect(std::move(effect_))
-    {
-    }
-    data(urd::flat_string name_,
          urd::flat_string original_name_,
          urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
          ygg::uint_t original_arity_,
@@ -90,11 +65,25 @@ struct data<::loki::formalism::Action>
         effect(std::move(effect_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept
-    { return urd::Members<&data::index, &data::name, &data::original_name, &data::parameters, &data::original_arity, &data::precondition, &data::effect> {}; }
+    static constexpr auto fields() noexcept
+    {
+        return urd::Fields<urd::field<"name", &data::name>,
+                           urd::field<"original_name", &data::original_name>,
+                           urd::field<"parameters", &data::parameters>,
+                           urd::field<"original_arity", &data::original_arity>,
+                           urd::field<"precondition", &data::precondition>,
+                           urd::field<"effect", &data::effect>> {};
+    }
     static constexpr auto identifying_members() noexcept
     { return urd::Members<&data::original_name, &data::parameters, &data::original_arity, &data::precondition, &data::effect> {}; }
+    static constexpr auto cista_members() noexcept
+    { return urd::Members<&data::index, &data::name, &data::original_name, &data::parameters, &data::original_arity, &data::precondition, &data::effect> {}; }
 };
 
 }

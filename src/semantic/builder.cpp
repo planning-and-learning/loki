@@ -22,6 +22,7 @@
 #include "context.hpp"
 #include "diagnostics.hpp"
 #include "loki/ast/ast.hpp"
+#include "loki/formalism/conditions.hpp"
 #include "loki/formalism/repository.hpp"
 #include "loki/semantic/errors.hpp"
 #include "mappings.hpp"

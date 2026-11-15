@@ -67,7 +67,28 @@ struct data<::loki::formalism::Domain>
         axioms(std::move(axioms_))
     {
     }
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
+    static constexpr auto fields() noexcept
+    {
+        return urd::Fields<urd::field<"name", &data::name>,
+                           urd::field<"requirements", &data::requirements>,
+                           urd::field<"types", &data::types>,
+                           urd::field<"constants", &data::constants>,
+                           urd::field<"predicates", &data::predicates>,
+                           urd::field<"functions", &data::functions>,
+                           urd::field<"actions", &data::actions>,
+                           urd::field<"axioms", &data::axioms>> {};
+    }
+    static constexpr auto identifying_members() noexcept
+    {
+        return urd::
+            Members<&data::name, &data::requirements, &data::types, &data::constants, &data::predicates, &data::functions, &data::actions, &data::axioms> {};
+    }
     static constexpr auto cista_members() noexcept
     {
         return urd::Members<&data::index,
@@ -79,11 +100,6 @@ struct data<::loki::formalism::Domain>
                             &data::functions,
                             &data::actions,
                             &data::axioms> {};
-    }
-    static constexpr auto identifying_members() noexcept
-    {
-        return urd::
-            Members<&data::name, &data::requirements, &data::types, &data::constants, &data::predicates, &data::functions, &data::actions, &data::axioms> {};
     }
 };
 

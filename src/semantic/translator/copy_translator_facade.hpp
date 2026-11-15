@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <urd/elements/flat.hpp>
 #include <urd/repr/maps/unordered_flat_map.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
@@ -93,7 +94,7 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
     if (auto mapped = find_mapped(this->copy_context().storage->maps, domain))
         return { *mapped, false };
     auto data = formalism::checkout<formalism::Domain>(this->copy_context().builder);
-    data->name = domain.data().name;
+    data->name = domain.get_name();
     this->self().template copy_list<formalism::Requirement>(domain.get_requirements(), data->requirements);
     this->self().template copy_list<formalism::Type>(domain.get_types(), data->types);
     this->self().template copy_list<formalism::Object>(domain.get_constants(), data->constants);
@@ -145,7 +146,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     if (auto mapped = find_mapped(this->copy_context().storage->maps, task))
         return { *mapped, false };
     auto data = formalism::checkout<formalism::Task>(this->copy_context().builder);
-    data->name = task.data().name;
+    data->name = task.get_name();
     data->domain = this->copy_context().storage->translated().index();
     this->self().template copy_list<formalism::Requirement>(task.get_requirements(), data->requirements);
     this->self().template copy_list<formalism::Object>(task.get_objects(), data->objects);

@@ -18,6 +18,7 @@
 #ifndef LOKI_FORMALISM_CONDITION_OR_DATA_HPP_
 #define LOKI_FORMALISM_CONDITION_OR_DATA_HPP_
 
+#include "loki/formalism/conditions.hpp"
 #include "loki/formalism/declarations.hpp"
 
 #include <optional>
@@ -41,9 +42,15 @@ struct data<::loki::formalism::Condition<::loki::formalism::OrTag>>
 
     data() = default;
     data(::loki::formalism::ConditionList conditions_) : index(), conditions(std::move(conditions_)) {}
+    data(const data& other) = delete;
+    data& operator=(const data& other) = delete;
+    data(data&& other) = default;
+    data& operator=(data&& other) = default;
+    ~data() = default;
 
-    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::conditions> {}; }
+    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"conditions", &data::conditions>> {}; }
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::conditions> {}; }
+    static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::conditions> {}; }
 };
 
 }

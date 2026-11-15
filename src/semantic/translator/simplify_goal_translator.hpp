@@ -52,7 +52,7 @@ formalism::ConditionView SimplifyGoalTranslator<Derived>::make_generated_goal_co
     const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
-    literal_data->m_polarity = true;
+    literal_data->polarity = true;
     const auto literal = formalism::insert(this->copy_context().storage->repository, *literal_data).first.index();
     auto axiom_data = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
     axiom_data->original_arity = 0;

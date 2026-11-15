@@ -21,6 +21,8 @@
 #include "context.hpp"
 #include "diagnostics.hpp"
 #include "loki/ast/ast.hpp"
+#include "loki/formalism/conditions.hpp"
+#include "loki/formalism/effects.hpp"
 #include "loki/formalism/repository.hpp"
 #include "loki/semantic/errors.hpp"
 #include "mappings.hpp"
@@ -76,7 +78,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectNumeric& no
     const auto function_term = formalism::insert(repo(), *function_data).first;
     const auto expression = parse_function_expression(node.expression.get());
     auto data = formalism::checkout<formalism::Effect<formalism::NumericTag>>(m_builder);
-    data->op = op;
+    data->operation = op;
     data->function = function_term.index();
     data->expression = urd::to_stored(expression);
     return formalism::insert(repo(), *data).first;
@@ -179,7 +181,7 @@ formalism::AxiomView AstBuilder::parse_axiom(const ast::Axiom& node)
     auto atom = formalism::insert(repo(), *atom_data).first;
     auto literal_data = formalism::checkout<formalism::Literal>(m_builder);
     literal_data->atom = atom.index();
-    literal_data->m_polarity = true;
+    literal_data->polarity = true;
     auto head = formalism::insert(repo(), *literal_data).first;
     auto condition = parse_condition(node.condition);
     auto data = formalism::checkout<formalism::Axiom>(m_builder);
@@ -252,7 +254,7 @@ template<typename T>
 bool writes_total_cost(formalism::EntityView<T> node)
 {
     auto found = false;
-    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { found = found || writes_total_cost(child); });
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node, [&](auto child) { found = found || writes_total_cost(child); });
     return found;
 }
 }  // namespace
@@ -267,7 +269,7 @@ formalism::ActionView AstBuilder::add_unit_cost(formalism::ActionView view)
     const auto one = formalism::insert(repo(), *number_data).first;
     const auto total_cost = total_cost_term();
     auto numeric_data = formalism::checkout<formalism::Effect<formalism::NumericTag>>(m_builder);
-    numeric_data->op = formalism::NumericEffectOperator::Increase;
+    numeric_data->operation = formalism::NumericEffectOperator::Increase;
     numeric_data->function = total_cost.index();
     numeric_data->expression = one.index();
     const auto increase = formalism::insert(repo(), *numeric_data).first;
@@ -287,7 +289,7 @@ formalism::ActionView AstBuilder::add_unit_cost(formalism::ActionView view)
     for (auto parameter : view.get_parameters())
         data->parameters.push_back(parameter.index());
     data->original_arity = data->parameters.size();
-    data->precondition = view.data().precondition;
+    data->precondition = urd::to_stored(view.get_precondition());
     data->effect = urd::to_stored(combined);
     return formalism::insert(repo(), *data).first;
 }

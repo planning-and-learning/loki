@@ -1,3 +1,4 @@
+#include "loki/formalism/function_expressions.hpp"
 #include "loki/formalism/multi_function_expression_data.hpp"
 #include "loki/formalism/multi_function_expression_view.hpp"
 #include "loki/formalism/repository.hpp"
@@ -18,13 +19,13 @@ static_assert(std::same_as<View, loki::formalism::EntityView<loki::formalism::Fu
 static_assert(std::constructible_from<Data, loki::formalism::MultiArithmeticOperator, loki::formalism::FunctionExpressionList>);
 static_assert(requires(Data& data) {
     data.index;
-    data.op;
+    data.operation;
     data.args;
     { data == data } -> std::same_as<bool>;
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_operator();
+    view.get_operation();
     view.get_args();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
@@ -60,7 +61,7 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
                                                                                                      builder,
                                                                                                      [&](auto& data)
                                                                                                      {
-                                                                                                         data.op =
+                                                                                                         data.operation =
                                                                                                              loki::formalism::BinaryArithmeticOperator::Add;
                                                                                                          data.left = urd::to_stored(one);
                                                                                                          data.right = urd::to_stored(two);
@@ -69,7 +70,8 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
                                                                                                    builder,
                                                                                                    [&](auto& data)
                                                                                                    {
-                                                                                                       data.op = loki::formalism::MultiArithmeticOperator::Add;
+                                                                                                       data.operation =
+                                                                                                           loki::formalism::MultiArithmeticOperator::Add;
                                                                                                        data.args.push_back(urd::to_stored(one));
                                                                                                        data.args.push_back(urd::to_stored(two));
                                                                                                    }));
@@ -81,7 +83,7 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
                                                                                       builder,
                                                                                       [&](auto& data)
                                                                                       {
-                                                                                          data.op = loki::formalism::MultiArithmeticOperator::Mul;
+                                                                                          data.operation = loki::formalism::MultiArithmeticOperator::Mul;
                                                                                           data.args.push_back(urd::to_stored(left));
                                                                                           data.args.push_back(urd::to_stored(right));
                                                                                       });

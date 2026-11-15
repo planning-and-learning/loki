@@ -30,7 +30,7 @@ CanonicalCopyTranslator::CanonicalCopyTranslator(std::shared_ptr<TranslationStor
 template<typename T>
 formalism::EntityView<T> CanonicalCopyTranslator::copy_child(formalism::EntityView<T> source)
 {
-    return memoized(m_storage->maps, source, [&] { return rebuild(m_storage->repository, source, [&](auto child) { return copy_child(child); }); });
+    return memoized(m_storage->maps, source, [&] { return rebuild(*m_storage, source, [&](auto child) { return copy_child(child); }); });
 }
 
 formalism::DomainView CanonicalCopyTranslator::copy_child(formalism::DomainView source)
@@ -46,8 +46,8 @@ std::pair<formalism::EntityView<T>, bool> CanonicalCopyTranslator::copy_root(for
         remember(m_storage->maps, source, source);
         return { source, false };
     }
-    auto data =
-        urd::map_children<formalism::SymbolRepositoryTypes, T>(source.data(), source.context(), [&](auto child) { return urd::to_stored(copy_child(child)); });
+    auto scratch = formalism::checkout<T>(m_storage->builder);
+    auto& data = urd::map_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return urd::to_stored(copy_child(child)); });
     auto [view, inserted] = formalism::insert(m_storage->repository, data);
     remember(m_storage->maps, source, view);
     return { view, inserted };

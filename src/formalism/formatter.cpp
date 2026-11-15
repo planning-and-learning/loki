@@ -17,7 +17,11 @@
 
 #include "loki/formalism/formatter.hpp"
 
+#include "loki/formalism/conditions.hpp"
+#include "loki/formalism/effects.hpp"
+#include "loki/formalism/function_expressions.hpp"
 #include "loki/formalism/repository.hpp"
+#include "loki/formalism/term.hpp"
 #include "loki/formalism/views.hpp"
 
 #include <concepts>
@@ -115,10 +119,10 @@ std::string to_string(FunctionTermView value) { return fmt::format("({}{})", val
 std::string to_string(EntityView<FunctionExpression<UnaryTag>> value) { return fmt::format("(- {})", to_string(value.get_expression())); }
 
 std::string to_string(EntityView<FunctionExpression<BinaryTag>> value)
-{ return fmt::format("({} {} {})", loki::formalism::to_string(value.data().op), to_string(value.get_left()), to_string(value.get_right())); }
+{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_operation()), to_string(value.get_left()), to_string(value.get_right())); }
 
 std::string to_string(EntityView<FunctionExpression<MultiTag>> value)
-{ return fmt::format("({}{})", loki::formalism::to_string(value.get_operator()), detail::spaced(value.get_args())); }
+{ return fmt::format("({}{})", loki::formalism::to_string(value.get_operation()), detail::spaced(value.get_args())); }
 
 std::string to_string(FunctionExpressionView value)
 {
@@ -159,7 +163,7 @@ std::string to_string(EntityView<Condition<ForallTag>> value)
 { return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_condition())); }
 
 std::string to_string(EntityView<Condition<NumericConstraintTag>> value)
-{ return fmt::format("({} {} {})", loki::formalism::to_string(value.data().comparator), to_string(value.get_left()), to_string(value.get_right())); }
+{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_comparator()), to_string(value.get_left()), to_string(value.get_right())); }
 
 std::string to_string(ConditionView value)
 {
@@ -173,7 +177,7 @@ std::string to_string(EntityView<Effect<LiteralTag>> value) { return to_string(v
 std::string to_string(EntityView<Effect<AndTag>> value) { return fmt::format("(and{})", detail::spaced(value.get_effects())); }
 
 std::string to_string(EntityView<Effect<NumericTag>> value)
-{ return fmt::format("({} {} {})", loki::formalism::to_string(value.data().op), to_string(value.get_function()), to_string(value.get_expression())); }
+{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_operation()), to_string(value.get_function()), to_string(value.get_expression())); }
 
 std::string to_string(EntityView<Effect<ForallTag>> value)
 { return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_effect())); }
@@ -183,7 +187,7 @@ std::string to_string(EntityView<Effect<WhenTag>> value)
 
 std::string to_string(EntityView<Effect<OneOfTag>> value) { return fmt::format("(oneof{})", detail::spaced(value.get_effects())); }
 
-std::string to_string(EffectProbabilisticAlternativeView value) { return fmt::format("{} {}", value.data().probability, to_string(value.get_effect())); }
+std::string to_string(EffectProbabilisticAlternativeView value) { return fmt::format("{} {}", value.get_probability(), to_string(value.get_effect())); }
 
 std::string to_string(EntityView<Effect<ProbabilisticTag>> value) { return fmt::format("(probabilistic{})", detail::spaced(value.get_alternatives())); }
 

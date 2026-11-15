@@ -52,7 +52,7 @@ static formalism::TypeView copy_type_view_for_metadata(TranslationStorage& targe
 {
     return memoized(target.maps,
                     source,
-                    [&] { return rebuild(target.repository, source, [&](formalism::TypeView base) { return copy_type_view_for_metadata(target, base); }); });
+                    [&] { return rebuild(target, source, [&](formalism::TypeView base) { return copy_type_view_for_metadata(target, base); }); });
 }
 
 static void remap_object_type_metadata(TranslationStorage& target,

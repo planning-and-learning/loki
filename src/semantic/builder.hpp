@@ -19,8 +19,12 @@
 #define LOKI_SEMANTIC_BUILDER_HPP_
 
 #include "loki/ast/ast_fwd.hpp"
+#include "loki/formalism/conditions.hpp"
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/effects.hpp"
+#include "loki/formalism/function_expressions.hpp"
 #include "loki/formalism/repository.hpp"
+#include "loki/formalism/term.hpp"
 #include "loki/semantic/options.hpp"
 
 #include <cstddef>

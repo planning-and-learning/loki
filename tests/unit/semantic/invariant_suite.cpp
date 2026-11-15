@@ -20,6 +20,8 @@
 
 #include <cstdint>
 #include <gtest/gtest.h>
+#include <loki/formalism/conditions.hpp>
+#include <loki/formalism/effects.hpp>
 #include <loki/formalism/formatter.hpp>
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>

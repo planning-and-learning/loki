@@ -77,7 +77,7 @@ struct RequirementCollector
     {
         if (required<T>)
             requirements.insert(*required<T>);
-        urd::for_each_child<SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { visit(child); });
+        urd::for_each_child<SymbolRepositoryTypes, T>(node, [&](auto child) { visit(child); });
     }
 
     template<typename... Vs>
@@ -131,7 +131,7 @@ struct RequirementCollector
     void visit(EntityView<Effect<NumericTag>> node)
     {
         // Bare :action-costs permits only writes of the form (increase (total-cost) ...).
-        const auto increases_total_cost = node.get_operator() == NumericEffectOperator::Increase && is_total_cost(node.get_function().get_function());
+        const auto increases_total_cost = node.get_operation() == NumericEffectOperator::Increase && is_total_cost(node.get_function().get_function());
         requirements.insert(increases_total_cost ? ActionCosts : NumericFluents);
         visit(node.get_function());
         visit(node.get_expression());

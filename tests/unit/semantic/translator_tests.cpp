@@ -22,7 +22,9 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 #include <initializer_list>
+#include <loki/formalism/conditions.hpp>
 #include <loki/formalism/formatter.hpp>
+#include <loki/formalism/function_expressions.hpp>
 #include <loki/formalism/repository.hpp>
 #include <loki/semantic/errors.hpp>
 #include <loki/semantic/options.hpp>
@@ -95,7 +97,7 @@ formalism::FunctionExpressionView binary_expression(formalism::Repository& repos
                                                                        builder,
                                                                        [&](auto& data)
                                                                        {
-                                                                           data.op = op;
+                                                                           data.operation = op;
                                                                            data.left = urd::to_stored(left);
                                                                            data.right = urd::to_stored(right);
                                                                        });
@@ -110,7 +112,7 @@ formalism::FunctionExpressionView multi_expression(formalism::Repository& reposi
                                                                       builder,
                                                                       [&](auto& data)
                                                                       {
-                                                                          data.op = op;
+                                                                          data.operation = op;
                                                                           for (const auto expression : expressions)
                                                                               data.args.push_back(urd::to_stored(expression));
                                                                       });
@@ -128,7 +130,7 @@ bool contains_binary_add_or_multiply(formalism::FunctionExpressionView expressio
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>>)
             {
-                if (node.get_operator() == formalism::BinaryArithmeticOperator::Add || node.get_operator() == formalism::BinaryArithmeticOperator::Mul)
+                if (node.get_operation() == formalism::BinaryArithmeticOperator::Add || node.get_operation() == formalism::BinaryArithmeticOperator::Mul)
                     return true;
                 return contains_binary_add_or_multiply(node.get_left()) || contains_binary_add_or_multiply(node.get_right());
             }
@@ -775,7 +777,7 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
                                           [&](auto& data)
                                           {
                                               data.atom = atom;
-                                              data.m_polarity = true;
+                                              data.polarity = true;
                                           })
             .index();
     };

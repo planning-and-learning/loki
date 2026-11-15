@@ -20,7 +20,10 @@
 
 #include <algorithm>
 #include <gtest/gtest.h>
+#include <loki/formalism/conditions.hpp>
+#include <loki/formalism/effects.hpp>
 #include <loki/formalism/repository.hpp>
+#include <loki/formalism/term.hpp>
 #include <loki/formalism/views.hpp>
 #include <optional>
 #include <string>
@@ -43,7 +46,7 @@ template<typename Target, typename T>
 std::size_t count_nodes(formalism::EntityView<T> node)
 {
     auto result = std::size_t { std::is_same_v<T, Target> };
-    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(), node.context(), [&](auto child) { result += count_nodes<Target>(child); });
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node, [&](auto child) { result += count_nodes<Target>(child); });
     return result;
 }
 
@@ -84,9 +87,7 @@ template<typename T>
 bool mentions_predicate(formalism::EntityView<T> node, const std::string& name)
 {
     auto found = false;
-    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(),
-                                                             node.context(),
-                                                             [&](auto child) { found = found || mentions_predicate(child, name); });
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node, [&](auto child) { found = found || mentions_predicate(child, name); });
     return found;
 }
 
@@ -126,9 +127,7 @@ template<typename T>
 bool writes_function_named(formalism::EntityView<T> node, std::string_view name)
 {
     auto found = false;
-    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(),
-                                                             node.context(),
-                                                             [&](auto child) { found = found || writes_function_named(child, name); });
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node, [&](auto child) { found = found || writes_function_named(child, name); });
     return found;
 }
 

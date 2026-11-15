@@ -62,9 +62,7 @@ template<typename Derived>
 template<typename T>
 void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::EntityView<T> node, VariableSet& bound, VariableSet& free) const
 {
-    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(),
-                                                             node.context(),
-                                                             [&](auto child) { this->self().collect_free_variables(child, bound, free); });
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node, [&](auto child) { this->self().collect_free_variables(child, bound, free); });
 }
 
 template<typename Derived>

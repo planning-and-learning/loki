@@ -20,7 +20,10 @@
 #include "checks.hpp"
 #include "context.hpp"
 #include "loki/ast/ast.hpp"
+#include "loki/formalism/conditions.hpp"
+#include "loki/formalism/function_expressions.hpp"
 #include "loki/formalism/repository.hpp"
+#include "loki/formalism/term.hpp"
 #include "mappings.hpp"
 
 #include <utility>
@@ -54,7 +57,7 @@ formalism::LiteralView AstBuilder::parse_literal(const ast::Literal& node)
     const auto atom = parse_atom(node.atom);
     auto data = formalism::checkout<formalism::Literal>(m_builder);
     data->atom = atom.index();
-    data->m_polarity = node.positive;
+    data->polarity = node.positive;
     return formalism::insert(repo(), *data).first;
 }
 
@@ -180,7 +183,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
 {
     const auto expression = parse_function_expression(node.expression.get());
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(m_builder);
-    data->op = formalism::UnaryArithmeticOperator::Sub;
+    data->operation = formalism::UnaryArithmeticOperator::Sub;
     data->expression = urd::to_stored(expression);
     return formalism::insert(repo(), *data).first;
 }
@@ -190,7 +193,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
     const auto left = parse_function_expression(node.left.get());
     const auto right = parse_function_expression(node.right.get());
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::BinaryTag>>(m_builder);
-    data->op = binary_operator(node.op);
+    data->operation = binary_operator(node.op);
     data->left = urd::to_stored(left);
     data->right = urd::to_stored(right);
     return formalism::insert(repo(), *data).first;
@@ -210,7 +213,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
         return parse_function_expression(node.expressions.front().get());
 
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::MultiTag>>(m_builder);
-    data->op = op;
+    data->operation = op;
     data->args.reserve(node.expressions.size());
     for (const auto& expression : node.expressions)
         data->args.push_back(urd::to_stored(parse_function_expression(expression.get())));

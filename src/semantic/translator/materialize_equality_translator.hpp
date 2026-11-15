@@ -19,6 +19,7 @@
 #define LOKI_SEMANTIC_TRANSLATOR_MATERIALIZE_EQUALITY_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+#include "loki/formalism/views.hpp"
 #include "loki/semantic/errors.hpp"
 
 namespace loki::semantic::detail
@@ -57,9 +58,7 @@ template<typename T>
 bool MaterializeEqualityTranslator<Derived>::uses_equality(formalism::EntityView<T> node) const
 {
     auto found = false;
-    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node.data(),
-                                                             node.context(),
-                                                             [&](auto child) { found = found || this->self().uses_equality(child); });
+    urd::for_each_child<formalism::SymbolRepositoryTypes, T>(node, [&](auto child) { found = found || this->self().uses_equality(child); });
     return found;
 }
 
@@ -93,7 +92,7 @@ formalism::LiteralView MaterializeEqualityTranslator<Derived>::equality_literal(
     const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
-    literal_data->m_polarity = true;
+    literal_data->polarity = true;
     return formalism::insert(this->copy_context().storage->repository, *literal_data).first;
 }
 

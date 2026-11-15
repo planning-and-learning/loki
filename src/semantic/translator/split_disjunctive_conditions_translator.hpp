@@ -20,6 +20,7 @@
 
 #include "copy_translator_component.hpp"
 
+#include <urd/elements/flat.hpp>
 #include <urd/repr/maps/unordered_flat_map.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
@@ -49,7 +50,6 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(fo
     auto seen = urd::Store<urd::set<formalism::ActionView>> {};
     for (auto action : actions)
     {
-        const auto& data = action.data();
         if (const auto precondition_view = action.get_precondition())
         {
             const auto precondition = this->self().flatten_condition(precondition_view.value());
@@ -58,13 +58,13 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(fo
                 for (auto part : condition_or->get_conditions())
                 {
                     auto action_data = formalism::checkout<formalism::Action>(this->copy_context().builder);
-                    action_data->name = data.name;
-                    action_data->original_name = data.original_name;
-                    for (auto parameter : data.parameters)
-                        action_data->parameters.push_back(parameter);
-                    action_data->original_arity = data.original_arity;
+                    action_data->name = action.get_name();
+                    action_data->original_name = action.get_original_name();
+                    for (auto parameter : action.get_parameters())
+                        action_data->parameters.push_back(parameter.index());
+                    action_data->original_arity = action.get_original_arity();
                     action_data->precondition = urd::to_stored(part);
-                    action_data->effect = data.effect;
+                    action_data->effect = urd::to_stored(action.get_effect());
                     this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *action_data).first);
                 }
                 continue;
@@ -82,17 +82,16 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_axioms(for
     auto seen = urd::Store<urd::set<formalism::AxiomView>> {};
     for (auto axiom : axioms)
     {
-        const auto& data = axiom.data();
         const auto condition = this->self().flatten_condition(axiom.get_condition());
         if (const auto condition_or = this->self().as_or(condition))
         {
             for (auto part : condition_or->get_conditions())
             {
                 auto axiom_data = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
-                for (auto parameter : data.parameters)
-                    axiom_data->parameters.push_back(parameter);
-                axiom_data->original_arity = data.original_arity;
-                axiom_data->head = data.head;
+                for (auto parameter : axiom.get_parameters())
+                    axiom_data->parameters.push_back(parameter.index());
+                axiom_data->original_arity = axiom.get_original_arity();
+                axiom_data->head = axiom.get_head().index();
                 axiom_data->condition = urd::to_stored(part);
                 this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *axiom_data).first);
             }

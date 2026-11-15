@@ -18,7 +18,11 @@
 #ifndef LOKI_FORMALISM_FORMATTER_HPP_
 #define LOKI_FORMALISM_FORMATTER_HPP_
 
+#include "loki/formalism/conditions.hpp"
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/effects.hpp"
+#include "loki/formalism/function_expressions.hpp"
+#include "loki/formalism/term.hpp"
 
 #include <fmt/format.h>
 #include <string>

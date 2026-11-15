@@ -79,8 +79,7 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
     {
         if (const auto numeric = this->self().template as_effect<formalism::Effect<formalism::NumericTag>>(effect))
         {
-            const auto& data = numeric->data();
-            numeric_groups[NumericGroupKey(data.op, data.function)].push_back(data.expression);
+            numeric_groups[NumericGroupKey(numeric->get_operation(), numeric->get_function().index())].push_back(urd::to_stored(numeric->get_expression()));
             return;
         }
         result->effects.push_back(urd::to_stored(effect));
@@ -108,13 +107,13 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
         if (expressions.size() > 1)
         {
             auto multi_data = formalism::checkout<formalism::FunctionExpression<formalism::MultiTag>>(this->copy_context().builder);
-            multi_data->op = formalism::MultiArithmeticOperator::Add;
+            multi_data->operation = formalism::MultiArithmeticOperator::Add;
             for (const auto& expression : expressions)
                 multi_data->args.push_back(expression);
             sum = formalism::insert(this->copy_context().storage->repository, *multi_data).first.index();
         }
         auto numeric_data = formalism::checkout<formalism::Effect<formalism::NumericTag>>(this->copy_context().builder);
-        numeric_data->op = key.first;
+        numeric_data->operation = key.first;
         numeric_data->function = key.second;
         numeric_data->expression = sum;
         result->effects.push_back(formalism::insert(this->copy_context().storage->repository, *numeric_data).first.index());
@@ -127,7 +126,6 @@ template<typename Derived>
 formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView,
                                                                                    formalism::EntityView<formalism::Effect<formalism::ForallTag>> node)
 {
-    const auto& data = node.data();
     const auto nested = this->self().normalize_effect(node.get_effect());
     if (const auto nested_and = this->self().template as_effect<formalism::Effect<formalism::AndTag>>(nested))
     {
@@ -135,8 +133,8 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
         for (auto part : nested_and->get_effects())
         {
             auto forall_data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
-            for (auto parameter : data.parameters)
-                forall_data->parameters.push_back(parameter);
+            for (auto parameter : node.get_parameters())
+                forall_data->parameters.push_back(parameter.index());
             forall_data->effect = urd::to_stored(part);
             const auto wrapped = formalism::EffectView(formalism::insert(this->copy_context().storage->repository, *forall_data).first);
             conjunction_data->effects.push_back(urd::to_stored(this->self().normalize_effect(wrapped)));
@@ -147,8 +145,8 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
     if (const auto nested_forall = this->self().template as_effect<formalism::Effect<formalism::ForallTag>>(nested))
     {
         auto forall_data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
-        for (auto parameter : data.parameters)
-            forall_data->parameters.push_back(parameter);
+        for (auto parameter : node.get_parameters())
+            forall_data->parameters.push_back(parameter.index());
         for (auto parameter : nested_forall->get_parameters())
             forall_data->parameters.push_back(parameter.index());
         forall_data->effect = urd::to_stored(nested_forall->get_effect());
@@ -156,8 +154,8 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
         return this->self().normalize_effect(wrapped);
     }
     auto forall_data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
-    for (auto parameter : data.parameters)
-        forall_data->parameters.push_back(parameter);
+    for (auto parameter : node.get_parameters())
+        forall_data->parameters.push_back(parameter.index());
     forall_data->effect = urd::to_stored(nested);
     return formalism::EffectView(formalism::insert(this->copy_context().storage->repository, *forall_data).first);
 }
