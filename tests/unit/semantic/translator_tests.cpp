@@ -98,8 +98,8 @@ formalism::FunctionExpressionView binary_expression(formalism::Repository& repos
                                                                        [&](auto& data)
                                                                        {
                                                                            data.operation = op;
-                                                                           data.left = urd::to_stored(left);
-                                                                           data.right = urd::to_stored(right);
+                                                                           urd::store(data.left, left);
+                                                                           urd::store(data.right, right);
                                                                        });
 }
 
@@ -114,7 +114,7 @@ formalism::FunctionExpressionView multi_expression(formalism::Repository& reposi
                                                                       {
                                                                           data.operation = op;
                                                                           for (const auto expression : expressions)
-                                                                              data.args.push_back(urd::to_stored(expression));
+                                                                              urd::append(data.args, expression);
                                                                       });
 }
 
@@ -787,8 +787,8 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
     { return formalism::ConditionView(intern<formalism::Condition<formalism::LiteralTag>>(repository, builder, [&](auto& data) { data.literal = literal; })); };
     const auto p_condition_view = make_condition(p_literal);
     const auto q_condition_view = make_condition(q_literal);
-    const auto p_condition = urd::to_stored(p_condition_view);
-    const auto q_condition = urd::to_stored(q_condition_view);
+    const auto p_condition = urd::stored<formalism::ConditionVariant>(p_condition_view);
+    const auto q_condition = urd::stored<formalism::ConditionVariant>(q_condition_view);
 
     const auto first = intern<formalism::Condition<formalism::AndTag>>(repository,
                                                                        builder,

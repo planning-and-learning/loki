@@ -43,15 +43,16 @@ EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalis
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
-    auto effect = urd::to_stored(this->self().copy(source.get_effect()));
+    // Stored: the typing below replaces it by the index of the effect that wraps it.
+    auto effect = urd::stored<formalism::EffectVariant>(this->self().copy(source.get_effect()));
     if (this->copy_context().phase == TranslationPhase::CompileTyping)
     {
         auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
         this->self().type_conditions_for_parameters(source.get_parameters(), *condition_data);
         const auto condition = this->self().make_conjunction(*condition_data);
         auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
-        data->condition = urd::to_stored(condition);
-        data->effect = effect;
+        urd::store(data->condition, condition);
+        urd::store(data->effect, effect);
         effect = formalism::insert(this->copy_context().storage->repository, *data).first.index();
     }
     auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
@@ -60,7 +61,7 @@ EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalis
     else
         for (auto parameter : parameter_views)
             data->parameters.push_back(parameter.index());
-    data->effect = effect;
+    urd::store(data->effect, effect);
     const auto out = formalism::insert(this->copy_context().storage->repository, *data).first;
     this->self().leave_scope();
     return out;
@@ -73,23 +74,23 @@ formalism::EffectView EffectTranslator<Derived>::copy(formalism::EffectView sour
     if (this->copy_context().phase == TranslationPhase::SplitDisjunctiveConditions && when)
     {
         const auto condition = this->self().copy(when->get_condition());
-        const auto effect = urd::to_stored(this->self().copy(when->get_effect()));
+        const auto effect = this->self().copy(when->get_effect());
         if (const auto condition_or = this->self().as_or(condition))
         {
             auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
             for (auto part : condition_or->get_conditions())
             {
                 auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
-                when_data->condition = urd::to_stored(part);
-                when_data->effect = effect;
+                urd::store(when_data->condition, part);
+                urd::store(when_data->effect, effect);
                 const auto split = formalism::insert(this->copy_context().storage->repository, *when_data).first;
                 data->effects.push_back(split.index());
             }
             return formalism::insert(this->copy_context().storage->repository, *data).first;
         }
         auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
-        data->condition = urd::to_stored(condition);
-        data->effect = effect;
+        urd::store(data->condition, condition);
+        urd::store(data->effect, effect);
         return formalism::insert(this->copy_context().storage->repository, *data).first;
     }
 

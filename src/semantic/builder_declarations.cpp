@@ -337,7 +337,7 @@ urd::Store<urd::sequence<formalism::ObjectView>> AstBuilder::parse_objects(const
             auto types = group.type ? parse_type_expression(*group.type) : urd::Store<urd::sequence<formalism::TypeView>> { m_domain_context.object_type };
             auto data = formalism::checkout<formalism::Object>(m_builder);
             data->name = urd::flat_string(name);
-            data->types = urd::to_stored(types);
+            urd::store(data->types, types);
             auto view = formalism::insert(repo(), *data).first;
             table.emplace(name, view);
             result.push_back(view);
@@ -369,7 +369,7 @@ urd::Store<urd::sequence<formalism::ParameterView>> AstBuilder::parse_parameters
             if (const auto union_view = alternatives ? union_type(*alternatives, identifier) : std::nullopt)
                 parameter_data->types.push_back(union_view->index());
             else
-                parameter_data->types = urd::to_stored(types);
+                urd::store(parameter_data->types, types);
             m_parse_context.variable_types.insert_or_assign(variable, std::move(types));
             result.push_back(formalism::insert(repo(), *parameter_data).first);
         }
@@ -387,7 +387,7 @@ urd::Store<urd::sequence<formalism::PredicateView>> AstBuilder::parse_predicates
         checks().ensure_new<DuplicatePredicateError>(m_domain_context.declared_predicates, name, node.name);
         auto data = formalism::checkout<formalism::Predicate>(m_builder);
         data->name = urd::flat_string(name);
-        data->parameters = urd::to_stored(parameters);
+        urd::store(data->parameters, parameters);
         auto view = formalism::insert(repo(), *data).first;
         m_domain_context.predicates.emplace(name, view);
         result.push_back(view);
@@ -412,7 +412,7 @@ urd::Store<urd::sequence<formalism::FunctionSkeletonView>> AstBuilder::parse_fun
         auto type = node.type ? parse_type_expression(*node.type).front().index() : m_domain_context.number_type.index();
         auto data = formalism::checkout<formalism::FunctionSkeleton>(m_builder);
         data->name = urd::flat_string(name);
-        data->parameters = urd::to_stored(parameters);
+        urd::store(data->parameters, parameters);
         data->type = type;
         auto view = formalism::insert(repo(), *data).first;
         m_domain_context.functions.emplace(name, view);

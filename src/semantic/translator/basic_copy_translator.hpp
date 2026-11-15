@@ -94,7 +94,7 @@ template<typename T>
 void BasicCopyTranslator<Derived>::copy_list(formalism::EntityListView<T> source, urd::flat_vector<urd::index<T>>& result)
 {
     for (auto view : source)
-        result.push_back(urd::to_stored(this->self().copy(view)));
+        urd::append(result, this->self().copy(view));
 }
 
 template<typename Derived>
@@ -221,7 +221,7 @@ formalism::EntityView<T> BasicCopyTranslator<Derived>::copy_declaration(formalis
                             this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
                         else
                             for (auto parameter : source.get_parameters())
-                                data->parameters.push_back(urd::to_stored(this->self().copy(parameter)));
+                                urd::append(data->parameters, this->self().copy(parameter));
                         finish(*data);
                         return formalism::insert(this->copy_context().storage->repository, *data).first;
                     });
@@ -236,7 +236,7 @@ formalism::PredicateView BasicCopyTranslator<Derived>::copy(formalism::Predicate
 template<typename Derived>
 formalism::FunctionSkeletonView BasicCopyTranslator<Derived>::copy(formalism::FunctionSkeletonView source)
 {
-    return this->copy_declaration(source, [&](auto& data) { data.type = urd::to_stored(this->self().copy(source.get_type())); });
+    return this->copy_declaration(source, [&](auto& data) { urd::store(data.type, this->self().copy(source.get_type())); });
 }
 
 template<typename Derived>

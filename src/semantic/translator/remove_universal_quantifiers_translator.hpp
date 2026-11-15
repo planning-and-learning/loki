@@ -84,7 +84,7 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
         axiom_data->parameters.push_back(parameter);
     axiom_data->original_arity = axiom_data->parameters.size();
     axiom_data->head = positive_head;
-    axiom_data->condition = urd::to_stored(condition);
+    urd::store(axiom_data->condition, condition);
     const auto axiom = formalism::insert(this->copy_context().storage->repository, *axiom_data).first;
 
     this->copy_context().generated_predicates.push_back(predicate);
@@ -143,12 +143,12 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
-    auto condition = urd::to_stored(this->self().remove_universal_quantifiers(source.get_condition()));
+    auto condition = this->self().remove_universal_quantifiers(source.get_condition());
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.index());
-    data->condition = condition;
+    urd::store(data->condition, condition);
     return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
 }
 
@@ -159,12 +159,12 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
-    auto negated = urd::to_stored(this->self().negate_condition(source.get_condition()));
+    auto negated = this->self().negate_condition(source.get_condition());
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.index());
-    data->condition = negated;
+    urd::store(data->condition, negated);
     const auto exists_not = this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
     const auto translated_exists_not = this->self().remove_universal_quantifiers(exists_not);
     return this->self().make_generated_axiom_condition(translated_exists_not);

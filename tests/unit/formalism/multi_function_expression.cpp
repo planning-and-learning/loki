@@ -63,8 +63,8 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
                                                                                                      {
                                                                                                          data.operation =
                                                                                                              loki::formalism::BinaryArithmeticOperator::Add;
-                                                                                                         data.left = urd::to_stored(one);
-                                                                                                         data.right = urd::to_stored(two);
+                                                                                                         urd::store(data.left, one);
+                                                                                                         urd::store(data.right, two);
                                                                                                      }));
     const auto multi = wrap(intern<loki::formalism::FunctionExpression<loki::formalism::MultiTag>>(repository,
                                                                                                    builder,
@@ -72,8 +72,8 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
                                                                                                    {
                                                                                                        data.operation =
                                                                                                            loki::formalism::MultiArithmeticOperator::Add;
-                                                                                                       data.args.push_back(urd::to_stored(one));
-                                                                                                       data.args.push_back(urd::to_stored(two));
+                                                                                                       urd::append(data.args, one);
+                                                                                                       urd::append(data.args, two);
                                                                                                    }));
     ASSERT_NE(binary, multi);
 
@@ -84,8 +84,8 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
                                                                                       [&](auto& data)
                                                                                       {
                                                                                           data.operation = loki::formalism::MultiArithmeticOperator::Mul;
-                                                                                          data.args.push_back(urd::to_stored(left));
-                                                                                          data.args.push_back(urd::to_stored(right));
+                                                                                          urd::append(data.args, left);
+                                                                                          urd::append(data.args, right);
                                                                                       });
     };
     const auto first = make_product(binary, multi);

@@ -162,11 +162,11 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             const auto renamed_goal = this->self().rename_variables(goal.value());
             this->self().leave_variable_scope();
             const auto renaming_disabled = RenamingDisabled(this->copy_context());
-            data->goal = urd::to_stored(this->self().copy(renamed_goal));
+            urd::store(data->goal, this->self().copy(renamed_goal));
         }
         else
         {
-            data->goal = urd::to_stored(this->self().copy(goal.value()));
+            urd::store(data->goal, this->self().copy(goal.value()));
         }
     }
     else
@@ -175,7 +175,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     }
 
     if (const auto metric = task.get_metric())
-        data->metric = urd::to_stored(this->self().copy(metric.value()));
+        urd::store(data->metric, this->self().copy(metric.value()));
     else
         data->metric = {};
     this->self().template copy_list<formalism::Predicate>(task.get_predicates(), data->predicates);
@@ -191,7 +191,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
         case TranslationPhase::SimplifyGoal:
         {
             if (this->copy_context().phase == TranslationPhase::SimplifyGoal && data->goal)
-                data->goal = urd::to_stored(this->self().simplify_goal_condition(copied_task.get_goal().value()));
+                urd::store(data->goal, this->self().simplify_goal_condition(copied_task.get_goal().value()));
 
             auto existing_predicates = urd::Store<urd::set<formalism::PredicateView>> {};
             for (auto predicate : copied_task.get_predicates())

@@ -166,7 +166,7 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameters)
         data->parameters.push_back(parameter.index());
-    data->condition = urd::to_stored(conjunction);
+    urd::store(data->condition, conjunction);
     return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
 }
 

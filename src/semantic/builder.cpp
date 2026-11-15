@@ -112,13 +112,13 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
 
     auto data = formalism::checkout<formalism::Domain>(m_builder);
     data->name = urd::flat_string(domain.name.text);
-    data->requirements = urd::to_stored(requirements);
-    data->types = urd::to_stored(types);
-    data->constants = urd::to_stored(constants);
-    data->predicates = urd::to_stored(predicates);
-    data->functions = urd::to_stored(functions);
-    data->actions = urd::to_stored(actions);
-    data->axioms = urd::to_stored(axioms);
+    urd::store(data->requirements, requirements);
+    urd::store(data->types, types);
+    urd::store(data->constants, constants);
+    urd::store(data->predicates, predicates);
+    urd::store(data->functions, functions);
+    urd::store(data->actions, actions);
+    urd::store(data->axioms, axioms);
     return formalism::insert(repo(), *data).first;
 }
 
@@ -167,16 +167,16 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
     auto data = formalism::checkout<formalism::Task>(m_builder);
     data->name = urd::flat_string(task.name.text);
     data->domain = m_domain_context.get_domain().index();
-    data->requirements = urd::to_stored(requirements);
-    data->types = urd::to_stored(types);
-    data->predicates = urd::to_stored(predicates);
-    data->objects = urd::to_stored(objects);
-    data->initial_literals = urd::to_stored(initial_literals);
-    data->initial_function_values = urd::to_stored(initial_function_values);
+    urd::store(data->requirements, requirements);
+    urd::store(data->types, types);
+    urd::store(data->predicates, predicates);
+    urd::store(data->objects, objects);
+    urd::store(data->initial_literals, initial_literals);
+    urd::store(data->initial_function_values, initial_function_values);
     if (goal)
-        data->goal = urd::to_stored(*goal);
-    data->metric = urd::to_stored(metric);
-    data->axioms = urd::to_stored(axioms);
+        urd::store(data->goal, *goal);
+    urd::store(data->metric, metric);
+    urd::store(data->axioms, axioms);
     return formalism::insert(repo(), *data).first;
 }
 

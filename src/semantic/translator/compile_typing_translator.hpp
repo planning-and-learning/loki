@@ -79,7 +79,7 @@ void CompileTypingTranslator<Derived>::copy_type_hierarchy(formalism::EntityList
         for (auto collected : this->self().collect_type_hierarchy(type))
         {
             if (seen.insert(collected).second)
-                result.push_back(urd::to_stored(this->self().copy(collected)));
+                urd::append(result, this->self().copy(collected));
         }
     }
 }
@@ -90,9 +90,9 @@ void CompileTypingTranslator<Derived>::copy_parameters_without_types(formalism::
 {
     for (auto parameter : parameters)
     {
-        const auto variable = urd::to_stored(this->self().copy(parameter.get_variable()));
+        const auto variable = this->self().copy(parameter.get_variable());
         auto data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
-        data->variable = variable;
+        urd::store(data->variable, variable);
         result.push_back(formalism::insert(this->copy_context().storage->repository, *data).first.index());
     }
 }
@@ -109,7 +109,7 @@ formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formal
         for (auto ancestor : this->self().collect_type_hierarchy(type))
             if (ancestor.get_bases().empty())
             {
-                parameter_data->types.push_back(urd::to_stored(this->self().copy(ancestor)));
+                urd::append(parameter_data->types, this->self().copy(ancestor));
                 break;
             }
     auto variable_data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
@@ -127,10 +127,10 @@ formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formal
 template<typename Derived>
 formalism::LiteralView CompileTypingTranslator<Derived>::type_literal(formalism::TypeView type, formalism::TermView term)
 {
-    const auto predicate = urd::to_stored(this->self().type_predicate(type));
+    const auto predicate = this->self().type_predicate(type);
     auto atom_data = formalism::checkout<formalism::Atom>(this->copy_context().builder);
-    atom_data->predicate = predicate;
-    atom_data->terms.push_back(urd::to_stored(term));
+    urd::store(atom_data->predicate, predicate);
+    urd::append(atom_data->terms, term);
     const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
@@ -141,9 +141,9 @@ formalism::LiteralView CompileTypingTranslator<Derived>::type_literal(formalism:
 template<typename Derived>
 formalism::ConditionView CompileTypingTranslator<Derived>::type_condition(formalism::TypeView type, formalism::VariableView variable)
 {
-    const auto literal = urd::to_stored(this->self().type_literal(type, this->self().copy(variable)));
+    const auto literal = this->self().type_literal(type, this->self().copy(variable));
     auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
-    condition_data->literal = literal;
+    urd::store(condition_data->literal, literal);
     return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
 }
 
@@ -215,7 +215,7 @@ void CompileTypingTranslator<Derived>::add_type_literals_for_object(urd::flat_ve
     const auto copied_object = this->self().copy(object);
     auto add_literal = [&](auto&& self, formalism::TypeView type) -> void
     {
-        literals.push_back(urd::to_stored(this->self().type_literal(type, copied_object)));
+        urd::append(literals, this->self().type_literal(type, copied_object));
         for (auto base : type.get_bases())
             self(self, base);
     };

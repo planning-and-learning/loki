@@ -140,7 +140,7 @@ template<typename T, typename F>
 formalism::EntityView<T> rebuild(TranslationStorage& storage, formalism::EntityView<T> source, F f)
 {
     auto scratch = formalism::checkout<T>(storage.builder);
-    auto& data = urd::map_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return urd::to_stored(f(child)); });
+    auto& data = urd::map_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return f(child); });
     return formalism::insert(storage.repository, data).first;
 }
 

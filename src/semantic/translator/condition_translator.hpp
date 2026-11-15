@@ -58,7 +58,7 @@ formalism::EntityView<formalism::Condition<Tag>> ConditionTranslator<Derived>::c
     else
         for (auto parameter : parameter_views)
             data->parameters.push_back(parameter.index());
-    data->condition = urd::to_stored(typed_condition);
+    urd::store(data->condition, typed_condition);
     return formalism::insert(this->copy_context().storage->repository, *data).first;
 }
 
