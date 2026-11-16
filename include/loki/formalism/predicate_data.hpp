@@ -50,8 +50,8 @@ struct data<::loki::formalism::Predicate>
     }
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
-    data(data&& other) = default;
-    data& operator=(data&& other) = default;
+    data(data&& other) noexcept = default;
+    data& operator=(data&& other) noexcept = default;
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"name", &data::name>, urd::field<"parameters", &data::parameters>> {}; }

@@ -15,8 +15,8 @@ def make_literal(
     positive: bool = True,
 ) -> pypddl.Literal:
     """Intern the literal of predicate over terms."""
-    atom, _ = repository.insert(pypddl.AtomData(predicate, list(terms)))
-    return repository.insert(pypddl.LiteralData(atom, positive))[0]
+    atom, _ = repository.insert(pypddl.AtomData(predicate.index(), [each.index() for each in terms]))
+    return repository.insert(pypddl.LiteralData(atom.index(), positive))[0]
 
 
 def make_condition(
@@ -28,13 +28,13 @@ def make_condition(
 ) -> pypddl.ConditionLiteral:
     """Intern the condition that holds the literal of predicate over terms."""
     literal = make_literal(repository, predicate, terms, positive=positive)
-    condition_literal, _ = repository.insert(pypddl.ConditionLiteralData(literal))
+    condition_literal, _ = repository.insert(pypddl.ConditionLiteralData(literal.index()))
     return condition_literal
 
 
 def make_effect(repository: pypddl.Repository, literal: pypddl.Literal) -> pypddl.EffectLiteral:
     """Intern the effect that sets literal."""
-    effect_literal, _ = repository.insert(pypddl.EffectLiteralData(literal))
+    effect_literal, _ = repository.insert(pypddl.EffectLiteralData(literal.index()))
     return effect_literal
 
 
@@ -43,7 +43,7 @@ def make_condition_and(
     conditions: Sequence[pypddl.ConditionLiteral],
 ) -> pypddl.ConditionAnd:
     """Intern the conjunction of conditions."""
-    conjunction, _ = repository.insert(pypddl.ConditionAndData(list(conditions)))
+    conjunction, _ = repository.insert(pypddl.ConditionAndData([each.index() for each in conditions]))
     return conjunction
 
 
@@ -52,7 +52,7 @@ def make_effect_and(
     effects: Sequence[pypddl.EffectLiteral],
 ) -> pypddl.EffectAnd:
     """Intern the conjunction of effects."""
-    conjunction, _ = repository.insert(pypddl.EffectAndData(list(effects)))
+    conjunction, _ = repository.insert(pypddl.EffectAndData([each.index() for each in effects]))
     return conjunction
 
 
@@ -63,19 +63,27 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
     typing, _ = repository.insert(pypddl.RequirementData(pypddl.RequirementKind.Typing))
 
     object_t, _ = repository.insert(pypddl.TypeData("object", []))
-    room_t, _ = repository.insert(pypddl.TypeData("room", [object_t]))
-    ball_t, _ = repository.insert(pypddl.TypeData("ball", [object_t]))
-    gripper_t, _ = repository.insert(pypddl.TypeData("gripper", [object_t]))
+    room_t, _ = repository.insert(pypddl.TypeData("room", [object_t.index()]))
+    ball_t, _ = repository.insert(pypddl.TypeData("ball", [object_t.index()]))
+    gripper_t, _ = repository.insert(pypddl.TypeData("gripper", [object_t.index()]))
 
-    x, _ = repository.insert(pypddl.ParameterData(repository.insert(pypddl.VariableData("?x"))[0], [room_t]))
-    y, _ = repository.insert(pypddl.ParameterData(repository.insert(pypddl.VariableData("?y"))[0], [room_t]))
-    b, _ = repository.insert(pypddl.ParameterData(repository.insert(pypddl.VariableData("?b"))[0], [ball_t]))
-    g, _ = repository.insert(pypddl.ParameterData(repository.insert(pypddl.VariableData("?g"))[0], [gripper_t]))
+    x, _ = repository.insert(
+        pypddl.ParameterData(repository.insert(pypddl.VariableData("?x"))[0].index(), [room_t.index()])
+    )
+    y, _ = repository.insert(
+        pypddl.ParameterData(repository.insert(pypddl.VariableData("?y"))[0].index(), [room_t.index()])
+    )
+    b, _ = repository.insert(
+        pypddl.ParameterData(repository.insert(pypddl.VariableData("?b"))[0].index(), [ball_t.index()])
+    )
+    g, _ = repository.insert(
+        pypddl.ParameterData(repository.insert(pypddl.VariableData("?g"))[0].index(), [gripper_t.index()])
+    )
 
-    at_robby, _ = repository.insert(pypddl.PredicateData("at-robby", [x]))
-    at, _ = repository.insert(pypddl.PredicateData("at", [b, x]))
-    free, _ = repository.insert(pypddl.PredicateData("free", [g]))
-    carry, _ = repository.insert(pypddl.PredicateData("carry", [b, g]))
+    at_robby, _ = repository.insert(pypddl.PredicateData("at-robby", [x.index()]))
+    at, _ = repository.insert(pypddl.PredicateData("at", [b.index(), x.index()]))
+    free, _ = repository.insert(pypddl.PredicateData("free", [g.index()]))
+    carry, _ = repository.insert(pypddl.PredicateData("carry", [b.index(), g.index()]))
 
     x_term = x.get_variable()
     y_term = y.get_variable()
@@ -90,7 +98,9 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
             make_effect(repository, make_literal(repository, at_robby, [y_term])),
         ],
     )
-    move, _ = repository.insert(pypddl.ActionData("move", "move", [x, y], 2, move_pre, move_eff))
+    move, _ = repository.insert(
+        pypddl.ActionData("move", "move", [x.index(), y.index()], 2, move_pre.index(), move_eff.index())
+    )
 
     pick_pre = make_condition_and(
         repository,
@@ -108,7 +118,9 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
             make_effect(repository, make_literal(repository, carry, [b_term, g_term])),
         ],
     )
-    pick, _ = repository.insert(pypddl.ActionData("pick", "pick", [b, x, g], 3, pick_pre, pick_eff))
+    pick, _ = repository.insert(
+        pypddl.ActionData("pick", "pick", [b.index(), x.index(), g.index()], 3, pick_pre.index(), pick_eff.index())
+    )
 
     drop_pre = make_condition_and(
         repository,
@@ -125,27 +137,29 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
             make_effect(repository, make_literal(repository, at, [b_term, x_term])),
         ],
     )
-    drop, _ = repository.insert(pypddl.ActionData("drop", "drop", [b, x, g], 3, drop_pre, drop_eff))
+    drop, _ = repository.insert(
+        pypddl.ActionData("drop", "drop", [b.index(), x.index(), g.index()], 3, drop_pre.index(), drop_eff.index())
+    )
 
     domain, _ = repository.insert(
         pypddl.DomainData(
             "gripper",
-            requirements=[strips, typing],
-            types=[object_t, room_t, ball_t, gripper_t],
+            requirements=[strips.index(), typing.index()],
+            types=[object_t.index(), room_t.index(), ball_t.index(), gripper_t.index()],
             constants=[],
-            predicates=[at_robby, at, free, carry],
+            predicates=[at_robby.index(), at.index(), free.index(), carry.index()],
             functions=[],
-            actions=[move, pick, drop],
+            actions=[move.index(), pick.index(), drop.index()],
             axioms=[],
         ),
     )
 
     def task(name: str, balls: Sequence[str]) -> pypddl.Task:
-        rooma, _ = repository.insert(pypddl.ObjectData("rooma", [room_t]))
-        roomb, _ = repository.insert(pypddl.ObjectData("roomb", [room_t]))
-        left, _ = repository.insert(pypddl.ObjectData("left", [gripper_t]))
-        right, _ = repository.insert(pypddl.ObjectData("right", [gripper_t]))
-        ball_objects = [repository.insert(pypddl.ObjectData(ball, [ball_t]))[0] for ball in balls]
+        rooma, _ = repository.insert(pypddl.ObjectData("rooma", [room_t.index()]))
+        roomb, _ = repository.insert(pypddl.ObjectData("roomb", [room_t.index()]))
+        left, _ = repository.insert(pypddl.ObjectData("left", [gripper_t.index()]))
+        right, _ = repository.insert(pypddl.ObjectData("right", [gripper_t.index()]))
+        ball_objects = [repository.insert(pypddl.ObjectData(ball, [ball_t.index()]))[0] for ball in balls]
 
         rooma_term = rooma
         roomb_term = roomb
@@ -166,14 +180,20 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
         return repository.insert(
             pypddl.TaskData(
                 name,
-                domain,
+                domain.index(),
                 requirements=[],
                 types=[],
                 predicates=[],
-                objects=[rooma, roomb, left, right, *ball_objects],
-                initial_literals=initial_literals,
+                objects=[
+                    rooma.index(),
+                    roomb.index(),
+                    left.index(),
+                    right.index(),
+                    *(each.index() for each in ball_objects),
+                ],
+                initial_literals=[each.index() for each in initial_literals],
                 initial_function_values=[],
-                goal=make_condition_and(repository, goals),
+                goal=(make_condition_and(repository, goals)).index(),
                 metric=None,
                 axioms=[],
             ),
