@@ -41,7 +41,9 @@ struct data<::loki::formalism::Effect<::loki::formalism::OneOfTag>>
     ::loki::formalism::EffectList effects;
 
     data() = default;
+
     data(::loki::formalism::EffectList effects_) : index(), effects(std::move(effects_)) {}
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -49,7 +51,9 @@ struct data<::loki::formalism::Effect<::loki::formalism::OneOfTag>>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"effects", &data::effects>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::effects> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::effects> {}; }
 };
 

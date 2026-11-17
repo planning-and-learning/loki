@@ -41,6 +41,7 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
     ::loki::formalism::FunctionExpressionVariant right;
 
     data() = default;
+
     data(::loki::formalism::BinaryArithmeticOperator operation_,
          ::loki::formalism::FunctionExpressionVariant left_,
          ::loki::formalism::FunctionExpressionVariant right_) :
@@ -50,6 +51,7 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
         right(std::move(right_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -58,7 +60,9 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
 
     static constexpr auto fields() noexcept
     { return urd::Fields<urd::field<"operation", &data::operation>, urd::field<"left", &data::left>, urd::field<"right", &data::right>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::operation, &data::left, &data::right> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::operation, &data::left, &data::right> {}; }
 };
 

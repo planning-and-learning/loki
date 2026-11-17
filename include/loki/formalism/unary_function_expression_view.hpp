@@ -33,6 +33,7 @@ private:
 
 public:
     auto get_operation() const noexcept { return self().template member<&urd::record_of<V>::operation>(); }
+
     auto get_expression() const noexcept { return self().template member<&urd::record_of<V>::expression>(); }
 };
 }  // namespace urd

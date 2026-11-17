@@ -47,24 +47,43 @@ namespace loki::parser
 {
 
 rules::identifier_type const& identifier() { return rules::identifier; }
+
 rules::type_expression_type const& type_expression() { return rules::type_expression; }
+
 rules::typed_name_list_type const& typed_name_list() { return rules::typed_name_list; }
+
 rules::typed_variable_list_type const& typed_variable_list() { return rules::typed_variable_list; }
+
 rules::term_type const& term() { return rules::term; }
+
 rules::atom_type const& atom() { return rules::atom; }
+
 rules::literal_type const& literal() { return rules::literal; }
+
 rules::function_term_type const& function_term() { return rules::function_term; }
+
 rules::function_expression_type const& function_expression() { return rules::function_expression; }
+
 rules::condition_type const& condition() { return rules::condition; }
+
 rules::effect_type const& effect() { return rules::effect; }
+
 rules::predicate_declaration_type const& predicate_declaration() { return rules::predicate_declaration; }
+
 rules::function_declaration_type const& function_declaration() { return rules::function_declaration; }
+
 rules::action_type const& action() { return rules::action; }
+
 rules::axiom_type const& axiom() { return rules::axiom; }
+
 rules::metric_type const& metric() { return rules::metric; }
+
 rules::initial_function_value_type const& initial_function_value() { return rules::initial_function_value; }
+
 rules::domain_type const& domain() { return rules::domain; }
+
 rules::task_type const& task() { return rules::task; }
+
 rules::file_type const& file() { return rules::file; }
 
 }  // namespace loki::parser

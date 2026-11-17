@@ -82,9 +82,13 @@ Parser::Parser(Parser&&) noexcept = default;
 Parser& Parser::operator=(Parser&&) noexcept = default;
 
 const formalism::Repository& Parser::repository() const noexcept { return m_impl->repository(); }
+
 formalism::Repository& Parser::repository() noexcept { return m_impl->repository(); }
+
 formalism::DomainView Parser::get_domain() const noexcept { return m_impl->get_domain(); }
+
 formalism::TaskView Parser::parse_task(const std::string& source) { return m_impl->parse_task(source); }
+
 formalism::TaskView Parser::parse_task(const std::filesystem::path& path) { return m_impl->parse_task(path); }
 
 Parser::Impl::Impl(std::string domain_source, std::string source_name, ParserOptions options) :
@@ -103,13 +107,17 @@ Parser::Impl::Impl(std::string domain_source, std::string source_name, ParserOpt
 }
 
 const formalism::Repository& Parser::Impl::repository() const noexcept { return repo(); }
+
 formalism::Repository& Parser::Impl::repository() noexcept { return repo(); }
+
 formalism::DomainView Parser::Impl::get_domain() const noexcept { return m_domain_context.get_domain(); }
+
 formalism::TaskView Parser::Impl::parse_task(const std::string& source) { return parse_task_source(source, ""); }
 
 formalism::TaskView Parser::Impl::parse_task(const std::filesystem::path& path) { return parse_task_source(ygg::common::read_file(path), path.string()); }
 
 formalism::Repository& Parser::Impl::repo() noexcept { return m_domain_context.storage->repository; }
+
 const formalism::Repository& Parser::Impl::repo() const noexcept { return m_domain_context.storage->repository; }
 
 formalism::TaskView Parser::Impl::parse_task_source(std::string source, const std::string& source_name)

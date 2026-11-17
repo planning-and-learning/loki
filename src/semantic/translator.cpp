@@ -88,6 +88,7 @@ static const urd::Store<urd::sequence<PhaseStep>>& task_phase_steps()
 }
 
 std::pair<formalism::DomainView, bool> copy(formalism::DomainView source, CopyTranslator& context) { return context.copy(source); }
+
 std::pair<formalism::TaskView, bool> copy(formalism::TaskView source, CopyTranslator& context) { return context.copy(source); }
 
 }  // namespace detail

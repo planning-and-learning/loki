@@ -121,11 +121,11 @@ void bind_records(nb::module_& m, RepositoryBinding& repository)
     bind_insert<Parameter>(repository);
 
     urd::python::bind_data<Predicate>(m);
-    urd::python::bind_view<EntityView<Predicate>>(m).def("get_arity", &EntityView<Predicate>::get_arity);
+    urd::python::bind_view<EntityView<Predicate>>(m);
     bind_insert<Predicate>(repository);
 
     urd::python::bind_data<FunctionSkeleton>(m);
-    urd::python::bind_view<EntityView<FunctionSkeleton>>(m).def("get_arity", &EntityView<FunctionSkeleton>::get_arity);
+    urd::python::bind_view<EntityView<FunctionSkeleton>>(m);
     bind_insert<FunctionSkeleton>(repository);
 
     urd::python::bind_data<Atom>(m);
@@ -221,11 +221,11 @@ void bind_records(nb::module_& m, RepositoryBinding& repository)
     bind_insert<Effect<ProbabilisticTag>>(repository);
 
     urd::python::bind_data<Action>(m);
-    urd::python::bind_view<EntityView<Action>>(m).def("get_arity", &EntityView<Action>::get_arity);
+    urd::python::bind_view<EntityView<Action>>(m);
     bind_insert<Action>(repository);
 
     urd::python::bind_data<Axiom>(m);
-    urd::python::bind_view<EntityView<Axiom>>(m).def("get_arity", &EntityView<Axiom>::get_arity);
+    urd::python::bind_view<EntityView<Axiom>>(m);
     bind_insert<Axiom>(repository);
 
     urd::python::bind_data<Metric>(m);

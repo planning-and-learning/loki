@@ -43,6 +43,7 @@ struct data<::loki::formalism::FunctionSkeleton>
     urd::index<::loki::formalism::Type> type;
 
     data() = default;
+
     data(urd::flat_string name_, urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_, urd::index<::loki::formalism::Type> type_) :
         index(),
         name(std::move(name_)),
@@ -50,6 +51,7 @@ struct data<::loki::formalism::FunctionSkeleton>
         type(type_)
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) noexcept = default;
@@ -58,7 +60,9 @@ struct data<::loki::formalism::FunctionSkeleton>
 
     static constexpr auto fields() noexcept
     { return urd::Fields<urd::field<"name", &data::name>, urd::field<"parameters", &data::parameters>, urd::field<"type", &data::type>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::name, &data::parameters, &data::type> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name, &data::parameters, &data::type> {}; }
 };
 

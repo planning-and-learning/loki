@@ -33,6 +33,7 @@ private:
 
 public:
     auto get_function() const noexcept { return self().template member<&urd::record_of<V>::function>(); }
+
     auto get_terms() const noexcept { return self().template member<&urd::record_of<V>::terms>(); }
 };
 }  // namespace urd

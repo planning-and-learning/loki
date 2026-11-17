@@ -37,12 +37,14 @@ struct data<::loki::formalism::Metric>
     ::loki::formalism::FunctionExpressionVariant expression;
 
     data() = default;
+
     data(::loki::formalism::OptimizationDirection optimization_direction_, ::loki::formalism::FunctionExpressionVariant expression_) :
         index(),
         optimization_direction(optimization_direction_),
         expression(std::move(expression_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -51,7 +53,9 @@ struct data<::loki::formalism::Metric>
 
     static constexpr auto fields() noexcept
     { return urd::Fields<urd::field<"optimization_direction", &data::optimization_direction>, urd::field<"expression", &data::expression>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::optimization_direction, &data::expression> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::optimization_direction, &data::expression> {}; }
 };
 

@@ -76,15 +76,25 @@ void canonicalize(const C& context, List& list)
 }  // namespace detail
 
 void canonicalize(Repository& repository, urd::data<Type>& data) { detail::canonicalize(repository, data.bases); }
+
 void canonicalize(Repository& repository, urd::data<Object>& data) { detail::canonicalize(repository, data.types); }
+
 void canonicalize(Repository& repository, urd::data<Parameter>& data) { detail::canonicalize(repository, data.types); }
+
 void canonicalize(Repository& repository, urd::data<FunctionExpression<MultiTag>>& data) { detail::canonicalize<false>(repository, data.args); }
+
 void canonicalize(Repository& repository, urd::data<Condition<AndTag>>& data) { detail::canonicalize(repository, data.conditions); }
+
 void canonicalize(Repository& repository, urd::data<Condition<OrTag>>& data) { detail::canonicalize(repository, data.conditions); }
+
 void canonicalize(Repository& repository, urd::data<Condition<ExistsTag>>& data) { detail::canonicalize(repository, data.parameters); }
+
 void canonicalize(Repository& repository, urd::data<Condition<ForallTag>>& data) { detail::canonicalize(repository, data.parameters); }
+
 void canonicalize(Repository& repository, urd::data<Effect<AndTag>>& data) { detail::canonicalize(repository, data.effects); }
+
 void canonicalize(Repository& repository, urd::data<Effect<OneOfTag>>& data) { detail::canonicalize(repository, data.effects); }
+
 void canonicalize(Repository& repository, urd::data<Effect<ProbabilisticTag>>& data) { detail::canonicalize(repository, data.alternatives); }
 
 void canonicalize(Repository& repository, urd::data<Domain>& data)

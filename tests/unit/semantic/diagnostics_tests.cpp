@@ -132,6 +132,7 @@ TEST(LokiSemanticDiagnostics, OnlyIdentifiedChildConditionsOwnTheirErrors)
         std::string opening;
         std::string offending;
     };
+
     for (const auto& item : {
              Case { "(and bare)", "and condition", "(and", "bare" },
              Case { "(and (", "and condition", "(and", "(" },

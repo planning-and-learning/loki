@@ -42,12 +42,14 @@ struct data<::loki::formalism::Atom>
     ::loki::formalism::TermList terms;
 
     data() = default;
+
     data(urd::index<::loki::formalism::Predicate> predicate_, ::loki::formalism::TermList terms_ = {}) :
         index(),
         predicate(predicate_),
         terms(std::move(terms_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -55,7 +57,9 @@ struct data<::loki::formalism::Atom>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"predicate", &data::predicate>, urd::field<"terms", &data::terms>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::predicate, &data::terms> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::predicate, &data::terms> {}; }
 };
 

@@ -42,12 +42,14 @@ struct data<::loki::formalism::Condition<::loki::formalism::ForallTag>>
     ::loki::formalism::ConditionVariant condition;
 
     data() = default;
+
     data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_, ::loki::formalism::ConditionVariant condition_) :
         index(),
         parameters(std::move(parameters_)),
         condition(std::move(condition_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -55,7 +57,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::ForallTag>>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"parameters", &data::parameters>, urd::field<"condition", &data::condition>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::parameters, &data::condition> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::parameters, &data::condition> {}; }
 };
 

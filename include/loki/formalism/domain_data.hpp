@@ -48,6 +48,7 @@ struct data<::loki::formalism::Domain>
     urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms;
 
     data() = default;
+
     data(urd::flat_string name_,
          urd::flat_vector<urd::index<::loki::formalism::Requirement>> requirements_,
          urd::flat_vector<urd::index<::loki::formalism::Type>> types_,
@@ -67,6 +68,7 @@ struct data<::loki::formalism::Domain>
         axioms(std::move(axioms_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) noexcept = default;
@@ -84,11 +86,13 @@ struct data<::loki::formalism::Domain>
                            urd::field<"actions", &data::actions>,
                            urd::field<"axioms", &data::axioms>> {};
     }
+
     static constexpr auto identifying_members() noexcept
     {
         return urd::
             Members<&data::name, &data::requirements, &data::types, &data::constants, &data::predicates, &data::functions, &data::actions, &data::axioms> {};
     }
+
     static constexpr auto cista_members() noexcept
     {
         return urd::Members<&data::index,

@@ -38,7 +38,9 @@ struct data<::loki::formalism::Requirement>
     ::loki::formalism::RequirementKind kind {};
 
     data() = default;
+
     data(::loki::formalism::RequirementKind kind_) : index(), kind(kind_) {}
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -46,7 +48,9 @@ struct data<::loki::formalism::Requirement>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"kind", &data::kind>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::kind> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::kind> {}; }
 };
 

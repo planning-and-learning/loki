@@ -45,6 +45,7 @@ struct data<::loki::formalism::Axiom>
     ::loki::formalism::ConditionVariant condition;
 
     data() = default;
+
     data(urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
          ygg::uint_t original_arity_,
          urd::index<::loki::formalism::Literal> head_,
@@ -56,6 +57,7 @@ struct data<::loki::formalism::Axiom>
         condition(std::move(condition_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -69,7 +71,9 @@ struct data<::loki::formalism::Axiom>
                            urd::field<"head", &data::head>,
                            urd::field<"condition", &data::condition>> {};
     }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::parameters, &data::original_arity, &data::head, &data::condition> {}; }
+
     static constexpr auto cista_members() noexcept
     { return urd::Members<&data::index, &data::parameters, &data::original_arity, &data::head, &data::condition> {}; }
 };

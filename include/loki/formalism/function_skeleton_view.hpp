@@ -33,9 +33,14 @@ private:
 
 public:
     const auto& get_name() const noexcept { return self().template member<&urd::record_of<V>::name>(); }
+
     auto get_parameters() const noexcept { return self().template member<&urd::record_of<V>::parameters>(); }
+
     auto get_type() const noexcept { return self().template member<&urd::record_of<V>::type>(); }
+
     auto get_arity() const noexcept { return get_parameters().size(); }
+
+    static constexpr auto functions() noexcept { return urd::Functions<urd::function<"get_arity", &view_mixin::get_arity>> {}; }
 };
 }  // namespace urd
 

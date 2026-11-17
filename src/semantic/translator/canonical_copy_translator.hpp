@@ -50,6 +50,7 @@ private:
 };
 
 inline auto copy(formalism::DomainView source, CanonicalCopyTranslator& context) { return context.copy(source); }
+
 inline auto copy(formalism::TaskView source, CanonicalCopyTranslator& context) { return context.copy(source); }
 
 }  // namespace loki::semantic::detail

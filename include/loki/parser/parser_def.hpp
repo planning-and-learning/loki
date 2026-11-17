@@ -74,93 +74,123 @@ namespace detail
 struct VariableIdentifierClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct TypeReferenceClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct EitherTypeClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct FunctionExpressionNumberClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct FunctionExpressionFunctionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct FunctionExpressionUnaryClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct FunctionExpressionBinaryClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct FunctionExpressionMultiClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ConditionLiteralClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ConditionAndClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ConditionOrClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ConditionNotClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ConditionImplyClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ConditionExistsClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ConditionForallClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ConditionNumericConstraintClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct EffectLiteralClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct EffectAndClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct EffectNumericClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct EffectForallClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct EffectWhenClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct EffectOneOfClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct EffectProbabilisticClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ProbabilisticEffectAlternativeClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct RequirementSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct TypeSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ConstantSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct PredicateSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct FunctionSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ObjectSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct InitialSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
@@ -240,12 +270,15 @@ using detail::variable_identifier;
 
 constexpr auto identifier_def = detail::symbol;
 constexpr auto type_expression_def = detail::type_reference | detail::either_type;
+
 struct TypedNameGroupClass : boost::spirit::x3::annotate_on_success
 {
 };
+
 struct TypedVariableGroupClass : boost::spirit::x3::annotate_on_success
 {
 };
+
 constexpr auto typed_name_group = boost::spirit::x3::rule<TypedNameGroupClass, ast::TypedGroup> { "typed name group" } = +(!lit('-') >> identifier)
                                                                                                                          >> -(lit('-') >> type_expression);
 constexpr auto typed_variable_group = boost::spirit::x3::rule<TypedVariableGroupClass, ast::TypedGroup> {
@@ -347,9 +380,11 @@ constexpr auto effect_when_def = context("when effect")['(' >> keyword("when") >
 constexpr auto effect_one_of_def = context("oneof effect")['(' >> keyword("oneof") >> *effect > ')'];
 constexpr auto probabilistic_effect_alternative_def = double_ >> effect;
 constexpr auto effect_probabilistic_def = context("probabilistic effect")['(' >> keyword("probabilistic") >> *probabilistic_effect_alternative > ')'];
+
 struct RequirementNameClass : boost::spirit::x3::annotate_on_success
 {
 };
+
 constexpr auto requirement_name = boost::spirit::x3::rule<RequirementNameClass, ast::Identifier> { "requirement name" } =
     +(symbol_character - ':') >> !symbol_character;
 constexpr auto requirement_section_def = context("requirements section")['(' >> keyword(":requirements") >> *lexeme[lit(':') > requirement_name] > ')'];

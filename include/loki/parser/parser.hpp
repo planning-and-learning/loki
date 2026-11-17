@@ -32,60 +32,79 @@ namespace rules
 struct IdentifierClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct TypeExpressionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct TypedNameListClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct TypedVariableListClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct TermClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct AtomClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct LiteralClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct FunctionTermClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct FunctionExpressionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ConditionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct EffectClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct PredicateDeclarationClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct FunctionDeclarationClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct ActionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct AxiomClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct MetricClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct InitialFunctionValueClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct DomainClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct TaskClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
+
 struct FileClass : ygg::diagnostics::ErrorHandlerBase
 {
 };

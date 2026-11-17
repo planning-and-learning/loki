@@ -40,7 +40,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::ImplyTag>>
     ::loki::formalism::ConditionVariant right;
 
     data() = default;
+
     data(::loki::formalism::ConditionVariant left_, ::loki::formalism::ConditionVariant right_) : index(), left(std::move(left_)), right(std::move(right_)) {}
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -48,7 +50,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::ImplyTag>>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"left", &data::left>, urd::field<"right", &data::right>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::left, &data::right> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::left, &data::right> {}; }
 };
 

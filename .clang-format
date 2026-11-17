@@ -37,6 +37,7 @@ Language: Cpp
 MaxEmptyLinesToKeep: '1'
 NamespaceIndentation: None
 PointerAlignment: Left
+SeparateDefinitionBlocks: Always
 SortIncludes: 'true'
 SortUsingDeclarations: 'true'
 SpaceAfterCStyleCast: 'true'

@@ -50,6 +50,7 @@ struct data<::loki::formalism::Action>
     urd::flat_optional<::loki::formalism::EffectVariant> effect;
 
     data() = default;
+
     data(urd::flat_string name_,
          urd::flat_string original_name_,
          urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_,
@@ -65,6 +66,7 @@ struct data<::loki::formalism::Action>
         effect(std::move(effect_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) noexcept = default;
@@ -80,8 +82,10 @@ struct data<::loki::formalism::Action>
                            urd::field<"precondition", &data::precondition>,
                            urd::field<"effect", &data::effect>> {};
     }
+
     static constexpr auto identifying_members() noexcept
     { return urd::Members<&data::original_name, &data::parameters, &data::original_arity, &data::precondition, &data::effect> {}; }
+
     static constexpr auto cista_members() noexcept
     { return urd::Members<&data::index, &data::name, &data::original_name, &data::parameters, &data::original_arity, &data::precondition, &data::effect> {}; }
 };

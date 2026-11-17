@@ -41,6 +41,7 @@ struct data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
     ::loki::formalism::FunctionExpressionVariant expression;
 
     data() = default;
+
     data(::loki::formalism::NumericEffectOperator operation_,
          urd::index<::loki::formalism::FunctionTerm> function_,
          ::loki::formalism::FunctionExpressionVariant expression_) :
@@ -50,6 +51,7 @@ struct data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
         expression(std::move(expression_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -58,7 +60,9 @@ struct data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
 
     static constexpr auto fields() noexcept
     { return urd::Fields<urd::field<"operation", &data::operation>, urd::field<"function", &data::function>, urd::field<"expression", &data::expression>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::operation, &data::function, &data::expression> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::operation, &data::function, &data::expression> {}; }
 };
 

@@ -67,10 +67,12 @@ class RenamingDisabled
 {
 public:
     explicit RenamingDisabled(CopyContext& context) : m_context(context), m_previous(std::exchange(context.renaming_enabled, false)) {}
+
     RenamingDisabled(const RenamingDisabled&) = delete;
     RenamingDisabled& operator=(const RenamingDisabled&) = delete;
     RenamingDisabled(RenamingDisabled&&) = delete;
     RenamingDisabled& operator=(RenamingDisabled&&) = delete;
+
     ~RenamingDisabled() { m_context.renaming_enabled = m_previous; }
 
 private:
@@ -89,6 +91,7 @@ public:
     }
 
     CopyContext& context() noexcept { return m_context; }
+
     [[nodiscard]] const CopyContext& context() const noexcept { return m_context; }
 
 private:

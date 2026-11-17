@@ -42,12 +42,14 @@ struct data<::loki::formalism::FunctionTerm>
     ::loki::formalism::TermList terms;
 
     data() = default;
+
     data(urd::index<::loki::formalism::FunctionSkeleton> function_, ::loki::formalism::TermList terms_ = {}) :
         index(),
         function(function_),
         terms(std::move(terms_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -55,7 +57,9 @@ struct data<::loki::formalism::FunctionTerm>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"function", &data::function>, urd::field<"terms", &data::terms>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::function, &data::terms> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::function, &data::terms> {}; }
 };
 

@@ -40,12 +40,14 @@ struct data<::loki::formalism::InitialFunctionValue>
     ::loki::formalism::FunctionExpressionVariant value;
 
     data() = default;
+
     data(urd::index<::loki::formalism::FunctionTerm> function_, ::loki::formalism::FunctionExpressionVariant value_) :
         index(),
         function(function_),
         value(std::move(value_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -53,7 +55,9 @@ struct data<::loki::formalism::InitialFunctionValue>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"function", &data::function>, urd::field<"value", &data::value>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::function, &data::value> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::function, &data::value> {}; }
 };
 

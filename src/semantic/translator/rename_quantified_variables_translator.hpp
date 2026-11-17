@@ -49,11 +49,16 @@ public:
     formalism::VariableView rename_variables(formalism::VariableView source);
     /// A parameter binds its variable to a fresh one, in the scope of the binder it belongs to.
     formalism::ParameterView rename_variables(formalism::ParameterView source);
+
     /// Declarations and constants hold no quantified variables: copied.
     formalism::PredicateView rename_variables(formalism::PredicateView source) { return this->self().copy(source); }
+
     formalism::FunctionSkeletonView rename_variables(formalism::FunctionSkeletonView source) { return this->self().copy(source); }
+
     formalism::TypeView rename_variables(formalism::TypeView source) { return this->self().copy(source); }
+
     formalism::ObjectView rename_variables(formalism::ObjectView source) { return this->self().copy(source); }
+
     formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>
     rename_variables(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source)
     { return this->self().copy(source); }

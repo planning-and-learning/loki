@@ -52,16 +52,20 @@ private:
     // them so that no binder shadows an action parameter after the lift.
     template<typename T>
     void collect_binder_names(formalism::EntityView<T> node, urd::Store<urd::set<std::string>>& names) const;
+
     template<typename... Vs>
     void collect_binder_names(const std::variant<Vs...>& node, urd::Store<urd::set<std::string>>& names) const
     {
         std::visit([&](auto alternative) { collect_binder_names(alternative, names); }, node);
     }
+
     /// Below a condition or an effect, the parameters are those of its binders.
     void collect_binder_names(formalism::ParameterView parameter, urd::Store<urd::set<std::string>>& names) const
     { names.insert(std::string(parameter.get_variable().get_name())); }
+
     /// A declaration's parameters bind nothing in the subtree.
     void collect_binder_names(formalism::PredicateView, urd::Store<urd::set<std::string>>&) const {}
+
     void collect_binder_names(formalism::FunctionSkeletonView, urd::Store<urd::set<std::string>>&) const {}
 
     // Hoists the binders of an exists into parameters/claimed; a binder whose name is already

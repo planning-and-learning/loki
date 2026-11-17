@@ -33,6 +33,7 @@ template<>
 struct formatter<loki::ast::Identifier, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Identifier& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("{}"), value.text); }
@@ -42,6 +43,7 @@ template<>
 struct formatter<loki::ast::TypeReference, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::TypeReference& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("{}"), value.name); }
@@ -51,6 +53,7 @@ template<>
 struct formatter<loki::ast::EitherType, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::EitherType& value, FormatContext& ctx) const
     {
@@ -65,6 +68,7 @@ template<>
 struct formatter<loki::ast::TypeExpression, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::TypeExpression& value, FormatContext& ctx) const
     {
@@ -78,6 +82,7 @@ template<>
 struct formatter<loki::ast::TypedGroup, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::TypedGroup& value, FormatContext& ctx) const
     {
@@ -94,6 +99,7 @@ template<>
 struct formatter<loki::ast::Requirement, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Requirement& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime(":{}"), value.name); }
@@ -103,6 +109,7 @@ template<>
 struct formatter<loki::ast::Term, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Term& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("{}"), value.name); }
@@ -112,6 +119,7 @@ template<>
 struct formatter<loki::ast::Atom, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Atom& value, FormatContext& ctx) const
     {
@@ -126,6 +134,7 @@ template<>
 struct formatter<loki::ast::Literal, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Literal& value, FormatContext& ctx) const
     {
@@ -139,6 +148,7 @@ template<>
 struct formatter<loki::ast::FunctionTerm, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::FunctionTerm& value, FormatContext& ctx) const
     {
@@ -153,6 +163,7 @@ template<>
 struct formatter<loki::ast::FunctionExpressionNumber, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::FunctionExpressionNumber& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("{}"), value.value); }
@@ -162,6 +173,7 @@ template<>
 struct formatter<loki::ast::FunctionExpressionFunction, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::FunctionExpressionFunction& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("{}"), value.term); }
@@ -171,6 +183,7 @@ template<>
 struct formatter<loki::ast::FunctionExpressionUnary, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::FunctionExpressionUnary& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("({} {})"), value.op, value.expression.get()); }
@@ -180,6 +193,7 @@ template<>
 struct formatter<loki::ast::FunctionExpressionBinary, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::FunctionExpressionBinary& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("({} {} {})"), value.op, value.left.get(), value.right.get()); }
@@ -189,6 +203,7 @@ template<>
 struct formatter<loki::ast::FunctionExpressionMulti, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::FunctionExpressionMulti& value, FormatContext& ctx) const
     {
@@ -203,6 +218,7 @@ template<>
 struct formatter<loki::ast::FunctionExpression, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::FunctionExpression& value, FormatContext& ctx) const
     {
@@ -216,6 +232,7 @@ template<>
 struct formatter<loki::ast::ConditionLiteral, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::ConditionLiteral& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("{}"), value.literal); }
@@ -225,6 +242,7 @@ template<>
 struct formatter<loki::ast::ConditionAnd, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::ConditionAnd& value, FormatContext& ctx) const
     {
@@ -239,6 +257,7 @@ template<>
 struct formatter<loki::ast::ConditionOr, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::ConditionOr& value, FormatContext& ctx) const
     {
@@ -253,6 +272,7 @@ template<>
 struct formatter<loki::ast::ConditionNot, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::ConditionNot& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("(not {})"), value.condition.get()); }
@@ -262,6 +282,7 @@ template<>
 struct formatter<loki::ast::ConditionImply, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::ConditionImply& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("(imply {} {})"), value.left.get(), value.right.get()); }
@@ -271,6 +292,7 @@ template<>
 struct formatter<loki::ast::ConditionExists, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::ConditionExists& value, FormatContext& ctx) const
     {
@@ -291,6 +313,7 @@ template<>
 struct formatter<loki::ast::ConditionForall, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::ConditionForall& value, FormatContext& ctx) const
     {
@@ -311,6 +334,7 @@ template<>
 struct formatter<loki::ast::ConditionNumericConstraint, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::ConditionNumericConstraint& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("({} {} {})"), value.comparator, value.left.get(), value.right.get()); }
@@ -320,6 +344,7 @@ template<>
 struct formatter<loki::ast::Condition, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Condition& value, FormatContext& ctx) const
     {
@@ -333,6 +358,7 @@ template<>
 struct formatter<loki::ast::EffectLiteral, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::EffectLiteral& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("{}"), value.literal); }
@@ -342,6 +368,7 @@ template<>
 struct formatter<loki::ast::EffectAnd, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::EffectAnd& value, FormatContext& ctx) const
     {
@@ -356,6 +383,7 @@ template<>
 struct formatter<loki::ast::EffectNumeric, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::EffectNumeric& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("({} {} {})"), value.op, value.function, value.expression.get()); }
@@ -365,6 +393,7 @@ template<>
 struct formatter<loki::ast::EffectForall, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::EffectForall& value, FormatContext& ctx) const
     {
@@ -385,6 +414,7 @@ template<>
 struct formatter<loki::ast::EffectWhen, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::EffectWhen& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("(when {} {})"), value.condition.get(), value.effect.get()); }
@@ -394,6 +424,7 @@ template<>
 struct formatter<loki::ast::EffectOneOf, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::EffectOneOf& value, FormatContext& ctx) const
     {
@@ -408,6 +439,7 @@ template<>
 struct formatter<loki::ast::ProbabilisticEffectAlternative, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::ProbabilisticEffectAlternative& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("{} {}"), value.probability, value.effect.get()); }
@@ -417,6 +449,7 @@ template<>
 struct formatter<loki::ast::EffectProbabilistic, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::EffectProbabilistic& value, FormatContext& ctx) const
     {
@@ -431,6 +464,7 @@ template<>
 struct formatter<loki::ast::Effect, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Effect& value, FormatContext& ctx) const
     {
@@ -444,6 +478,7 @@ template<>
 struct formatter<loki::ast::PredicateDeclaration, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::PredicateDeclaration& value, FormatContext& ctx) const
     {
@@ -458,6 +493,7 @@ template<>
 struct formatter<loki::ast::FunctionDeclaration, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::FunctionDeclaration& value, FormatContext& ctx) const
     {
@@ -475,6 +511,7 @@ template<>
 struct formatter<loki::ast::Action, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Action& value, FormatContext& ctx) const
     {
@@ -500,6 +537,7 @@ template<>
 struct formatter<loki::ast::Axiom, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Axiom& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("(:derived {} {})"), value.head, value.condition); }
@@ -509,6 +547,7 @@ template<>
 struct formatter<loki::ast::Metric, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Metric& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("(:metric {} {})"), value.optimization, value.expression); }
@@ -518,6 +557,7 @@ template<>
 struct formatter<loki::ast::InitialFunctionValue, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::InitialFunctionValue& value, FormatContext& ctx) const
     { return fmt::format_to(ctx.out(), fmt::runtime("(= {} {})"), value.function, value.value); }
@@ -527,6 +567,7 @@ template<>
 struct formatter<loki::ast::InitialElement, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::InitialElement& value, FormatContext& ctx) const
     {
@@ -540,6 +581,7 @@ template<>
 struct formatter<loki::ast::Domain, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Domain& value, FormatContext& ctx) const
     {
@@ -621,6 +663,7 @@ template<>
 struct formatter<loki::ast::Task, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::Task& value, FormatContext& ctx) const
     {
@@ -704,6 +747,7 @@ template<>
 struct formatter<loki::ast::File, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const loki::ast::File& value, FormatContext& ctx) const
     {

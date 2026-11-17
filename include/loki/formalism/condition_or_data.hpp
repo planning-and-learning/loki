@@ -41,7 +41,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::OrTag>>
     ::loki::formalism::ConditionList conditions;
 
     data() = default;
+
     data(::loki::formalism::ConditionList conditions_) : index(), conditions(std::move(conditions_)) {}
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -49,7 +51,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::OrTag>>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"conditions", &data::conditions>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::conditions> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::conditions> {}; }
 };
 

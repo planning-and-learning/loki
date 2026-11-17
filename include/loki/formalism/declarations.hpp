@@ -23,12 +23,13 @@
 #include <boost/mp11.hpp>
 #include <string_view>
 #include <urd/elements/index.hpp>
+#include <urd/tags.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
 namespace ygg::formalism
 {
 
-template<typename ObjectTag, typename... Ts>
+template<typename Width, typename... Ts>
 class RelationRepository;
 
 template<typename SymbolRepo, typename RelationRepo>
@@ -43,42 +44,52 @@ struct Requirement
 {
     static constexpr std::string_view name = "Requirement";
 };
+
 struct Type
 {
     static constexpr std::string_view name = "Type";
 };
+
 struct Object
 {
     static constexpr std::string_view name = "Object";
 };
+
 struct Variable
 {
     static constexpr std::string_view name = "Variable";
 };
+
 struct Parameter
 {
     static constexpr std::string_view name = "Parameter";
 };
+
 struct Predicate
 {
     static constexpr std::string_view name = "Predicate";
 };
+
 struct FunctionSkeleton
 {
     static constexpr std::string_view name = "FunctionSkeleton";
 };
+
 struct Atom
 {
     static constexpr std::string_view name = "Atom";
 };
+
 struct Literal
 {
     static constexpr std::string_view name = "Literal";
 };
+
 struct FunctionTerm
 {
     static constexpr std::string_view name = "FunctionTerm";
 };
+
 struct EffectProbabilisticAlternative
 {
     static constexpr std::string_view name = "EffectProbabilisticAlternative";
@@ -89,10 +100,12 @@ struct LiteralTag
 {
     static constexpr std::string_view name = "Literal";
 };
+
 struct AndTag
 {
     static constexpr std::string_view name = "And";
 };
+
 struct ForallTag
 {
     static constexpr std::string_view name = "Forall";
@@ -103,18 +116,22 @@ struct OrTag
 {
     static constexpr std::string_view name = "Or";
 };
+
 struct NotTag
 {
     static constexpr std::string_view name = "Not";
 };
+
 struct ImplyTag
 {
     static constexpr std::string_view name = "Imply";
 };
+
 struct ExistsTag
 {
     static constexpr std::string_view name = "Exists";
 };
+
 struct NumericConstraintTag
 {
     static constexpr std::string_view name = "NumericConstraint";
@@ -125,14 +142,17 @@ struct NumericTag
 {
     static constexpr std::string_view name = "Numeric";
 };
+
 struct WhenTag
 {
     static constexpr std::string_view name = "When";
 };
+
 struct OneOfTag
 {
     static constexpr std::string_view name = "OneOf";
 };
+
 struct ProbabilisticTag
 {
     static constexpr std::string_view name = "Probabilistic";
@@ -143,14 +163,17 @@ struct NumberTag
 {
     static constexpr std::string_view name = "Number";
 };
+
 struct UnaryTag
 {
     static constexpr std::string_view name = "Unary";
 };
+
 struct BinaryTag
 {
     static constexpr std::string_view name = "Binary";
 };
+
 struct MultiTag
 {
     static constexpr std::string_view name = "Multi";
@@ -166,12 +189,14 @@ struct FunctionExpression
 {
     static constexpr std::string_view name = "FunctionExpression";
 };
+
 template<typename Tag>
     requires boost::mp11::mp_contains<ConditionTags, Tag>::value
 struct Condition
 {
     static constexpr std::string_view name = "Condition";
 };
+
 template<typename Tag>
     requires boost::mp11::mp_contains<EffectTags, Tag>::value
 struct Effect
@@ -186,22 +211,27 @@ struct Action
 {
     static constexpr std::string_view name = "Action";
 };
+
 struct Axiom
 {
     static constexpr std::string_view name = "Axiom";
 };
+
 struct Metric
 {
     static constexpr std::string_view name = "Metric";
 };
+
 struct InitialFunctionValue
 {
     static constexpr std::string_view name = "InitialFunctionValue";
 };
+
 struct Domain
 {
     static constexpr std::string_view name = "Domain";
 };
+
 struct Task
 {
     static constexpr std::string_view name = "Task";
@@ -227,11 +257,12 @@ using SymbolRepositoryTypes =
                                                 Task>>;
 
 /// No family has rows in loki.
-using RelationRepository = ::ygg::formalism::RelationRepository<Object>;
+using RelationRepository = ::ygg::formalism::RelationRepository<urd::word>;  // no relation families: the width is unused
 
 /// Named by what it holds (yggdrasil's Symbols and Relations), not by its stores: a call with a repository argument
 /// then never instantiates them (yggdrasil/formalism/declarations.hpp).
-using Repository = ::ygg::formalism::Repository<boost::mp11::mp_apply<::ygg::formalism::Symbols, SymbolRepositoryTypes>, ::ygg::formalism::Relations<Object>>;
+using Repository =
+    ::ygg::formalism::Repository<boost::mp11::mp_apply<::ygg::formalism::Symbols, SymbolRepositoryTypes>, ::ygg::formalism::Relations<urd::word>>;
 
 template<typename T>
 using EntityView = urd::index_view<T, Repository>;

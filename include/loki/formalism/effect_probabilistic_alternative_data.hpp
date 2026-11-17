@@ -40,7 +40,9 @@ struct data<::loki::formalism::EffectProbabilisticAlternative>
     ::loki::formalism::EffectVariant effect;
 
     data() = default;
+
     data(double probability_, ::loki::formalism::EffectVariant effect_) : index(), probability(probability_), effect(std::move(effect_)) {}
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -48,7 +50,9 @@ struct data<::loki::formalism::EffectProbabilisticAlternative>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"probability", &data::probability>, urd::field<"effect", &data::effect>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::probability, &data::effect> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::probability, &data::effect> {}; }
 };
 

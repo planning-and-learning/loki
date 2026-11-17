@@ -35,7 +35,9 @@ public:
     /// Whether the predicate "=" occurs in node: it or one of its descendants.
     template<typename T>
     [[nodiscard]] bool uses_equality(formalism::EntityView<T> node) const;
+
     [[nodiscard]] bool uses_equality(formalism::PredicateView predicate) const { return std::string_view(predicate.get_name()) == "="; }
+
     [[nodiscard]] bool equality_required(formalism::TaskView task) const;
     [[nodiscard]] std::optional<formalism::PredicateView> find_domain_equality_predicate() const;
     formalism::LiteralView equality_literal(formalism::PredicateView predicate, urd::index<formalism::Object> object);

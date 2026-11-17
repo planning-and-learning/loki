@@ -33,6 +33,7 @@ private:
 
 public:
     auto get_parameters() const noexcept { return self().template member<&urd::record_of<V>::parameters>(); }
+
     auto get_condition() const noexcept { return self().template member<&urd::record_of<V>::condition>(); }
 };
 }  // namespace urd

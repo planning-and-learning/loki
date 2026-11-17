@@ -33,6 +33,7 @@ private:
 
 public:
     auto get_variable() const noexcept { return self().template member<&urd::record_of<V>::variable>(); }
+
     auto get_types() const noexcept { return self().template member<&urd::record_of<V>::types>(); }
 };
 }  // namespace urd

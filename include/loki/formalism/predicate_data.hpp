@@ -42,12 +42,14 @@ struct data<::loki::formalism::Predicate>
     urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
 
     data() = default;
+
     data(urd::flat_string name_, urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters_ = {}) :
         index(),
         name(std::move(name_)),
         parameters(std::move(parameters_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) noexcept = default;
@@ -55,7 +57,9 @@ struct data<::loki::formalism::Predicate>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"name", &data::name>, urd::field<"parameters", &data::parameters>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::name, &data::parameters> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name, &data::parameters> {}; }
 };
 

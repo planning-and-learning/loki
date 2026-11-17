@@ -32,9 +32,11 @@ struct TypeRepository
     const Data& operator[](Index) const;
     [[nodiscard]] std::size_t layer() const;
 };
+
 struct TypeContext
 {
     const TypeRepository* repository;
+
     // Only checked by SymbolContextFor in unevaluated contexts.
     [[maybe_unused]] friend const TypeRepository& get_repository(const TypeContext& context) { return *context.repository; }
 };

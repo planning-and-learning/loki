@@ -49,9 +49,12 @@ public:
     template<typename Tag>
         requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
     void collect_free_variables(formalism::EntityView<formalism::Condition<Tag>> node, VariableSet& bound, VariableSet& free) const;
+
     /// Declarations and constants hold none of the node's variables.
     void collect_free_variables(formalism::PredicateView, VariableSet&, VariableSet&) const {}
+
     void collect_free_variables(formalism::FunctionSkeletonView, VariableSet&, VariableSet&) const {}
+
     void collect_free_variables(formalism::ObjectView, VariableSet&, VariableSet&) const {}
 
     [[nodiscard]] urd::Store<urd::sequence<std::pair<formalism::ParameterView, formalism::VariableView>>>

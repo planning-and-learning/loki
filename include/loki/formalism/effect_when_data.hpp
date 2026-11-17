@@ -41,12 +41,14 @@ struct data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
     ::loki::formalism::EffectVariant effect;
 
     data() = default;
+
     data(::loki::formalism::ConditionVariant condition_, ::loki::formalism::EffectVariant effect_) :
         index(),
         condition(std::move(condition_)),
         effect(std::move(effect_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -54,7 +56,9 @@ struct data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"condition", &data::condition>, urd::field<"effect", &data::effect>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::condition, &data::effect> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::condition, &data::effect> {}; }
 };
 

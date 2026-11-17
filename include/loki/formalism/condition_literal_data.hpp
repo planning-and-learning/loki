@@ -38,7 +38,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::LiteralTag>>
     urd::index<::loki::formalism::Literal> literal;
 
     data() = default;
+
     data(urd::index<::loki::formalism::Literal> literal_) : index(), literal(literal_) {}
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -46,7 +48,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::LiteralTag>>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"literal", &data::literal>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::literal> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::literal> {}; }
 };
 

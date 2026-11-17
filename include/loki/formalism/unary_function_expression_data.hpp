@@ -40,12 +40,14 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
     ::loki::formalism::FunctionExpressionVariant expression;
 
     data() = default;
+
     data(::loki::formalism::UnaryArithmeticOperator operation_, ::loki::formalism::FunctionExpressionVariant expression_) :
         index(),
         operation(operation_),
         expression(std::move(expression_))
     {
     }
+
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
     data(data&& other) = default;
@@ -53,7 +55,9 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
     ~data() = default;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"operation", &data::operation>, urd::field<"expression", &data::expression>> {}; }
+
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::operation, &data::expression> {}; }
+
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::operation, &data::expression> {}; }
 };
 
