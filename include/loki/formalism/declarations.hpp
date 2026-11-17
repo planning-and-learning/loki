@@ -22,6 +22,7 @@
 
 #include <boost/mp11.hpp>
 #include <string_view>
+#include <urd/elements/concepts.hpp>
 #include <urd/elements/index.hpp>
 #include <urd/tags.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
@@ -187,21 +188,21 @@ template<typename Tag>
     requires boost::mp11::mp_contains<FunctionExpressionTags, Tag>::value
 struct FunctionExpression
 {
-    static constexpr std::string_view name = "FunctionExpression";
+    static constexpr std::string_view name = urd::joined_name<"FunctionExpression", Tag::name>;
 };
 
 template<typename Tag>
     requires boost::mp11::mp_contains<ConditionTags, Tag>::value
 struct Condition
 {
-    static constexpr std::string_view name = "Condition";
+    static constexpr std::string_view name = urd::joined_name<"Condition", Tag::name>;
 };
 
 template<typename Tag>
     requires boost::mp11::mp_contains<EffectTags, Tag>::value
 struct Effect
 {
-    static constexpr std::string_view name = "Effect";
+    static constexpr std::string_view name = urd::joined_name<"Effect", Tag::name>;
 };
 
 using FunctionExpressionTypes = boost::mp11::mp_append<boost::mp11::mp_list<FunctionExpression<NumberTag>, FunctionTerm>,

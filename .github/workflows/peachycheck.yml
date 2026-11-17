@@ -35,3 +35,10 @@ jobs:
                   -DCMAKE_PREFIX_PATH="$PREFIX" -DCMAKE_INSTALL_LIBDIR=lib \
                   -DPython_EXECUTABLE="$PWD/.venv/bin/python" -DPython3_EXECUTABLE="$PWD/.venv/bin/python"
             .venv/bin/python -m pip install --no-build-isolation ".[test]"
+      # The schema rules (brokkr's docs/schema_rules.rst, S1 to S4), parsed with clang over the compile database the
+      # lint configured.
+      - name: Schema rules
+        run: |
+          python3 -m venv "$RUNNER_TEMP/rules"
+          "$RUNNER_TEMP/rules/bin/python" -m pip install --quiet "pybrokkr[fallbacks]>=0.2.0,<0.3"
+          "$RUNNER_TEMP/rules/bin/python" -m pybrokkr.rules S --compile-commands build/peachycheck/compile_commands.json -j 4
