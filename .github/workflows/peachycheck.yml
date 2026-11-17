@@ -26,7 +26,7 @@ jobs:
           prepare: |
             "$PYTHON" -m venv .venv
             .venv/bin/python -m pip install 'scikit-build-core>=1.0.3,<2' 'cmake>=3.21' 'ninja>=1.5' \
-              'nanobind-backend>=1.0' 'pybrokkr>=0.2.0,<0.3' 'pyyggdrasil>=0.10.0,<0.11' \
+              'nanobind-backend>=1.0' 'pybrokkr>=0.2.1,<0.3' 'pyyggdrasil>=0.10.0,<0.11' \
               'pypddl-datasets>=0.0.17,<0.1'
             PREFIX="$(.venv/bin/python -c 'import pyyggdrasil; print(pyyggdrasil.native_prefix())')"
             cmake -S . -B build/peachycheck -G Ninja -DCMAKE_MAKE_PROGRAM="$PWD/.venv/bin/ninja" \
@@ -40,5 +40,5 @@ jobs:
       - name: Schema rules
         run: |
           python3 -m venv "$RUNNER_TEMP/rules"
-          "$RUNNER_TEMP/rules/bin/python" -m pip install --quiet "pybrokkr[fallbacks]>=0.2.0,<0.3"
+          "$RUNNER_TEMP/rules/bin/python" -m pip install --quiet "pybrokkr[fallbacks]>=0.2.1,<0.3"
           "$RUNNER_TEMP/rules/bin/python" -m pybrokkr.rules S --compile-commands build/peachycheck/compile_commands.json -j 4
