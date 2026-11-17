@@ -156,8 +156,6 @@ from pypddl._pypddl.formalism import (
     Variable as Variable,
     VariableData as VariableData,
     VariableIndex as VariableIndex,
-    format_domain as format_domain,
-    format_task as format_task,
     translate_domain as translate_domain,
     translate_task as translate_task,
 )

@@ -70,12 +70,6 @@ void bind_semantic_translator(nb::module_& m)
         nb::keep_alive<0, 1>(),
         nb::keep_alive<0, 2>(),
         "Translate and normalize a parsed task with a matching domain translation.");
-    m.def(
-        "format_domain",
-        [](formalism::DomainView domain) { return formalism::format::to_string(domain); },
-        "domain"_a,
-        "Format a domain view as reparseable PDDL text.");
-    m.def("format_task", [](formalism::TaskView task) { return formalism::format::to_string(task); }, "task"_a, "Format a task view as reparseable PDDL text.");
 }
 
 }  // namespace loki::formalism

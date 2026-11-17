@@ -299,7 +299,6 @@ def test_high_level_bindings_expose_useful_docstrings() -> None:
     assert "Parse a PDDL problem" in (pypddl.Parser.parse_task.__doc__ or "")
     assert "Translate and normalize" in (pypddl.translate_domain.__doc__ or "")
     assert "matching domain translation" in (pypddl.translate_task.__doc__ or "")
-    assert "reparseable PDDL" in (pypddl.format_domain.__doc__ or "")
     assert "Owns interned formalism objects" in (pypddl.Repository.__doc__ or "")
     assert "Create a repository" in (pypddl.Repository.__init__.__doc__ or "")
 
@@ -417,7 +416,7 @@ def test_arithmetic_normalization_binding_flattens_sorts_and_removes_units() -> 
 
     translated = pypddl.translate_domain(parser.domain(), options).translated_domain
 
-    assert "(assign (f) (+ 1 2 3))" in pypddl.format_domain(translated)
+    assert "(assign (f) (+ 1 2 3))" in str(translated)
 
 
 def test_repository_view_keeps_temporary_repository_alive() -> None:
@@ -1000,16 +999,13 @@ def test_task_declares_types_and_predicates_and_translation_reparses_strictly() 
         translator_options.compile_typing = compile_typing
         domain_translation = pypddl.translate_domain(parser.domain(), translator_options)
         translated_task = pypddl.translate_task(task, domain_translation, translator_options).translated_task
-        domain_text = pypddl.format_domain(domain_translation.translated_domain)
-        task_text = pypddl.format_task(translated_task)
+        domain_text = str(domain_translation.translated_domain)
+        task_text = str(translated_task)
 
         strict = pypddl.ParserOptions()
         strict.strict = True
         reparsed = pypddl.Parser(domain_text, strict)
         reparsed_task = reparsed.parse_task(task_text)
         retranslation = pypddl.translate_domain(reparsed.domain(), translator_options)
-        assert pypddl.format_domain(retranslation.translated_domain) == domain_text
-        assert (
-            pypddl.format_task(pypddl.translate_task(reparsed_task, retranslation, translator_options).translated_task)
-            == task_text
-        )
+        assert str(retranslation.translated_domain) == domain_text
+        assert str(pypddl.translate_task(reparsed_task, retranslation, translator_options).translated_task) == task_text

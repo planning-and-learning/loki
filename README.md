@@ -123,7 +123,7 @@ parser = pddl.Parser("""
 """)
 
 translation = pddl.translate_domain(parser.domain())
-domain_text = pddl.format_domain(translation.translated_domain)
+domain_text = str(translation.translated_domain)
 reparsed = pddl.Parser(domain_text)
 assert reparsed.domain().get_name() == "ready-domain"
 ```
