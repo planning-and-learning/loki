@@ -53,7 +53,7 @@ EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalis
         auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
         urd::store(data->condition, condition);
         urd::store(data->effect, effect);
-        effect = formalism::insert(this->copy_context().storage->repository, *data).first.index();
+        effect = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first.index();
     }
     auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
     if (this->self().compiles_typing_now())
@@ -62,7 +62,7 @@ EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalis
         for (auto parameter : parameter_views)
             data->parameters.push_back(parameter.index());
     urd::store(data->effect, effect);
-    const auto out = formalism::insert(this->copy_context().storage->repository, *data).first;
+    const auto out = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
     this->self().leave_scope();
     return out;
 }
@@ -83,15 +83,15 @@ formalism::EffectView EffectTranslator<Derived>::copy(formalism::EffectView sour
                 auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
                 urd::store(when_data->condition, part);
                 urd::store(when_data->effect, effect);
-                const auto split = formalism::insert(this->copy_context().storage->repository, *when_data).first;
+                const auto split = this->copy_context().storage->repository.insert(*when_data, this->copy_context().storage->builder).first;
                 data->effects.push_back(split.index());
             }
-            return formalism::insert(this->copy_context().storage->repository, *data).first;
+            return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
         }
         auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
         urd::store(data->condition, condition);
         urd::store(data->effect, effect);
-        return formalism::insert(this->copy_context().storage->repository, *data).first;
+        return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
     }
 
     const auto copied = std::visit([&](const auto& arg) -> formalism::EffectView { return this->self().copy(arg); }, source);

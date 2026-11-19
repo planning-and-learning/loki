@@ -203,7 +203,7 @@ formalism::PredicateView AstBuilder::predicate(const ast::Identifier& identifier
         m_diagnostics.throw_at(identifier, UndefinedPredicateError(name));
     auto data = formalism::checkout<formalism::Predicate>(m_builder);
     data->name = urd::flat_string(name);
-    auto view = formalism::insert(repo(), *data).first;
+    auto view = repo().insert(*data, m_builder).first;
     m_domain_context.predicates.emplace(name, view);
     return view;
 }
@@ -224,23 +224,23 @@ formalism::PredicateView AstBuilder::equality_predicate(const ast::Identifier& i
 
     auto variable_data = formalism::checkout<formalism::Variable>(m_builder);
     variable_data->name = urd::flat_string("?lhs");
-    const auto left = formalism::insert(repo(), *variable_data).first.index();
-    urd::clear_members(*variable_data);
+    const auto left = repo().insert(*variable_data, m_builder).first.index();
+    urd::clear_fields(*variable_data);
     variable_data->name = urd::flat_string("?rhs");
-    const auto right = formalism::insert(repo(), *variable_data).first.index();
+    const auto right = repo().insert(*variable_data, m_builder).first.index();
     auto parameter_data = formalism::checkout<formalism::Parameter>(m_builder);
     parameter_data->variable = left;
     parameter_data->types.push_back(m_domain_context.object_type.index());
-    const auto left_parameter = formalism::insert(repo(), *parameter_data).first;
-    urd::clear_members(*parameter_data);
+    const auto left_parameter = repo().insert(*parameter_data, m_builder).first;
+    urd::clear_fields(*parameter_data);
     parameter_data->variable = right;
     parameter_data->types.push_back(m_domain_context.object_type.index());
-    const auto right_parameter = formalism::insert(repo(), *parameter_data).first;
+    const auto right_parameter = repo().insert(*parameter_data, m_builder).first;
     auto predicate_data = formalism::checkout<formalism::Predicate>(m_builder);
     predicate_data->name = urd::flat_string("=");
     predicate_data->parameters.push_back(left_parameter.index());
     predicate_data->parameters.push_back(right_parameter.index());
-    auto view = formalism::insert(repo(), *predicate_data).first;
+    auto view = repo().insert(*predicate_data, m_builder).first;
     m_domain_context.predicates.emplace(name, view);
     return view;
 }
@@ -259,7 +259,7 @@ formalism::FunctionSkeletonView AstBuilder::function(const ast::Identifier& iden
     auto data = formalism::checkout<formalism::FunctionSkeleton>(m_builder);
     data->name = urd::flat_string(name);
     data->type = m_domain_context.number_type.index();
-    auto view = formalism::insert(repo(), *data).first;
+    auto view = repo().insert(*data, m_builder).first;
     m_domain_context.functions.emplace(name, view);
     return view;
 }
@@ -282,9 +282,9 @@ urd::Store<urd::sequence<formalism::RequirementView>> AstBuilder::parse_requirem
             m_parse_context.active_numeric_fluents = true;
         for (const auto capability : requirement_capabilities(node, m_diagnostics))
             m_parse_context.active_requirements.insert(capability);
-        urd::clear_members(*data);
+        urd::clear_fields(*data);
         data->kind = kind;
-        result.push_back(formalism::insert(repo(), *data).first);
+        result.push_back(repo().insert(*data, m_builder).first);
     }
     return result;
 }
@@ -338,7 +338,7 @@ urd::Store<urd::sequence<formalism::ObjectView>> AstBuilder::parse_objects(const
             auto data = formalism::checkout<formalism::Object>(m_builder);
             data->name = urd::flat_string(name);
             urd::store(data->types, types);
-            auto view = formalism::insert(repo(), *data).first;
+            auto view = repo().insert(*data, m_builder).first;
             table.emplace(name, view);
             result.push_back(view);
         }
@@ -356,7 +356,7 @@ urd::Store<urd::sequence<formalism::ParameterView>> AstBuilder::parse_parameters
                 m_diagnostics.throw_at(identifier, DuplicateVariableError(name));
             auto variable_data = formalism::checkout<formalism::Variable>(m_builder);
             variable_data->name = urd::flat_string(name);
-            auto variable = formalism::insert(repo(), *variable_data).first;
+            auto variable = repo().insert(*variable_data, m_builder).first;
             if (m_parse_context.variable_scopes.depth() > 0)
                 m_parse_context.variable_scopes.insert_or_assign(name, variable);  // shadows an outer binding
             checks().require_typing_if_needed(group.type, identifier);
@@ -371,7 +371,7 @@ urd::Store<urd::sequence<formalism::ParameterView>> AstBuilder::parse_parameters
             else
                 urd::store(parameter_data->types, types);
             m_parse_context.variable_types.insert_or_assign(variable, std::move(types));
-            result.push_back(formalism::insert(repo(), *parameter_data).first);
+            result.push_back(repo().insert(*parameter_data, m_builder).first);
         }
     return result;
 }
@@ -388,7 +388,7 @@ urd::Store<urd::sequence<formalism::PredicateView>> AstBuilder::parse_predicates
         auto data = formalism::checkout<formalism::Predicate>(m_builder);
         data->name = urd::flat_string(name);
         urd::store(data->parameters, parameters);
-        auto view = formalism::insert(repo(), *data).first;
+        auto view = repo().insert(*data, m_builder).first;
         m_domain_context.predicates.emplace(name, view);
         result.push_back(view);
     }
@@ -414,7 +414,7 @@ urd::Store<urd::sequence<formalism::FunctionSkeletonView>> AstBuilder::parse_fun
         data->name = urd::flat_string(name);
         urd::store(data->parameters, parameters);
         data->type = type;
-        auto view = formalism::insert(repo(), *data).first;
+        auto view = repo().insert(*data, m_builder).first;
         m_domain_context.functions.emplace(name, view);
         result.push_back(view);
     }

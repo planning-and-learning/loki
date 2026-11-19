@@ -53,11 +53,11 @@ private:
     formalism::FunctionExpressionView normalize_associative(formalism::MultiArithmeticOperator op, const Range& source_operands);
     void append_source_operand(formalism::MultiArithmeticOperator op,
                                formalism::FunctionExpressionView source,
-                               formalism::FunctionExpressionList& operands,
+                               urd::built_t<formalism::FunctionExpressionList, formalism::Repository>& operands,
                                std::optional<formalism::FunctionExpressionView>& first_operand);
     void append_normalized_operand(formalism::MultiArithmeticOperator op,
                                    formalism::FunctionExpressionView source,
-                                   formalism::FunctionExpressionList& operands,
+                                   urd::built_t<formalism::FunctionExpressionList, formalism::Repository>& operands,
                                    std::optional<formalism::FunctionExpressionView>& first_operand);
     [[nodiscard]] bool is_unit(formalism::MultiArithmeticOperator op, formalism::FunctionExpressionView expression) const;
 };
@@ -85,7 +85,7 @@ NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::Ent
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(this->copy_context().builder);
     data->operation = source.get_operation();
     urd::store(data->expression, expression);
-    return formalism::FunctionExpressionView(formalism::insert(this->copy_context().storage->repository, *data).first);
+    return formalism::FunctionExpressionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
 }
 
 template<typename Derived>
@@ -107,7 +107,7 @@ NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::Ent
             data->operation = source.get_operation();
             urd::store(data->left, left);
             urd::store(data->right, right);
-            return formalism::FunctionExpressionView(formalism::insert(this->copy_context().storage->repository, *data).first);
+            return formalism::FunctionExpressionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
         }
     }
     throw std::invalid_argument("invalid BinaryArithmeticOperator");
@@ -123,7 +123,7 @@ formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Deriv
 {
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::NumberTag>>(this->copy_context().builder);
     data->value = value;
-    return formalism::FunctionExpressionView(formalism::insert(this->copy_context().storage->repository, *data).first);
+    return formalism::FunctionExpressionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
 }
 
 template<typename Derived>
@@ -145,13 +145,13 @@ formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Deriv
     }
 
     data->operation = op;
-    return formalism::FunctionExpressionView(formalism::insert(this->copy_context().storage->repository, *data).first);
+    return formalism::FunctionExpressionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
 }
 
 template<typename Derived>
 void NormalizeArithmeticExpressionsTranslator<Derived>::append_source_operand(formalism::MultiArithmeticOperator op,
                                                                               formalism::FunctionExpressionView source,
-                                                                              formalism::FunctionExpressionList& operands,
+                                                                              urd::built_t<formalism::FunctionExpressionList, formalism::Repository>& operands,
                                                                               std::optional<formalism::FunctionExpressionView>& first_operand)
 {
     if (std::holds_alternative<formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>>(source))
@@ -181,7 +181,7 @@ void NormalizeArithmeticExpressionsTranslator<Derived>::append_source_operand(fo
 template<typename Derived>
 void NormalizeArithmeticExpressionsTranslator<Derived>::append_normalized_operand(formalism::MultiArithmeticOperator op,
                                                                                   formalism::FunctionExpressionView source,
-                                                                                  formalism::FunctionExpressionList& operands,
+                                                                                  urd::built_t<formalism::FunctionExpressionList, formalism::Repository>& operands,
                                                                                   std::optional<formalism::FunctionExpressionView>& first_operand)
 {
     const auto normalized = normalize_arithmetic_expression(source);

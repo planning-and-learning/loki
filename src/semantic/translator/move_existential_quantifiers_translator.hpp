@@ -129,7 +129,7 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::hoist_ex
         }
         auto variable_data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
         variable_data->name = urd::flat_string(name);
-        const auto fresh = formalism::insert(this->copy_context().storage->repository, *variable_data).first;
+        const auto fresh = this->copy_context().storage->repository.insert(*variable_data, this->copy_context().storage->builder).first;
         this->self().enter_variable_scope();
         this->self().bind_variable(variable, fresh);
         condition = this->self().rename_variables(condition);
@@ -139,7 +139,7 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::hoist_ex
         parameter_data->variable = fresh.index();
         for (auto type : parameter.get_types())
             parameter_data->types.push_back(type.index());
-        parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first);
+        parameters.push_back(this->copy_context().storage->repository.insert(*parameter_data, this->copy_context().storage->builder).first);
     }
     return condition;
 }
@@ -171,7 +171,7 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
     for (auto parameter : parameters)
         data->parameters.push_back(parameter.index());
     urd::store(data->condition, conjunction);
-    return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
+    return this->self().flatten_condition(formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
 }
 
 template<typename Derived>
@@ -180,7 +180,7 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
                                                                       formalism::EntityView<formalism::Condition<formalism::ExistsTag>> node)
 {
     // No child types: the parameters are kept as they are, only the condition slot is mapped.
-    auto scratch = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
+    auto scratch = this->copy_context().builder.template scratch<formalism::Condition<formalism::ExistsTag>>();
     auto& data = urd::map_variant_children<boost::mp11::mp_list<>, formalism::Condition<formalism::ExistsTag>>(
         node,
         *scratch,

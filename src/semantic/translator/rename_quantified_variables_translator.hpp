@@ -129,7 +129,7 @@ formalism::VariableView RenameQuantifiedVariablesTranslator<Derived>::fresh_vari
             this->copy_context().renamed_variable_names.insert(name);
             auto data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
             data->name = urd::flat_string(name);
-            return formalism::insert(this->copy_context().storage->repository, *data).first;
+            return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
         }
     }
 }
@@ -142,7 +142,7 @@ formalism::ParameterView RenameQuantifiedVariablesTranslator<Derived>::rename_va
     auto data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
     data->variable = variable.index();
     this->self().template copy_list<formalism::Type>(source.get_types(), data->types);
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
+    return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
 }
 
 template<typename Derived>

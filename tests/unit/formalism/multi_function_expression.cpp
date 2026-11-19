@@ -36,7 +36,7 @@ static loki::formalism::EntityView<T> intern(loki::formalism::Repository& reposi
 {
     auto data = loki::formalism::checkout<T>(builder);
     std::forward<Initialize>(initialize)(*data);
-    return loki::formalism::insert(repository, *data).first;
+    return repository.insert(*data, builder).first;
 }
 
 TEST(LokiTests, FunctionExpressionMultiAllowsAnyArity)

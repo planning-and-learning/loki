@@ -71,7 +71,7 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
         remember_requirement(m_parse_context, formalism::RequirementKind::ActionCosts);
         auto data = formalism::checkout<formalism::Requirement>(m_builder);
         data->kind = formalism::RequirementKind::ActionCosts;
-        const auto requirement = formalism::insert(repo(), *data).first;
+        const auto requirement = repo().insert(*data, m_builder).first;
         if (std::none_of(requirements.begin(), requirements.end(), [&](const auto value) { return value.index() == requirement.index(); }))
             requirements.push_back(requirement);
     }
@@ -119,7 +119,7 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
     urd::store(data->functions, functions);
     urd::store(data->actions, actions);
     urd::store(data->axioms, axioms);
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::TaskView AstBuilder::build_task(const ast::Task& task)
@@ -177,7 +177,7 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
         urd::store(data->goal, *goal);
     urd::store(data->metric, metric);
     urd::store(data->axioms, axioms);
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 }  // namespace loki::semantic

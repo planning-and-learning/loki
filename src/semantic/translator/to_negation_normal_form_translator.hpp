@@ -86,10 +86,10 @@ ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::Entity
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     urd::store(literal_data->atom, atom);
     literal_data->polarity = !literal.get_polarity();
-    const auto negated_literal = formalism::insert(this->copy_context().storage->repository, *literal_data).first;
+    const auto negated_literal = this->copy_context().storage->repository.insert(*literal_data, this->copy_context().storage->builder).first;
     auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
     condition_data->literal = negated_literal.index();
-    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
+    return formalism::ConditionView(this->copy_context().storage->repository.insert(*condition_data, this->copy_context().storage->builder).first);
 }
 
 template<typename Derived>
@@ -139,7 +139,7 @@ formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_conditi
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.index());
     urd::store(data->condition, condition);
-    return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
+    return this->self().flatten_condition(formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
 }
 
 template<typename Derived>
@@ -153,7 +153,7 @@ ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::Entity
     result->comparator = comparator;
     urd::store(result->left, left);
     urd::store(result->right, right);
-    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *result).first);
+    return formalism::ConditionView(this->copy_context().storage->repository.insert(*result, this->copy_context().storage->builder).first);
 }
 
 template<typename Derived>

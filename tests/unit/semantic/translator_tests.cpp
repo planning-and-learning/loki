@@ -79,7 +79,7 @@ formalism::EntityView<T> intern(formalism::Repository& repository, formalism::Bu
 {
     auto data = formalism::checkout<T>(builder);
     std::forward<Initialize>(initialize)(*data);
-    return formalism::insert(repository, *data).first;
+    return repository.insert(*data, builder).first;
 }
 
 formalism::FunctionExpressionView number_expression(formalism::Repository& repository, formalism::Builder& builder, double value)
@@ -794,16 +794,16 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
                                                                        builder,
                                                                        [&](auto& data)
                                                                        {
-                                                                           data.conditions.push_back(q_condition);
-                                                                           data.conditions.push_back(p_condition);
+                                                                           urd::append(data.conditions, q_condition_view);
+                                                                           urd::append(data.conditions, p_condition_view);
                                                                        });
 
     const auto second = intern<formalism::Condition<formalism::AndTag>>(repository,
                                                                         builder,
                                                                         [&](auto& data)
                                                                         {
-                                                                            data.conditions.push_back(p_condition);
-                                                                            data.conditions.push_back(q_condition);
+                                                                            urd::append(data.conditions, p_condition_view);
+                                                                            urd::append(data.conditions, q_condition_view);
                                                                         });
 
     EXPECT_EQ(first, second);

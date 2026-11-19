@@ -35,17 +35,17 @@ public:
 
     [[nodiscard]] bool compiles_typing_now() const noexcept;
     urd::Store<urd::sequence<formalism::TypeView>> collect_type_hierarchy(formalism::TypeView type);
-    void copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, urd::flat_vector<urd::index<formalism::Type>>& result);
-    void copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters, urd::flat_vector<urd::index<formalism::Parameter>>& result);
+    void copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, urd::built_t<urd::flat_vector<urd::index<formalism::Type>>, formalism::Repository>& result);
+    void copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters, urd::built_t<urd::flat_vector<urd::index<formalism::Parameter>>, formalism::Repository>& result);
     formalism::PredicateView type_predicate(formalism::TypeView type);
     formalism::LiteralView type_literal(formalism::TypeView type, formalism::TermView term);
     formalism::ConditionView type_condition(formalism::TypeView type, formalism::VariableView variable);
-    void type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters, urd::data<formalism::Condition<formalism::AndTag>>& data);
+    void type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters, urd::builder<formalism::Condition<formalism::AndTag>, formalism::Repository>& data);
     void prepend_type_conditions(std::optional<formalism::ConditionView>& condition, formalism::EntityListView<formalism::Parameter> parameters);
     void prepend_type_conditions(formalism::ConditionView& condition, formalism::EntityListView<formalism::Parameter> parameters);
-    void compile_typing_to_domain(urd::data<formalism::Domain>& data, formalism::DomainView domain);
-    void add_type_literals_for_object(urd::flat_vector<urd::index<formalism::Literal>>& literals, formalism::ObjectView object);
-    void initialize_type_literals(urd::data<formalism::Task>& data, formalism::TaskView task);
+    void compile_typing_to_domain(urd::builder<formalism::Domain, formalism::Repository>& data, formalism::DomainView domain);
+    void add_type_literals_for_object(urd::built_t<urd::flat_vector<urd::index<formalism::Literal>>, formalism::Repository>& literals, formalism::ObjectView object);
+    void initialize_type_literals(urd::builder<formalism::Task, formalism::Repository>& data, formalism::TaskView task);
 };
 
 template<typename Derived>
@@ -71,7 +71,7 @@ urd::Store<urd::sequence<formalism::TypeView>> CompileTypingTranslator<Derived>:
 
 template<typename Derived>
 void CompileTypingTranslator<Derived>::copy_type_hierarchy(formalism::EntityListView<formalism::Type> types,
-                                                           urd::flat_vector<urd::index<formalism::Type>>& result)
+                                                           urd::built_t<urd::flat_vector<urd::index<formalism::Type>>, formalism::Repository>& result)
 {
     auto seen = urd::Store<urd::set<formalism::TypeView>> {};
     for (auto type : types)
@@ -86,14 +86,14 @@ void CompileTypingTranslator<Derived>::copy_type_hierarchy(formalism::EntityList
 
 template<typename Derived>
 void CompileTypingTranslator<Derived>::copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters,
-                                                                     urd::flat_vector<urd::index<formalism::Parameter>>& result)
+                                                                     urd::built_t<urd::flat_vector<urd::index<formalism::Parameter>>, formalism::Repository>& result)
 {
     for (auto parameter : parameters)
     {
         const auto variable = this->self().copy(parameter.get_variable());
         auto data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
         urd::store(data->variable, variable);
-        result.push_back(formalism::insert(this->copy_context().storage->repository, *data).first.index());
+        result.push_back(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first.index());
     }
 }
 
@@ -114,11 +114,11 @@ formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formal
             }
     auto variable_data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
     variable_data->name = urd::flat_string("?arg");
-    parameter_data->variable = formalism::insert(this->copy_context().storage->repository, *variable_data).first.index();
+    parameter_data->variable = this->copy_context().storage->repository.insert(*variable_data, this->copy_context().storage->builder).first.index();
     auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
     predicate_data->name = type.get_name();
-    predicate_data->parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first.index());
-    auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first;
+    predicate_data->parameters.push_back(this->copy_context().storage->repository.insert(*parameter_data, this->copy_context().storage->builder).first.index());
+    auto predicate = this->copy_context().storage->repository.insert(*predicate_data, this->copy_context().storage->builder).first;
     this->copy_context().type_predicates.emplace(type, predicate);
     this->copy_context().used_predicate_names.insert(std::string(type.get_name()));
     return predicate;
@@ -131,11 +131,11 @@ formalism::LiteralView CompileTypingTranslator<Derived>::type_literal(formalism:
     auto atom_data = formalism::checkout<formalism::Atom>(this->copy_context().builder);
     urd::store(atom_data->predicate, predicate);
     urd::append(atom_data->terms, term);
-    const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
+    const auto atom = this->copy_context().storage->repository.insert(*atom_data, this->copy_context().storage->builder).first.index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
     literal_data->polarity = true;
-    return formalism::insert(this->copy_context().storage->repository, *literal_data).first;
+    return this->copy_context().storage->repository.insert(*literal_data, this->copy_context().storage->builder).first;
 }
 
 template<typename Derived>
@@ -144,12 +144,12 @@ formalism::ConditionView CompileTypingTranslator<Derived>::type_condition(formal
     const auto literal = this->self().type_literal(type, this->self().copy(variable));
     auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
     urd::store(condition_data->literal, literal);
-    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
+    return formalism::ConditionView(this->copy_context().storage->repository.insert(*condition_data, this->copy_context().storage->builder).first);
 }
 
 template<typename Derived>
 void CompileTypingTranslator<Derived>::type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters,
-                                                                      urd::data<formalism::Condition<formalism::AndTag>>& data)
+                                                                      urd::builder<formalism::Condition<formalism::AndTag>, formalism::Repository>& data)
 {
     auto add_conditions = [&](auto&& self, formalism::TypeView type, formalism::VariableView variable) -> void
     {
@@ -184,7 +184,7 @@ void CompileTypingTranslator<Derived>::prepend_type_conditions(formalism::Condit
 }
 
 template<typename Derived>
-void CompileTypingTranslator<Derived>::compile_typing_to_domain(urd::data<formalism::Domain>& data, formalism::DomainView domain)
+void CompileTypingTranslator<Derived>::compile_typing_to_domain(urd::builder<formalism::Domain, formalism::Repository>& data, formalism::DomainView domain)
 {
     auto existing = urd::Store<urd::set<formalism::PredicateView>> {};
     for (auto predicate : domain.get_predicates())
@@ -210,7 +210,7 @@ void CompileTypingTranslator<Derived>::compile_typing_to_domain(urd::data<formal
 }
 
 template<typename Derived>
-void CompileTypingTranslator<Derived>::add_type_literals_for_object(urd::flat_vector<urd::index<formalism::Literal>>& literals, formalism::ObjectView object)
+void CompileTypingTranslator<Derived>::add_type_literals_for_object(urd::built_t<urd::flat_vector<urd::index<formalism::Literal>>, formalism::Repository>& literals, formalism::ObjectView object)
 {
     const auto copied_object = this->self().copy(object);
     auto add_literal = [&](auto&& self, formalism::TypeView type) -> void
@@ -236,7 +236,7 @@ void CompileTypingTranslator<Derived>::add_type_literals_for_object(urd::flat_ve
 }
 
 template<typename Derived>
-void CompileTypingTranslator<Derived>::initialize_type_literals(urd::data<formalism::Task>& data, formalism::TaskView task)
+void CompileTypingTranslator<Derived>::initialize_type_literals(urd::builder<formalism::Task, formalism::Repository>& data, formalism::TaskView task)
 {
     for (auto object : this->copy_context().storage->translated().get_constants())
         this->self().add_type_literals_for_object(data.initial_literals, object);
@@ -244,7 +244,9 @@ void CompileTypingTranslator<Derived>::initialize_type_literals(urd::data<formal
         this->self().add_type_literals_for_object(data.initial_literals, object);
 
     // The task's own types need type predicates; a reparsed translation may declare them already.
-    auto existing = urd::Store<urd::set<urd::index<formalism::Predicate>>>(data.predicates.begin(), data.predicates.end());
+    auto existing = urd::Store<urd::set<urd::index<formalism::Predicate>>> {};
+    for (const auto& predicate : data.predicates)
+        existing.insert(std::get<0>(predicate));  // its predicates are interned
     for (auto type : task.get_types())
         if (const auto predicate = this->self().type_predicate(type).index(); existing.insert(predicate).second)
             data.predicates.push_back(predicate);

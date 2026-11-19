@@ -40,7 +40,7 @@ public:
     explicit CopyTranslatorFacade(CopyContext& context) : CopyTranslatorComponent<Derived, CopyTranslatorFacade<Derived>>(context) {}
 
     template<typename T>
-    void push_unique(urd::flat_vector<urd::index<T>>& list, urd::Store<urd::set<formalism::EntityView<T>>>& seen, formalism::EntityView<T> value);
+    void push_unique(urd::built_t<urd::flat_vector<urd::index<T>>, formalism::Repository>& list, urd::Store<urd::set<formalism::EntityView<T>>>& seen, formalism::EntityView<T> value);
 
     [[nodiscard]] urd::Store<urd::set<std::string>> used_predicate_names() const;
 
@@ -53,7 +53,7 @@ public:
 
 template<typename Derived>
 template<typename T>
-void CopyTranslatorFacade<Derived>::push_unique(urd::flat_vector<urd::index<T>>& list,
+void CopyTranslatorFacade<Derived>::push_unique(urd::built_t<urd::flat_vector<urd::index<T>>, formalism::Repository>& list,
                                                 urd::Store<urd::set<formalism::EntityView<T>>>& seen,
                                                 formalism::EntityView<T> value)
 {
@@ -103,7 +103,7 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
     this->self().template copy_list<formalism::Action>(domain.get_actions(), data->actions);
     this->self().template copy_list<formalism::Axiom>(domain.get_axioms(), data->axioms);
 
-    auto [copied_domain, copied_inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    auto [copied_domain, copied_inserted] = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder);
     this->copy_context().storage->translated_domain = copied_domain;
     data->index = {};
 
@@ -134,7 +134,7 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
             return { copied_domain, copied_inserted };
     }
 
-    auto [view, inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    auto [view, inserted] = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder);
     this->copy_context().storage->translated_domain = view;
     remember(this->copy_context().storage->maps, domain, view);
     return { view, inserted || (copied_inserted && view == copied_domain) };
@@ -182,7 +182,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     this->self().template copy_list<formalism::Axiom>(task.get_axioms(), data->axioms);
     this->self().template copy_list<formalism::Type>(task.get_types(), data->types);
 
-    auto [copied_task, copied_inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    auto [copied_task, copied_inserted] = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder);
     data->index = {};
 
     switch (this->copy_context().phase)
@@ -226,7 +226,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             return { copied_task, copied_inserted };
     }
 
-    auto [view, inserted] = formalism::insert(this->copy_context().storage->repository, *data);
+    auto [view, inserted] = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder);
     remember(this->copy_context().storage->maps, task, view);
     return { view, inserted || (copied_inserted && view == copied_task) };
 }

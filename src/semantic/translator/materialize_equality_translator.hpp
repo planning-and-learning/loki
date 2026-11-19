@@ -41,8 +41,8 @@ public:
     [[nodiscard]] bool equality_required(formalism::TaskView task) const;
     [[nodiscard]] std::optional<formalism::PredicateView> find_domain_equality_predicate() const;
     formalism::LiteralView equality_literal(formalism::PredicateView predicate, urd::index<formalism::Object> object);
-    void add_equality_predicate_to_domain(urd::data<formalism::Domain>& data, formalism::DomainView domain);
-    void materialize_equality(urd::data<formalism::Task>& data, formalism::TaskView task);
+    void add_equality_predicate_to_domain(urd::builder<formalism::Domain, formalism::Repository>& data, formalism::DomainView domain);
+    void materialize_equality(urd::builder<formalism::Task, formalism::Repository>& data, formalism::TaskView task);
 };
 
 template<typename Derived>
@@ -91,15 +91,15 @@ formalism::LiteralView MaterializeEqualityTranslator<Derived>::equality_literal(
     atom_data->predicate = predicate.index();
     atom_data->terms.push_back(object);
     atom_data->terms.push_back(object);
-    const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
+    const auto atom = this->copy_context().storage->repository.insert(*atom_data, this->copy_context().storage->builder).first.index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
     literal_data->polarity = true;
-    return formalism::insert(this->copy_context().storage->repository, *literal_data).first;
+    return this->copy_context().storage->repository.insert(*literal_data, this->copy_context().storage->builder).first;
 }
 
 template<typename Derived>
-void MaterializeEqualityTranslator<Derived>::add_equality_predicate_to_domain(urd::data<formalism::Domain>& data, formalism::DomainView domain)
+void MaterializeEqualityTranslator<Derived>::add_equality_predicate_to_domain(urd::builder<formalism::Domain, formalism::Repository>& data, formalism::DomainView domain)
 {
     if (!this->self().has_requirement(domain.get_requirements(), formalism::RequirementKind::Equality) && !this->self().uses_equality(domain))
         return;
@@ -125,28 +125,28 @@ void MaterializeEqualityTranslator<Derived>::add_equality_predicate_to_domain(ur
 
     auto variable_data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
     variable_data->name = urd::flat_string("?lhs");
-    const auto left = formalism::insert(this->copy_context().storage->repository, *variable_data).first.index();
-    urd::clear_members(*variable_data);
+    const auto left = this->copy_context().storage->repository.insert(*variable_data, this->copy_context().storage->builder).first.index();
+    urd::clear_fields(*variable_data);
     variable_data->name = urd::flat_string("?rhs");
-    const auto right = formalism::insert(this->copy_context().storage->repository, *variable_data).first.index();
+    const auto right = this->copy_context().storage->repository.insert(*variable_data, this->copy_context().storage->builder).first.index();
     auto parameter_data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
     parameter_data->variable = left;
     if (object_type)
         parameter_data->types.push_back(*object_type);
     auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
     predicate_data->name = urd::flat_string("=");
-    predicate_data->parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first.index());
-    urd::clear_members(*parameter_data);
+    predicate_data->parameters.push_back(this->copy_context().storage->repository.insert(*parameter_data, this->copy_context().storage->builder).first.index());
+    urd::clear_fields(*parameter_data);
     parameter_data->variable = right;
     if (object_type)
         parameter_data->types.push_back(*object_type);
-    predicate_data->parameters.push_back(formalism::insert(this->copy_context().storage->repository, *parameter_data).first.index());
-    const auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first.index();
+    predicate_data->parameters.push_back(this->copy_context().storage->repository.insert(*parameter_data, this->copy_context().storage->builder).first.index());
+    const auto predicate = this->copy_context().storage->repository.insert(*predicate_data, this->copy_context().storage->builder).first.index();
     data.predicates.push_back(predicate);
 }
 
 template<typename Derived>
-void MaterializeEqualityTranslator<Derived>::materialize_equality(urd::data<formalism::Task>& data, formalism::TaskView task)
+void MaterializeEqualityTranslator<Derived>::materialize_equality(urd::builder<formalism::Task, formalism::Repository>& data, formalism::TaskView task)
 {
     if (!this->self().equality_required(task))
         return;
@@ -155,8 +155,8 @@ void MaterializeEqualityTranslator<Derived>::materialize_equality(urd::data<form
         throw InvalidEqualityError("expected equality predicate to be declared in the translated domain");
     for (auto object : this->copy_context().storage->translated().get_constants())
         urd::append(data.initial_literals, this->self().equality_literal(*predicate, object.index()));
-    for (auto object : data.objects)
-        urd::append(data.initial_literals, this->self().equality_literal(*predicate, object));
+    for (const auto& object : data.objects)
+        urd::append(data.initial_literals, this->self().equality_literal(*predicate, std::get<0>(object)));  // its objects are interned
     data.domain = this->copy_context().storage->translated().index();
 }
 

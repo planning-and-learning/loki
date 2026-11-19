@@ -44,12 +44,12 @@ public:
     {
     }
 
-    void compile_conditional_effect_actions(formalism::EntityListView<formalism::Action> actions, urd::flat_vector<urd::index<formalism::Action>>& result);
+    void compile_conditional_effect_actions(formalism::EntityListView<formalism::Action> actions, urd::built_t<urd::flat_vector<urd::index<formalism::Action>>, formalism::Repository>& result);
 };
 
 template<typename Derived>
 void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_actions(formalism::EntityListView<formalism::Action> actions,
-                                                                                      urd::flat_vector<urd::index<formalism::Action>>& result)
+                                                                                      urd::built_t<urd::flat_vector<urd::index<formalism::Action>>, formalism::Repository>& result)
 {
     struct ConditionalEffect
     {
@@ -99,13 +99,13 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
         auto effect_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
         for (auto mask = size_t { 0 }; mask < num_variants; ++mask)
         {
-            urd::clear_members(*condition_data);
+            urd::clear_fields(*condition_data);
             if (const auto precondition = action.get_precondition())
                 this->self().append_conjunct(*condition_data, *precondition);
 
-            urd::clear_members(*effect_data);
+            urd::clear_fields(*effect_data);
             for (auto effect : unconditional)
-                effect_data->effects.push_back(effect);
+                urd::append(effect_data->effects, effect);
             for (auto i = size_t { 0 }; i < conditional.size(); ++i)
             {
                 const auto selected = (mask & (size_t { 1 } << i)) != 0;
@@ -120,18 +120,19 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                 }
             }
 
-            auto precondition = urd::flat_optional<formalism::ConditionVariant> {};
+            // In the action builder's form: a single conjunct is moved over as it is held.
+            auto precondition = urd::built_t<urd::flat_optional<formalism::ConditionVariant>, formalism::Repository> {};
             if (condition_data->conditions.size() == 1)
-                precondition = condition_data->conditions.front();
+                precondition = std::move(condition_data->conditions.front());
             else if (!condition_data->conditions.empty())
                 urd::store(precondition, this->self().make_conjunction(*condition_data));
 
-            auto effect = urd::flat_optional<formalism::EffectVariant> {};
+            auto effect = urd::built_t<urd::flat_optional<formalism::EffectVariant>, formalism::Repository> {};
             if (effect_data->effects.size() == 1)
-                effect = effect_data->effects.front();
+                effect = std::move(effect_data->effects.front());
             else if (!effect_data->effects.empty())
             {
-                effect = formalism::insert(this->copy_context().storage->repository, *effect_data).first.index();
+                urd::store(effect, this->copy_context().storage->repository.insert(*effect_data, this->copy_context().storage->builder).first);
             }
 
             auto name = std::string(action.get_name()) + "_" + std::to_string(action.index().value);
@@ -145,9 +146,9 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
             for (auto parameter : action.get_parameters())
                 action_data->parameters.push_back(parameter.index());
             action_data->original_arity = action.get_original_arity();
-            action_data->precondition = precondition;
-            action_data->effect = effect;
-            this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *action_data).first);
+            action_data->precondition = std::move(precondition);
+            action_data->effect = std::move(effect);
+            this->self().push_unique(result, seen, this->copy_context().storage->repository.insert(*action_data, this->copy_context().storage->builder).first);
         }
     }
 }

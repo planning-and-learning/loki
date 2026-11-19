@@ -20,6 +20,7 @@
 
 #include "copy_translator_component.hpp"
 
+#include <urd/elements/clone.hpp>
 #include <concepts>
 #include <urd/elements/flat.hpp>
 
@@ -68,30 +69,30 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
     }
 
     predicate_data->name = urd::flat_string(this->self().next_generated_predicate_name("loki-universal-"));
-    const auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first;
+    const auto predicate = this->copy_context().storage->repository.insert(*predicate_data, this->copy_context().storage->builder).first;
     atom_data->predicate = predicate.index();
-    const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
+    const auto atom = this->copy_context().storage->repository.insert(*atom_data, this->copy_context().storage->builder).first.index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
     literal_data->polarity = true;
-    const auto positive_head = formalism::insert(this->copy_context().storage->repository, *literal_data).first.index();
-    urd::clear_members(*literal_data);
+    const auto positive_head = this->copy_context().storage->repository.insert(*literal_data, this->copy_context().storage->builder).first.index();
+    urd::clear_fields(*literal_data);
     literal_data->atom = atom;
     literal_data->polarity = false;
-    const auto negative_literal = formalism::insert(this->copy_context().storage->repository, *literal_data).first.index();
+    const auto negative_literal = this->copy_context().storage->repository.insert(*literal_data, this->copy_context().storage->builder).first.index();
     auto axiom_data = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
-    for (auto parameter : predicate_data->parameters)
-        axiom_data->parameters.push_back(parameter);
+    for (const auto& parameter : predicate_data->parameters)
+        axiom_data->parameters.push_back(urd::clone(parameter));
     axiom_data->original_arity = axiom_data->parameters.size();
     axiom_data->head = positive_head;
     urd::store(axiom_data->condition, condition);
-    const auto axiom = formalism::insert(this->copy_context().storage->repository, *axiom_data).first;
+    const auto axiom = this->copy_context().storage->repository.insert(*axiom_data, this->copy_context().storage->builder).first;
 
-    this->copy_context().generated_predicates.push_back(predicate);
-    this->copy_context().generated_axioms.push_back(axiom);
+    urd::append(this->copy_context().generated_predicates, predicate);
+    urd::append(this->copy_context().generated_axioms, axiom);
     auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
     condition_data->literal = negative_literal;
-    auto result = formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
+    auto result = formalism::ConditionView(this->copy_context().storage->repository.insert(*condition_data, this->copy_context().storage->builder).first);
     this->copy_context().generated_universal_conditions.emplace(key, result);
     return result;
 }
@@ -128,7 +129,7 @@ template<typename Tag>
 formalism::ConditionView
 RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<Tag>> source)
 {
-    auto scratch = formalism::checkout<formalism::Condition<Tag>>(this->copy_context().builder);
+    auto scratch = this->copy_context().builder.template scratch<formalism::Condition<Tag>>();
     auto& data = urd::map_variant_children<formalism::SymbolRepositoryTypes, formalism::Condition<Tag>>(
         source,
         *scratch,
@@ -149,7 +150,7 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.index());
     urd::store(data->condition, condition);
-    return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
+    return this->self().flatten_condition(formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
 }
 
 template<typename Derived>
@@ -165,7 +166,7 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.index());
     urd::store(data->condition, negated);
-    const auto exists_not = this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *data).first));
+    const auto exists_not = this->self().flatten_condition(formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
     const auto translated_exists_not = this->self().remove_universal_quantifiers(exists_not);
     return this->self().make_generated_axiom_condition(translated_exists_not);
 }

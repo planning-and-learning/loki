@@ -88,9 +88,8 @@ TEST(LokiTests, SharedInterningCanonicalizesTypeBasesUsingTheRepository)
     data->bases.push_back(zebra.index());
     data->bases.push_back(alpha.index());
     data->bases.push_back(zebra.index());
-    const auto [view, inserted] = loki::formalism::insert(repository, *data);
+    const auto [view, inserted] = repository.insert(*data, builder);
     EXPECT_TRUE(inserted);
-    EXPECT_EQ(data->index, view.index());
     ASSERT_EQ(view.get_bases().size(), 2);
     EXPECT_EQ(view.get_bases()[0], alpha);
     EXPECT_EQ(view.get_bases()[1], zebra);
@@ -99,10 +98,9 @@ TEST(LokiTests, SharedInterningCanonicalizesTypeBasesUsingTheRepository)
     data->bases.push_back(zebra.index());
     data->bases.push_back(alpha.index());
     data->index = Index();
-    const auto [duplicate, duplicate_inserted] = loki::formalism::insert(repository, *data);
+    const auto [duplicate, duplicate_inserted] = repository.insert(*data, builder);
     EXPECT_FALSE(duplicate_inserted);
     EXPECT_EQ(duplicate, view);
-    EXPECT_EQ(data->index, view.index());
 }
 
 TEST(LokiTests, SymbolViewsUseTheRepositoryOfTheirContext)

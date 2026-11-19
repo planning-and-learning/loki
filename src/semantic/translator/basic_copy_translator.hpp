@@ -36,7 +36,7 @@ public:
     void increment_quantifications(formalism::EntityListView<formalism::Parameter> parameters);
 
     template<typename T>
-    void copy_list(formalism::EntityListView<T> source, urd::flat_vector<urd::index<T>>& result);
+    void copy_list(formalism::EntityListView<T> source, urd::built_t<urd::flat_vector<urd::index<T>>, formalism::Repository>& result);
 
     urd::Store<urd::sequence<formalism::ParameterView>> copy_parameter_views(formalism::EntityListView<formalism::Parameter> source);
 
@@ -44,14 +44,14 @@ public:
 
     void leave_scope();
 
-    void append_generated_domain_objects(urd::data<formalism::Domain>& data);
+    void append_generated_domain_objects(urd::builder<formalism::Domain, formalism::Repository>& data);
 
     /// The copy of a predicate or function skeleton, memoized: its name and its parameters, copied without renaming.
     /// finish(data) does what else a new copy of its type needs.
     template<typename T, typename Finish>
     formalism::EntityView<T> copy_declaration(formalism::EntityView<T> source, Finish finish);
 
-    void set_requirements(const urd::Store<urd::sequence<formalism::RequirementKind>>& kinds, urd::flat_vector<urd::index<formalism::Requirement>>& result);
+    void set_requirements(const urd::Store<urd::sequence<formalism::RequirementKind>>& kinds, urd::built_t<urd::flat_vector<urd::index<formalism::Requirement>>, formalism::Repository>& result);
 
     /// The entities without type-specific logic: their children copied through copy, a variant slot whole (so that
     /// the phase hooks on ConditionView, EffectView and FunctionExpressionView apply), the record rebuilt.
@@ -91,7 +91,7 @@ void BasicCopyTranslator<Derived>::increment_quantifications(formalism::EntityLi
 
 template<typename Derived>
 template<typename T>
-void BasicCopyTranslator<Derived>::copy_list(formalism::EntityListView<T> source, urd::flat_vector<urd::index<T>>& result)
+void BasicCopyTranslator<Derived>::copy_list(formalism::EntityListView<T> source, urd::built_t<urd::flat_vector<urd::index<T>>, formalism::Repository>& result)
 {
     for (auto view : source)
         urd::append(result, this->self().copy(view));
@@ -125,7 +125,7 @@ void BasicCopyTranslator<Derived>::leave_scope()
 }
 
 template<typename Derived>
-void BasicCopyTranslator<Derived>::append_generated_domain_objects(urd::data<formalism::Domain>& data)
+void BasicCopyTranslator<Derived>::append_generated_domain_objects(urd::builder<formalism::Domain, formalism::Repository>& data)
 {
     if (this->copy_context().generated_predicates.empty() && this->copy_context().generated_axioms.empty())
         return;
@@ -138,14 +138,14 @@ void BasicCopyTranslator<Derived>::append_generated_domain_objects(urd::data<for
 
 template<typename Derived>
 void BasicCopyTranslator<Derived>::set_requirements(const urd::Store<urd::sequence<formalism::RequirementKind>>& kinds,
-                                                    urd::flat_vector<urd::index<formalism::Requirement>>& result)
+                                                    urd::built_t<urd::flat_vector<urd::index<formalism::Requirement>>, formalism::Repository>& result)
 {
     result.clear();
     auto data = formalism::checkout<formalism::Requirement>(this->copy_context().builder);
     for (const auto kind : kinds)
     {
         data->kind = kind;
-        result.push_back(formalism::insert(this->copy_context().storage->repository, *data).first.index());
+        result.push_back(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first.index());
     }
 }
 
@@ -153,7 +153,7 @@ template<typename Derived>
 template<typename T>
 formalism::EntityView<T> BasicCopyTranslator<Derived>::copy(formalism::EntityView<T> source)
 {
-    auto scratch = formalism::checkout<T>(this->copy_context().builder);
+    auto scratch = this->copy_context().builder.template scratch<T>();
     auto& data = urd::map_variant_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return this->self().copy(child); });
     return formalism::insert(this->copy_context().storage->repository, data).first;
 }
@@ -186,7 +186,7 @@ formalism::ObjectView BasicCopyTranslator<Derived>::copy(formalism::ObjectView s
                         data->name = source.get_name();
                         if (!this->self().compiles_typing_now())
                             this->self().copy_type_hierarchy(source.get_types(), data->types);
-                        auto out = formalism::insert(this->copy_context().storage->repository, *data).first;
+                        auto out = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
                         this->copy_context().storage->object_type_views[out] = std::move(source_types);
                         return out;
                     });
@@ -203,7 +203,7 @@ formalism::VariableView BasicCopyTranslator<Derived>::copy(formalism::VariableVi
     }
     auto data = formalism::checkout<formalism::Variable>(this->copy_context().builder);
     data->name = urd::flat_string(name);
-    return formalism::insert(this->copy_context().storage->repository, *data).first;
+    return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
 }
 
 template<typename Derived>
@@ -223,7 +223,7 @@ formalism::EntityView<T> BasicCopyTranslator<Derived>::copy_declaration(formalis
                             for (auto parameter : source.get_parameters())
                                 urd::append(data->parameters, this->self().copy(parameter));
                         finish(*data);
-                        return formalism::insert(this->copy_context().storage->repository, *data).first;
+                        return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
                     });
 }
 

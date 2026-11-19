@@ -35,7 +35,7 @@ jobs:
                   -DCMAKE_PREFIX_PATH="$PREFIX" -DCMAKE_INSTALL_LIBDIR=lib \
                   -DPython_EXECUTABLE="$PWD/.venv/bin/python" -DPython3_EXECUTABLE="$PWD/.venv/bin/python"
             .venv/bin/python -m pip install --no-build-isolation ".[test]"
-      # The schema rules (brokkr's docs/schema_rules.rst, S1 to S4), parsed with clang over the compile database the
+      # The schema rules (brokkr's docs/schema_rules.rst, S1 to S5), parsed with clang over the compile database the
       # lint configured.
       - name: Schema rules
         run: |

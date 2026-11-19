@@ -32,7 +32,7 @@ formalism::EntityView<T> intern(formalism::Repository& repository, formalism::Bu
 {
     auto data = formalism::checkout<T>(builder);
     std::forward<Initialize>(initialize)(*data);
-    return formalism::insert(repository, *data).first;
+    return repository.insert(*data, builder).first;
 }
 }  // namespace
 
@@ -58,7 +58,7 @@ AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repo
                                                           [&](auto& data)
                                                           {
                                                               data.name = "predicate_" + std::to_string(i);
-                                                              data.parameters = parameters;
+                                                              urd::store(data.parameters, parameters);
                                                           }));
 
     const auto term = [](formalism::ObjectView object) { return formalism::Term(object.index()); };
@@ -72,7 +72,7 @@ AtomList create_atoms(size_t num_objects, size_t num_predicates, formalism::Repo
                                                         [&](auto& data)
                                                         {
                                                             data.predicate = predicate.index();
-                                                            data.terms = formalism::TermList { term(object_left), term(object_right) };
+                                                            urd::store(data.terms, formalism::TermList { term(object_left), term(object_right) });
                                                         }));
     return atoms;
 }

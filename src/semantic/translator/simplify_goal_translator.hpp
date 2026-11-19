@@ -46,24 +46,24 @@ formalism::ConditionView SimplifyGoalTranslator<Derived>::make_generated_goal_co
     const auto name = urd::flat_string(this->self().next_generated_predicate_name("loki-goal-"));
     auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
     predicate_data->name = name;
-    const auto predicate = formalism::insert(this->copy_context().storage->repository, *predicate_data).first;
+    const auto predicate = this->copy_context().storage->repository.insert(*predicate_data, this->copy_context().storage->builder).first;
     auto atom_data = formalism::checkout<formalism::Atom>(this->copy_context().builder);
     atom_data->predicate = predicate.index();
-    const auto atom = formalism::insert(this->copy_context().storage->repository, *atom_data).first.index();
+    const auto atom = this->copy_context().storage->repository.insert(*atom_data, this->copy_context().storage->builder).first.index();
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     literal_data->atom = atom;
     literal_data->polarity = true;
-    const auto literal = formalism::insert(this->copy_context().storage->repository, *literal_data).first.index();
+    const auto literal = this->copy_context().storage->repository.insert(*literal_data, this->copy_context().storage->builder).first.index();
     auto axiom_data = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
     axiom_data->original_arity = 0;
     axiom_data->head = literal;
-    axiom_data->condition = condition;
-    const auto axiom = formalism::insert(this->copy_context().storage->repository, *axiom_data).first;
-    this->copy_context().generated_predicates.push_back(predicate);
-    this->copy_context().generated_axioms.push_back(axiom);
+    urd::store(axiom_data->condition, condition);
+    const auto axiom = this->copy_context().storage->repository.insert(*axiom_data, this->copy_context().storage->builder).first;
+    urd::append(this->copy_context().generated_predicates, predicate);
+    urd::append(this->copy_context().generated_axioms, axiom);
     auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
     condition_data->literal = literal;
-    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, *condition_data).first);
+    return formalism::ConditionView(this->copy_context().storage->repository.insert(*condition_data, this->copy_context().storage->builder).first);
 }
 
 template<typename Derived>

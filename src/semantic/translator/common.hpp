@@ -139,7 +139,7 @@ formalism::EntityView<T> memoized(ViewMaps& maps, formalism::EntityView<T> sourc
 template<typename T, typename F>
 formalism::EntityView<T> rebuild(TranslationStorage& storage, formalism::EntityView<T> source, F f)
 {
-    auto scratch = formalism::checkout<T>(storage.builder);
+    auto scratch = storage.builder.template scratch<T>();
     auto& data = urd::map_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return f(child); });
     return formalism::insert(storage.repository, data).first;
 }

@@ -48,7 +48,7 @@ formalism::AtomView AstBuilder::parse_atom(const ast::Atom& node)
     data->predicate = pred.index();
     for (const auto& term : node.terms)
         urd::append(data->terms, parse_term(term));
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::LiteralView AstBuilder::parse_literal(const ast::Literal& node)
@@ -58,7 +58,7 @@ formalism::LiteralView AstBuilder::parse_literal(const ast::Literal& node)
     auto data = formalism::checkout<formalism::Literal>(m_builder);
     data->atom = atom.index();
     data->polarity = node.positive;
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::ConditionView AstBuilder::parse_condition(const ast::Condition& condition)
@@ -71,7 +71,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionLi
     const auto literal = parse_literal(node.literal);
     auto data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(m_builder);
     data->literal = literal.index();
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionAnd& node)
@@ -79,7 +79,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionAn
     auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(m_builder);
     for (const auto& child : node.conditions)
         urd::append(data->conditions, parse_condition(child.get()));
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionOr& node)
@@ -88,7 +88,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionOr
     auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(m_builder);
     for (const auto& child : node.conditions)
         urd::append(data->conditions, parse_condition(child.get()));
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionNot& node)
@@ -97,7 +97,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionNo
     const auto condition = parse_condition(node.condition.get());
     auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(m_builder);
     urd::store(data->condition, condition);
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionImply& node)
@@ -108,7 +108,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionIm
     auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(m_builder);
     urd::store(data->left, left);
     urd::store(data->right, right);
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionExists& node)
@@ -120,7 +120,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionEx
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(m_builder);
     urd::store(data->parameters, parameters);
     urd::store(data->condition, child);
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionForall& node)
@@ -132,7 +132,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionFo
     auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(m_builder);
     urd::store(data->parameters, parameters);
     urd::store(data->condition, child);
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionNumericConstraint& node)
@@ -144,7 +144,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionNu
     data->comparator = comparator(node, m_diagnostics);
     urd::store(data->left, left);
     urd::store(data->right, right);
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::FunctionTermView AstBuilder::parse_function_term(const ast::FunctionTerm& node)
@@ -161,7 +161,7 @@ formalism::FunctionTermView AstBuilder::parse_function_term(const ast::FunctionT
     data->function = skeleton.index();
     for (const auto& term : node.terms)
         urd::append(data->terms, parse_term(term));
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::FunctionExpressionView AstBuilder::parse_function_expression(const ast::FunctionExpression& expression)
@@ -173,7 +173,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
 {
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::NumberTag>>(m_builder);
     data->value = node.value;
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(const ast::FunctionExpressionFunction& node)
@@ -185,7 +185,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(m_builder);
     data->operation = formalism::UnaryArithmeticOperator::Sub;
     urd::store(data->expression, expression);
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(const ast::FunctionExpressionBinary& node)
@@ -196,7 +196,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
     data->operation = binary_operator(node.op);
     urd::store(data->left, left);
     urd::store(data->right, right);
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(const ast::FunctionExpressionMulti& node)
@@ -207,7 +207,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
         const auto unit = op == formalism::MultiArithmeticOperator::Add ? 0.0 : 1.0;
         auto data = formalism::checkout<formalism::FunctionExpression<formalism::NumberTag>>(m_builder);
         data->value = unit;
-        return formalism::insert(repo(), *data).first;
+        return repo().insert(*data, m_builder).first;
     }
     if (node.expressions.size() == 1)
         return parse_function_expression(node.expressions.front().get());
@@ -217,7 +217,7 @@ formalism::FunctionExpressionView AstBuilder::parse_function_expression_node(con
     data->args.reserve(node.expressions.size());
     for (const auto& expression : node.expressions)
         urd::append(data->args, parse_function_expression(expression.get()));
-    return formalism::insert(repo(), *data).first;
+    return repo().insert(*data, m_builder).first;
 }
 
 }  // namespace loki::semantic

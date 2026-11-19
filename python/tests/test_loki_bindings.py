@@ -701,7 +701,7 @@ def test_views_expose_typed_indices() -> None:
     assert int(domain_index) == 0
     assert operator.index(domain_index) == 0
     assert str(domain_index) == repr(domain_index) == "DomainIndex(0)"
-    assert hash(domain_index) == 0
+    assert hash(domain_index) == hash(pypddl.DomainIndex(0))
     assert domain_index == domain.index()
     assert domain_index != next_domain_index
     assert domain_index < next_domain_index

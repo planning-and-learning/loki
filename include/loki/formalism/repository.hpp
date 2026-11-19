@@ -18,6 +18,7 @@
 #ifndef LOKI_FORMALISM_REPOSITORY_HPP_
 #define LOKI_FORMALISM_REPOSITORY_HPP_
 
+#include "loki/formalism/builders.hpp"
 #include "loki/formalism/canonicalization.hpp"
 #include "loki/formalism/datas.hpp"
 #include "loki/formalism/declarations.hpp"
@@ -32,7 +33,9 @@
 namespace loki::formalism
 {
 
-using Builder = boost::mp11::mp_apply<ygg::formalism::BuilderStorage, SymbolRepositoryTypes>;
+/// The builder storage of the records: what checkout<T> draws a builder from and repository.insert(builder, storage)
+/// interns it through.
+using Builder = ygg::formalism::BasicBuilderStorage<Repository, SymbolRepositoryTypes>;
 
 using ygg::formalism::checkout;
 using ygg::formalism::insert;

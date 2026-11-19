@@ -87,8 +87,8 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
                         result->original_arity = source.get_original_arity();
                         if (precondition)
                             urd::store(result->precondition, *precondition);
-                        result->effect = effect;
-                        auto out = formalism::insert(this->copy_context().storage->repository, *result).first;
+                        urd::store(result->effect, effect);
+                        auto out = this->copy_context().storage->repository.insert(*result, this->copy_context().storage->builder).first;
                         this->self().leave_scope();
                         return out;
                     });
@@ -129,7 +129,7 @@ formalism::AxiomView TopLevelTranslator<Derived>::copy(formalism::AxiomView sour
                         result->original_arity = source.get_original_arity();
                         urd::store(result->head, head);
                         urd::store(result->condition, copied_condition);
-                        auto out = formalism::insert(this->copy_context().storage->repository, *result).first;
+                        auto out = this->copy_context().storage->repository.insert(*result, this->copy_context().storage->builder).first;
                         this->self().leave_scope();
                         return out;
                     });
@@ -146,7 +146,7 @@ formalism::MetricView TopLevelTranslator<Derived>::copy(formalism::MetricView so
                         auto data = formalism::checkout<formalism::Metric>(this->copy_context().builder);
                         data->optimization_direction = source.get_optimization_direction();
                         urd::store(data->expression, expression);
-                        return formalism::insert(this->copy_context().storage->repository, *data).first;
+                        return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
                     });
 }
 
@@ -162,7 +162,7 @@ formalism::InitialFunctionValueView TopLevelTranslator<Derived>::copy(formalism:
                         auto data = formalism::checkout<formalism::InitialFunctionValue>(this->copy_context().builder);
                         urd::store(data->function, function);
                         urd::store(data->value, value);
-                        return formalism::insert(this->copy_context().storage->repository, *data).first;
+                        return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
                     });
 }
 

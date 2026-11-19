@@ -38,13 +38,13 @@ public:
     {
     }
 
-    void split_disjunctive_actions(formalism::EntityListView<formalism::Action> actions, urd::flat_vector<urd::index<formalism::Action>>& result);
-    void split_disjunctive_axioms(formalism::EntityListView<formalism::Axiom> axioms, urd::flat_vector<urd::index<formalism::Axiom>>& result);
+    void split_disjunctive_actions(formalism::EntityListView<formalism::Action> actions, urd::built_t<urd::flat_vector<urd::index<formalism::Action>>, formalism::Repository>& result);
+    void split_disjunctive_axioms(formalism::EntityListView<formalism::Axiom> axioms, urd::built_t<urd::flat_vector<urd::index<formalism::Axiom>>, formalism::Repository>& result);
 };
 
 template<typename Derived>
 void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(formalism::EntityListView<formalism::Action> actions,
-                                                                              urd::flat_vector<urd::index<formalism::Action>>& result)
+                                                                              urd::built_t<urd::flat_vector<urd::index<formalism::Action>>, formalism::Repository>& result)
 {
     result.clear();
     auto seen = urd::Store<urd::set<formalism::ActionView>> {};
@@ -65,7 +65,7 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(fo
                     action_data->original_arity = action.get_original_arity();
                     urd::store(action_data->precondition, part);
                     urd::store(action_data->effect, action.get_effect());
-                    this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *action_data).first);
+                    this->self().push_unique(result, seen, this->copy_context().storage->repository.insert(*action_data, this->copy_context().storage->builder).first);
                 }
                 continue;
             }
@@ -76,7 +76,7 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(fo
 
 template<typename Derived>
 void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_axioms(formalism::EntityListView<formalism::Axiom> axioms,
-                                                                             urd::flat_vector<urd::index<formalism::Axiom>>& result)
+                                                                             urd::built_t<urd::flat_vector<urd::index<formalism::Axiom>>, formalism::Repository>& result)
 {
     result.clear();
     auto seen = urd::Store<urd::set<formalism::AxiomView>> {};
@@ -93,7 +93,7 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_axioms(for
                 axiom_data->original_arity = axiom.get_original_arity();
                 axiom_data->head = axiom.get_head().index();
                 urd::store(axiom_data->condition, part);
-                this->self().push_unique(result, seen, formalism::insert(this->copy_context().storage->repository, *axiom_data).first);
+                this->self().push_unique(result, seen, this->copy_context().storage->repository.insert(*axiom_data, this->copy_context().storage->builder).first);
             }
         }
         else

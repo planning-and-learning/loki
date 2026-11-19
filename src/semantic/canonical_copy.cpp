@@ -46,7 +46,7 @@ std::pair<formalism::EntityView<T>, bool> CanonicalCopyTranslator::copy_root(for
         remember(m_storage->maps, source, source);
         return { source, false };
     }
-    auto scratch = formalism::checkout<T>(m_storage->builder);
+    auto scratch = m_storage->builder.template scratch<T>();
     auto& data = urd::map_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return copy_child(child); });
     auto [view, inserted] = formalism::insert(m_storage->repository, data);
     remember(m_storage->maps, source, view);
