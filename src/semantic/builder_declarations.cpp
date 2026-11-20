@@ -230,16 +230,16 @@ formalism::PredicateView AstBuilder::equality_predicate(const ast::Identifier& i
     const auto right = repo().insert(*variable_data, m_builder).first.index();
     auto parameter_data = formalism::checkout<formalism::Parameter>(m_builder);
     parameter_data->variable = left;
-    parameter_data->types.push_back(m_domain_context.object_type.index());
+    parameter_data->types.emplace_back(m_domain_context.object_type.index());
     const auto left_parameter = repo().insert(*parameter_data, m_builder).first;
     urd::clear_fields(*parameter_data);
     parameter_data->variable = right;
-    parameter_data->types.push_back(m_domain_context.object_type.index());
+    parameter_data->types.emplace_back(m_domain_context.object_type.index());
     const auto right_parameter = repo().insert(*parameter_data, m_builder).first;
     auto predicate_data = formalism::checkout<formalism::Predicate>(m_builder);
     predicate_data->name = urd::flat_string("=");
-    predicate_data->parameters.push_back(left_parameter.index());
-    predicate_data->parameters.push_back(right_parameter.index());
+    predicate_data->parameters.emplace_back(left_parameter.index());
+    predicate_data->parameters.emplace_back(right_parameter.index());
     auto view = repo().insert(*predicate_data, m_builder).first;
     m_domain_context.predicates.emplace(name, view);
     return view;
@@ -367,7 +367,7 @@ urd::Store<urd::sequence<formalism::ParameterView>> AstBuilder::parse_parameters
             // as their union, so a build without the union type checks the same as the build with it.
             const auto alternatives = group.type ? union_alternatives(*group.type) : std::nullopt;
             if (const auto union_view = alternatives ? union_type(*alternatives, identifier) : std::nullopt)
-                parameter_data->types.push_back(union_view->index());
+                parameter_data->types.emplace_back(union_view->index());
             else
                 urd::store(parameter_data->types, types);
             m_parse_context.variable_types.insert_or_assign(variable, std::move(types));

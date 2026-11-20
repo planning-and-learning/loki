@@ -54,8 +54,14 @@ struct builder<::loki::formalism::Domain, C>
 
     static constexpr auto identifying_members() noexcept
     {
-        return urd::
-            Members<&builder::name, &builder::requirements, &builder::types, &builder::constants, &builder::predicates, &builder::functions, &builder::actions, &builder::axioms> {};
+        return urd::Members<&builder::name,
+                            &builder::requirements,
+                            &builder::types,
+                            &builder::constants,
+                            &builder::predicates,
+                            &builder::functions,
+                            &builder::actions,
+                            &builder::axioms> {};
     }
 };
 

@@ -131,7 +131,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectProbabilist
         urd::clear_fields(*alternative_data);
         alternative_data->probability = alternative.probability;
         urd::store(alternative_data->effect, effect);
-        data->alternatives.push_back(repo().insert(*alternative_data, m_builder).first.index());
+        data->alternatives.emplace_back(repo().insert(*alternative_data, m_builder).first.index());
     }
     constexpr auto rounding_tolerance = 1e-9;
     if (total > 1.0 + rounding_tolerance)
@@ -278,7 +278,7 @@ formalism::ActionView AstBuilder::add_unit_cost(formalism::ActionView view)
     {
         auto and_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(m_builder);
         urd::append(and_data->effects, effect.value());
-        and_data->effects.push_back(increase.index());
+        and_data->effects.emplace_back(increase.index());
         combined = repo().insert(*and_data, m_builder).first;
     }
 
@@ -287,7 +287,7 @@ formalism::ActionView AstBuilder::add_unit_cost(formalism::ActionView view)
     data->original_name = data->name;
     data->parameters.reserve(view.get_parameters().size());
     for (auto parameter : view.get_parameters())
-        data->parameters.push_back(parameter.index());
+        data->parameters.emplace_back(parameter.index());
     data->original_arity = data->parameters.size();
     urd::store(data->precondition, view.get_precondition());
     urd::store(data->effect, combined);

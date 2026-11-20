@@ -40,7 +40,9 @@ public:
     explicit CopyTranslatorFacade(CopyContext& context) : CopyTranslatorComponent<Derived, CopyTranslatorFacade<Derived>>(context) {}
 
     template<typename T>
-    void push_unique(urd::built_t<urd::flat_vector<urd::index<T>>, formalism::Repository>& list, urd::Store<urd::set<formalism::EntityView<T>>>& seen, formalism::EntityView<T> value);
+    void push_unique(urd::built_t<urd::flat_vector<urd::index<T>>, formalism::Repository>& list,
+                     urd::Store<urd::set<formalism::EntityView<T>>>& seen,
+                     formalism::EntityView<T> value);
 
     [[nodiscard]] urd::Store<urd::set<std::string>> used_predicate_names() const;
 

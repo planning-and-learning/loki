@@ -51,7 +51,8 @@ public:
     template<typename T, typename Finish>
     formalism::EntityView<T> copy_declaration(formalism::EntityView<T> source, Finish finish);
 
-    void set_requirements(const urd::Store<urd::sequence<formalism::RequirementKind>>& kinds, urd::built_t<urd::flat_vector<urd::index<formalism::Requirement>>, formalism::Repository>& result);
+    void set_requirements(const urd::Store<urd::sequence<formalism::RequirementKind>>& kinds,
+                          urd::built_t<urd::flat_vector<urd::index<formalism::Requirement>>, formalism::Repository>& result);
 
     /// The entities without type-specific logic: their children copied through copy, a variant slot whole (so that
     /// the phase hooks on ConditionView, EffectView and FunctionExpressionView apply), the record rebuilt.

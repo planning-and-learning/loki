@@ -20,8 +20,8 @@
 
 #include "copy_translator_component.hpp"
 
-#include <urd/elements/clone.hpp>
 #include <concepts>
+#include <urd/elements/clone.hpp>
 #include <urd/elements/flat.hpp>
 
 namespace loki::semantic::detail
@@ -150,7 +150,8 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.index());
     urd::store(data->condition, condition);
-    return this->self().flatten_condition(formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
+    return this->self().flatten_condition(
+        formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
 }
 
 template<typename Derived>
@@ -166,7 +167,8 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.index());
     urd::store(data->condition, negated);
-    const auto exists_not = this->self().flatten_condition(formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
+    const auto exists_not = this->self().flatten_condition(
+        formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
     const auto translated_exists_not = this->self().remove_universal_quantifiers(exists_not);
     return this->self().make_generated_axiom_condition(translated_exists_not);
 }

@@ -44,7 +44,8 @@ struct builder<::loki::formalism::Axiom, C>
                            urd::field<"condition", &builder::condition>> {};
     }
 
-    static constexpr auto identifying_members() noexcept { return urd::Members<&builder::parameters, &builder::original_arity, &builder::head, &builder::condition> {}; }
+    static constexpr auto identifying_members() noexcept
+    { return urd::Members<&builder::parameters, &builder::original_arity, &builder::head, &builder::condition> {}; }
 };
 
 }

@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.21)
 
-# brokkr (pybrokkr): build helpers, found through scikit-build-core in wheel builds, else asked of the Python that has it.
-find_package(brokkr QUIET)
-if(NOT brokkr_FOUND)
-    if(Python_EXECUTABLE)
-        set(_brokkr_python "${Python_EXECUTABLE}")
-    else()
-        find_program(_brokkr_python NAMES python3 python REQUIRED)
-    endif()
-    execute_process(COMMAND "${_brokkr_python}" -m pybrokkr --cmake-dir
-                    OUTPUT_VARIABLE _brokkr_dir OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
-    set(brokkr_DIR "${_brokkr_dir}" CACHE PATH "The directory holding brokkrConfig.cmake" FORCE)
-    find_package(brokkr REQUIRED)
+# brokkr (pybrokkr): build helpers, found as every dependency is: its prefix asked of the configuring Python (the
+# venv's, -DPython_EXECUTABLE; scikit-build-core sets it in wheel builds), put on CMAKE_PREFIX_PATH, nowhere else searched.
+if(NOT Python_EXECUTABLE)
+    message(FATAL_ERROR "brokkr: no Python_EXECUTABLE: configure with -DPython_EXECUTABLE=<venv>/bin/python of a venv that has pybrokkr.")
 endif()
+execute_process(COMMAND "${Python_EXECUTABLE}" -m pybrokkr --cmake-dir
+                OUTPUT_VARIABLE _brokkr_dir OUTPUT_STRIP_TRAILING_WHITESPACE RESULT_VARIABLE _brokkr_result)
+if(NOT _brokkr_result EQUAL 0)
+    message(FATAL_ERROR "brokkr: ${Python_EXECUTABLE} has no pybrokkr: configure with -DPython_EXECUTABLE=<venv>/bin/python of a venv that has it.")
+endif()
+cmake_path(GET _brokkr_dir PARENT_PATH _brokkr_prefix)
+list(PREPEND CMAKE_PREFIX_PATH "${_brokkr_prefix}")
+find_package(brokkr CONFIG REQUIRED PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
 brokkr_read_project_version(LOKI_PROJECT_VERSION "${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml")
 
 project(loki VERSION "${LOKI_PROJECT_VERSION}" LANGUAGES C CXX)

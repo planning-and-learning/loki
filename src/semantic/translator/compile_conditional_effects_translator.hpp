@@ -44,12 +44,14 @@ public:
     {
     }
 
-    void compile_conditional_effect_actions(formalism::EntityListView<formalism::Action> actions, urd::built_t<urd::flat_vector<urd::index<formalism::Action>>, formalism::Repository>& result);
+    void compile_conditional_effect_actions(formalism::EntityListView<formalism::Action> actions,
+                                            urd::built_t<urd::flat_vector<urd::index<formalism::Action>>, formalism::Repository>& result);
 };
 
 template<typename Derived>
-void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_actions(formalism::EntityListView<formalism::Action> actions,
-                                                                                      urd::built_t<urd::flat_vector<urd::index<formalism::Action>>, formalism::Repository>& result)
+void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_actions(
+    formalism::EntityListView<formalism::Action> actions,
+    urd::built_t<urd::flat_vector<urd::index<formalism::Action>>, formalism::Repository>& result)
 {
     struct ConditionalEffect
     {

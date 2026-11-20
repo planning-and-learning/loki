@@ -36,7 +36,10 @@ struct builder<::loki::formalism::Effect<::loki::formalism::NumericTag>, C>
     urd::built_t<::loki::formalism::FunctionExpressionVariant, C> expression;
 
     static constexpr auto fields() noexcept
-    { return urd::Fields<urd::field<"operation", &builder::operation>, urd::field<"function", &builder::function>, urd::field<"expression", &builder::expression>> {}; }
+    {
+        return urd::
+            Fields<urd::field<"operation", &builder::operation>, urd::field<"function", &builder::function>, urd::field<"expression", &builder::expression>> {};
+    }
 
     static constexpr auto identifying_members() noexcept { return urd::Members<&builder::operation, &builder::function, &builder::expression> {}; }
 };

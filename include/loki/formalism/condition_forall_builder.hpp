@@ -34,7 +34,8 @@ struct builder<::loki::formalism::Condition<::loki::formalism::ForallTag>, C>
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Parameter>>, C> parameters;
     urd::built_t<::loki::formalism::ConditionVariant, C> condition;
 
-    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"parameters", &builder::parameters>, urd::field<"condition", &builder::condition>> {}; }
+    static constexpr auto fields() noexcept
+    { return urd::Fields<urd::field<"parameters", &builder::parameters>, urd::field<"condition", &builder::condition>> {}; }
 
     static constexpr auto identifying_members() noexcept { return urd::Members<&builder::parameters, &builder::condition> {}; }
 };

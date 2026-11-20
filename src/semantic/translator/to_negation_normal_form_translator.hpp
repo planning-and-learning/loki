@@ -139,7 +139,8 @@ formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_conditi
     for (auto parameter : parameter_views)
         data->parameters.push_back(parameter.index());
     urd::store(data->condition, condition);
-    return this->self().flatten_condition(formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
+    return this->self().flatten_condition(
+        formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
 }
 
 template<typename Derived>

@@ -179,10 +179,11 @@ void NormalizeArithmeticExpressionsTranslator<Derived>::append_source_operand(fo
 }
 
 template<typename Derived>
-void NormalizeArithmeticExpressionsTranslator<Derived>::append_normalized_operand(formalism::MultiArithmeticOperator op,
-                                                                                  formalism::FunctionExpressionView source,
-                                                                                  urd::built_t<formalism::FunctionExpressionList, formalism::Repository>& operands,
-                                                                                  std::optional<formalism::FunctionExpressionView>& first_operand)
+void NormalizeArithmeticExpressionsTranslator<Derived>::append_normalized_operand(
+    formalism::MultiArithmeticOperator op,
+    formalism::FunctionExpressionView source,
+    urd::built_t<formalism::FunctionExpressionList, formalism::Repository>& operands,
+    std::optional<formalism::FunctionExpressionView>& first_operand)
 {
     const auto normalized = normalize_arithmetic_expression(source);
     if (std::holds_alternative<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized))

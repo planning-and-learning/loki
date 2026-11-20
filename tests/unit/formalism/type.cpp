@@ -85,9 +85,9 @@ TEST(LokiTests, SharedInterningCanonicalizesTypeBasesUsingTheRepository)
 
     auto data = loki::formalism::checkout<loki::formalism::Type>(builder);
     data->name = urd::flat_string("combined");
-    data->bases.push_back(zebra.index());
-    data->bases.push_back(alpha.index());
-    data->bases.push_back(zebra.index());
+    data->bases.emplace_back(zebra.index());
+    data->bases.emplace_back(alpha.index());
+    data->bases.emplace_back(zebra.index());
     const auto [view, inserted] = repository.insert(*data, builder);
     EXPECT_TRUE(inserted);
     ASSERT_EQ(view.get_bases().size(), 2);
@@ -95,8 +95,8 @@ TEST(LokiTests, SharedInterningCanonicalizesTypeBasesUsingTheRepository)
     EXPECT_EQ(view.get_bases()[1], zebra);
 
     data->bases.clear();
-    data->bases.push_back(zebra.index());
-    data->bases.push_back(alpha.index());
+    data->bases.emplace_back(zebra.index());
+    data->bases.emplace_back(alpha.index());
     data->index = Index();
     const auto [duplicate, duplicate_inserted] = repository.insert(*data, builder);
     EXPECT_FALSE(duplicate_inserted);

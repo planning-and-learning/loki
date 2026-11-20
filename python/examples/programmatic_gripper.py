@@ -41,7 +41,9 @@ def literal(predicate_of: pypddl.PredicateBuilder, *terms: Term, positive: bool 
     return pypddl.LiteralBuilder(atom=pypddl.AtomBuilder(predicate=predicate_of, terms=list(terms)), polarity=positive)
 
 
-def condition(predicate_of: pypddl.PredicateBuilder, *terms: Term, positive: bool = True) -> pypddl.ConditionLiteralBuilder:
+def condition(
+    predicate_of: pypddl.PredicateBuilder, *terms: Term, positive: bool = True
+) -> pypddl.ConditionLiteralBuilder:
     """The condition that holds the literal of a predicate over terms."""
     return pypddl.ConditionLiteralBuilder(literal=literal(predicate_of, *terms, positive=positive))
 
@@ -89,7 +91,11 @@ def domain_(
 ) -> pypddl.DomainBuilder:
     """The domain name with its parts."""
     return pypddl.DomainBuilder(
-        name=name, requirements=list(requirements), types=list(types), predicates=list(predicates), actions=list(actions)
+        name=name,
+        requirements=list(requirements),
+        types=list(types),
+        predicates=list(predicates),
+        actions=list(actions),
     )
 
 
@@ -130,7 +136,9 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
         "pick",
         [b, x, g],
         conjunction(condition(at, b_var, x_var), condition(at_robby, x_var), condition(free, g_var)),
-        effects(effect(at, b_var, x_var, positive=False), effect(free, g_var, positive=False), effect(carry, b_var, g_var)),
+        effects(
+            effect(at, b_var, x_var, positive=False), effect(free, g_var, positive=False), effect(carry, b_var, g_var)
+        ),
     )
     drop = action(
         "drop",
@@ -155,7 +163,12 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
         "gripper-1-ball",
         domain,
         objects=[rooma, roomb, left, right, ball1],
-        initial_literals=[literal(at_robby, rooma), literal(free, left), literal(free, right), literal(at, ball1, rooma)],
+        initial_literals=[
+            literal(at_robby, rooma),
+            literal(free, left),
+            literal(free, right),
+            literal(at, ball1, rooma),
+        ],
         goal=conjunction(condition(at, ball1, roomb)),
     )
     two_ball = task(

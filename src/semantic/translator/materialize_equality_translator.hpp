@@ -99,7 +99,8 @@ formalism::LiteralView MaterializeEqualityTranslator<Derived>::equality_literal(
 }
 
 template<typename Derived>
-void MaterializeEqualityTranslator<Derived>::add_equality_predicate_to_domain(urd::builder<formalism::Domain, formalism::Repository>& data, formalism::DomainView domain)
+void MaterializeEqualityTranslator<Derived>::add_equality_predicate_to_domain(urd::builder<formalism::Domain, formalism::Repository>& data,
+                                                                              formalism::DomainView domain)
 {
     if (!this->self().has_requirement(domain.get_requirements(), formalism::RequirementKind::Equality) && !this->self().uses_equality(domain))
         return;
@@ -108,7 +109,7 @@ void MaterializeEqualityTranslator<Derived>::add_equality_predicate_to_domain(ur
     {
         if (std::string_view(predicate.get_name()) == "=")
         {
-            data.predicates.push_back(predicate.index());
+            data.predicates.emplace_back(predicate.index());
             return;
         }
     }

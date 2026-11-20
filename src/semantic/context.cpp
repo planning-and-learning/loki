@@ -70,7 +70,7 @@ formalism::TypeView intern_type(DomainContext& domain_context,
     data->name = urd::flat_string(k);
     data->bases.reserve(bases.size());
     for (const auto base : bases)
-        data->bases.push_back(base.index());
+        data->bases.emplace_back(base.index());
     auto view = repository.insert(*data, builder).first;
     domain_context.types.insert_or_assign(k, view);
     return view;

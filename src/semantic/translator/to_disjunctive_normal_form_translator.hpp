@@ -124,7 +124,8 @@ formalism::ConditionView ToDisjunctiveNormalFormTranslator<Derived>::to_dnf_node
             for (auto parameter : node.get_parameters())
                 result->parameters.push_back(parameter.index());
             urd::store(result->condition, nested);
-            const auto quantified = formalism::ConditionView(this->copy_context().storage->repository.insert(*result, this->copy_context().storage->builder).first);
+            const auto quantified =
+                formalism::ConditionView(this->copy_context().storage->repository.insert(*result, this->copy_context().storage->builder).first);
             this->self().append_disjunct(*condition_data, quantified);
         }
         return this->self().to_dnf(this->self().make_disjunction(*condition_data));

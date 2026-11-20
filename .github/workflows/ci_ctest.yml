@@ -52,6 +52,7 @@ jobs:
                 -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
                 -DLOKI_BUILD_TESTS=ON \
                 -DCMAKE_INSTALL_LIBDIR=lib \
+                -DPython_EXECUTABLE="$(python -c 'import sys; print(sys.executable)')" \
                 -DPython3_EXECUTABLE="$(python -c 'import sys; print(sys.executable)')" \
                 -S . -B build_${{ matrix.build_type }} \
                 -DCMAKE_PREFIX_PATH="$(python -c 'import pyyggdrasil; print(pyyggdrasil.native_prefix())')"

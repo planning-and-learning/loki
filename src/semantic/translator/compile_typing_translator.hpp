@@ -35,16 +35,20 @@ public:
 
     [[nodiscard]] bool compiles_typing_now() const noexcept;
     urd::Store<urd::sequence<formalism::TypeView>> collect_type_hierarchy(formalism::TypeView type);
-    void copy_type_hierarchy(formalism::EntityListView<formalism::Type> types, urd::built_t<urd::flat_vector<urd::index<formalism::Type>>, formalism::Repository>& result);
-    void copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters, urd::built_t<urd::flat_vector<urd::index<formalism::Parameter>>, formalism::Repository>& result);
+    void copy_type_hierarchy(formalism::EntityListView<formalism::Type> types,
+                             urd::built_t<urd::flat_vector<urd::index<formalism::Type>>, formalism::Repository>& result);
+    void copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters,
+                                       urd::built_t<urd::flat_vector<urd::index<formalism::Parameter>>, formalism::Repository>& result);
     formalism::PredicateView type_predicate(formalism::TypeView type);
     formalism::LiteralView type_literal(formalism::TypeView type, formalism::TermView term);
     formalism::ConditionView type_condition(formalism::TypeView type, formalism::VariableView variable);
-    void type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters, urd::builder<formalism::Condition<formalism::AndTag>, formalism::Repository>& data);
+    void type_conditions_for_parameters(formalism::EntityListView<formalism::Parameter> parameters,
+                                        urd::builder<formalism::Condition<formalism::AndTag>, formalism::Repository>& data);
     void prepend_type_conditions(std::optional<formalism::ConditionView>& condition, formalism::EntityListView<formalism::Parameter> parameters);
     void prepend_type_conditions(formalism::ConditionView& condition, formalism::EntityListView<formalism::Parameter> parameters);
     void compile_typing_to_domain(urd::builder<formalism::Domain, formalism::Repository>& data, formalism::DomainView domain);
-    void add_type_literals_for_object(urd::built_t<urd::flat_vector<urd::index<formalism::Literal>>, formalism::Repository>& literals, formalism::ObjectView object);
+    void add_type_literals_for_object(urd::built_t<urd::flat_vector<urd::index<formalism::Literal>>, formalism::Repository>& literals,
+                                      formalism::ObjectView object);
     void initialize_type_literals(urd::builder<formalism::Task, formalism::Repository>& data, formalism::TaskView task);
 };
 
@@ -85,8 +89,9 @@ void CompileTypingTranslator<Derived>::copy_type_hierarchy(formalism::EntityList
 }
 
 template<typename Derived>
-void CompileTypingTranslator<Derived>::copy_parameters_without_types(formalism::EntityListView<formalism::Parameter> parameters,
-                                                                     urd::built_t<urd::flat_vector<urd::index<formalism::Parameter>>, formalism::Repository>& result)
+void CompileTypingTranslator<Derived>::copy_parameters_without_types(
+    formalism::EntityListView<formalism::Parameter> parameters,
+    urd::built_t<urd::flat_vector<urd::index<formalism::Parameter>>, formalism::Repository>& result)
 {
     for (auto parameter : parameters)
     {
@@ -210,7 +215,9 @@ void CompileTypingTranslator<Derived>::compile_typing_to_domain(urd::builder<for
 }
 
 template<typename Derived>
-void CompileTypingTranslator<Derived>::add_type_literals_for_object(urd::built_t<urd::flat_vector<urd::index<formalism::Literal>>, formalism::Repository>& literals, formalism::ObjectView object)
+void CompileTypingTranslator<Derived>::add_type_literals_for_object(
+    urd::built_t<urd::flat_vector<urd::index<formalism::Literal>>, formalism::Repository>& literals,
+    formalism::ObjectView object)
 {
     const auto copied_object = this->self().copy(object);
     auto add_literal = [&](auto&& self, formalism::TypeView type) -> void

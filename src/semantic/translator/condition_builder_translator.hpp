@@ -112,7 +112,8 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                             for (auto parameter : flat_node.get_parameters())
                                 data->parameters.push_back(parameter.index());
                             urd::store(data->condition, flat_node.get_condition());
-                            return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
+                            return formalism::ConditionView(
+                                this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
                         }
                         else
                         {
@@ -120,7 +121,8 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                             for (auto parameter : node.get_parameters())
                                 data->parameters.push_back(parameter.index());
                             urd::store(data->condition, flat);
-                            return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
+                            return formalism::ConditionView(
+                                this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
                         }
                     },
                     flat);
@@ -139,7 +141,8 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                             for (auto parameter : flat_node.get_parameters())
                                 data->parameters.push_back(parameter.index());
                             urd::store(data->condition, flat_node.get_condition());
-                            return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
+                            return formalism::ConditionView(
+                                this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
                         }
                         else
                         {
@@ -147,7 +150,8 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                             for (auto parameter : node.get_parameters())
                                 data->parameters.push_back(parameter.index());
                             urd::store(data->condition, flat);
-                            return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
+                            return formalism::ConditionView(
+                                this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
                         }
                     },
                     flat);
@@ -161,7 +165,8 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
 }
 
 template<typename Derived>
-void ConditionBuilderTranslator<Derived>::append_conjunct(urd::builder<formalism::Condition<formalism::AndTag>, formalism::Repository>& data, formalism::ConditionView condition)
+void ConditionBuilderTranslator<Derived>::append_conjunct(urd::builder<formalism::Condition<formalism::AndTag>, formalism::Repository>& data,
+                                                          formalism::ConditionView condition)
 {
     std::visit(
         [&]<typename Node>(const Node& node)
@@ -180,7 +185,8 @@ void ConditionBuilderTranslator<Derived>::append_conjunct(urd::builder<formalism
 }
 
 template<typename Derived>
-void ConditionBuilderTranslator<Derived>::append_disjunct(urd::builder<formalism::Condition<formalism::OrTag>, formalism::Repository>& data, formalism::ConditionView condition)
+void ConditionBuilderTranslator<Derived>::append_disjunct(urd::builder<formalism::Condition<formalism::OrTag>, formalism::Repository>& data,
+                                                          formalism::ConditionView condition)
 {
     std::visit(
         [&]<typename Node>(const Node& node)
@@ -199,11 +205,13 @@ void ConditionBuilderTranslator<Derived>::append_disjunct(urd::builder<formalism
 }
 
 template<typename Derived>
-formalism::ConditionView ConditionBuilderTranslator<Derived>::make_conjunction(urd::builder<formalism::Condition<formalism::AndTag>, formalism::Repository>& data)
+formalism::ConditionView
+ConditionBuilderTranslator<Derived>::make_conjunction(urd::builder<formalism::Condition<formalism::AndTag>, formalism::Repository>& data)
 { return formalism::ConditionView(this->copy_context().storage->repository.insert(data, this->copy_context().storage->builder).first); }
 
 template<typename Derived>
-formalism::ConditionView ConditionBuilderTranslator<Derived>::make_disjunction(urd::builder<formalism::Condition<formalism::OrTag>, formalism::Repository>& data)
+formalism::ConditionView
+ConditionBuilderTranslator<Derived>::make_disjunction(urd::builder<formalism::Condition<formalism::OrTag>, formalism::Repository>& data)
 { return formalism::ConditionView(this->copy_context().storage->repository.insert(data, this->copy_context().storage->builder).first); }
 
 }  // namespace loki::semantic::detail

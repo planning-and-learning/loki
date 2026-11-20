@@ -34,7 +34,8 @@ struct builder<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag
     urd::built_t<::loki::formalism::UnaryArithmeticOperator, C> operation {};
     urd::built_t<::loki::formalism::FunctionExpressionVariant, C> expression;
 
-    static constexpr auto fields() noexcept { return urd::Fields<urd::field<"operation", &builder::operation>, urd::field<"expression", &builder::expression>> {}; }
+    static constexpr auto fields() noexcept
+    { return urd::Fields<urd::field<"operation", &builder::operation>, urd::field<"expression", &builder::expression>> {}; }
 
     static constexpr auto identifying_members() noexcept { return urd::Members<&builder::operation, &builder::expression> {}; }
 };
