@@ -45,19 +45,19 @@ TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
 {
     auto source = formalism::Repository();
     auto type_data = urd::data<formalism::Type>(urd::flat_string("type"));
-    const auto type = formalism::insert(source, type_data).first;
+    const auto type = source.insert(type_data).first;
     auto domain_data = urd::data<formalism::Domain>();
     domain_data.name = "domain";
     domain_data.types.push_back(type.index());
-    const auto domain = formalism::insert(source, domain_data).first;
+    const auto domain = source.insert(domain_data).first;
     auto task_data = urd::data<formalism::Task>();
     task_data.name = "task";
     task_data.domain = domain.index();
-    const auto task = formalism::insert(source, task_data).first;
+    const auto task = source.insert(task_data).first;
 
     auto destination = std::make_shared<semantic::detail::TranslationStorage>();
     auto occupied_data = urd::data<formalism::Type>(urd::flat_string("occupied"));
-    static_cast<void>(formalism::insert(destination->repository, occupied_data));
+    static_cast<void>(destination->repository.insert(occupied_data));
     auto context = semantic::detail::CanonicalCopyTranslator(destination);
     const auto [copied_domain, domain_inserted] = semantic::detail::copy(domain, context);
     EXPECT_TRUE(domain_inserted);

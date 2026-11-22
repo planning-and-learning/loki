@@ -17,7 +17,6 @@
 
 #include "loki/semantic/translator.hpp"
 
-#include "loki/formalism/detail/repository_instantiations.hpp"
 #include "loki/semantic/errors.hpp"
 #include "loki/semantic/options.hpp"
 #include "translator/common.hpp"

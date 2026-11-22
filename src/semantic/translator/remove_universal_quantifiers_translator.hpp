@@ -134,7 +134,7 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
         source,
         *scratch,
         [&](formalism::ConditionView condition) { return this->self().remove_universal_quantifiers(condition); });
-    return formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, data).first);
+    return formalism::ConditionView(this->copy_context().storage->repository.insert(data).first);
 }
 
 template<typename Derived>

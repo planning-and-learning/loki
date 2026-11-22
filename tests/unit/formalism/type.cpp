@@ -42,7 +42,7 @@ struct TypeContext
 };
 
 template<typename T>
-concept CanInsert = requires(loki::formalism::Repository& repository, urd::data<T>& data) { loki::formalism::insert(repository, data); };
+concept CanInsert = requires(loki::formalism::Repository& repository, urd::data<T>& data) { repository.insert(data); };
 }
 
 static_assert(SymbolRepositoryFor<TypeRepository, loki::formalism::Type>);
@@ -79,8 +79,8 @@ TEST(LokiTests, SharedInterningCanonicalizesTypeBasesUsingTheRepository)
     auto builder = loki::formalism::Builder {};
     auto zebra_data = Data(urd::flat_string("zebra"));
     auto alpha_data = Data(urd::flat_string("alpha"));
-    const auto zebra = loki::formalism::insert(repository, zebra_data).first;
-    const auto alpha = loki::formalism::insert(repository, alpha_data).first;
+    const auto zebra = repository.insert(zebra_data).first;
+    const auto alpha = repository.insert(alpha_data).first;
     ASSERT_LT(zebra.index(), alpha.index());
 
     auto data = loki::formalism::checkout<loki::formalism::Type>(builder);
@@ -107,14 +107,14 @@ TEST(LokiTests, SymbolViewsUseTheRepositoryOfTheirContext)
 {
     auto repository = loki::formalism::Repository();
     auto data = Data(urd::flat_string("type"));
-    const auto original = loki::formalism::insert(repository, data).first;
+    const auto original = repository.insert(data).first;
     const auto again = repository.view(original.index());
     EXPECT_EQ(&again.get_name(), &original.get_name());
     EXPECT_EQ(again.get_name(), original.get_name());
     EXPECT_EQ(urd::detail::identity(again), urd::detail::identity(original));
 
     auto child = loki::formalism::Repository(&repository);
-    const auto [inherited, inserted] = loki::formalism::insert(child, data);
+    const auto [inherited, inserted] = child.insert(data);
     EXPECT_FALSE(inserted);
     EXPECT_EQ(&inherited.context(), &repository);
     EXPECT_EQ(inherited, original);

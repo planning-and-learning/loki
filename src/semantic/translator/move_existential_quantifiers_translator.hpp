@@ -186,7 +186,7 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
         node,
         *scratch,
         [&](formalism::ConditionView condition) { return this->self().move_existentials(condition); });
-    return this->self().flatten_condition(formalism::ConditionView(formalism::insert(this->copy_context().storage->repository, data).first));
+    return this->self().flatten_condition(formalism::ConditionView(this->copy_context().storage->repository.insert(data).first));
 }
 
 template<typename Derived>

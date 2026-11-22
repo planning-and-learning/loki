@@ -93,7 +93,7 @@ template<typename T>
 void bind_insert(RepositoryBinding& repository)
 {
     // The record is canonicalized where it is (its lists sorted) and interned: records are not copied.
-    repository.def("insert", [](Repository& self, urd::data<T>& data) { return formalism::insert(self, data); }, nb::arg("data"));
+    repository.def("insert", [](Repository& self, urd::data<T>& data) { return self.insert(data); }, nb::arg("data"));
     // A builder is interned with its children, built ones first, through scratch records of a builder storage of its own.
     repository.def(
         "insert",

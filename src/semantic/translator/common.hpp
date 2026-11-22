@@ -141,7 +141,7 @@ formalism::EntityView<T> rebuild(TranslationStorage& storage, formalism::EntityV
 {
     auto scratch = storage.builder.template scratch<T>();
     auto& data = urd::map_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return f(child); });
-    return formalism::insert(storage.repository, data).first;
+    return storage.repository.insert(data).first;
 }
 
 }  // namespace detail

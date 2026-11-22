@@ -15,7 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "loki/formalism/detail/repository_instantiations.hpp"
 #include "loki/formalism/repository.hpp"
 #include "translator/canonical_copy_translator.hpp"
 #include "translator/common.hpp"
@@ -48,7 +47,7 @@ std::pair<formalism::EntityView<T>, bool> CanonicalCopyTranslator::copy_root(for
     }
     auto scratch = m_storage->builder.template scratch<T>();
     auto& data = urd::map_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return copy_child(child); });
-    auto [view, inserted] = formalism::insert(m_storage->repository, data);
+    auto [view, inserted] = m_storage->repository.insert(data);
     remember(m_storage->maps, source, view);
     return { view, inserted };
 }

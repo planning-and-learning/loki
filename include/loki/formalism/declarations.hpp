@@ -30,7 +30,7 @@
 namespace ygg::formalism
 {
 
-template<typename Width, typename... Ts>
+template<typename... Ts>
 class RelationRepository;
 
 template<typename SymbolRepo, typename RelationRepo>
@@ -258,12 +258,12 @@ using SymbolRepositoryTypes =
                                                 Task>>;
 
 /// No family has rows in loki.
-using RelationRepository = ::ygg::formalism::RelationRepository<urd::word>;  // no relation families: the width is unused
+using RelationRepository = ::ygg::formalism::RelationRepository<>;
 
 /// Named by what it holds (yggdrasil's Symbols and Relations), not by its stores: a call with a repository argument
 /// then never instantiates them (yggdrasil/formalism/declarations.hpp).
 using Repository =
-    ::ygg::formalism::Repository<boost::mp11::mp_apply<::ygg::formalism::Symbols, SymbolRepositoryTypes>, ::ygg::formalism::Relations<urd::word>>;
+    ::ygg::formalism::Repository<boost::mp11::mp_apply<::ygg::formalism::Symbols, SymbolRepositoryTypes>, ::ygg::formalism::Relations<>>;
 
 template<typename T>
 using EntityView = urd::index_view<T, Repository>;

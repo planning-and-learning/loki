@@ -43,7 +43,7 @@ TEST(LokiTests, FunctionExpressionMultiAllowsAnyArity)
 {
     auto repository = loki::formalism::Repository();
     auto data = Data {};
-    const auto [expression, created] = loki::formalism::insert(repository, data);
+    const auto [expression, created] = repository.insert(data);
     EXPECT_TRUE(created);
     EXPECT_TRUE(expression.get_args().empty());
 }

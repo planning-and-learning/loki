@@ -24,27 +24,20 @@
 namespace loki::formalism
 {
 
-/// Brings a record into canonical form before it is interned: its lists sorted by how their elements read, and
-/// deduplicated where order and repetition carry no meaning. Records without such lists are left as they are.
-template<typename T>
-inline void canonicalize(Repository&, urd::data<T>&) noexcept
-{
-}
-
 // Defined in src/formalism/canonicalization.cpp, which alone formats the elements to sort them.
-void canonicalize(Repository& repository, urd::data<Type>& data);
-void canonicalize(Repository& repository, urd::data<Object>& data);
-void canonicalize(Repository& repository, urd::data<Parameter>& data);
-void canonicalize(Repository& repository, urd::data<FunctionExpression<MultiTag>>& data);
-void canonicalize(Repository& repository, urd::data<Condition<AndTag>>& data);
-void canonicalize(Repository& repository, urd::data<Condition<OrTag>>& data);
-void canonicalize(Repository& repository, urd::data<Condition<ExistsTag>>& data);
-void canonicalize(Repository& repository, urd::data<Condition<ForallTag>>& data);
-void canonicalize(Repository& repository, urd::data<Effect<AndTag>>& data);
-void canonicalize(Repository& repository, urd::data<Effect<OneOfTag>>& data);
-void canonicalize(Repository& repository, urd::data<Effect<ProbabilisticTag>>& data);
-void canonicalize(Repository& repository, urd::data<Domain>& data);
-void canonicalize(Repository& repository, urd::data<Task>& data);
+void canonicalize(const Repository& repository, urd::data<Type>& data);
+void canonicalize(const Repository& repository, urd::data<Object>& data);
+void canonicalize(const Repository& repository, urd::data<Parameter>& data);
+void canonicalize(const Repository& repository, urd::data<FunctionExpression<MultiTag>>& data);
+void canonicalize(const Repository& repository, urd::data<Condition<AndTag>>& data);
+void canonicalize(const Repository& repository, urd::data<Condition<OrTag>>& data);
+void canonicalize(const Repository& repository, urd::data<Condition<ExistsTag>>& data);
+void canonicalize(const Repository& repository, urd::data<Condition<ForallTag>>& data);
+void canonicalize(const Repository& repository, urd::data<Effect<AndTag>>& data);
+void canonicalize(const Repository& repository, urd::data<Effect<OneOfTag>>& data);
+void canonicalize(const Repository& repository, urd::data<Effect<ProbabilisticTag>>& data);
+void canonicalize(const Repository& repository, urd::data<Domain>& data);
+void canonicalize(const Repository& repository, urd::data<Task>& data);
 
 }  // namespace loki::formalism
 

@@ -565,7 +565,7 @@ TEST(LokiSemanticTranslator, InitializesEqualityForConstantsAndTaskObjects)
 
     EXPECT_TRUE(has_equality_predicate(translated.get_domain()));
     EXPECT_EQ(count_equality_literals(translated.get_initial_literals()), count_unique_object_names(translation.get_translated_domain(), translated));
-    EXPECT_TRUE(ygg::formalism::contains(translated.get_domain().context(), translation.get_translated_domain()));
+    EXPECT_TRUE(translated.get_domain().context().contains(translation.get_translated_domain()));
 }
 
 TEST(LokiSemanticTranslator, SkipsEqualityInitializationWhenDisabled)
@@ -787,8 +787,8 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
     { return formalism::ConditionView(intern<formalism::Condition<formalism::LiteralTag>>(repository, builder, [&](auto& data) { data.literal = literal; })); };
     const auto p_condition_view = make_condition(p_literal);
     const auto q_condition_view = make_condition(q_literal);
-    const auto p_condition = urd::stored<formalism::ConditionVariant>(p_condition_view);
-    const auto q_condition = urd::stored<formalism::ConditionVariant>(q_condition_view);
+    const auto p_condition = urd::as_member<formalism::ConditionVariant>(p_condition_view);
+    const auto q_condition = urd::as_member<formalism::ConditionVariant>(q_condition_view);
 
     const auto first = intern<formalism::Condition<formalism::AndTag>>(repository,
                                                                        builder,

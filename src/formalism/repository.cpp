@@ -17,12 +17,11 @@
 
 #include "loki/formalism/repository.hpp"
 
-#include "loki/formalism/detail/repository_instantiations.hpp"
 
 #include <yggdrasil/formalism/builder_instantiations.hpp>
+#include <yggdrasil/formalism/repository_impl.hpp>
 #include <yggdrasil/formalism/repository_instantiations.hpp>
 
-LOKI_FORMALISM_INTERNS()
 
 // The repository's members, which the library's other sources only declare (yggdrasil/formalism/repository.hpp).
 YGG_FORMALISM_REPOSITORY(, loki::formalism::Repository, 36, 0)

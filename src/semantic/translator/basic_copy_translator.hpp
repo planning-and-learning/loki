@@ -156,7 +156,7 @@ formalism::EntityView<T> BasicCopyTranslator<Derived>::copy(formalism::EntityVie
 {
     auto scratch = this->copy_context().builder.template scratch<T>();
     auto& data = urd::map_variant_children<formalism::SymbolRepositoryTypes, T>(source, *scratch, [&](auto child) { return this->self().copy(child); });
-    return formalism::insert(this->copy_context().storage->repository, data).first;
+    return this->copy_context().storage->repository.insert(data).first;
 }
 
 template<typename Derived>

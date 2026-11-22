@@ -38,10 +38,16 @@ namespace loki::formalism
 using Builder = ygg::formalism::BasicBuilderStorage<Repository, SymbolRepositoryTypes>;
 
 using ygg::formalism::checkout;
-using ygg::formalism::insert;
+
+/// A record's canonical form, which loki's domain reads its repository for (canonicalization.hpp): as built, unless its
+/// kind has an overload of its own.
+template<typename T>
+void canonicalize(const Repository& /*repository*/, urd::data<T>& /*data*/) noexcept
+{
+}
 
 template<typename T>
-void prepare_for_insert(Repository& repository, urd::data<T>& data)
+void prepare_for_insert(const Repository& repository, urd::data<T>& data)
 { canonicalize(repository, data); }
 
 }

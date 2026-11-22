@@ -43,8 +43,8 @@ EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalis
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
-    // Stored: the typing below replaces it by the index of the effect that wraps it.
-    auto effect = urd::stored<formalism::EffectVariant>(this->self().copy(source.get_effect()));
+    // Held as a member (urd::as_member): the typing below replaces it by the index of the effect that wraps it.
+    auto effect = urd::as_member<formalism::EffectVariant>(this->self().copy(source.get_effect()));
     if (this->copy_context().phase == TranslationPhase::CompileTyping)
     {
         auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);

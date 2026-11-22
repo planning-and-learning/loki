@@ -21,7 +21,6 @@
 #include "context.hpp"
 #include "diagnostics.hpp"
 #include "loki/ast/ast.hpp"
-#include "loki/formalism/detail/repository_instantiations.hpp"
 #include "loki/parser/parser.hpp"
 #include "loki/semantic/errors.hpp"
 #include "loki/semantic/options.hpp"
