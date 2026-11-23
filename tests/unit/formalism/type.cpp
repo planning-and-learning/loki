@@ -12,43 +12,10 @@ using View = urd::index_view<loki::formalism::Type, loki::formalism::Repository>
 
 namespace
 {
-/// Read access to one supported symbol representation.
-template<typename Repository, typename T>
-concept SymbolRepositoryFor =
-    ygg::formalism::SupportsSymbol<Repository, T> && requires(const std::remove_reference_t<Repository>& repository, urd::index<T> index) {
-        { repository[index] } -> std::same_as<const urd::data<T>&>;
-    };
-
-/// A context whose repository reads T's records and is numbered (layer()).
-template<typename C, typename T>
-concept SymbolContextFor = requires(const C& context) {
-    { get_repository(context) } -> SymbolRepositoryFor<T>;
-    get_repository(context).layer();
-};
-
-struct TypeRepository
-{
-    using SymbolTypes = boost::mp11::mp_list<loki::formalism::Type>;
-    const Data& operator[](Index) const;
-    [[nodiscard]] std::size_t layer() const;
-};
-
-struct TypeContext
-{
-    const TypeRepository* repository;
-
-    // Only checked by SymbolContextFor in unevaluated contexts.
-    [[maybe_unused]] friend const TypeRepository& get_repository(const TypeContext& context) { return *context.repository; }
-};
-
 template<typename T>
 concept CanInsert = requires(loki::formalism::Repository& repository, urd::data<T>& data) { repository.insert(data); };
 }
 
-static_assert(SymbolRepositoryFor<TypeRepository, loki::formalism::Type>);
-static_assert(!SymbolRepositoryFor<TypeRepository, loki::formalism::Object>);
-static_assert(SymbolContextFor<TypeContext, loki::formalism::Type>);
-static_assert(!SymbolContextFor<TypeContext, loki::formalism::Object>);
 static_assert(CanInsert<loki::formalism::Type>);
 static_assert(!CanInsert<int>);
 static_assert(urd::resolves<loki::formalism::Repository, loki::formalism::Type>);
