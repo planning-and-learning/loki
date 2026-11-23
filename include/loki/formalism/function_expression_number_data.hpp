@@ -34,7 +34,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>
 {
-    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>> index;
+    urd::key<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>> index;
     double value = 0.0;
 
     data() = default;
@@ -52,6 +52,9 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::value> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::value> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>> key() const noexcept
+    { return urd::key<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>>(index); }
 };
 
 }

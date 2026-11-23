@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Condition<::loki::formalism::ImplyTag>, C>
 {
-    urd::index<::loki::formalism::Condition<::loki::formalism::ImplyTag>> index;
+    urd::key<::loki::formalism::Condition<::loki::formalism::ImplyTag>> index;
     urd::built_t<::loki::formalism::ConditionVariant, C> left;
     urd::built_t<::loki::formalism::ConditionVariant, C> right;
 

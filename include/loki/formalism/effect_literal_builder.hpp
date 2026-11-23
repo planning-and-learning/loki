@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Effect<::loki::formalism::LiteralTag>, C>
 {
-    urd::index<::loki::formalism::Effect<::loki::formalism::LiteralTag>> index;
+    urd::key<::loki::formalism::Effect<::loki::formalism::LiteralTag>> index;
     urd::built_t<urd::index<::loki::formalism::Literal>, C> literal;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"literal", &builder::literal>> {}; }

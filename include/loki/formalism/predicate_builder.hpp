@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Predicate, C>
 {
-    urd::index<::loki::formalism::Predicate> index;
+    urd::key<::loki::formalism::Predicate> index;
     urd::built_t<urd::flat_string, C> name;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Parameter>>, C> parameters;
 

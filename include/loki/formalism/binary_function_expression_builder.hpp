@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>, C>
 {
-    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>> index;
+    urd::key<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>> index;
     urd::built_t<::loki::formalism::BinaryArithmeticOperator, C> operation {};
     urd::built_t<::loki::formalism::FunctionExpressionVariant, C> left;
     urd::built_t<::loki::formalism::FunctionExpressionVariant, C> right;

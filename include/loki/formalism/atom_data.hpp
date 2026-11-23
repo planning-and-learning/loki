@@ -37,7 +37,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Atom>
 {
-    urd::index<::loki::formalism::Atom> index;
+    urd::key<::loki::formalism::Atom> index;
     urd::index<::loki::formalism::Predicate> predicate;
     ::loki::formalism::TermList terms;
 
@@ -61,6 +61,8 @@ struct data<::loki::formalism::Atom>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::predicate, &data::terms> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::predicate, &data::terms> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Atom> key() const noexcept { return urd::key<::loki::formalism::Atom>(index); }
 };
 
 }

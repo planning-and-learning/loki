@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Requirement, C>
 {
-    urd::index<::loki::formalism::Requirement> index;
+    urd::key<::loki::formalism::Requirement> index;
     urd::built_t<::loki::formalism::RequirementKind, C> kind {};
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"kind", &builder::kind>> {}; }

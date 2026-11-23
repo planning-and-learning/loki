@@ -34,7 +34,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Literal>
 {
-    urd::index<::loki::formalism::Literal> index;
+    urd::key<::loki::formalism::Literal> index;
     urd::index<::loki::formalism::Atom> atom;
     bool polarity = true;
 
@@ -53,6 +53,8 @@ struct data<::loki::formalism::Literal>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::atom, &data::polarity> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::atom, &data::polarity> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Literal> key() const noexcept { return urd::key<::loki::formalism::Literal>(index); }
 };
 
 }

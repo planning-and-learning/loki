@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Atom, C>
 {
-    urd::index<::loki::formalism::Atom> index;
+    urd::key<::loki::formalism::Atom> index;
     urd::built_t<urd::index<::loki::formalism::Predicate>, C> predicate;
     urd::built_t<::loki::formalism::TermList, C> terms;
 

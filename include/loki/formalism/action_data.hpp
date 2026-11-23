@@ -41,7 +41,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Action>
 {
-    urd::index<::loki::formalism::Action> index;
+    urd::key<::loki::formalism::Action> index;
     urd::flat_string name;
     urd::flat_string original_name;
     urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
@@ -88,6 +88,8 @@ struct data<::loki::formalism::Action>
 
     static constexpr auto cista_members() noexcept
     { return urd::Members<&data::index, &data::name, &data::original_name, &data::parameters, &data::original_arity, &data::precondition, &data::effect> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Action> key() const noexcept { return urd::key<::loki::formalism::Action>(index); }
 };
 
 }

@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::InitialFunctionValue, C>
 {
-    urd::index<::loki::formalism::InitialFunctionValue> index;
+    urd::key<::loki::formalism::InitialFunctionValue> index;
     urd::built_t<urd::index<::loki::formalism::FunctionTerm>, C> function;
     urd::built_t<::loki::formalism::FunctionExpressionVariant, C> value;
 

@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::FunctionSkeleton, C>
 {
-    urd::index<::loki::formalism::FunctionSkeleton> index;
+    urd::key<::loki::formalism::FunctionSkeleton> index;
     urd::built_t<urd::flat_string, C> name;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Parameter>>, C> parameters;
     urd::built_t<urd::index<::loki::formalism::Type>, C> type;

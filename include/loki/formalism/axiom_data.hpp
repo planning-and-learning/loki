@@ -38,7 +38,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Axiom>
 {
-    urd::index<::loki::formalism::Axiom> index;
+    urd::key<::loki::formalism::Axiom> index;
     urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
     ygg::uint_t original_arity = 0;
     urd::index<::loki::formalism::Literal> head;
@@ -76,6 +76,8 @@ struct data<::loki::formalism::Axiom>
 
     static constexpr auto cista_members() noexcept
     { return urd::Members<&data::index, &data::parameters, &data::original_arity, &data::head, &data::condition> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Axiom> key() const noexcept { return urd::key<::loki::formalism::Axiom>(index); }
 };
 
 }

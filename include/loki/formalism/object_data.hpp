@@ -37,7 +37,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Object>
 {
-    urd::index<::loki::formalism::Object> index;
+    urd::key<::loki::formalism::Object> index;
     urd::flat_string name;
     urd::flat_vector<urd::index<::loki::formalism::Type>> types;
 
@@ -58,6 +58,8 @@ struct data<::loki::formalism::Object>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::name, &data::types> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name, &data::types> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Object> key() const noexcept { return urd::key<::loki::formalism::Object>(index); }
 };
 
 }

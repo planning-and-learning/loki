@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Effect<::loki::formalism::NumericTag>, C>
 {
-    urd::index<::loki::formalism::Effect<::loki::formalism::NumericTag>> index;
+    urd::key<::loki::formalism::Effect<::loki::formalism::NumericTag>> index;
     urd::built_t<::loki::formalism::NumericEffectOperator, C> operation {};
     urd::built_t<urd::index<::loki::formalism::FunctionTerm>, C> function;
     urd::built_t<::loki::formalism::FunctionExpressionVariant, C> expression;

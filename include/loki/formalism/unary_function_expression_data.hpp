@@ -35,7 +35,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
 {
-    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>> index;
+    urd::key<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>> index;
     ::loki::formalism::UnaryArithmeticOperator operation {};
     ::loki::formalism::FunctionExpressionVariant expression;
 
@@ -59,6 +59,9 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::operation, &data::expression> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::operation, &data::expression> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>> key() const noexcept
+    { return urd::key<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>>(index); }
 };
 
 }

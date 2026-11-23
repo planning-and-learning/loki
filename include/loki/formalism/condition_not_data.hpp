@@ -35,7 +35,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Condition<::loki::formalism::NotTag>>
 {
-    urd::index<::loki::formalism::Condition<::loki::formalism::NotTag>> index;
+    urd::key<::loki::formalism::Condition<::loki::formalism::NotTag>> index;
     ::loki::formalism::ConditionVariant condition;
 
     data() = default;
@@ -53,6 +53,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::NotTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::condition> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::condition> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Condition<::loki::formalism::NotTag>> key() const noexcept
+    { return urd::key<::loki::formalism::Condition<::loki::formalism::NotTag>>(index); }
 };
 
 }

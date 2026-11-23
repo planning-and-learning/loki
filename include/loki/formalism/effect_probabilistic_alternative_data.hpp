@@ -35,7 +35,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::EffectProbabilisticAlternative>
 {
-    urd::index<::loki::formalism::EffectProbabilisticAlternative> index;
+    urd::key<::loki::formalism::EffectProbabilisticAlternative> index;
     double probability = 0.0;
     ::loki::formalism::EffectVariant effect;
 
@@ -54,6 +54,9 @@ struct data<::loki::formalism::EffectProbabilisticAlternative>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::probability, &data::effect> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::probability, &data::effect> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::EffectProbabilisticAlternative> key() const noexcept
+    { return urd::key<::loki::formalism::EffectProbabilisticAlternative>(index); }
 };
 
 }

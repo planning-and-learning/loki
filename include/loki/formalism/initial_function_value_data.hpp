@@ -35,7 +35,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::InitialFunctionValue>
 {
-    urd::index<::loki::formalism::InitialFunctionValue> index;
+    urd::key<::loki::formalism::InitialFunctionValue> index;
     urd::index<::loki::formalism::FunctionTerm> function;
     ::loki::formalism::FunctionExpressionVariant value;
 
@@ -59,6 +59,8 @@ struct data<::loki::formalism::InitialFunctionValue>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::function, &data::value> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::function, &data::value> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::InitialFunctionValue> key() const noexcept { return urd::key<::loki::formalism::InitialFunctionValue>(index); }
 };
 
 }

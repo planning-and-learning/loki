@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Effect<::loki::formalism::OneOfTag>, C>
 {
-    urd::index<::loki::formalism::Effect<::loki::formalism::OneOfTag>> index;
+    urd::key<::loki::formalism::Effect<::loki::formalism::OneOfTag>> index;
     urd::built_t<::loki::formalism::EffectList, C> effects;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"effects", &builder::effects>> {}; }

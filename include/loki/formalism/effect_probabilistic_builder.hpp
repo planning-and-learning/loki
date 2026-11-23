@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>, C>
 {
-    urd::index<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>> index;
+    urd::key<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>> index;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::EffectProbabilisticAlternative>>, C> alternatives;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"alternatives", &builder::alternatives>> {}; }

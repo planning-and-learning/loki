@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Metric, C>
 {
-    urd::index<::loki::formalism::Metric> index;
+    urd::key<::loki::formalism::Metric> index;
     urd::built_t<::loki::formalism::OptimizationDirection, C> optimization_direction = ::loki::formalism::OptimizationDirection::Minimize;
     urd::built_t<::loki::formalism::FunctionExpressionVariant, C> expression;
 

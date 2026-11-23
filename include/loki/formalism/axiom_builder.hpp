@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Axiom, C>
 {
-    urd::index<::loki::formalism::Axiom> index;
+    urd::key<::loki::formalism::Axiom> index;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Parameter>>, C> parameters;
     urd::built_t<ygg::uint_t, C> original_arity = 0;
     urd::built_t<urd::index<::loki::formalism::Literal>, C> head;

@@ -37,7 +37,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Domain>
 {
-    urd::index<::loki::formalism::Domain> index;
+    urd::key<::loki::formalism::Domain> index;
     urd::flat_string name;
     urd::flat_vector<urd::index<::loki::formalism::Requirement>> requirements;
     urd::flat_vector<urd::index<::loki::formalism::Type>> types;
@@ -105,6 +105,8 @@ struct data<::loki::formalism::Domain>
                             &data::actions,
                             &data::axioms> {};
     }
+
+    [[nodiscard]] urd::key<::loki::formalism::Domain> key() const noexcept { return urd::key<::loki::formalism::Domain>(index); }
 };
 
 }

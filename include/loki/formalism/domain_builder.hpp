@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Domain, C>
 {
-    urd::index<::loki::formalism::Domain> index;
+    urd::key<::loki::formalism::Domain> index;
     urd::built_t<urd::flat_string, C> name;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Requirement>>, C> requirements;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Type>>, C> types;

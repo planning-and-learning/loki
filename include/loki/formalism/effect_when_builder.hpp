@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Effect<::loki::formalism::WhenTag>, C>
 {
-    urd::index<::loki::formalism::Effect<::loki::formalism::WhenTag>> index;
+    urd::key<::loki::formalism::Effect<::loki::formalism::WhenTag>> index;
     urd::built_t<::loki::formalism::ConditionVariant, C> condition;
     urd::built_t<::loki::formalism::EffectVariant, C> effect;
 

@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>, C>
 {
-    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>> index;
+    urd::key<::loki::formalism::FunctionExpression<::loki::formalism::UnaryTag>> index;
     urd::built_t<::loki::formalism::UnaryArithmeticOperator, C> operation {};
     urd::built_t<::loki::formalism::FunctionExpressionVariant, C> expression;
 

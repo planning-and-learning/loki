@@ -35,7 +35,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
 {
-    urd::index<::loki::formalism::Effect<::loki::formalism::NumericTag>> index;
+    urd::key<::loki::formalism::Effect<::loki::formalism::NumericTag>> index;
     ::loki::formalism::NumericEffectOperator operation {};
     urd::index<::loki::formalism::FunctionTerm> function;
     ::loki::formalism::FunctionExpressionVariant expression;
@@ -64,6 +64,9 @@ struct data<::loki::formalism::Effect<::loki::formalism::NumericTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::operation, &data::function, &data::expression> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::operation, &data::function, &data::expression> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Effect<::loki::formalism::NumericTag>> key() const noexcept
+    { return urd::key<::loki::formalism::Effect<::loki::formalism::NumericTag>>(index); }
 };
 
 }

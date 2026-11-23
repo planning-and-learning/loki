@@ -35,7 +35,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Condition<::loki::formalism::ImplyTag>>
 {
-    urd::index<::loki::formalism::Condition<::loki::formalism::ImplyTag>> index;
+    urd::key<::loki::formalism::Condition<::loki::formalism::ImplyTag>> index;
     ::loki::formalism::ConditionVariant left;
     ::loki::formalism::ConditionVariant right;
 
@@ -54,6 +54,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::ImplyTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::left, &data::right> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::left, &data::right> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Condition<::loki::formalism::ImplyTag>> key() const noexcept
+    { return urd::key<::loki::formalism::Condition<::loki::formalism::ImplyTag>>(index); }
 };
 
 }

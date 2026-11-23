@@ -37,7 +37,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>
 {
-    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>> index;
+    urd::key<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>> index;
     ::loki::formalism::MultiArithmeticOperator operation {};
     ::loki::formalism::FunctionExpressionList args;
 
@@ -61,6 +61,9 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::operation, &data::args> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::operation, &data::args> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>> key() const noexcept
+    { return urd::key<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>>(index); }
 };
 
 }

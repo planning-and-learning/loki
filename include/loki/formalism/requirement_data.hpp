@@ -34,7 +34,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Requirement>
 {
-    urd::index<::loki::formalism::Requirement> index;
+    urd::key<::loki::formalism::Requirement> index;
     ::loki::formalism::RequirementKind kind {};
 
     data() = default;
@@ -52,6 +52,8 @@ struct data<::loki::formalism::Requirement>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::kind> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::kind> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Requirement> key() const noexcept { return urd::key<::loki::formalism::Requirement>(index); }
 };
 
 }

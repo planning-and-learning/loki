@@ -32,7 +32,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Metric>
 {
-    urd::index<::loki::formalism::Metric> index;
+    urd::key<::loki::formalism::Metric> index;
     ::loki::formalism::OptimizationDirection optimization_direction = ::loki::formalism::OptimizationDirection::Minimize;
     ::loki::formalism::FunctionExpressionVariant expression;
 
@@ -57,6 +57,8 @@ struct data<::loki::formalism::Metric>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::optimization_direction, &data::expression> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::optimization_direction, &data::expression> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Metric> key() const noexcept { return urd::key<::loki::formalism::Metric>(index); }
 };
 
 }

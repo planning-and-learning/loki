@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>, C>
 {
-    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>> index;
+    urd::key<::loki::formalism::FunctionExpression<::loki::formalism::NumberTag>> index;
     urd::built_t<double, C> value = 0.0;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"value", &builder::value>> {}; }

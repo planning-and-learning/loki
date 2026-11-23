@@ -37,7 +37,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Effect<::loki::formalism::ForallTag>>
 {
-    urd::index<::loki::formalism::Effect<::loki::formalism::ForallTag>> index;
+    urd::key<::loki::formalism::Effect<::loki::formalism::ForallTag>> index;
     urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
     ::loki::formalism::EffectVariant effect;
 
@@ -61,6 +61,9 @@ struct data<::loki::formalism::Effect<::loki::formalism::ForallTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::parameters, &data::effect> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::parameters, &data::effect> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Effect<::loki::formalism::ForallTag>> key() const noexcept
+    { return urd::key<::loki::formalism::Effect<::loki::formalism::ForallTag>>(index); }
 };
 
 }

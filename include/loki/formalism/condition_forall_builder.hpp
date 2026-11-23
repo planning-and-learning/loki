@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Condition<::loki::formalism::ForallTag>, C>
 {
-    urd::index<::loki::formalism::Condition<::loki::formalism::ForallTag>> index;
+    urd::key<::loki::formalism::Condition<::loki::formalism::ForallTag>> index;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Parameter>>, C> parameters;
     urd::built_t<::loki::formalism::ConditionVariant, C> condition;
 

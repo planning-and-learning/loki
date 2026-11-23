@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Variable, C>
 {
-    urd::index<::loki::formalism::Variable> index;
+    urd::key<::loki::formalism::Variable> index;
     urd::built_t<urd::flat_string, C> name;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"name", &builder::name>> {}; }

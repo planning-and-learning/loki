@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag>, C>
 {
-    urd::index<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag>> index;
+    urd::key<::loki::formalism::Condition<::loki::formalism::NumericConstraintTag>> index;
     urd::built_t<::loki::formalism::BinaryComparator, C> comparator {};
     urd::built_t<::loki::formalism::FunctionExpressionVariant, C> left;
     urd::built_t<::loki::formalism::FunctionExpressionVariant, C> right;

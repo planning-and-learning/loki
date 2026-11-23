@@ -36,7 +36,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
 {
-    urd::index<::loki::formalism::Effect<::loki::formalism::WhenTag>> index;
+    urd::key<::loki::formalism::Effect<::loki::formalism::WhenTag>> index;
     ::loki::formalism::ConditionVariant condition;
     ::loki::formalism::EffectVariant effect;
 
@@ -60,6 +60,9 @@ struct data<::loki::formalism::Effect<::loki::formalism::WhenTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::condition, &data::effect> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::condition, &data::effect> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Effect<::loki::formalism::WhenTag>> key() const noexcept
+    { return urd::key<::loki::formalism::Effect<::loki::formalism::WhenTag>>(index); }
 };
 
 }

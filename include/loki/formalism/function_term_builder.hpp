@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::FunctionTerm, C>
 {
-    urd::index<::loki::formalism::FunctionTerm> index;
+    urd::key<::loki::formalism::FunctionTerm> index;
     urd::built_t<urd::index<::loki::formalism::FunctionSkeleton>, C> function;
     urd::built_t<::loki::formalism::TermList, C> terms;
 

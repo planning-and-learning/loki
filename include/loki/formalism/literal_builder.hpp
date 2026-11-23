@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Literal, C>
 {
-    urd::index<::loki::formalism::Literal> index;
+    urd::key<::loki::formalism::Literal> index;
     urd::built_t<urd::index<::loki::formalism::Atom>, C> atom;
     urd::built_t<bool, C> polarity = true;
 

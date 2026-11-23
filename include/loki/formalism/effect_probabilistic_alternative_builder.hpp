@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::EffectProbabilisticAlternative, C>
 {
-    urd::index<::loki::formalism::EffectProbabilisticAlternative> index;
+    urd::key<::loki::formalism::EffectProbabilisticAlternative> index;
     urd::built_t<double, C> probability = 0.0;
     urd::built_t<::loki::formalism::EffectVariant, C> effect;
 

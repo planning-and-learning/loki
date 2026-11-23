@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>, C>
 {
-    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>> index;
+    urd::key<::loki::formalism::FunctionExpression<::loki::formalism::MultiTag>> index;
     urd::built_t<::loki::formalism::MultiArithmeticOperator, C> operation {};
     urd::built_t<::loki::formalism::FunctionExpressionList, C> args;
 

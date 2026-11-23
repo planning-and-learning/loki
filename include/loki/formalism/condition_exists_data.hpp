@@ -37,7 +37,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Condition<::loki::formalism::ExistsTag>>
 {
-    urd::index<::loki::formalism::Condition<::loki::formalism::ExistsTag>> index;
+    urd::key<::loki::formalism::Condition<::loki::formalism::ExistsTag>> index;
     urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
     ::loki::formalism::ConditionVariant condition;
 
@@ -61,6 +61,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::ExistsTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::parameters, &data::condition> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::parameters, &data::condition> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Condition<::loki::formalism::ExistsTag>> key() const noexcept
+    { return urd::key<::loki::formalism::Condition<::loki::formalism::ExistsTag>>(index); }
 };
 
 }

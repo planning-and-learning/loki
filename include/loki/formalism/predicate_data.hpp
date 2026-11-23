@@ -37,7 +37,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Predicate>
 {
-    urd::index<::loki::formalism::Predicate> index;
+    urd::key<::loki::formalism::Predicate> index;
     urd::flat_string name;
     urd::flat_vector<urd::index<::loki::formalism::Parameter>> parameters;
 
@@ -61,6 +61,8 @@ struct data<::loki::formalism::Predicate>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::name, &data::parameters> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::name, &data::parameters> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Predicate> key() const noexcept { return urd::key<::loki::formalism::Predicate>(index); }
 };
 
 }

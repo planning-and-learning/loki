@@ -35,7 +35,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
 {
-    urd::index<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>> index;
+    urd::key<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>> index;
     ::loki::formalism::BinaryArithmeticOperator operation {};
     ::loki::formalism::FunctionExpressionVariant left;
     ::loki::formalism::FunctionExpressionVariant right;
@@ -64,6 +64,9 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::operation, &data::left, &data::right> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::operation, &data::left, &data::right> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>> key() const noexcept
+    { return urd::key<::loki::formalism::FunctionExpression<::loki::formalism::BinaryTag>>(index); }
 };
 
 }

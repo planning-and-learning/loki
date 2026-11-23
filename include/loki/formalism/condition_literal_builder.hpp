@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Condition<::loki::formalism::LiteralTag>, C>
 {
-    urd::index<::loki::formalism::Condition<::loki::formalism::LiteralTag>> index;
+    urd::key<::loki::formalism::Condition<::loki::formalism::LiteralTag>> index;
     urd::built_t<urd::index<::loki::formalism::Literal>, C> literal;
 
     static constexpr auto fields() noexcept { return urd::Fields<urd::field<"literal", &builder::literal>> {}; }

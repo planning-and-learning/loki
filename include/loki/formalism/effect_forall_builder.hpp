@@ -30,7 +30,7 @@ namespace urd
 template<typename C>
 struct builder<::loki::formalism::Effect<::loki::formalism::ForallTag>, C>
 {
-    urd::index<::loki::formalism::Effect<::loki::formalism::ForallTag>> index;
+    urd::key<::loki::formalism::Effect<::loki::formalism::ForallTag>> index;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Parameter>>, C> parameters;
     urd::built_t<::loki::formalism::EffectVariant, C> effect;
 

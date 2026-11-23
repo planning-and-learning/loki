@@ -34,7 +34,7 @@ namespace urd
 template<>
 struct data<::loki::formalism::Condition<::loki::formalism::LiteralTag>>
 {
-    urd::index<::loki::formalism::Condition<::loki::formalism::LiteralTag>> index;
+    urd::key<::loki::formalism::Condition<::loki::formalism::LiteralTag>> index;
     urd::index<::loki::formalism::Literal> literal;
 
     data() = default;
@@ -52,6 +52,9 @@ struct data<::loki::formalism::Condition<::loki::formalism::LiteralTag>>
     static constexpr auto identifying_members() noexcept { return urd::Members<&data::literal> {}; }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index, &data::literal> {}; }
+
+    [[nodiscard]] urd::key<::loki::formalism::Condition<::loki::formalism::LiteralTag>> key() const noexcept
+    { return urd::key<::loki::formalism::Condition<::loki::formalism::LiteralTag>>(index); }
 };
 
 }
