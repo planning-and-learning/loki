@@ -39,6 +39,8 @@ Homepage = "https://github.com/planning-and-learning/loki"
 testpaths = ["python/tests"]
 
 [tool.scikit-build]
+# A persistent build directory per wheel tag: a reinstall rebuilds only what changed.
+build-dir = "build/wheel/{wheel_tag}"
 build.targets = ["pypddl_wheel"]
 cmake.build-type = "Release"
 install.components = ["pypddl"]
