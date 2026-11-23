@@ -33,6 +33,7 @@ Stage: build
 
     # Build Loki
     cmake -S . -B build \
+        -DPython_EXECUTABLE=/usr/bin/python3 \
         -DCMAKE_BUILD_TYPE=Release \
         -DLOKI_BUILD_TESTS=OFF \
         -DLOKI_BUILD_BENCHMARKS=OFF \
