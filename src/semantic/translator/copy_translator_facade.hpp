@@ -195,19 +195,26 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             if (this->copy_context().phase == TranslationPhase::SimplifyGoal && data->goal)
                 urd::store(data->goal, this->self().simplify_goal_condition(copied_task.get_goal().value()));
 
+            // The task's predicates and axioms, then the generated ones not among them, each list written once (urd::store).
             auto existing_predicates = urd::Store<urd::set<formalism::PredicateView>> {};
+            auto predicates = urd::Store<urd::sequence<formalism::PredicateView>> {};
             for (auto predicate : copied_task.get_predicates())
-                existing_predicates.insert(predicate);
+                if (existing_predicates.insert(predicate).second)
+                    predicates.push_back(predicate);
             for (auto predicate : this->copy_context().generated_predicates)
                 if (existing_predicates.insert(predicate).second)
-                    data->predicates.push_back(predicate.index());
+                    predicates.push_back(predicate);
+            urd::store(data->predicates, predicates);
 
             auto existing_axioms = urd::Store<urd::set<formalism::AxiomView>> {};
+            auto axioms = urd::Store<urd::sequence<formalism::AxiomView>> {};
             for (auto axiom : copied_task.get_axioms())
-                existing_axioms.insert(axiom);
+                if (existing_axioms.insert(axiom).second)
+                    axioms.push_back(axiom);
             for (auto axiom : this->copy_context().generated_axioms)
                 if (existing_axioms.insert(axiom).second)
-                    data->axioms.push_back(axiom.index());
+                    axioms.push_back(axiom);
+            urd::store(data->axioms, axioms);
             break;
         }
         case TranslationPhase::SplitDisjunctiveConditions:
