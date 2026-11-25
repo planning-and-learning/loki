@@ -42,7 +42,7 @@ struct data<::loki::formalism::FunctionExpression<::loki::formalism::DurationTag
 
     static constexpr auto fields() noexcept { return urd::Fields<> {}; }
 
-    static constexpr auto identifying_members() noexcept { return urd::Members<> {}; }
+    static constexpr auto identifying_members() noexcept { return urd::members_of(fields()); }
 
     static constexpr auto cista_members() noexcept { return urd::Members<&data::index> {}; }
 
