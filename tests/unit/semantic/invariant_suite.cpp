@@ -297,7 +297,7 @@ void expect_task_invariants(formalism::DomainView translated_domain, formalism::
         {
             auto conjunct = goal.value();
             if (const auto* conjunction = std::get_if<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(&goal.value()))
-                conjunct = conjunction->get_conditions()[index];
+                conjunct = conjunction->get_conditions()[static_cast<std::ptrdiff_t>(index)];
             if (const auto* forall = std::get_if<formalism::EntityView<formalism::Condition<formalism::ForallTag>>>(&conjunct))
                 conjunct = forall->get_condition();
             if (const auto* preference = std::get_if<formalism::EntityView<formalism::Condition<formalism::PreferenceTag>>>(&conjunct))

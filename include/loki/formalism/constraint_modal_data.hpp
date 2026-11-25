@@ -41,7 +41,7 @@ struct data<::loki::formalism::Constraint<::loki::formalism::ModalTag>>
 
     data(::loki::formalism::ConstraintOperator operation_, urd::flat_vector<double> numbers_, ::loki::formalism::ConstraintList constraints_) :
         index(),
-        operation(std::move(operation_)),
+        operation(operation_),
         numbers(std::move(numbers_)),
         constraints(std::move(constraints_))
     {

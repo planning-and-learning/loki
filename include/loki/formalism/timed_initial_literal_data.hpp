@@ -36,7 +36,7 @@ struct data<::loki::formalism::TimedInitialLiteral>
 
     data() = default;
 
-    data(double time_, urd::index<::loki::formalism::Literal> literal_) : index(), time(std::move(time_)), literal(std::move(literal_)) {}
+    data(double time_, urd::index<::loki::formalism::Literal> literal_) : index(), time(time_), literal(literal_) {}
 
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;

@@ -175,7 +175,8 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             alternative->probability = 1.0;
             urd::store(alternative->effect, copied);
             auto element = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(this->copy_context().builder);
-            element->alternatives.emplace_back(this->copy_context().storage->repository.insert(*alternative, this->copy_context().storage->builder).first.index());
+            element->alternatives.emplace_back(
+                this->copy_context().storage->repository.insert(*alternative, this->copy_context().storage->builder).first.index());
             data->initial_effects.emplace_back(this->copy_context().storage->repository.insert(*element, this->copy_context().storage->builder).first.index());
         }
     }

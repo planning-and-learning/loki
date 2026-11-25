@@ -360,8 +360,6 @@ struct RequirementCollector
     }
 };
 
-}  // namespace
-
 /// Whether the requirements provide a capability.
 bool declares(EntityListView<Requirement> requirements, RequirementKind capability)
 {
@@ -374,6 +372,8 @@ bool declares(EntityListView<Requirement> requirements, RequirementKind capabili
 
 /// Whether the requirements provide PPDDL's (reward).
 bool declares_rewards(EntityListView<Requirement> requirements) { return declares(requirements, Rewards); }
+
+}  // namespace
 
 urd::Store<urd::sequence<RequirementKind>> infer_requirements(DomainView domain)
 {

@@ -11,7 +11,7 @@ backend-path = ["python"]
 
 [project]
 name = "pypddl"
-version = "1.15.0"
+version = "1.15.1"
 description = "Python-distributed native package for the Loki PDDL parser library"
 readme = "README.md"
 license = "GPL-3.0-or-later"

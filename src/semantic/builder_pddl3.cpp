@@ -127,7 +127,7 @@ template<typename Target, typename Source>
 Target tagged(const Source& source)
 {
     auto result = Target {};
-    static_cast<boost::spirit::x3::position_tagged&>(result) = source;
+    static_cast<boost::spirit::x3::position_tagged&>(result) = static_cast<const boost::spirit::x3::position_tagged&>(source);
     return result;
 }
 

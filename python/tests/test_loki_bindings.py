@@ -841,6 +841,8 @@ def test_multi_args_keep_repository_alive() -> None:
         | pypddl.FunctionExpressionUnary
         | pypddl.FunctionExpressionBinary
         | pypddl.FunctionExpressionMulti
+        | pypddl.FunctionExpressionDuration
+        | pypddl.FunctionExpressionIsViolated
     ]:
         repository = pypddl.Repository()
         operands = [make_number_expression(repository, value) for value in (1.0, 2.0, 3.0)]

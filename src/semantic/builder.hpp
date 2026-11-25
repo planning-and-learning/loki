@@ -194,7 +194,7 @@ private:
     formalism::MetricView parse_metric(const ast::Metric& node);
     /// What a metric over the makespan (total-time) or violated preferences alone requires instead of numeric fluents;
     /// none if it reads another function.
-    std::optional<formalism::RequirementKind> implicit_metric_requirement(const ast::FunctionExpression& expression) const;
+    [[nodiscard]] std::optional<formalism::RequirementKind> implicit_metric_requirement(const ast::FunctionExpression& expression) const;
 
     // Action-costs completion.
     formalism::FunctionSkeletonView total_cost_function();

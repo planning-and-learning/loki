@@ -57,7 +57,7 @@ struct data<::loki::formalism::DurativeAction>
         name(std::move(name_)),
         original_name(std::move(original_name_)),
         parameters(std::move(parameters_)),
-        original_arity(std::move(original_arity_)),
+        original_arity(original_arity_),
         duration(std::move(duration_)),
         condition(std::move(condition_)),
         effect(std::move(effect_))
@@ -66,8 +66,8 @@ struct data<::loki::formalism::DurativeAction>
 
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
-    data(data&& other) = default;
-    data& operator=(data&& other) = default;
+    data(data&& other) noexcept = default;
+    data& operator=(data&& other) noexcept = default;
     ~data() = default;
 
     static constexpr auto fields() noexcept

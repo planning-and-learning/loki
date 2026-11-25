@@ -26,6 +26,7 @@
 #include <optional>
 #include <type_traits>
 #include <variant>
+#include <yggdrasil/diagnostics/errors.hpp>
 
 namespace loki::semantic::detail
 {
@@ -53,7 +54,7 @@ public:
     formalism::ConstraintView negate_constraint(formalism::ConstraintView constraint);
 
     /// Whether the formula is in PDDL 3's form: conjunctions, universals and preferences over modal constraints of PDDL 3.
-    bool is_pddl3_formula(formalism::ConstraintView constraint) const;
+    [[nodiscard]] bool is_pddl3_formula(formalism::ConstraintView constraint) const;
 
     /// A PDDL 3 formula holding vacuously for the bindings of the parameters outside their types: the condition that
     /// triggers a modal constraint (at-most-once, sometime-after, sometime-before, always-within) gets the type conditions as
@@ -74,7 +75,7 @@ private:
     }
 
     /// Whether typing goes away for typed parameters below the root of a hierarchy: guarding needs them.
-    bool guards(formalism::EntityListView<formalism::Parameter> parameters) const
+    [[nodiscard]] bool guards(formalism::EntityListView<formalism::Parameter> parameters) const
     {
         return this->self().compiles_typing_now()
                && std::ranges::any_of(parameters,

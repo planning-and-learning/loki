@@ -37,12 +37,7 @@ struct data<::loki::formalism::Condition<::loki::formalism::TimedTag>>
 
     data() = default;
 
-    data(::loki::formalism::TimeSpecifier time_, ::loki::formalism::ConditionVariant condition_) :
-        index(),
-        time(std::move(time_)),
-        condition(std::move(condition_))
-    {
-    }
+    data(::loki::formalism::TimeSpecifier time_, ::loki::formalism::ConditionVariant condition_) : index(), time(time_), condition(std::move(condition_)) {}
 
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;

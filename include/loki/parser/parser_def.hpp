@@ -61,7 +61,7 @@ struct ExactDoubleParser : boost::spirit::x3::parser<ExactDoubleParser>
             return false;
         const auto text = std::string(first, end);
         auto value = 0.0;
-        if (boost::charconv::from_chars(text.data(), text.data() + text.size(), value).ec != std::errc {})
+        if (boost::charconv::from_chars(text, value).ec != std::errc {})
             value = ignored;  // ponytail: from_chars rejects a leading '+' or out-of-range text; x3's value then stands
         boost::spirit::x3::traits::move_to(value, attribute);
         first = end;

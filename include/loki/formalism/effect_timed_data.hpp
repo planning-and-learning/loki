@@ -37,7 +37,7 @@ struct data<::loki::formalism::Effect<::loki::formalism::TimedTag>>
 
     data() = default;
 
-    data(::loki::formalism::TimeSpecifier time_, ::loki::formalism::EffectVariant effect_) : index(), time(std::move(time_)), effect(std::move(effect_)) {}
+    data(::loki::formalism::TimeSpecifier time_, ::loki::formalism::EffectVariant effect_) : index(), time(time_), effect(std::move(effect_)) {}
 
     data(const data& other) = delete;
     data& operator=(const data& other) = delete;
