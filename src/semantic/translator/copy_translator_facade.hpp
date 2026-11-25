@@ -167,7 +167,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     {
         const auto copied = this->self().copy(formalism::EffectView(effect));
         if (const auto* probabilistic = std::get_if<formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>(&copied))
-            data->initial_effects.push_back(probabilistic->index());
+            data->initial_effects.emplace_back(probabilistic->index());
         else
         {
             // Normalized to a single certain outcome: a probabilistic element of probability 1.
@@ -175,8 +175,8 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             alternative->probability = 1.0;
             urd::store(alternative->effect, copied);
             auto element = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(this->copy_context().builder);
-            element->alternatives.push_back(this->copy_context().storage->repository.insert(*alternative, this->copy_context().storage->builder).first.index());
-            data->initial_effects.push_back(this->copy_context().storage->repository.insert(*element, this->copy_context().storage->builder).first.index());
+            element->alternatives.emplace_back(this->copy_context().storage->repository.insert(*alternative, this->copy_context().storage->builder).first.index());
+            data->initial_effects.emplace_back(this->copy_context().storage->repository.insert(*element, this->copy_context().storage->builder).first.index());
         }
     }
 

@@ -65,8 +65,6 @@ inline constexpr auto required<FunctionExpression<IsViolatedTag>> = std::optiona
 template<>
 inline constexpr auto required<Constraint<ForallTag>> = std::optional(UniversalPreconditions);
 template<>
-inline constexpr auto required<Constraint<ModalTag>> = std::optional(Constraints);
-template<>
 inline constexpr auto required<Effect<ForallTag>> = std::optional(UniversalPreconditions);
 template<>
 inline constexpr auto required<Effect<WhenTag>> = std::optional(ConditionalEffects);
