@@ -84,8 +84,18 @@ urd::Store<urd::sequence<formalism::RequirementKind>> requirement_capabilities(f
                  ExistentialPreconditions,
                  UniversalPreconditions,
                  ConditionalEffects };
-    if (kind == Fluents || kind == ActionCosts)
+    // PPDDL's :rewards provides the fluent (reward), as :action-costs provides (total-cost).
+    if (kind == Fluents || kind == ActionCosts || kind == Rewards)
         return { kind, NumericFluents };
+    // PPDDL's :mdp: probabilistic effects with rewards.
+    if (kind == Mdp)
+        return { Mdp, ProbabilisticEffects, Rewards, NumericFluents };
+    // Formulas over the state trajectory extend PDDL 3's constraints.
+    if (kind == TrajectoryFormulas)
+        return { TrajectoryFormulas, Constraints };
+    // PDDL 2.1 and 2.2: duration inequalities and timed initial literals are durative actions' features.
+    if (kind == DurationInequalities || kind == TimedInitialLiterals)
+        return { kind, DurativeActions };
     return { kind };
 }
 

@@ -55,6 +55,10 @@ struct CopyContext
     urd::Store<urd::sequence<formalism::PredicateView>> generated_predicates;
     urd::Store<urd::sequence<formalism::AxiomView>> generated_axioms;
     urd::Store<urd::map<GeneratedUniversalConditionKey, formalism::ConditionView>> generated_universal_conditions;
+    urd::Store<urd::map<GeneratedUniversalConditionKey, formalism::ConditionView>> generated_choice_conditions;
+    urd::Store<urd::map<GeneratedUniversalConditionKey, formalism::ConditionView>> generated_timed_conditions;
+    urd::Store<urd::map<GeneratedUniversalConditionKey, formalism::ConditionView>> generated_constraint_conditions;
+    urd::Store<urd::map<GeneratedUniversalConditionKey, formalism::ConditionView>> generated_preference_conditions;
     size_t num_generated_axioms = 0;
     urd::Store<urd::map<formalism::TypeView, formalism::PredicateView>> type_predicates;
     bool compile_typing = true;

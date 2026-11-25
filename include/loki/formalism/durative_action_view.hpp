@@ -1,0 +1,55 @@
+/*
+ * Copyright (C) 2024-2026 Dominik Drexler
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef LOKI_FORMALISM_DURATIVE_ACTION_VIEW_HPP_
+#define LOKI_FORMALISM_DURATIVE_ACTION_VIEW_HPP_
+
+#include "loki/formalism/durative_action_data.hpp"
+
+#include <urd/elements/flat.hpp>
+#include <yggdrasil/formalism/declarations.hpp>
+
+namespace urd
+{
+template<typename V>
+struct view_mixin<::loki::formalism::DurativeAction, V>
+{
+private:
+    [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
+
+public:
+    const auto& get_name() const noexcept { return self().template member<&urd::record_of<V>::name>(); }
+
+    const auto& get_original_name() const noexcept { return self().template member<&urd::record_of<V>::original_name>(); }
+
+    auto get_parameters() const noexcept { return self().template member<&urd::record_of<V>::parameters>(); }
+
+    auto get_original_arity() const noexcept { return self().template member<&urd::record_of<V>::original_arity>(); }
+
+    auto get_duration() const noexcept { return self().template member<&urd::record_of<V>::duration>(); }
+
+    auto get_condition() const noexcept { return self().template member<&urd::record_of<V>::condition>(); }
+
+    auto get_effect() const noexcept { return self().template member<&urd::record_of<V>::effect>(); }
+
+    auto get_arity() const noexcept { return get_parameters().size(); }
+
+    static constexpr auto functions() noexcept { return urd::Functions<urd::function<"get_arity", &view_mixin::get_arity>> {}; }
+};
+}  // namespace urd
+
+#endif

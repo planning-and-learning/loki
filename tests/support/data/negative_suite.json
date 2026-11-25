@@ -15,6 +15,12 @@
             "domain_file": "duplicate_predicate/domain.pddl"
         },
         {
+            "name": "predicate redefines a type",
+            "expected_error": "DuplicatePredicateError",
+            "expected_message": "Duplicate predicate definition: fault",
+            "domain_file": "predicate_redefines_type/domain.pddl"
+        },
+        {
             "name": "strict missing disjunction requirement",
             "expected_error": "MissingRequirementError",
             "strict": true,

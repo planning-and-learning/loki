@@ -178,6 +178,7 @@ formalism::TaskView Parser::Impl::parse_task_ast(const ast::Task& task)
         parse_context.active_requirements = m_domain_context.requirement_kinds;
         parse_context.active_action_costs = m_domain_context.action_costs;
         parse_context.active_numeric_fluents = m_domain_context.numeric_fluents;
+        parse_context.active_rewards = m_domain_context.rewards;
         parse_context.declared_objects = m_domain_context.declared_objects;
         parse_context.union_types = union_types;
         auto view = AstBuilder(m_options, m_diagnostics, parse_storage->repository, task_domain_context, parse_context).build_task(task);

@@ -19,6 +19,7 @@
 #define LOKI_SEMANTIC_TRANSLATOR_EFFECT_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+#include "loki/formalism/choices.hpp"
 
 #include <optional>
 
@@ -71,6 +72,15 @@ template<typename Derived>
 formalism::EffectView EffectTranslator<Derived>::copy(formalism::EffectView source)
 {
     const auto* when = std::get_if<formalism::EntityView<formalism::Effect<formalism::WhenTag>>>(&source);
+    if (this->copy_context().phase == TranslationPhase::RemoveUniversalQuantifiers && when && formalism::contains_choice(when->get_effect()))
+    {
+        const auto condition = this->self().make_choice_condition(this->self().copy(when->get_condition()));
+        const auto effect = this->self().copy(when->get_effect());
+        auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
+        urd::store(data->condition, condition);
+        urd::store(data->effect, effect);
+        return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
+    }
     if (this->copy_context().phase == TranslationPhase::SplitDisjunctiveConditions && when)
     {
         const auto condition = this->self().copy(when->get_condition());

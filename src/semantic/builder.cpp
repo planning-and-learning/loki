@@ -59,12 +59,16 @@ SemanticChecks AstBuilder::checks() const { return SemanticChecks { &m_options, 
 
 formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
 {
-    auto requirements = parse_requirements(domain.requirements);
-    if (m_options.strict && std::none_of(domain.requirements.begin(), domain.requirements.end(), [](const auto& node) { return node.name.text == "strips"; }))
+    // Each kind of section concatenated in source order: a domain's sections can come in any order.
+    const auto parts = ast::parts(domain);
+    auto requirements = parse_requirements(parts.requirements);
+    if (m_options.strict && std::none_of(parts.requirements.begin(), parts.requirements.end(), [](const auto& node) { return node.name.text == "strips"; }))
         m_diagnostics.throw_at(domain.name, MissingRequirementError("strips"));
     // Genuine numeric domains keep their own cost structure; a planner interprets an absent
     // metric as unit costs, so grafting total-cost onto :numeric-fluents would be wrong.
-    const auto inject_unit_costs = m_options.add_action_costs && !m_parse_context.active_action_costs && !m_parse_context.active_numeric_fluents;
+    // A PPDDL domain with :rewards has its own objective, (reward), just as a numeric domain has.
+    const auto inject_unit_costs =
+        m_options.add_action_costs && !m_parse_context.active_action_costs && !m_parse_context.active_numeric_fluents && !m_parse_context.active_rewards;
     if (inject_unit_costs)
     {
         m_parse_context.active_action_costs = true;
@@ -78,10 +82,11 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
     m_domain_context.requirement_kinds = m_parse_context.active_requirements;
     m_domain_context.action_costs = m_parse_context.active_action_costs;
     m_domain_context.numeric_fluents = m_parse_context.active_numeric_fluents;
-    auto types = parse_type_hierarchy(domain.types);
-    auto constants = parse_objects(domain.constants, m_domain_context.objects, m_domain_context.declared_objects);
-    auto predicates = parse_predicates(domain.predicates);
-    auto functions = parse_functions(domain.functions);
+    m_domain_context.rewards = m_parse_context.active_rewards;
+    auto types = parse_type_hierarchy(parts.types);
+    auto constants = parse_objects(parts.constants, m_domain_context.objects, m_domain_context.declared_objects);
+    auto predicates = parse_predicates(parts.predicates);
+    auto functions = parse_functions(parts.functions);
     if (m_parse_context.active_action_costs && !m_domain_context.declared_functions.contains("total-cost"))
     {
         if (m_options.strict && !m_options.add_action_costs)
@@ -89,21 +94,33 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
         m_domain_context.declared_functions.insert("total-cost");
         functions.push_back(total_cost_function());
     }
+    // PPDDL declares (reward) by :rewards alone.
+    if (m_parse_context.active_rewards && !m_domain_context.declared_functions.contains("reward"))
+    {
+        m_domain_context.declared_functions.insert("reward");
+        functions.push_back(number_function("reward"));
+    }
     auto axioms = urd::Store<urd::sequence<formalism::AxiomView>> {};
-    for (const auto& declaration : domain.declarations)
+    for (const auto& declaration : parts.declarations)
         if (const auto* axiom = boost::get<ast::Axiom>(&declaration))
         {
             checks().require_requirement(formalism::RequirementKind::DerivedPredicates, *axiom);
             axioms.push_back(parse_axiom(*axiom));
         }
     auto actions = urd::Store<urd::sequence<formalism::ActionView>> {};
-    for (const auto& declaration : domain.declarations)
+    for (const auto& declaration : parts.declarations)
         if (const auto* action = boost::get<ast::Action>(&declaration))
             actions.push_back(parse_action(*action));
     if (inject_unit_costs)
         for (auto& action : actions)
             action = add_unit_cost(action);
-    checks().reject_unused_requirements(domain.requirements);
+    auto durative_actions = urd::Store<urd::sequence<formalism::DurativeActionView>> {};
+    for (const auto& declaration : parts.declarations)
+        if (const auto* action = boost::get<ast::DurativeAction>(&declaration))
+            durative_actions.push_back(parse_durative_action(*action));
+    // After the actions: is-violated reads the names of their preferences.
+    const auto constraints = parse_constraints(parts.constraints);
+    checks().reject_unused_requirements(parts.requirements);
 
     types.clear();
     for (const auto& [_, type] : m_domain_context.types)
@@ -118,7 +135,10 @@ formalism::DomainView AstBuilder::build_domain(const ast::Domain& domain)
     urd::store(data->predicates, predicates);
     urd::store(data->functions, functions);
     urd::store(data->actions, actions);
+    urd::store(data->durative_actions, durative_actions);
     urd::store(data->axioms, axioms);
+    if (constraints)
+        urd::store(data->constraints, *constraints);
     return repo().insert(*data, m_builder).first;
 }
 
@@ -142,14 +162,22 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
     auto types = parse_type_hierarchy(task.types);
     auto predicates = parse_predicates(task.predicates);
     auto objects = parse_objects(task.objects, m_parse_context.task_objects, m_parse_context.declared_objects);
-    auto initial_literals = urd::Store<urd::sequence<formalism::LiteralView>> {};
-    auto initial_function_values = urd::Store<urd::sequence<formalism::InitialFunctionValueView>> {};
+    auto initial = InitialElements {};
     for (const auto& element : task.initial)
-        boost::apply_visitor([&](const auto& node) { parse_initial_element(node, initial_literals, initial_function_values); }, element);
+        boost::apply_visitor([&](const auto& node) { parse_initial_element(node, initial); }, element);
+    auto& initial_literals = initial.literals;
+    auto& initial_function_values = initial.values;
+
+    auto constraints = std::optional<formalism::ConstraintView> {};
+    if (task.constraints)
+    {
+        const auto preferences = FlagScope(m_parse_context.preferences_allowed, true);
+        constraints = parse_constraint(*task.constraints);
+    }
 
     auto goal = std::optional<formalism::ConditionView> {};
     if (task.goal)
-        goal = parse_condition(*task.goal);
+        goal = parse_goal(*task.goal, constraints);
 
     auto metric = std::optional<formalism::MetricView> {};
     if (task.metric)
@@ -173,10 +201,21 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
     urd::store(data->objects, objects);
     urd::store(data->initial_literals, initial_literals);
     urd::store(data->initial_function_values, initial_function_values);
+    urd::store(data->timed_initial_literals, initial.timed_literals);
+    urd::store(data->initial_effects, initial.effects);
     if (goal)
         urd::store(data->goal, *goal);
+    if (task.goal_reward)
+    {
+        checks().require_requirement(formalism::RequirementKind::Rewards, task);
+        if (!m_parse_context.active_rewards && m_options.strict)
+            m_diagnostics.throw_at(task, MissingRequirementError("rewards"));
+        data->goal_reward = *task.goal_reward;
+    }
     urd::store(data->metric, metric);
     urd::store(data->axioms, axioms);
+    if (constraints)
+        urd::store(data->constraints, *constraints);
     return repo().insert(*data, m_builder).first;
 }
 

@@ -19,8 +19,10 @@
 #define LOKI_SEMANTIC_TRANSLATOR_REMOVE_UNIVERSAL_QUANTIFIERS_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+#include "loki/formalism/preferences.hpp"
 
 #include <concepts>
+#include <string_view>
 #include <urd/elements/clone.hpp>
 #include <urd/elements/flat.hpp>
 
@@ -36,7 +38,28 @@ public:
     {
     }
 
+    /// The negated head of a generated axiom loki-universal-*(free parameters) <- condition.
     formalism::ConditionView make_generated_axiom_condition(formalism::ConditionView condition);
+    /// The condition of an effect that holds a choice, if a conjunction of literals and numeric constraints; otherwise
+    /// the head of a generated axiom loki-choice-*(free parameters) <- condition. Splitting a disjunction or lifting an
+    /// existential of the condition into a forall effect would apply the choice once per disjunct or witness, where it
+    /// is drawn once (choices.hpp); a derived atom is evaluated once.
+    formalism::ConditionView make_choice_condition(formalism::ConditionView condition);
+    /// The condition of a timed condition, each conjunct that is no literal or numeric constraint the head of a
+    /// generated axiom loki-timed-*(free parameters) <- conjunct: a durative action's condition is never split or
+    /// lifted into parameters (TopLevelTranslator).
+    formalism::ConditionView make_timed_condition(formalism::ConditionView condition);
+    /// The condition with each conjunct that is no literal or numeric constraint replaced by the head of a generated
+    /// axiom prefix*(free parameters) <- conjunct.
+    formalism::ConditionView make_conjunctive_condition(formalism::ConditionView condition,
+                                                        std::string_view prefix,
+                                                        urd::Store<urd::map<GeneratedUniversalConditionKey, formalism::ConditionView>>& cache);
+    /// The head of a generated axiom prefix*(free parameters) <- condition, as a literal of the given polarity; one axiom
+    /// per condition and free parameters in cache.
+    formalism::ConditionView make_generated_axiom_literal(formalism::ConditionView condition,
+                                                          std::string_view prefix,
+                                                          bool polarity,
+                                                          urd::Store<urd::map<GeneratedUniversalConditionKey, formalism::ConditionView>>& cache);
     formalism::ConditionView remove_universal_quantifiers(formalism::ConditionView condition);
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::AndTag>> source);
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::OrTag>> source);
@@ -47,17 +70,59 @@ public:
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<Tag>> source);
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source);
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source);
+    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::TimedTag>> source);
+    /// A preference counts its violations: its condition becomes a conjunction (make_conjunctive_condition), never a derived
+    /// predicate as a whole.
+    formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::PreferenceTag>> source);
     template<typename T>
     formalism::ConditionView remove_universal_quantifiers_node(formalism::EntityView<T> source);
 };
 
 template<typename Derived>
 formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_generated_axiom_condition(formalism::ConditionView condition)
+{ return make_generated_axiom_literal(condition, "loki-universal-", false, this->copy_context().generated_universal_conditions); }
+
+template<typename Derived>
+formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_choice_condition(formalism::ConditionView condition)
+{ return make_conjunctive_condition(condition, "loki-choice-", this->copy_context().generated_choice_conditions); }
+
+template<typename Derived>
+formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_timed_condition(formalism::ConditionView condition)
+{ return make_conjunctive_condition(condition, "loki-timed-", this->copy_context().generated_timed_conditions); }
+
+template<typename Derived>
+formalism::ConditionView
+RemoveUniversalQuantifiersTranslator<Derived>::make_conjunctive_condition(formalism::ConditionView condition,
+                                                                          std::string_view prefix,
+                                                                          urd::Store<urd::map<GeneratedUniversalConditionKey, formalism::ConditionView>>& cache)
+{
+    const auto is_basic = [](formalism::ConditionView node)
+    {
+        return std::holds_alternative<formalism::EntityView<formalism::Condition<formalism::LiteralTag>>>(node)
+               || std::holds_alternative<formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>>(node);
+    };
+    if (is_basic(condition))
+        return condition;
+    const auto* conjunction = std::get_if<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(&condition);
+    if (!conjunction)
+        return make_generated_axiom_literal(condition, prefix, true, cache);
+    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
+    for (auto conjunct : conjunction->get_conditions())
+        this->self().append_conjunct(*data, is_basic(conjunct) ? conjunct : make_generated_axiom_literal(conjunct, prefix, true, cache));
+    return this->self().make_conjunction(*data);
+}
+
+template<typename Derived>
+formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_generated_axiom_literal(
+    formalism::ConditionView condition,
+    std::string_view prefix,
+    bool polarity,
+    urd::Store<urd::map<GeneratedUniversalConditionKey, formalism::ConditionView>>& cache)
 {
     const auto free_parameters = this->self().free_parameters_in_scope(condition);
 
     const auto key = GeneratedUniversalConditionKey { free_parameters, condition };
-    if (auto it = this->copy_context().generated_universal_conditions.find(key); it != this->copy_context().generated_universal_conditions.end())
+    if (auto it = cache.find(key); it != cache.end())
         return it->second;
 
     auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
@@ -68,7 +133,7 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
         atom_data->terms.push_back(variable.index());
     }
 
-    predicate_data->name = urd::flat_string(this->self().next_generated_predicate_name("loki-universal-"));
+    predicate_data->name = urd::flat_string(this->self().next_generated_predicate_name(prefix));
     const auto predicate = this->copy_context().storage->repository.insert(*predicate_data, this->copy_context().storage->builder).first;
     atom_data->predicate = predicate.index();
     const auto atom = this->copy_context().storage->repository.insert(*atom_data, this->copy_context().storage->builder).first.index();
@@ -78,8 +143,8 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
     const auto positive_head = this->copy_context().storage->repository.insert(*literal_data, this->copy_context().storage->builder).first.index();
     urd::clear_fields(*literal_data);
     literal_data->atom = atom;
-    literal_data->polarity = false;
-    const auto negative_literal = this->copy_context().storage->repository.insert(*literal_data, this->copy_context().storage->builder).first.index();
+    literal_data->polarity = polarity;
+    const auto result_literal = this->copy_context().storage->repository.insert(*literal_data, this->copy_context().storage->builder).first.index();
     auto axiom_data = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
     for (const auto& parameter : predicate_data->parameters)
         axiom_data->parameters.push_back(urd::clone(parameter));
@@ -91,9 +156,9 @@ formalism::ConditionView RemoveUniversalQuantifiersTranslator<Derived>::make_gen
     urd::append(this->copy_context().generated_predicates, predicate);
     urd::append(this->copy_context().generated_axioms, axiom);
     auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
-    condition_data->literal = negative_literal;
+    condition_data->literal = result_literal;
     auto result = formalism::ConditionView(this->copy_context().storage->repository.insert(*condition_data, this->copy_context().storage->builder).first);
-    this->copy_context().generated_universal_conditions.emplace(key, result);
+    cache.emplace(key, result);
     return result;
 }
 
@@ -156,8 +221,36 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
 
 template<typename Derived>
 formalism::ConditionView
+RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::PreferenceTag>> source)
+{
+    const auto condition = this->self().make_conjunctive_condition(this->self().remove_universal_quantifiers(source.get_condition()),
+                                                                   "loki-preference-",
+                                                                   this->copy_context().generated_preference_conditions);
+    auto data = formalism::checkout<formalism::Condition<formalism::PreferenceTag>>(this->copy_context().builder);
+    data->name = source.get_name();
+    urd::store(data->condition, condition);
+    return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
+}
+
+template<typename Derived>
+formalism::ConditionView
 RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
 {
+    // A universal preference is a preference per binding: it stays universal (the parser separates it from hard conditions).
+    if (formalism::contains_preference(source.get_condition()))
+    {
+        this->self().increment_quantifications(source.get_parameters());
+        auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+        this->self().enter_scope(parameter_views);
+        const auto condition = this->self().remove_universal_quantifiers(source.get_condition());
+        this->self().leave_scope();
+        auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
+        for (auto parameter : parameter_views)
+            data->parameters.push_back(parameter.index());
+        urd::store(data->condition, condition);
+        return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
+    }
+
     this->self().increment_quantifications(source.get_parameters());
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
@@ -171,6 +264,17 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
         formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
     const auto translated_exists_not = this->self().remove_universal_quantifiers(exists_not);
     return this->self().make_generated_axiom_condition(translated_exists_not);
+}
+
+template<typename Derived>
+formalism::ConditionView
+RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::TimedTag>> source)
+{
+    const auto condition = this->self().make_timed_condition(this->self().remove_universal_quantifiers(source.get_condition()));
+    auto data = formalism::checkout<formalism::Condition<formalism::TimedTag>>(this->copy_context().builder);
+    data->time = source.get_time();
+    urd::store(data->condition, condition);
+    return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
 }
 
 template<typename Derived>

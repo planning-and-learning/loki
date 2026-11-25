@@ -58,6 +58,8 @@ void bind_semantic_errors(nb::module_& m)
     ygg::bind_diagnostic_exception<semantic::InvalidNumericConstraintError>(m, "InvalidNumericConstraintError", semantic_error.ptr());
     ygg::bind_diagnostic_exception<semantic::InvalidNumericEffectError>(m, "InvalidNumericEffectError", semantic_error.ptr());
     ygg::bind_diagnostic_exception<semantic::InvalidProbabilisticEffectError>(m, "InvalidProbabilisticEffectError", semantic_error.ptr());
+    ygg::bind_diagnostic_exception<semantic::InvalidTemporalExpressionError>(m, "InvalidTemporalExpressionError", semantic_error.ptr());
+    ygg::bind_diagnostic_exception<semantic::InvalidConstraintError>(m, "InvalidConstraintError", semantic_error.ptr());
     ygg::bind_diagnostic_exception<semantic::InvalidEqualityError>(m, "InvalidEqualityError", semantic_error.ptr());
 }
 

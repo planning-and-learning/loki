@@ -46,7 +46,11 @@ public:
 
     auto get_actions() const noexcept { return self().template member<&urd::record_of<V>::actions>(); }
 
+    auto get_durative_actions() const noexcept { return self().template member<&urd::record_of<V>::durative_actions>(); }
+
     auto get_axioms() const noexcept { return self().template member<&urd::record_of<V>::axioms>(); }
+
+    auto get_constraints() const noexcept { return self().template member<&urd::record_of<V>::constraints>(); }
 };
 }  // namespace urd
 

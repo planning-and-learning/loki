@@ -24,6 +24,7 @@
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <sstream>
+#include <string_view>
 #include <yggdrasil/io/iostream.hpp>
 
 namespace fmt
@@ -215,6 +216,29 @@ struct formatter<loki::ast::FunctionExpressionMulti, char>
 };
 
 template<>
+struct formatter<loki::ast::FunctionExpressionDuration, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::FunctionExpressionDuration& value, FormatContext& ctx) const
+    {
+        (void) value;
+        return fmt::format_to(ctx.out(), fmt::runtime("?duration"));
+    }
+};
+
+template<>
+struct formatter<loki::ast::FunctionExpressionIsViolated, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::FunctionExpressionIsViolated& value, FormatContext& ctx) const
+    { return fmt::format_to(ctx.out(), fmt::runtime("(is-violated {})"), value.name); }
+};
+
+template<>
 struct formatter<loki::ast::FunctionExpression, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
@@ -341,6 +365,33 @@ struct formatter<loki::ast::ConditionNumericConstraint, char>
 };
 
 template<>
+struct formatter<loki::ast::ConditionTimed, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConditionTimed& value, FormatContext& ctx) const
+    {
+        const auto* time = value.time == 's' ? "at start" : value.time == 'e' ? "at end" : "over all";
+        return fmt::format_to(ctx.out(), fmt::runtime("({} {})"), time, value.condition.get());
+    }
+};
+
+template<>
+struct formatter<loki::ast::ConditionPreference, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConditionPreference& value, FormatContext& ctx) const
+    {
+        if (value.name)
+            return fmt::format_to(ctx.out(), fmt::runtime("(preference {} {})"), *value.name, value.condition.get());
+        return fmt::format_to(ctx.out(), fmt::runtime("(preference {})"), value.condition.get());
+    }
+};
+
+template<>
 struct formatter<loki::ast::Condition, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
@@ -442,7 +493,11 @@ struct formatter<loki::ast::ProbabilisticEffectAlternative, char>
 
     template<typename FormatContext>
     auto format(const loki::ast::ProbabilisticEffectAlternative& value, FormatContext& ctx) const
-    { return fmt::format_to(ctx.out(), fmt::runtime("{} {}"), value.probability, value.effect.get()); }
+    {
+        if (value.denominator)
+            return fmt::format_to(ctx.out(), fmt::runtime("{}/{} {}"), value.probability, *value.denominator, value.effect.get());
+        return fmt::format_to(ctx.out(), fmt::runtime("{} {}"), value.probability, value.effect.get());
+    }
 };
 
 template<>
@@ -457,6 +512,19 @@ struct formatter<loki::ast::EffectProbabilistic, char>
         for (const auto& alternative : value.alternatives)
             out = fmt::format_to(out, fmt::runtime(" {}"), alternative);
         return fmt::format_to(out, fmt::runtime(")"));
+    }
+};
+
+template<>
+struct formatter<loki::ast::EffectTimed, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::EffectTimed& value, FormatContext& ctx) const
+    {
+        const auto* time = value.time == 's' ? "at start" : value.time == 'e' ? "at end" : "over all";
+        return fmt::format_to(ctx.out(), fmt::runtime("({} {})"), time, value.effect.get());
     }
 };
 
@@ -534,6 +602,214 @@ struct formatter<loki::ast::Action, char>
 };
 
 template<>
+struct formatter<loki::ast::ConstraintAnd, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConstraintAnd& value, FormatContext& ctx) const
+    {
+        auto out = fmt::format_to(ctx.out(), fmt::runtime("(and"));
+        for (const auto& constraint : value.constraints)
+            out = fmt::format_to(out, fmt::runtime(" {}"), constraint.get());
+        return fmt::format_to(out, fmt::runtime(")"));
+    }
+};
+
+template<>
+struct formatter<loki::ast::ConstraintOr, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConstraintOr& value, FormatContext& ctx) const
+    {
+        auto out = fmt::format_to(ctx.out(), fmt::runtime("(or"));
+        for (const auto& constraint : value.constraints)
+            out = fmt::format_to(out, fmt::runtime(" {}"), constraint.get());
+        return fmt::format_to(out, fmt::runtime(")"));
+    }
+};
+
+template<>
+struct formatter<loki::ast::ConstraintNot, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConstraintNot& value, FormatContext& ctx) const
+    { return fmt::format_to(ctx.out(), fmt::runtime("(not {})"), value.constraint.get()); }
+};
+
+template<>
+struct formatter<loki::ast::ConstraintImply, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConstraintImply& value, FormatContext& ctx) const
+    { return fmt::format_to(ctx.out(), fmt::runtime("(imply {} {})"), value.left.get(), value.right.get()); }
+};
+
+template<>
+struct formatter<loki::ast::ConstraintExists, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConstraintExists& value, FormatContext& ctx) const
+    {
+        auto out = fmt::format_to(ctx.out(), fmt::runtime("(exists ("));
+        auto first = true;
+        for (const auto& parameter : value.parameters)
+        {
+            if (!first)
+                out = fmt::format_to(out, fmt::runtime(" "));
+            first = false;
+            out = fmt::format_to(out, fmt::runtime("{}"), parameter);
+        }
+        return fmt::format_to(out, fmt::runtime(") {})"), value.constraint.get());
+    }
+};
+
+template<>
+struct formatter<loki::ast::ConstraintState, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConstraintState& value, FormatContext& ctx) const
+    { return fmt::format_to(ctx.out(), fmt::runtime("{}"), value.condition); }
+};
+
+template<>
+struct formatter<loki::ast::ConstraintForall, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConstraintForall& value, FormatContext& ctx) const
+    {
+        auto out = fmt::format_to(ctx.out(), fmt::runtime("(forall ("));
+        auto first = true;
+        for (const auto& parameter : value.parameters)
+        {
+            if (!first)
+                out = fmt::format_to(out, fmt::runtime(" "));
+            first = false;
+            out = fmt::format_to(out, fmt::runtime("{}"), parameter);
+        }
+        return fmt::format_to(out, fmt::runtime(") {})"), value.constraint.get());
+    }
+};
+
+template<>
+struct formatter<loki::ast::ConstraintPreference, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConstraintPreference& value, FormatContext& ctx) const
+    {
+        if (value.name)
+            return fmt::format_to(ctx.out(), fmt::runtime("(preference {} {})"), *value.name, value.constraint.get());
+        return fmt::format_to(ctx.out(), fmt::runtime("(preference {})"), value.constraint.get());
+    }
+};
+
+template<>
+struct formatter<loki::ast::ConstraintModal, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConstraintModal& value, FormatContext& ctx) const
+    {
+        const auto* operation = value.operation == 'E' ? "at end" :
+                                value.operation == 'A' ? "always" :
+                                value.operation == 'S' ? "sometime" :
+                                value.operation == 'W' ? "within" :
+                                value.operation == 'O' ? "at-most-once" :
+                                value.operation == 'a' ? "sometime-after" :
+                                value.operation == 'b' ? "sometime-before" :
+                                value.operation == 'w' ? "always-within" :
+                                value.operation == 'h' ? "hold-during" :
+                                value.operation == 'H' ? "hold-after" :
+                                value.operation == 'n' ? "next" :
+                                value.operation == 'N' ? "weak-next" :
+                                value.operation == 'u' ? "until" :
+                                value.operation == 'r' ? "release" :
+                                value.operation == 'y' ? "yesterday" :
+                                value.operation == 'Y' ? "weak-yesterday" :
+                                value.operation == 's' ? "since" :
+                                value.operation == 't' ? "triggers" :
+                                value.operation == 'o' ? "once" :
+                                                         "historically";
+        // :trajectory-formulas' operators write their interval as (interval lo hi), PDDL 3's their bounds bare.
+        const auto trajectory = std::string_view("nNuryYstoi").find(value.operation) != std::string_view::npos;
+        auto out = fmt::format_to(ctx.out(), fmt::runtime("({}"), operation);
+        if (trajectory && value.numbers.size() == 2)
+            out = fmt::format_to(out, fmt::runtime(" (interval {} {})"), value.numbers[0], value.numbers[1]);
+        else
+            for (const auto number : value.numbers)
+                out = fmt::format_to(out, fmt::runtime(" {}"), number);
+        for (const auto& constraint : value.constraints)
+            out = fmt::format_to(out, fmt::runtime(" {}"), constraint.get());
+        return fmt::format_to(out, fmt::runtime(")"));
+    }
+};
+
+template<>
+struct formatter<loki::ast::Constraint, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::Constraint& value, FormatContext& ctx) const
+    {
+        auto out = ctx.out();
+        boost::apply_visitor([&](const auto& node) { out = fmt::format_to(out, fmt::runtime("{}"), node); }, value);
+        return out;
+    }
+};
+
+template<>
+struct formatter<loki::ast::ConstraintSection, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ConstraintSection& value, FormatContext& ctx) const
+    { return fmt::format_to(ctx.out(), fmt::runtime("(:constraints {})"), value.constraint); }
+};
+
+template<>
+struct formatter<loki::ast::DurativeAction, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::DurativeAction& value, FormatContext& ctx) const
+    {
+        auto out = fmt::format_to(ctx.out(), fmt::runtime("(:durative-action {} :parameters ("), value.name);
+        auto first = true;
+        for (const auto& parameter : value.parameters)
+        {
+            if (!first)
+                out = fmt::format_to(out, fmt::runtime(" "));
+            first = false;
+            out = fmt::format_to(out, fmt::runtime("{}"), parameter);
+        }
+        out = fmt::format_to(out, fmt::runtime(") :duration {}"), value.duration);
+        if (value.condition)
+            out = fmt::format_to(out, fmt::runtime(" :condition {}"), *value.condition);
+        if (value.effect)
+            out = fmt::format_to(out, fmt::runtime(" :effect {}"), *value.effect);
+        return fmt::format_to(out, fmt::runtime(")"));
+    }
+};
+
+template<>
 struct formatter<loki::ast::Axiom, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
@@ -564,6 +840,67 @@ struct formatter<loki::ast::InitialFunctionValue, char>
 };
 
 template<>
+struct formatter<loki::ast::TimedInitialLiteral, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::TimedInitialLiteral& value, FormatContext& ctx) const
+    { return fmt::format_to(ctx.out(), fmt::runtime("(at {} {})"), value.time, value.literal); }
+};
+
+template<>
+struct formatter<loki::ast::InitialAtom, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::InitialAtom& value, FormatContext& ctx) const
+    {
+        auto out = ctx.out();
+        boost::apply_visitor([&](const auto& node) { out = fmt::format_to(out, fmt::runtime("{}"), node); }, value);
+        return out;
+    }
+};
+
+template<>
+struct formatter<loki::ast::ProbabilisticInitialAlternative, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::ProbabilisticInitialAlternative& value, FormatContext& ctx) const
+    {
+        auto out = ctx.out();
+        if (value.denominator)
+            out = fmt::format_to(out, fmt::runtime("{}/{} "), value.probability, *value.denominator);
+        else
+            out = fmt::format_to(out, fmt::runtime("{} "), value.probability);
+        if (value.atoms.size() == 1)
+            return fmt::format_to(out, fmt::runtime("{}"), value.atoms.front());
+        out = fmt::format_to(out, fmt::runtime("(and"));
+        for (const auto& atom : value.atoms)
+            out = fmt::format_to(out, fmt::runtime(" {}"), atom);
+        return fmt::format_to(out, fmt::runtime(")"));
+    }
+};
+
+template<>
+struct formatter<loki::ast::InitialProbabilistic, char>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const loki::ast::InitialProbabilistic& value, FormatContext& ctx) const
+    {
+        auto out = fmt::format_to(ctx.out(), fmt::runtime("(probabilistic"));
+        for (const auto& alternative : value.alternatives)
+            out = fmt::format_to(out, fmt::runtime(" {}"), alternative);
+        return fmt::format_to(out, fmt::runtime(")"));
+    }
+};
+
+template<>
 struct formatter<loki::ast::InitialElement, char>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
@@ -589,69 +926,60 @@ struct formatter<loki::ast::Domain, char>
         os << "(define (domain " << value.name.text << ')';
         {
             ygg::IndentScope section(os);
-            if (!value.requirements.empty())
+            const auto print_list = [&](const char* header, const auto& elements)
             {
-                os << '\n' << ygg::print_indent << "(:requirements";
-                for (const auto& requirement : value.requirements)
-                    fmt::print(os, fmt::runtime(" {}"), requirement);
-                os << ')';
-            }
-            if (!value.types.empty())
-            {
-                os << '\n' << ygg::print_indent << "(:types ";
+                os << '\n' << ygg::print_indent << header;
                 auto first = true;
-                for (const auto& type : value.types)
+                for (const auto& element : elements)
                 {
                     if (!first)
                         os << ' ';
                     first = false;
-                    fmt::print(os, fmt::runtime("{}"), type);
+                    fmt::print(os, fmt::runtime("{}"), element);
                 }
                 os << ')';
-            }
-            if (!value.constants.empty())
+            };
+            const auto print_lines = [&](const char* header, const auto& elements)
             {
-                os << '\n' << ygg::print_indent << "(:constants ";
-                auto first = true;
-                for (const auto& constant : value.constants)
+                os << '\n' << ygg::print_indent << header;
                 {
-                    if (!first)
-                        os << ' ';
-                    first = false;
-                    fmt::print(os, fmt::runtime("{}"), constant);
-                }
-                os << ')';
-            }
-            if (!value.predicates.empty())
-            {
-                os << '\n' << ygg::print_indent << "(:predicates";
-                {
-                    ygg::IndentScope predicates(os);
-                    for (const auto& predicate : value.predicates)
+                    ygg::IndentScope lines(os);
+                    for (const auto& element : elements)
                     {
                         os << '\n' << ygg::print_indent;
-                        fmt::print(os, fmt::runtime("{}"), predicate);
+                        fmt::print(os, fmt::runtime("{}"), element);
                     }
                 }
                 os << ')';
-            }
-            if (!value.functions.empty())
+            };
+            // In source order: a domain's sections can come in any order.
+            for (const auto& element : value.elements)
             {
-                os << '\n' << ygg::print_indent << "(:functions";
-                {
-                    ygg::IndentScope functions(os);
-                    for (const auto& function : value.functions)
+                boost::apply_visitor(
+                    [&]<typename Node>(const Node& node)
                     {
-                        os << '\n' << ygg::print_indent;
-                        fmt::print(os, fmt::runtime("{}"), function);
-                    }
-                }
-                os << ')';
-            }
-            for (const auto& declaration : value.declarations)
-            {
-                os << '\n' << ygg::print_indent;
-                boost::apply_visitor([&](const auto& node) { fmt::print(os, fmt::runtime("{}"), node); }, declaration);
+                        if constexpr (std::is_same_v<Node, loki::ast::RequirementSection>)
+                        {
+                            os << '\n' << ygg::print_indent << "(:requirements";
+                            for (const auto& requirement : node.requirements)
+                                fmt::print(os, fmt::runtime(" {}"), requirement);
+                            os << ')';
+                        }
+                        else if constexpr (std::is_same_v<Node, loki::ast::TypeSection>)
+                            print_list("(:types ", node.types);
+                        else if constexpr (std::is_same_v<Node, loki::ast::ConstantSection>)
+                            print_list("(:constants ", node.constants);
+                        else if constexpr (std::is_same_v<Node, loki::ast::PredicateSection>)
+                            print_lines("(:predicates", node.predicates);
+                        else if constexpr (std::is_same_v<Node, loki::ast::FunctionSection>)
+                            print_lines("(:functions", node.functions);
+                        else
+                        {
+                            os << '\n' << ygg::print_indent;
+                            fmt::print(os, fmt::runtime("{}"), node);
+                        }
+                    },
+                    element);
             }
         }
         os << "\n)";
@@ -726,6 +1054,16 @@ struct formatter<loki::ast::Task, char>
             {
                 os << '\n' << ygg::print_indent;
                 fmt::print(os, fmt::runtime("(:goal {})"), *value.goal);
+            }
+            if (value.goal_reward)
+            {
+                os << '\n' << ygg::print_indent;
+                fmt::print(os, fmt::runtime("(:goal-reward {})"), *value.goal_reward);
+            }
+            if (value.constraints)
+            {
+                os << '\n' << ygg::print_indent;
+                fmt::print(os, fmt::runtime("(:constraints {})"), *value.constraints);
             }
             if (value.metric)
             {

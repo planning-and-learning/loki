@@ -19,6 +19,7 @@
 #define LOKI_SEMANTIC_TRANSLATOR_SIMPLIFY_GOAL_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+#include "loki/formalism/preferences.hpp"
 
 namespace loki::semantic::detail
 {
@@ -36,9 +37,17 @@ public:
     formalism::ConditionView simplify_goal_condition_node(formalism::ConditionView condition,
                                                           formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>);
     formalism::ConditionView simplify_goal_condition_node(formalism::ConditionView, formalism::EntityView<formalism::Condition<formalism::AndTag>> node);
+    /// A preference counts its violations: it stays in the goal (its condition is a conjunction already).
+    formalism::ConditionView simplify_goal_condition_node(formalism::ConditionView condition,
+                                                          formalism::EntityView<formalism::Condition<formalism::PreferenceTag>>);
     template<typename T>
     formalism::ConditionView simplify_goal_condition_node(formalism::ConditionView condition, T);
 };
+
+template<typename Derived>
+formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_condition_node(formalism::ConditionView condition,
+                                                                                       formalism::EntityView<formalism::Condition<formalism::PreferenceTag>>)
+{ return condition; }
 
 template<typename Derived>
 formalism::ConditionView SimplifyGoalTranslator<Derived>::make_generated_goal_condition(formalism::ConditionVariant condition)
@@ -96,7 +105,12 @@ formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_conditio
 template<typename Derived>
 template<typename T>
 formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_condition_node(formalism::ConditionView condition, T)
-{ return this->self().make_generated_goal_condition(urd::as_member<formalism::ConditionVariant>(condition)); }
+{
+    // A universal preference is a preference per binding: it stays in the goal.
+    if (formalism::contains_preference(condition))
+        return condition;
+    return this->self().make_generated_goal_condition(urd::as_member<formalism::ConditionVariant>(condition));
+}
 
 }  // namespace loki::semantic::detail
 

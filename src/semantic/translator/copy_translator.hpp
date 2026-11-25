@@ -24,6 +24,7 @@
 #include "condition_analysis_translator.hpp"
 #include "condition_builder_translator.hpp"
 #include "condition_translator.hpp"
+#include "constraint_translator.hpp"
 #include "copy_translator_facade.hpp"
 #include "effect_translator.hpp"
 #include "materialize_equality_translator.hpp"
@@ -49,6 +50,7 @@ class CopyTranslator :
     public BasicCopyTranslator<CopyTranslator>,
     public CompileConditionalEffectsTranslator<CopyTranslator>,
     public ConditionTranslator<CopyTranslator>,
+    public ConstraintTranslator<CopyTranslator>,
     public ConditionAnalysisTranslator<CopyTranslator>,
     public ConditionBuilderTranslator<CopyTranslator>,
     public ToDisjunctiveNormalFormTranslator<CopyTranslator>,
@@ -74,6 +76,7 @@ public:
         BasicCopyTranslator<CopyTranslator>(context()),
         CompileConditionalEffectsTranslator<CopyTranslator>(context()),
         ConditionTranslator<CopyTranslator>(context()),
+        ConstraintTranslator<CopyTranslator>(context()),
         ConditionAnalysisTranslator<CopyTranslator>(context()),
         ConditionBuilderTranslator<CopyTranslator>(context()),
         ToDisjunctiveNormalFormTranslator<CopyTranslator>(context()),
@@ -95,6 +98,7 @@ public:
     using CopyTranslatorFacade<CopyTranslator>::copy;
     using BasicCopyTranslator<CopyTranslator>::copy;
     using ConditionTranslator<CopyTranslator>::copy;
+    using ConstraintTranslator<CopyTranslator>::copy;
     using EffectTranslator<CopyTranslator>::copy;
     using TopLevelTranslator<CopyTranslator>::copy;
 };

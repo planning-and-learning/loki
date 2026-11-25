@@ -85,6 +85,10 @@ struct ActionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
 
+struct DurativeActionClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
 struct AxiomClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
@@ -123,6 +127,7 @@ using effect_type = boost::spirit::x3::rule<EffectClass, ast::Effect>;
 using predicate_declaration_type = boost::spirit::x3::rule<PredicateDeclarationClass, ast::PredicateDeclaration>;
 using function_declaration_type = boost::spirit::x3::rule<FunctionDeclarationClass, ast::FunctionDeclaration>;
 using action_type = boost::spirit::x3::rule<ActionClass, ast::Action>;
+using durative_action_type = boost::spirit::x3::rule<DurativeActionClass, ast::DurativeAction>;
 using axiom_type = boost::spirit::x3::rule<AxiomClass, ast::Axiom>;
 using metric_type = boost::spirit::x3::rule<MetricClass, ast::Metric>;
 using initial_function_value_type = boost::spirit::x3::rule<InitialFunctionValueClass, ast::InitialFunctionValue>;
@@ -144,6 +149,7 @@ BOOST_SPIRIT_DECLARE(effect_type)
 BOOST_SPIRIT_DECLARE(predicate_declaration_type)
 BOOST_SPIRIT_DECLARE(function_declaration_type)
 BOOST_SPIRIT_DECLARE(action_type)
+BOOST_SPIRIT_DECLARE(durative_action_type)
 BOOST_SPIRIT_DECLARE(axiom_type)
 BOOST_SPIRIT_DECLARE(metric_type)
 BOOST_SPIRIT_DECLARE(initial_function_value_type)
@@ -166,6 +172,7 @@ rules::effect_type const& effect();
 rules::predicate_declaration_type const& predicate_declaration();
 rules::function_declaration_type const& function_declaration();
 rules::action_type const& action();
+rules::durative_action_type const& durative_action();
 rules::axiom_type const& axiom();
 rules::metric_type const& metric();
 rules::initial_function_value_type const& initial_function_value();

@@ -19,7 +19,9 @@
 #define LOKI_FORMALISM_TASK_DATA_HPP_
 
 #include "loki/formalism/conditions.hpp"
+#include "loki/formalism/constraints.hpp"
 #include "loki/formalism/declarations.hpp"
+#include "loki/formalism/effects.hpp"
 
 #include <cista/containers/optional.h>
 #include <cista/containers/string.h>
@@ -48,9 +50,13 @@ struct data<::loki::formalism::Task>
     urd::flat_vector<urd::index<::loki::formalism::Object>> objects;
     urd::flat_vector<urd::index<::loki::formalism::Literal>> initial_literals;
     urd::flat_vector<urd::index<::loki::formalism::InitialFunctionValue>> initial_function_values;
+    urd::flat_vector<urd::index<::loki::formalism::TimedInitialLiteral>> timed_initial_literals;
+    urd::flat_vector<urd::index<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>>> initial_effects;
     urd::flat_optional<::loki::formalism::ConditionVariant> goal;
+    urd::flat_optional<double> goal_reward;
     urd::flat_optional<urd::index<::loki::formalism::Metric>> metric;
     urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms;
+    urd::flat_optional<::loki::formalism::ConstraintVariant> constraints;
 
     data() = default;
 
@@ -62,9 +68,13 @@ struct data<::loki::formalism::Task>
          urd::flat_vector<urd::index<::loki::formalism::Object>> objects_,
          urd::flat_vector<urd::index<::loki::formalism::Literal>> initial_literals_,
          urd::flat_vector<urd::index<::loki::formalism::InitialFunctionValue>> initial_function_values_,
+         urd::flat_vector<urd::index<::loki::formalism::TimedInitialLiteral>> timed_initial_literals_,
+         urd::flat_vector<urd::index<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>>> initial_effects_,
          urd::flat_optional<::loki::formalism::ConditionVariant> goal_,
+         urd::flat_optional<double> goal_reward_,
          urd::flat_optional<urd::index<::loki::formalism::Metric>> metric_,
-         urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms_) :
+         urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms_,
+         urd::flat_optional<::loki::formalism::ConstraintVariant> constraints_) :
         index(),
         name(std::move(name_)),
         domain(domain_),
@@ -74,9 +84,13 @@ struct data<::loki::formalism::Task>
         objects(std::move(objects_)),
         initial_literals(std::move(initial_literals_)),
         initial_function_values(std::move(initial_function_values_)),
+        timed_initial_literals(std::move(timed_initial_literals_)),
+        initial_effects(std::move(initial_effects_)),
         goal(std::move(goal_)),
+        goal_reward(std::move(goal_reward_)),
         metric(std::move(metric_)),
-        axioms(std::move(axioms_))
+        axioms(std::move(axioms_)),
+        constraints(std::move(constraints_))
     {
     }
 
@@ -96,9 +110,13 @@ struct data<::loki::formalism::Task>
                            urd::field<"objects", &data::objects>,
                            urd::field<"initial_literals", &data::initial_literals>,
                            urd::field<"initial_function_values", &data::initial_function_values>,
+                           urd::field<"timed_initial_literals", &data::timed_initial_literals>,
+                           urd::field<"initial_effects", &data::initial_effects>,
                            urd::field<"goal", &data::goal>,
+                           urd::field<"goal_reward", &data::goal_reward>,
                            urd::field<"metric", &data::metric>,
-                           urd::field<"axioms", &data::axioms>> {};
+                           urd::field<"axioms", &data::axioms>,
+                           urd::field<"constraints", &data::constraints>> {};
     }
 
     static constexpr auto identifying_members() noexcept
@@ -111,9 +129,13 @@ struct data<::loki::formalism::Task>
                             &data::objects,
                             &data::initial_literals,
                             &data::initial_function_values,
+                            &data::timed_initial_literals,
+                            &data::initial_effects,
                             &data::goal,
+                            &data::goal_reward,
                             &data::metric,
-                            &data::axioms> {};
+                            &data::axioms,
+                            &data::constraints> {};
     }
 
     static constexpr auto cista_members() noexcept
@@ -127,9 +149,13 @@ struct data<::loki::formalism::Task>
                             &data::objects,
                             &data::initial_literals,
                             &data::initial_function_values,
+                            &data::timed_initial_literals,
+                            &data::initial_effects,
                             &data::goal,
+                            &data::goal_reward,
                             &data::metric,
-                            &data::axioms> {};
+                            &data::axioms,
+                            &data::constraints> {};
     }
 
     [[nodiscard]] urd::key<::loki::formalism::Task> key() const noexcept { return urd::key<::loki::formalism::Task>(index); }

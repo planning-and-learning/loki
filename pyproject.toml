@@ -29,7 +29,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "pytest>=9.0.3",
-    "pypddl-datasets>=0.0.17,<0.1",
+    "pypddl-datasets>=0.0.22,<0.1",
 ]
 
 [project.urls]

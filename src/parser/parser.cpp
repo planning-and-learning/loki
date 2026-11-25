@@ -34,6 +34,7 @@ BOOST_SPIRIT_INSTANTIATE(effect_type, Iterator, Context)
 BOOST_SPIRIT_INSTANTIATE(predicate_declaration_type, Iterator, Context)
 BOOST_SPIRIT_INSTANTIATE(function_declaration_type, Iterator, Context)
 BOOST_SPIRIT_INSTANTIATE(action_type, Iterator, Context)
+BOOST_SPIRIT_INSTANTIATE(durative_action_type, Iterator, Context)
 BOOST_SPIRIT_INSTANTIATE(axiom_type, Iterator, Context)
 BOOST_SPIRIT_INSTANTIATE(metric_type, Iterator, Context)
 BOOST_SPIRIT_INSTANTIATE(initial_function_value_type, Iterator, Context)
@@ -73,6 +74,8 @@ rules::predicate_declaration_type const& predicate_declaration() { return rules:
 rules::function_declaration_type const& function_declaration() { return rules::function_declaration; }
 
 rules::action_type const& action() { return rules::action; }
+
+rules::durative_action_type const& durative_action() { return rules::durative_action; }
 
 rules::axiom_type const& axiom() { return rules::axiom; }
 

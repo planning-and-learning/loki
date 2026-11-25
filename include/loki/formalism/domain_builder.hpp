@@ -38,7 +38,9 @@ struct builder<::loki::formalism::Domain, C>
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Predicate>>, C> predicates;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::FunctionSkeleton>>, C> functions;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Action>>, C> actions;
+    urd::built_t<urd::flat_vector<urd::index<::loki::formalism::DurativeAction>>, C> durative_actions;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Axiom>>, C> axioms;
+    urd::built_t<urd::flat_optional<::loki::formalism::ConstraintVariant>, C> constraints;
 
     static constexpr auto fields() noexcept
     {
@@ -49,7 +51,9 @@ struct builder<::loki::formalism::Domain, C>
                            urd::field<"predicates", &builder::predicates>,
                            urd::field<"functions", &builder::functions>,
                            urd::field<"actions", &builder::actions>,
-                           urd::field<"axioms", &builder::axioms>> {};
+                           urd::field<"durative_actions", &builder::durative_actions>,
+                           urd::field<"axioms", &builder::axioms>,
+                           urd::field<"constraints", &builder::constraints>> {};
     }
 
     static constexpr auto identifying_members() noexcept
@@ -61,7 +65,9 @@ struct builder<::loki::formalism::Domain, C>
                             &builder::predicates,
                             &builder::functions,
                             &builder::actions,
-                            &builder::axioms> {};
+                            &builder::durative_actions,
+                            &builder::axioms,
+                            &builder::constraints> {};
     }
 };
 

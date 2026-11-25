@@ -22,6 +22,7 @@
 #include "loki/ast/ast.hpp"
 #include "loki/formalism/conditions.hpp"
 #include "loki/formalism/function_expressions.hpp"
+#include "loki/formalism/preferences.hpp"
 #include "loki/formalism/repository.hpp"
 #include "loki/formalism/term.hpp"
 #include "mappings.hpp"
@@ -85,6 +86,8 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionAn
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionOr& node)
 {
     checks().require_requirement(formalism::RequirementKind::DisjunctivePreconditions, node);
+    // A preference occurs below conjunctions and universal quantifiers only (PDDL 3).
+    const auto preferences = FlagScope(m_parse_context.preferences_allowed, false);
     auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(m_builder);
     for (const auto& child : node.conditions)
         urd::append(data->conditions, parse_condition(child.get()));
@@ -94,6 +97,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionOr
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionNot& node)
 {
     checks().require_requirement(formalism::RequirementKind::NegativePreconditions, node);
+    const auto preferences = FlagScope(m_parse_context.preferences_allowed, false);
     const auto condition = parse_condition(node.condition.get());
     auto data = formalism::checkout<formalism::Condition<formalism::NotTag>>(m_builder);
     urd::store(data->condition, condition);
@@ -103,6 +107,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionNo
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionImply& node)
 {
     checks().require_requirement(formalism::RequirementKind::DisjunctivePreconditions, node);
+    const auto preferences = FlagScope(m_parse_context.preferences_allowed, false);
     const auto left = parse_condition(node.left.get());
     const auto right = parse_condition(node.right.get());
     auto data = formalism::checkout<formalism::Condition<formalism::ImplyTag>>(m_builder);
@@ -114,6 +119,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionIm
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionExists& node)
 {
     checks().require_requirement(formalism::RequirementKind::ExistentialPreconditions, node);
+    const auto preferences = FlagScope(m_parse_context.preferences_allowed, false);
     auto scope = VariableScope(m_parse_context);
     auto parameters = parse_parameters(node.parameters);
     auto child = parse_condition(node.condition.get());
@@ -129,15 +135,54 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionFo
     auto scope = VariableScope(m_parse_context);
     auto parameters = parse_parameters(node.parameters);
     auto child = parse_condition(node.condition.get());
-    auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(m_builder);
-    urd::store(data->parameters, parameters);
-    urd::store(data->condition, child);
-    return repo().insert(*data, m_builder).first;
+    const auto make_forall = [&](formalism::ConditionView condition) -> formalism::ConditionView
+    {
+        auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(m_builder);
+        urd::store(data->parameters, parameters);
+        urd::store(data->condition, condition);
+        return repo().insert(*data, m_builder).first;
+    };
+    // A universal preference is a preference per binding; a universal conjunction of preferences and hard conditions is a
+    // conjunction of universal ones, so that the translator keeps the preferences and removes the hard universals as usual.
+    const auto* conjunction = std::get_if<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(&child);
+    if (conjunction && formalism::contains_preference(child))
+    {
+        auto preferences = urd::Store<urd::sequence<formalism::ConditionView>> {};
+        auto hard = urd::Store<urd::sequence<formalism::ConditionView>> {};
+        for (auto conjunct : conjunction->get_conditions())
+            (formalism::contains_preference(conjunct) ? preferences : hard).push_back(conjunct);
+        auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(m_builder);
+        for (const auto* part : { &preferences, &hard })
+        {
+            if (part->empty())
+                continue;
+            auto body = part->front();
+            if (part->size() > 1)
+            {
+                auto body_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(m_builder);
+                for (auto conjunct : *part)
+                    urd::append(body_data->conditions, conjunct);
+                body = repo().insert(*body_data, m_builder).first;
+            }
+            urd::append(data->conditions, make_forall(body));
+        }
+        return repo().insert(*data, m_builder).first;
+    }
+    return make_forall(child);
 }
 
 formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionNumericConstraint& node)
 {
-    checks().require_requirement(formalism::RequirementKind::NumericFluents, node);
+    // A duration constraint compares ?duration: numeric fluents only by the function terms it reads.
+    if (m_parse_context.in_duration)
+    {
+        if (comparator(node, m_diagnostics) != formalism::BinaryComparator::Eq)
+            checks().require_requirement(formalism::RequirementKind::DurationInequalities, node);
+    }
+    else
+    {
+        checks().require_requirement(formalism::RequirementKind::NumericFluents, node);
+    }
     const auto left = parse_function_expression(node.left.get());
     const auto right = parse_function_expression(node.right.get());
     auto data = formalism::checkout<formalism::Condition<formalism::NumericConstraintTag>>(m_builder);
@@ -152,6 +197,10 @@ formalism::FunctionTermView AstBuilder::parse_function_term(const ast::FunctionT
     const auto name = key(node.function.text);
     if (m_parse_context.active_action_costs && name == "total-cost")
         checks().mark_requirement_used(formalism::RequirementKind::ActionCosts);
+    else if (m_parse_context.active_rewards && name == "reward")
+        checks().mark_requirement_used(formalism::RequirementKind::Rewards);
+    else if (name == "total-time" && node.terms.empty() && m_parse_context.active_requirements.contains(formalism::RequirementKind::DurativeActions))
+        checks().mark_requirement_used(formalism::RequirementKind::DurativeActions);
     else
         checks().require_requirement(formalism::RequirementKind::NumericFluents, node.function);
     auto skeleton = function(node.function, node.terms.size());

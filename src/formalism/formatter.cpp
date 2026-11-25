@@ -124,6 +124,10 @@ std::string to_string(EntityView<FunctionExpression<BinaryTag>> value)
 std::string to_string(EntityView<FunctionExpression<MultiTag>> value)
 { return fmt::format("({}{})", loki::formalism::to_string(value.get_operation()), detail::spaced(value.get_args())); }
 
+std::string to_string(EntityView<FunctionExpression<DurationTag>>) { return "?duration"; }
+
+std::string to_string(EntityView<FunctionExpression<IsViolatedTag>> value) { return fmt::format("(is-violated {})", value.get_name()); }
+
 std::string to_string(FunctionExpressionView value)
 {
     auto result = std::string {};
@@ -165,6 +169,16 @@ std::string to_string(EntityView<Condition<ForallTag>> value)
 std::string to_string(EntityView<Condition<NumericConstraintTag>> value)
 { return fmt::format("({} {} {})", loki::formalism::to_string(value.get_comparator()), to_string(value.get_left()), to_string(value.get_right())); }
 
+std::string to_string(EntityView<Condition<TimedTag>> value)
+{ return fmt::format("({} {})", loki::formalism::to_string(value.get_time()), to_string(value.get_condition())); }
+
+std::string to_string(EntityView<Condition<PreferenceTag>> value)
+{
+    if (value.get_name().empty())
+        return fmt::format("(preference {})", to_string(value.get_condition()));
+    return fmt::format("(preference {} {})", value.get_name(), to_string(value.get_condition()));
+}
+
 std::string to_string(ConditionView value)
 {
     auto result = std::string {};
@@ -191,7 +205,101 @@ std::string to_string(EffectProbabilisticAlternativeView value) { return fmt::fo
 
 std::string to_string(EntityView<Effect<ProbabilisticTag>> value) { return fmt::format("(probabilistic{})", detail::spaced(value.get_alternatives())); }
 
+namespace detail
+{
+
+/// Whether the condition is a timed condition or a conjunction of them (the condition of a conditional effect of a
+/// durative action that reads another time point than its effect's).
+static bool is_timed(ConditionView condition)
+{
+    if (std::holds_alternative<EntityView<Condition<TimedTag>>>(condition))
+        return true;
+    const auto* conjunction = std::get_if<EntityView<Condition<AndTag>>>(&condition);
+    if (!conjunction || conjunction->get_conditions().empty())
+        return false;
+    for (auto conjunct : conjunction->get_conditions())
+        if (!std::holds_alternative<EntityView<Condition<TimedTag>>>(conjunct))
+            return false;
+    return true;
+}
+
+/// An effect at a time point in PDDL 2.1's form: the time specifier on each simple effect, conjunctions, universal
+/// effects and conditional effects outside it, and an untimed condition of a conditional effect at the effect's time.
+static std::string timed_effect_to_string(TimeSpecifier time, EffectView effect)
+{
+    const auto at = [&](const std::string& text) { return fmt::format("({} {})", loki::formalism::to_string(time), text); };
+    auto result = std::string {};
+    visit(
+        [&]<typename Node>(const Node& node)
+        {
+            if constexpr (std::same_as<Node, EntityView<Effect<AndTag>>>)
+            {
+                result = "(and";
+                for (auto part : node.get_effects())
+                    result += " " + timed_effect_to_string(time, part);
+                result += ")";
+            }
+            else if constexpr (std::same_as<Node, EntityView<Effect<ForallTag>>>)
+                result = fmt::format("(forall ({}) {})", fmt::join(to_strings(node.get_parameters()), " "), timed_effect_to_string(time, node.get_effect()));
+            else if constexpr (std::same_as<Node, EntityView<Effect<WhenTag>>>)
+                result = fmt::format("(when {} {})",
+                                     is_timed(node.get_condition()) ? to_string(node.get_condition()) : at(to_string(node.get_condition())),
+                                     timed_effect_to_string(time, node.get_effect()));
+            else
+                result = at(to_string(node));
+        },
+        effect);
+    return result;
+}
+
+}  // namespace detail
+
+std::string to_string(EntityView<Effect<TimedTag>> value) { return detail::timed_effect_to_string(value.get_time(), value.get_effect()); }
+
 std::string to_string(EffectView value)
+{
+    auto result = std::string {};
+    visit([&](const auto& node) { result = to_string(node); }, value);
+    return result;
+}
+
+std::string to_string(EntityView<Constraint<StateTag>> value) { return to_string(value.get_condition()); }
+
+std::string to_string(EntityView<Constraint<AndTag>> value) { return fmt::format("(and{})", detail::spaced(value.get_constraints())); }
+
+std::string to_string(EntityView<Constraint<OrTag>> value) { return fmt::format("(or{})", detail::spaced(value.get_constraints())); }
+
+std::string to_string(EntityView<Constraint<NotTag>> value) { return fmt::format("(not {})", to_string(value.get_constraint())); }
+
+std::string to_string(EntityView<Constraint<ExistsTag>> value)
+{ return fmt::format("(exists ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_constraint())); }
+
+std::string to_string(EntityView<Constraint<ForallTag>> value)
+{ return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_constraint())); }
+
+std::string to_string(EntityView<Constraint<PreferenceTag>> value)
+{
+    if (value.get_name().empty())
+        return fmt::format("(preference {})", to_string(value.get_constraint()));
+    return fmt::format("(preference {} {})", value.get_name(), to_string(value.get_constraint()));
+}
+
+std::string to_string(EntityView<Constraint<ModalTag>> value)
+{
+    auto result = fmt::format("({}", loki::formalism::to_string(value.get_operation()));
+    const auto numbers = value.get_numbers();
+    // PDDL 3's time bounds stand before the operands, a metric operator's interval as (interval lo hi).
+    if (is_trajectory_operator(value.get_operation()) && !numbers.empty())
+        result += fmt::format(" (interval {} {})", numbers[0], numbers[1]);
+    else
+        for (const auto number : numbers)
+            result += fmt::format(" {}", number);
+    for (const auto constraint : value.get_constraints())
+        result += " " + to_string(constraint);
+    return result + ")";
+}
+
+std::string to_string(ConstraintView value)
 {
     auto result = std::string {};
     visit([&](const auto& node) { result = to_string(node); }, value);
@@ -204,6 +312,16 @@ std::string to_string(ActionView value)
                        value.get_name(),
                        fmt::join(detail::to_strings(value.get_parameters()), " "),
                        value.get_precondition() ? fmt::format(" :precondition {}", to_string(value.get_precondition().value())) : "",
+                       value.get_effect() ? fmt::format(" :effect {}", to_string(value.get_effect().value())) : "");
+}
+
+std::string to_string(DurativeActionView value)
+{
+    return fmt::format("(:durative-action {} :parameters ({}) :duration {}{}{})",
+                       value.get_name(),
+                       fmt::join(detail::to_strings(value.get_parameters()), " "),
+                       value.get_duration() ? to_string(value.get_duration().value()) : "()",
+                       value.get_condition() ? fmt::format(" :condition {}", to_string(value.get_condition().value())) : "",
                        value.get_effect() ? fmt::format(" :effect {}", to_string(value.get_effect().value())) : "");
 }
 
@@ -256,6 +374,8 @@ std::string to_string(MetricView value)
 { return fmt::format("(:metric {} {})", formalism::to_string(value.get_optimization_direction()), to_string(value.get_expression())); }
 
 std::string to_string(InitialFunctionValueView value) { return fmt::format("(= {} {})", to_string(value.get_function()), to_string(value.get_value())); }
+
+std::string to_string(TimedInitialLiteralView value) { return fmt::format("(at {} {})", value.get_time(), to_string(value.get_literal())); }
 
 std::string to_string(DomainView value)
 {
@@ -328,10 +448,49 @@ std::string to_string(DomainView value)
             os << '\n' << ygg::print_indent << to_string(axiom);
         for (auto action : value.get_actions())
             os << '\n' << ygg::print_indent << to_string(action);
+        for (auto action : value.get_durative_actions())
+            os << '\n' << ygg::print_indent << to_string(action);
+        if (value.get_constraints())
+            os << '\n' << ygg::print_indent << "(:constraints " << to_string(value.get_constraints().value()) << ')';
     }
     os << "\n)";
     return os.str();
 }
+
+namespace detail
+{
+
+/// A probabilistic initial element (PPDDL) as :init writes it: function values as (= f n), not as assignments.
+static std::string initial_effect_to_string(EffectView effect)
+{
+    auto result = std::string {};
+    visit(
+        [&]<typename Node>(const Node& node)
+        {
+            if constexpr (std::same_as<Node, EntityView<Effect<ProbabilisticTag>>>)
+            {
+                result = "(probabilistic";
+                for (auto alternative : node.get_alternatives())
+                    result += fmt::format(" {} {}", alternative.get_probability(), initial_effect_to_string(alternative.get_effect()));
+                result += ")";
+            }
+            else if constexpr (std::same_as<Node, EntityView<Effect<AndTag>>>)
+            {
+                result = "(and";
+                for (auto part : node.get_effects())
+                    result += " " + initial_effect_to_string(part);
+                result += ")";
+            }
+            else if constexpr (std::same_as<Node, EntityView<Effect<NumericTag>>>)
+                result = fmt::format("(= {} {})", to_string(node.get_function()), to_string(node.get_expression()));
+            else
+                result = to_string(node);
+        },
+        effect);
+    return result;
+}
+
+}  // namespace detail
 
 std::string to_string(TaskView value)
 {
@@ -388,9 +547,17 @@ std::string to_string(TaskView value)
             os << ' ' << to_string(literal);
         for (auto initial_value : value.get_initial_function_values())
             os << ' ' << to_string(initial_value);
+        for (auto timed_literal : value.get_timed_initial_literals())
+            os << ' ' << to_string(timed_literal);
+        for (auto effect : value.get_initial_effects())
+            os << ' ' << detail::initial_effect_to_string(EffectView(effect));
         os << ')';
         if (value.get_goal())
             os << '\n' << ygg::print_indent << "(:goal " << to_string(value.get_goal().value()) << ')';
+        if (value.get_goal_reward())
+            os << '\n' << ygg::print_indent << fmt::format("(:goal-reward {})", value.get_goal_reward().value());
+        if (value.get_constraints())
+            os << '\n' << ygg::print_indent << "(:constraints " << to_string(value.get_constraints().value()) << ')';
         if (value.get_metric())
             os << '\n' << ygg::print_indent << to_string(value.get_metric().value());
         for (auto axiom : value.get_axioms())

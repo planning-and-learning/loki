@@ -103,7 +103,12 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
     this->self().template copy_list<formalism::Predicate>(domain.get_predicates(), data->predicates);
     this->self().template copy_list<formalism::FunctionSkeleton>(domain.get_functions(), data->functions);
     this->self().template copy_list<formalism::Action>(domain.get_actions(), data->actions);
+    this->self().template copy_list<formalism::DurativeAction>(domain.get_durative_actions(), data->durative_actions);
     this->self().template copy_list<formalism::Axiom>(domain.get_axioms(), data->axioms);
+    if (const auto constraints = domain.get_constraints())
+        urd::store(data->constraints, this->self().copy(constraints.value()));
+    else
+        data->constraints = {};
 
     auto [copied_domain, copied_inserted] = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder);
     this->copy_context().storage->translated_domain = copied_domain;
@@ -123,6 +128,8 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
             break;
         case TranslationPhase::CompileTyping:
             this->self().compile_typing_to_domain(*data, copied_domain);
+            // The derived predicates that guard universal constraints and preferences by the types of their parameters.
+            this->self().append_generated_domain_objects(*data);
             break;
         case TranslationPhase::MaterializeEquality:
             this->self().add_equality_predicate_to_domain(*data, copied_domain);
@@ -154,6 +161,24 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     this->self().template copy_list<formalism::Object>(task.get_objects(), data->objects);
     this->self().template copy_list<formalism::Literal>(task.get_initial_literals(), data->initial_literals);
     this->self().template copy_list<formalism::InitialFunctionValue>(task.get_initial_function_values(), data->initial_function_values);
+    this->self().template copy_list<formalism::TimedInitialLiteral>(task.get_timed_initial_literals(), data->timed_initial_literals);
+    // A probabilistic initial element stays one, its outcomes normalized (EffectTranslator, ToEffectNormalFormTranslator).
+    for (auto effect : task.get_initial_effects())
+    {
+        const auto copied = this->self().copy(formalism::EffectView(effect));
+        if (const auto* probabilistic = std::get_if<formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>(&copied))
+            data->initial_effects.push_back(probabilistic->index());
+        else
+        {
+            // Normalized to a single certain outcome: a probabilistic element of probability 1.
+            auto alternative = formalism::checkout<formalism::EffectProbabilisticAlternative>(this->copy_context().builder);
+            alternative->probability = 1.0;
+            urd::store(alternative->effect, copied);
+            auto element = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(this->copy_context().builder);
+            element->alternatives.push_back(this->copy_context().storage->repository.insert(*alternative, this->copy_context().storage->builder).first.index());
+            data->initial_effects.push_back(this->copy_context().storage->repository.insert(*element, this->copy_context().storage->builder).first.index());
+        }
+    }
 
     if (const auto goal = task.get_goal())
     {
@@ -176,6 +201,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
         data->goal = {};
     }
 
+    data->goal_reward = task.get_goal_reward();
     if (const auto metric = task.get_metric())
         urd::store(data->metric, this->self().copy(metric.value()));
     else
@@ -183,6 +209,10 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     this->self().template copy_list<formalism::Predicate>(task.get_predicates(), data->predicates);
     this->self().template copy_list<formalism::Axiom>(task.get_axioms(), data->axioms);
     this->self().template copy_list<formalism::Type>(task.get_types(), data->types);
+    if (const auto constraints = task.get_constraints())
+        urd::store(data->constraints, this->self().copy(constraints.value()));
+    else
+        data->constraints = {};
 
     auto [copied_task, copied_inserted] = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder);
     data->index = {};
@@ -191,6 +221,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     {
         case TranslationPhase::RemoveUniversalQuantifiers:
         case TranslationPhase::SimplifyGoal:
+        case TranslationPhase::CompileTyping:
         {
             if (this->copy_context().phase == TranslationPhase::SimplifyGoal && data->goal)
                 urd::store(data->goal, this->self().simplify_goal_condition(copied_task.get_goal().value()));
@@ -215,6 +246,9 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
                 if (existing_axioms.insert(axiom).second)
                     axioms.push_back(axiom);
             urd::store(data->axioms, axioms);
+            // After the merge, which rewrites the predicates: the type predicates of the task's own types join them.
+            if (this->copy_context().phase == TranslationPhase::CompileTyping)
+                this->self().initialize_type_literals(*data, task);
             break;
         }
         case TranslationPhase::SplitDisjunctiveConditions:
@@ -222,9 +256,6 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             break;
         case TranslationPhase::MaterializeEquality:
             this->self().materialize_equality(*data, task);
-            break;
-        case TranslationPhase::CompileTyping:
-            this->self().initialize_type_literals(*data, task);
             break;
         case TranslationPhase::InferRequirements:
             this->self().set_requirements(infer_requirements(copied_task, this->copy_context().storage->translated()), data->requirements);

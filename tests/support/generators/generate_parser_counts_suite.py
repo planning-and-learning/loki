@@ -24,7 +24,7 @@ CONFIGURATIONS: list[dict[str, bool]] = [
 def discover_cases(prefix: Path) -> list[dict[str, Any]]:
     """Each domain and task of the dataset's test suites, named uniquely."""
     cases: list[dict[str, Any]] = []
-    for family in ("classical", "numeric"):
+    for family in ("classical", "numeric", "temporal", "probabilistic", "nondeterministic"):
         family_root = prefix / family / "tests"
         for domain_file in sorted(family_root.rglob("domain.pddl")):
             task_files = sorted(path for path in domain_file.parent.glob("*.pddl") if path.name != "domain.pddl")
@@ -57,7 +57,7 @@ def make_options(config: dict[str, bool]) -> pypddl.ParserOptions:
     return options
 
 
-def domain_counts(domain: pypddl.Domain) -> dict[str, int]:
+def domain_counts(domain: pypddl.Domain) -> dict[str, int | bool]:
     """How many of each part the domain has."""
     return {
         "requirements": len(domain.get_requirements()),
@@ -67,6 +67,8 @@ def domain_counts(domain: pypddl.Domain) -> dict[str, int]:
         "functions": len(domain.get_functions()),
         "actions": len(domain.get_actions()),
         "axioms": len(domain.get_axioms()),
+        "durative_actions": len(domain.get_durative_actions()),
+        "has_constraints": domain.get_constraints() is not None,
     }
 
 
@@ -81,6 +83,10 @@ def task_counts(task: pypddl.Task) -> dict[str, int | bool]:
         "axioms": len(task.get_axioms()),
         "has_goal": task.get_goal() is not None,
         "has_metric": task.get_metric() is not None,
+        "timed_initial_literals": len(task.get_timed_initial_literals()),
+        "initial_effects": len(task.get_initial_effects()),
+        "has_goal_reward": task.get_goal_reward() is not None,
+        "has_constraints": task.get_constraints() is not None,
     }
 
 

@@ -39,9 +39,13 @@ struct builder<::loki::formalism::Task, C>
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Object>>, C> objects;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Literal>>, C> initial_literals;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::InitialFunctionValue>>, C> initial_function_values;
+    urd::built_t<urd::flat_vector<urd::index<::loki::formalism::TimedInitialLiteral>>, C> timed_initial_literals;
+    urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Effect<::loki::formalism::ProbabilisticTag>>>, C> initial_effects;
     urd::built_t<urd::flat_optional<::loki::formalism::ConditionVariant>, C> goal;
+    urd::built_t<urd::flat_optional<double>, C> goal_reward;
     urd::built_t<urd::flat_optional<urd::index<::loki::formalism::Metric>>, C> metric;
     urd::built_t<urd::flat_vector<urd::index<::loki::formalism::Axiom>>, C> axioms;
+    urd::built_t<urd::flat_optional<::loki::formalism::ConstraintVariant>, C> constraints;
 
     static constexpr auto fields() noexcept
     {
@@ -53,9 +57,13 @@ struct builder<::loki::formalism::Task, C>
                            urd::field<"objects", &builder::objects>,
                            urd::field<"initial_literals", &builder::initial_literals>,
                            urd::field<"initial_function_values", &builder::initial_function_values>,
+                           urd::field<"timed_initial_literals", &builder::timed_initial_literals>,
+                           urd::field<"initial_effects", &builder::initial_effects>,
                            urd::field<"goal", &builder::goal>,
+                           urd::field<"goal_reward", &builder::goal_reward>,
                            urd::field<"metric", &builder::metric>,
-                           urd::field<"axioms", &builder::axioms>> {};
+                           urd::field<"axioms", &builder::axioms>,
+                           urd::field<"constraints", &builder::constraints>> {};
     }
 
     static constexpr auto identifying_members() noexcept
@@ -68,9 +76,13 @@ struct builder<::loki::formalism::Task, C>
                             &builder::objects,
                             &builder::initial_literals,
                             &builder::initial_function_values,
+                            &builder::timed_initial_literals,
+                            &builder::initial_effects,
                             &builder::goal,
+                            &builder::goal_reward,
                             &builder::metric,
-                            &builder::axioms> {};
+                            &builder::axioms,
+                            &builder::constraints> {};
     }
 };
 

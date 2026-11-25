@@ -19,7 +19,9 @@
 #define LOKI_SEMANTIC_TRANSLATOR_CONDITION_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+#include "loki/formalism/preferences.hpp"
 
+#include <algorithm>
 #include <concepts>
 
 namespace loki::semantic::detail
@@ -37,7 +39,33 @@ public:
     formalism::EntityView<formalism::Condition<Tag>> copy(formalism::EntityView<formalism::Condition<Tag>> source);
 
     formalism::ConditionView copy(formalism::ConditionView source);
+
+    /// The condition, a preference or a conjunction of preferences, with each preference's condition guarded by the type
+    /// conditions of the parameters (CompileTypingTranslator::guard_with_types).
+    formalism::ConditionView guard_preferences(formalism::ConditionView condition, formalism::EntityListView<formalism::Parameter> parameters);
 };
+
+template<typename Derived>
+formalism::ConditionView ConditionTranslator<Derived>::guard_preferences(formalism::ConditionView condition,
+                                                                         formalism::EntityListView<formalism::Parameter> parameters)
+{
+    auto& context = this->copy_context();
+    if (const auto* conjunction = std::get_if<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(&condition))
+    {
+        auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(context.builder);
+        for (auto child : conjunction->get_conditions())
+            this->self().append_conjunct(*data, this->self().guard_preferences(child, parameters));
+        return this->self().make_conjunction(*data);
+    }
+    if (const auto* preference = std::get_if<formalism::EntityView<formalism::Condition<formalism::PreferenceTag>>>(&condition))
+    {
+        auto data = formalism::checkout<formalism::Condition<formalism::PreferenceTag>>(context.builder);
+        data->name = preference->get_name();
+        urd::store(data->condition, this->self().guard_with_types(preference->get_condition(), parameters));
+        return formalism::ConditionView(context.storage->repository.insert(*data, context.storage->builder).first);
+    }
+    return condition;
+}
 
 template<typename Derived>
 template<typename Tag>
@@ -48,10 +76,31 @@ formalism::EntityView<formalism::Condition<Tag>> ConditionTranslator<Derived>::c
     auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
     this->self().enter_scope(parameter_views);
     const auto condition = this->self().copy(source.get_condition());
-    this->self().leave_scope();
     auto typed_condition = condition;
     if (this->copy_context().phase == TranslationPhase::CompileTyping)
-        this->self().prepend_type_conditions(typed_condition, source.get_parameters());
+    {
+        if constexpr (std::same_as<Tag, formalism::ForallTag>)
+        {
+            // A universal preference holds vacuously outside the types: each preference's condition is guarded, where typing
+            // goes away (typed parameters restrict their bindings themselves, untyped ones (or object) need no guard).
+            if (formalism::contains_preference(condition))
+            {
+                if (this->self().compiles_typing_now()
+                    && std::ranges::any_of(source.get_parameters(),
+                                           [](auto parameter)
+                                           { return std::ranges::any_of(parameter.get_types(), [](auto type) { return !type.get_bases().empty(); }); }))
+                    typed_condition = this->self().guard_preferences(condition, source.get_parameters());
+            }
+            else
+                this->self().prepend_type_conditions(typed_condition, source.get_parameters());
+        }
+        else
+        {
+            this->self().prepend_type_conditions(typed_condition, source.get_parameters());
+        }
+    }
+    // After typing: a guard's derived predicate takes the parameters in scope.
+    this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<Tag>>(this->copy_context().builder);
     if (this->self().compiles_typing_now())
         this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);

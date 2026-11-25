@@ -48,11 +48,19 @@ public:
 
     auto get_initial_function_values() const noexcept { return self().template member<&urd::record_of<V>::initial_function_values>(); }
 
+    auto get_timed_initial_literals() const noexcept { return self().template member<&urd::record_of<V>::timed_initial_literals>(); }
+
+    auto get_initial_effects() const noexcept { return self().template member<&urd::record_of<V>::initial_effects>(); }
+
     auto get_goal() const noexcept { return self().template member<&urd::record_of<V>::goal>(); }
+
+    auto get_goal_reward() const noexcept { return self().template member<&urd::record_of<V>::goal_reward>(); }
 
     auto get_metric() const noexcept { return self().template member<&urd::record_of<V>::metric>(); }
 
     auto get_axioms() const noexcept { return self().template member<&urd::record_of<V>::axioms>(); }
+
+    auto get_constraints() const noexcept { return self().template member<&urd::record_of<V>::constraints>(); }
 };
 }  // namespace urd
 

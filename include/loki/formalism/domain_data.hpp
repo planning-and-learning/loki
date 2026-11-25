@@ -18,6 +18,7 @@
 #ifndef LOKI_FORMALISM_DOMAIN_DATA_HPP_
 #define LOKI_FORMALISM_DOMAIN_DATA_HPP_
 
+#include "loki/formalism/constraints.hpp"
 #include "loki/formalism/declarations.hpp"
 
 #include <cista/containers/string.h>
@@ -45,7 +46,9 @@ struct data<::loki::formalism::Domain>
     urd::flat_vector<urd::index<::loki::formalism::Predicate>> predicates;
     urd::flat_vector<urd::index<::loki::formalism::FunctionSkeleton>> functions;
     urd::flat_vector<urd::index<::loki::formalism::Action>> actions;
+    urd::flat_vector<urd::index<::loki::formalism::DurativeAction>> durative_actions;
     urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms;
+    urd::flat_optional<::loki::formalism::ConstraintVariant> constraints;
 
     data() = default;
 
@@ -56,7 +59,9 @@ struct data<::loki::formalism::Domain>
          urd::flat_vector<urd::index<::loki::formalism::Predicate>> predicates_,
          urd::flat_vector<urd::index<::loki::formalism::FunctionSkeleton>> functions_,
          urd::flat_vector<urd::index<::loki::formalism::Action>> actions_,
-         urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms_) :
+         urd::flat_vector<urd::index<::loki::formalism::DurativeAction>> durative_actions_,
+         urd::flat_vector<urd::index<::loki::formalism::Axiom>> axioms_,
+         urd::flat_optional<::loki::formalism::ConstraintVariant> constraints_) :
         index(),
         name(std::move(name_)),
         requirements(std::move(requirements_)),
@@ -65,7 +70,9 @@ struct data<::loki::formalism::Domain>
         predicates(std::move(predicates_)),
         functions(std::move(functions_)),
         actions(std::move(actions_)),
-        axioms(std::move(axioms_))
+        durative_actions(std::move(durative_actions_)),
+        axioms(std::move(axioms_)),
+        constraints(std::move(constraints_))
     {
     }
 
@@ -84,13 +91,23 @@ struct data<::loki::formalism::Domain>
                            urd::field<"predicates", &data::predicates>,
                            urd::field<"functions", &data::functions>,
                            urd::field<"actions", &data::actions>,
-                           urd::field<"axioms", &data::axioms>> {};
+                           urd::field<"durative_actions", &data::durative_actions>,
+                           urd::field<"axioms", &data::axioms>,
+                           urd::field<"constraints", &data::constraints>> {};
     }
 
     static constexpr auto identifying_members() noexcept
     {
-        return urd::
-            Members<&data::name, &data::requirements, &data::types, &data::constants, &data::predicates, &data::functions, &data::actions, &data::axioms> {};
+        return urd::Members<&data::name,
+                            &data::requirements,
+                            &data::types,
+                            &data::constants,
+                            &data::predicates,
+                            &data::functions,
+                            &data::actions,
+                            &data::durative_actions,
+                            &data::axioms,
+                            &data::constraints> {};
     }
 
     static constexpr auto cista_members() noexcept
@@ -103,7 +120,9 @@ struct data<::loki::formalism::Domain>
                             &data::predicates,
                             &data::functions,
                             &data::actions,
-                            &data::axioms> {};
+                            &data::durative_actions,
+                            &data::axioms,
+                            &data::constraints> {};
     }
 
     [[nodiscard]] urd::key<::loki::formalism::Domain> key() const noexcept { return urd::key<::loki::formalism::Domain>(index); }

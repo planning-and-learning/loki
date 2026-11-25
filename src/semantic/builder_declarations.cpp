@@ -254,6 +254,16 @@ formalism::FunctionSkeletonView AstBuilder::function(const ast::Identifier& iden
             checks().ensure_arity(name, it->second.get_parameters().size(), arity, identifier);
         return it->second;
     }
+    // The fluents a requirement provides undeclared: PPDDL's (reward) by :rewards, PDDL 2.1's (total-time), the plan's
+    // makespan, by :durative-actions.
+    if (name == "total-time" && arity == 0 && m_parse_context.active_requirements.contains(formalism::RequirementKind::DurativeActions))
+        return number_function(name);
+    if (name == "reward" && arity == 0 && m_parse_context.active_rewards)
+        return number_function(name);
+    if (m_options.strict && name == "total-time" && arity == 0)
+        m_diagnostics.throw_at(identifier, MissingRequirementError("durative-actions"));
+    if (m_options.strict && name == "reward" && arity == 0 && !m_parse_context.active_rewards)
+        m_diagnostics.throw_at(identifier, MissingRequirementError("rewards"));
     if (m_options.strict)
         m_diagnostics.throw_at(identifier, UndefinedFunctionError(name));
     auto data = formalism::checkout<formalism::FunctionSkeleton>(m_builder);
@@ -273,11 +283,13 @@ urd::Store<urd::sequence<formalism::RequirementView>> AstBuilder::parse_requirem
         const auto& name = node.name.text;
         // Aggregates hide which capabilities a model needs; strict mode demands the atomic
         // requirements, and the MissingRequirementError checks then enumerate the right ones.
-        if (m_options.strict && (name == "adl" || name == "fluents" || name == "quantified-preconditions"))
+        if (m_options.strict && (name == "adl" || name == "fluents" || name == "quantified-preconditions" || name == "mdp"))
             m_diagnostics.throw_at(node.name, AggregateRequirementError(name));
         const auto kind = requirement_kind(node, m_diagnostics);
         if (kind == formalism::RequirementKind::ActionCosts)
             m_parse_context.active_action_costs = true;
+        if (kind == formalism::RequirementKind::Rewards || kind == formalism::RequirementKind::Mdp)
+            m_parse_context.active_rewards = true;
         if (kind == formalism::RequirementKind::Fluents || kind == formalism::RequirementKind::NumericFluents)
             m_parse_context.active_numeric_fluents = true;
         for (const auto capability : requirement_capabilities(node, m_diagnostics))
@@ -385,6 +397,11 @@ urd::Store<urd::sequence<formalism::PredicateView>> AstBuilder::parse_predicates
         auto parameters = parse_parameters(node.parameters);
         const auto name = key(node.name.text);
         checks().ensure_new<DuplicatePredicateError>(m_domain_context.declared_predicates, name, node.name);
+        // A type is a unary predicate: a predicate of a type's name declares it again, unary over the root of a hierarchy
+        // (untyped, object or number), as a translation that keeps typing does; any other is a second definition.
+        if (m_domain_context.declared_types.contains(name)
+            && !(parameters.size() == 1 && std::ranges::all_of(parameters.front().get_types(), [](auto type) { return type.get_bases().empty(); })))
+            m_diagnostics.throw_at(node.name, DuplicatePredicateError(name));
         auto data = formalism::checkout<formalism::Predicate>(m_builder);
         data->name = urd::flat_string(name);
         urd::store(data->parameters, parameters);
@@ -405,6 +422,8 @@ urd::Store<urd::sequence<formalism::FunctionSkeletonView>> AstBuilder::parse_fun
         const auto name = key(node.name.text);
         if (m_parse_context.active_action_costs && name == "total-cost")
             checks().mark_requirement_used(formalism::RequirementKind::ActionCosts);
+        else if (m_parse_context.active_rewards && name == "reward")
+            checks().mark_requirement_used(formalism::RequirementKind::Rewards);
         else
             checks().require_requirement(formalism::RequirementKind::NumericFluents, node.name);
         checks().ensure_new<DuplicateFunctionError>(m_domain_context.declared_functions, name, node.name);

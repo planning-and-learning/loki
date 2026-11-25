@@ -274,6 +274,46 @@
             "name": "task-object-types",
             "domain_file": "task_object_types/domain.pddl",
             "task_file": "task_object_types/task.pddl"
+        },
+        {
+            "name": "choice-duplicates",
+            "domain_file": "choice_duplicates/domain.pddl"
+        },
+        {
+            "name": "choice-conditions",
+            "domain_file": "choice_conditions/domain.pddl"
+        },
+        {
+            "name": "choice-forall",
+            "domain_file": "choice_forall/domain.pddl"
+        },
+        {
+            "name": "choice-nested",
+            "domain_file": "choice_nested/domain.pddl"
+        },
+        {
+            "name": "choice-compile-conditional",
+            "domain_file": "choice_compile_conditional/domain.pddl"
+        },
+        {
+            "name": "temporal-basic",
+            "domain_file": "temporal_basic/domain.pddl",
+            "task_file": "temporal_basic/problem.pddl"
+        },
+        {
+            "name": "pddl3-basic",
+            "domain_file": "pddl3_basic/domain.pddl",
+            "task_file": "pddl3_basic/problem.pddl"
+        },
+        {
+            "name": "ppddl-rewards",
+            "domain_file": "ppddl_rewards/domain.pddl",
+            "task_file": "ppddl_rewards/problem.pddl"
+        },
+        {
+            "name": "trajectory-formulas",
+            "domain_file": "trajectory_formulas/domain.pddl",
+            "task_file": "trajectory_formulas/problem.pddl"
         }
     ]
 }

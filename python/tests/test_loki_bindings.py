@@ -193,7 +193,7 @@ def test_manually_created_exception_has_locationless_diagnostic() -> None:
 def test_expected_grammar_subjects_are_readable() -> None:
     cases = [
         ("(define (domain))", "Expected identifier while parsing domain header"),
-        ("(define (domain d) (:action a))", "Expected :parameters while parsing action"),
+        ("(define (domain d) (:action a :precondition))", "Expected condition while parsing action"),
         ("(define (domain d) (:action a :parameters bare))", "Expected action parameters while parsing action"),
         (
             "(define (domain d) (:types a - (either)))",
@@ -238,6 +238,8 @@ def test_parser_count_fixture_suite_replays() -> None:
                 "functions": len(domain.get_functions()),
                 "actions": len(domain.get_actions()),
                 "axioms": len(domain.get_axioms()),
+                "durative_actions": len(domain.get_durative_actions()),
+                "has_constraints": domain.get_constraints() is not None,
             } == configuration["domain"], case["name"]
             assert {
                 "requirements": len(task.get_requirements()),
@@ -248,6 +250,10 @@ def test_parser_count_fixture_suite_replays() -> None:
                 "axioms": len(task.get_axioms()),
                 "has_goal": task.get_goal() is not None,
                 "has_metric": task.get_metric() is not None,
+                "timed_initial_literals": len(task.get_timed_initial_literals()),
+                "initial_effects": len(task.get_initial_effects()),
+                "has_goal_reward": task.get_goal_reward() is not None,
+                "has_constraints": task.get_constraints() is not None,
             } == configuration["task"], case["name"]
 
 
@@ -464,6 +470,8 @@ def test_semantic_exceptions_have_expected_hierarchy() -> None:
         "InvalidNumericConstraintError",
         "InvalidNumericEffectError",
         "InvalidProbabilisticEffectError",
+        "InvalidTemporalExpressionError",
+        "InvalidConstraintError",
         "InvalidEqualityError",
     ]
     for name in semantic_error_names:
@@ -561,28 +569,34 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     action_builder.effect = effect.index()
     action, _ = repository.insert(action_builder)
 
-    domain_builder = pypddl.DomainData("d", [], [], [], [], [], [], [])
+    domain_builder = pypddl.DomainData("d", [], [], [], [], [], [], [], [], None)
     assert domain_builder.requirements == []
     assert domain_builder.types == []
     assert domain_builder.constants == []
     assert domain_builder.predicates == []
     assert domain_builder.functions == []
     assert domain_builder.actions == []
+    assert domain_builder.durative_actions == []
     assert domain_builder.axioms == []
+    assert domain_builder.constraints is None
     domain_builder.name = "mutated-domain"
     domain_builder.types = [object_type.index()]
     domain_builder.predicates = [predicate.index()]
     domain_builder.actions = [action.index()]
     domain, _ = repository.insert(domain_builder)
 
-    task_builder = pypddl.TaskData("t", domain.index(), [], [], [], [], [], [], None, None, [])
+    task_builder = pypddl.TaskData("t", domain.index(), [], [], [], [], [], [], [], [], None, None, None, [], None)
     assert task_builder.name == "t"
     assert task_builder.domain == domain.index()
     assert task_builder.requirements == []
     assert task_builder.objects == []
     assert task_builder.initial_literals == []
     assert task_builder.initial_function_values == []
+    assert task_builder.timed_initial_literals == []
+    assert task_builder.initial_effects == []
     assert task_builder.goal is None
+    assert task_builder.goal_reward is None
+    assert task_builder.constraints is None
     assert task_builder.metric is None
     assert task_builder.types == []
     assert task_builder.predicates == []
@@ -641,7 +655,9 @@ def test_repository_constructs_numeric_function_task_bits() -> None:
             predicates=[],
             functions=[fluent.index()],
             actions=[action.index()],
+            durative_actions=[],
             axioms=[],
+            constraints=None,
         ),
     )
     task, _ = repository.insert(
@@ -654,9 +670,13 @@ def test_repository_constructs_numeric_function_task_bits() -> None:
             objects=[location.index()],
             initial_literals=[],
             initial_function_values=[initial_value.index()],
+            timed_initial_literals=[],
+            initial_effects=[],
             goal=condition.index(),
+            goal_reward=None,
             metric=metric.index(),
             axioms=[],
+            constraints=None,
         ),
     )
 
@@ -911,7 +931,9 @@ def test_repository_exposes_recursive_constructors_and_accessors() -> None:
             predicates=[predicate.index()],
             functions=[fluent.index()],
             actions=[action.index()],
+            durative_actions=[],
             axioms=[axiom.index()],
+            constraints=None,
         )
     )
     task, _ = repository.insert(
@@ -924,9 +946,13 @@ def test_repository_exposes_recursive_constructors_and_accessors() -> None:
             objects=[],
             initial_literals=[],
             initial_function_values=[],
+            timed_initial_literals=[],
+            initial_effects=[],
             goal=condition_forall.index(),
+            goal_reward=None,
             metric=None,
             axioms=[axiom.index()],
+            constraints=None,
         )
     )
 

@@ -1,0 +1,7 @@
+(define (problem ppddl-rewards-1)
+  (:domain ppddl-rewards)
+  (:init)
+  (:goal (p))
+  (:goal-reward 500)
+  (:metric maximize (reward))
+)

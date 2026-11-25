@@ -44,6 +44,8 @@ public:
 private:
     formalism::FunctionExpressionView normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>> source);
     formalism::FunctionExpressionView normalize_node(formalism::FunctionTermView source);
+    formalism::FunctionExpressionView normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::DurationTag>> source);
+    formalism::FunctionExpressionView normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::IsViolatedTag>> source);
     formalism::FunctionExpressionView normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source);
     formalism::FunctionExpressionView normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source);
     formalism::FunctionExpressionView normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source);
@@ -75,6 +77,16 @@ NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::Ent
 
 template<typename Derived>
 formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::FunctionTermView source)
+{ return formalism::FunctionExpressionView(this->self().copy(source)); }
+
+template<typename Derived>
+formalism::FunctionExpressionView
+NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::DurationTag>> source)
+{ return formalism::FunctionExpressionView(this->self().copy(source)); }
+
+template<typename Derived>
+formalism::FunctionExpressionView
+NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::IsViolatedTag>> source)
 { return formalism::FunctionExpressionView(this->self().copy(source)); }
 
 template<typename Derived>

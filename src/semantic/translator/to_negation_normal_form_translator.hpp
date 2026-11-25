@@ -19,6 +19,7 @@
 #define LOKI_SEMANTIC_TRANSLATOR_TO_NEGATION_NORMAL_FORM_TRANSLATOR_HPP_
 
 #include "copy_translator_component.hpp"
+#include "loki/semantic/errors.hpp"
 
 #include <concepts>
 #include <type_traits>
@@ -44,6 +45,11 @@ public:
         requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
     formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<Tag>> source);
     formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source);
+    /// At a time point, the negation of the condition; "not over all" holds at some time point of the interval and has
+    /// no timed condition.
+    formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<formalism::TimedTag>> source);
+    /// A preference counts its violations; its negation is no condition.
+    formalism::ConditionView negate_condition_node(formalism::EntityView<formalism::Condition<formalism::PreferenceTag>> source);
     formalism::ConditionView copy_condition_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source);
     formalism::ConditionView copy_condition_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source);
     template<typename T>
@@ -174,6 +180,21 @@ template<typename Derived>
 template<typename T>
 formalism::ConditionView ToNegationNormalFormTranslator<Derived>::copy_condition_node(formalism::EntityView<T> source)
 { return formalism::ConditionView(this->self().copy(source)); }
+
+template<typename Derived>
+formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::PreferenceTag>>)
+{ throw ygg::diagnostics::SemanticError("a preference cannot be negated"); }
+
+template<typename Derived>
+formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::TimedTag>> source)
+{
+    if (source.get_time() == formalism::TimeSpecifier::OverAll)
+        throw ygg::diagnostics::SemanticError("an over all condition cannot be negated");
+    auto data = formalism::checkout<formalism::Condition<formalism::TimedTag>>(this->copy_context().builder);
+    data->time = source.get_time();
+    urd::store(data->condition, this->self().negate_condition(source.get_condition()));
+    return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
+}
 
 }  // namespace loki::semantic::detail
 

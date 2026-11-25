@@ -1,0 +1,8 @@
+(define (problem pddl3-basic-1)
+  (:domain pddl3-basic)
+  (:objects a b - block)
+  (:init (clear a) (clear b) (clear table) (fragile b))
+  (:goal (and (held a) (preference hold-b (held b)) (forall (?x - block) (preference all-held (held ?x)))))
+  (:constraints (and (within 5 (held a)) (hold-during 1 3 (clear b)) (always-within 2 (held a) (clear table))))
+  (:metric minimize (+ (* 2 (is-violated hold-b)) (is-violated all-held) (is-violated careful) (is-violated tidy)))
+)

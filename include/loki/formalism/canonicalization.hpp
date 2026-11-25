@@ -35,6 +35,8 @@ void canonicalize(const Repository& repository, urd::data<Condition<ExistsTag>>&
 void canonicalize(const Repository& repository, urd::data<Condition<ForallTag>>& data);
 void canonicalize(const Repository& repository, urd::data<Effect<AndTag>>& data);
 void canonicalize(const Repository& repository, urd::data<Effect<OneOfTag>>& data);
+void canonicalize(const Repository& repository, urd::data<Constraint<AndTag>>& data);
+void canonicalize(const Repository& repository, urd::data<Constraint<OrTag>>& data);
 void canonicalize(const Repository& repository, urd::data<Effect<ProbabilisticTag>>& data);
 void canonicalize(const Repository& repository, urd::data<Domain>& data);
 void canonicalize(const Repository& repository, urd::data<Task>& data);

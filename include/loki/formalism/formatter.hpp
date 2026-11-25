@@ -19,6 +19,7 @@
 #define LOKI_FORMALISM_FORMATTER_HPP_
 
 #include "loki/formalism/conditions.hpp"
+#include "loki/formalism/constraints.hpp"
 #include "loki/formalism/declarations.hpp"
 #include "loki/formalism/effects.hpp"
 #include "loki/formalism/function_expressions.hpp"
@@ -50,6 +51,8 @@ std::string to_string(FunctionTermView value);
 std::string to_string(EntityView<FunctionExpression<UnaryTag>> value);
 std::string to_string(EntityView<FunctionExpression<BinaryTag>> value);
 std::string to_string(EntityView<FunctionExpression<MultiTag>> value);
+std::string to_string(EntityView<FunctionExpression<DurationTag>> value);
+std::string to_string(EntityView<FunctionExpression<IsViolatedTag>> value);
 std::string to_string(FunctionExpressionView value);
 std::string to_string(EntityView<Condition<LiteralTag>> value);
 std::string to_string(EntityView<Condition<AndTag>> value);
@@ -59,6 +62,8 @@ std::string to_string(EntityView<Condition<ImplyTag>> value);
 std::string to_string(EntityView<Condition<ExistsTag>> value);
 std::string to_string(EntityView<Condition<ForallTag>> value);
 std::string to_string(EntityView<Condition<NumericConstraintTag>> value);
+std::string to_string(EntityView<Condition<TimedTag>> value);
+std::string to_string(EntityView<Condition<PreferenceTag>> value);
 std::string to_string(ConditionView value);
 std::string to_string(EntityView<Effect<LiteralTag>> value);
 std::string to_string(EntityView<Effect<AndTag>> value);
@@ -68,11 +73,23 @@ std::string to_string(EntityView<Effect<WhenTag>> value);
 std::string to_string(EntityView<Effect<OneOfTag>> value);
 std::string to_string(EffectProbabilisticAlternativeView value);
 std::string to_string(EntityView<Effect<ProbabilisticTag>> value);
+std::string to_string(EntityView<Effect<TimedTag>> value);
 std::string to_string(EffectView value);
+std::string to_string(EntityView<Constraint<StateTag>> value);
+std::string to_string(EntityView<Constraint<AndTag>> value);
+std::string to_string(EntityView<Constraint<OrTag>> value);
+std::string to_string(EntityView<Constraint<NotTag>> value);
+std::string to_string(EntityView<Constraint<ExistsTag>> value);
+std::string to_string(EntityView<Constraint<ForallTag>> value);
+std::string to_string(EntityView<Constraint<PreferenceTag>> value);
+std::string to_string(EntityView<Constraint<ModalTag>> value);
+std::string to_string(ConstraintView value);
 std::string to_string(ActionView value);
+std::string to_string(DurativeActionView value);
 std::string to_string(AxiomView value);
 std::string to_string(MetricView value);
 std::string to_string(InitialFunctionValueView value);
+std::string to_string(TimedInitialLiteralView value);
 std::string to_string(DomainView value);
 std::string to_string(TaskView value);
 

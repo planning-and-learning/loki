@@ -1,5 +1,6 @@
 add_library(
     parsers SHARED
+    formalism/builder_storage.cpp
     formalism/canonicalization.cpp
     formalism/formatter.cpp
     formalism/repository.cpp
@@ -8,6 +9,8 @@ add_library(
     semantic/builder_declarations.cpp
     semantic/builder_effects.cpp
     semantic/builder_expressions.cpp
+    semantic/builder_pddl3.cpp
+    semantic/builder_temporal.cpp
     semantic/canonical_copy.cpp
     semantic/context.cpp
     semantic/diagnostics.cpp
@@ -42,6 +45,8 @@ target_link_libraries(
     PUBLIC
         yggdrasil::yggdrasil
         fmt::fmt
+    PRIVATE
+        Boost::charconv
 )
 
 if(APPLE)

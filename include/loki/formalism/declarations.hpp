@@ -101,6 +101,18 @@ struct ForallTag
     static constexpr std::string_view name = "Forall";
 };
 
+/// A soft condition or constraint of PDDL 3.
+struct PreferenceTag
+{
+    static constexpr std::string_view name = "Preference";
+};
+
+/// A condition or effect of a durative action at a time point or over its interval (TimeSpecifier).
+struct TimedTag
+{
+    static constexpr std::string_view name = "Timed";
+};
+
 // Condition-only tags
 struct OrTag
 {
@@ -169,9 +181,34 @@ struct MultiTag
     static constexpr std::string_view name = "Multi";
 };
 
-using FunctionExpressionTags = boost::mp11::mp_list<NumberTag, UnaryTag, BinaryTag, MultiTag>;
-using ConditionTags = boost::mp11::mp_list<LiteralTag, AndTag, OrTag, NotTag, ImplyTag, ExistsTag, ForallTag, NumericConstraintTag>;
-using EffectTags = boost::mp11::mp_list<LiteralTag, AndTag, NumericTag, ForallTag, WhenTag, OneOfTag, ProbabilisticTag>;
+/// The number of violations of the preferences of a name: (is-violated name).
+struct IsViolatedTag
+{
+    static constexpr std::string_view name = "IsViolated";
+};
+
+/// A modal constraint of PDDL 3 (ConstraintOperator).
+struct ModalTag
+{
+    static constexpr std::string_view name = "Modal";
+};
+
+/// A goal description as a formula over the state trajectory: it holds at the position it is read at.
+struct StateTag
+{
+    static constexpr std::string_view name = "State";
+};
+
+/// The duration of the durative action: ?duration.
+struct DurationTag
+{
+    static constexpr std::string_view name = "Duration";
+};
+
+using FunctionExpressionTags = boost::mp11::mp_list<NumberTag, UnaryTag, BinaryTag, MultiTag, DurationTag, IsViolatedTag>;
+using ConditionTags = boost::mp11::mp_list<LiteralTag, AndTag, OrTag, NotTag, ImplyTag, ExistsTag, ForallTag, NumericConstraintTag, TimedTag, PreferenceTag>;
+using ConstraintTags = boost::mp11::mp_list<StateTag, AndTag, OrTag, NotTag, ExistsTag, ForallTag, PreferenceTag, ModalTag>;
+using EffectTags = boost::mp11::mp_list<LiteralTag, AndTag, NumericTag, ForallTag, WhenTag, OneOfTag, ProbabilisticTag, TimedTag>;
 
 template<typename Tag>
     requires boost::mp11::mp_contains<FunctionExpressionTags, Tag>::value
@@ -194,12 +231,25 @@ struct Effect
     static constexpr std::string_view name = urd::joined_name<"Effect", Tag::name>;
 };
 
-using FunctionExpressionTypes = boost::mp11::mp_append<boost::mp11::mp_list<FunctionExpression<NumberTag>, FunctionTerm>,
-                                                       boost::mp11::mp_transform<FunctionExpression, boost::mp11::mp_list<UnaryTag, BinaryTag, MultiTag>>>;
+template<typename Tag>
+    requires boost::mp11::mp_contains<ConstraintTags, Tag>::value
+struct Constraint
+{
+    static constexpr std::string_view name = urd::joined_name<"Constraint", Tag::name>;
+};
+
+using FunctionExpressionTypes =
+    boost::mp11::mp_append<boost::mp11::mp_list<FunctionExpression<NumberTag>, FunctionTerm>,
+                           boost::mp11::mp_transform<FunctionExpression, boost::mp11::mp_list<UnaryTag, BinaryTag, MultiTag, DurationTag, IsViolatedTag>>>;
 
 struct Action
 {
     static constexpr std::string_view name = "Action";
+};
+
+struct DurativeAction
+{
+    static constexpr std::string_view name = "DurativeAction";
 };
 
 struct Axiom
@@ -215,6 +265,11 @@ struct Metric
 struct InitialFunctionValue
 {
     static constexpr std::string_view name = "InitialFunctionValue";
+};
+
+struct TimedInitialLiteral
+{
+    static constexpr std::string_view name = "TimedInitialLiteral";
 };
 
 struct Domain
@@ -239,10 +294,21 @@ using SymbolRepositoryTypes =
                                                 Effect<OneOfTag>,
                                                 EffectProbabilisticAlternative,
                                                 Effect<ProbabilisticTag>,
+                                                Effect<TimedTag>,
+                                                Constraint<StateTag>,
+                                                Constraint<AndTag>,
+                                                Constraint<OrTag>,
+                                                Constraint<NotTag>,
+                                                Constraint<ExistsTag>,
+                                                Constraint<ForallTag>,
+                                                Constraint<PreferenceTag>,
+                                                Constraint<ModalTag>,
                                                 Action,
+                                                DurativeAction,
                                                 Axiom,
                                                 Metric,
                                                 InitialFunctionValue,
+                                                TimedInitialLiteral,
                                                 Domain,
                                                 Task>>;
 
@@ -275,9 +341,11 @@ using LiteralView = EntityView<Literal>;
 using FunctionTermView = EntityView<FunctionTerm>;
 using EffectProbabilisticAlternativeView = EntityView<EffectProbabilisticAlternative>;
 using ActionView = EntityView<Action>;
+using DurativeActionView = EntityView<DurativeAction>;
 using AxiomView = EntityView<Axiom>;
 using MetricView = EntityView<Metric>;
 using InitialFunctionValueView = EntityView<InitialFunctionValue>;
+using TimedInitialLiteralView = EntityView<TimedInitialLiteral>;
 using DomainView = EntityView<Domain>;
 using TaskView = EntityView<Task>;
 

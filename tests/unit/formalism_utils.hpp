@@ -113,6 +113,9 @@ inline bool is_conjunctive(formalism::ConditionView condition)
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::LiteralTag>>>
                                || std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>>)
                 return true;
+            // A preference over a conjunction counts as one conjunct: its violations are counted, not split.
+            else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::PreferenceTag>>>)
+                return is_conjunctive(node.get_condition());
             else
                 return false;
         },

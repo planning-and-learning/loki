@@ -175,6 +175,18 @@ public:
     explicit InvalidProbabilisticEffectError(const std::string& message) : ygg::diagnostics::SemanticError("Invalid probabilistic effect: " + message) {}
 };
 
+class LOKI_SEMANTIC_ERROR_API InvalidTemporalExpressionError : public ygg::diagnostics::SemanticError
+{
+public:
+    explicit InvalidTemporalExpressionError(const std::string& message) : ygg::diagnostics::SemanticError("Invalid temporal expression: " + message) {}
+};
+
+class LOKI_SEMANTIC_ERROR_API InvalidConstraintError : public ygg::diagnostics::SemanticError
+{
+public:
+    explicit InvalidConstraintError(const std::string& message) : ygg::diagnostics::SemanticError("Invalid constraint or preference: " + message) {}
+};
+
 class LOKI_SEMANTIC_ERROR_API InvalidEqualityError : public ygg::diagnostics::SemanticError
 {
 public:

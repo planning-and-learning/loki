@@ -17,10 +17,10 @@
 
 #include "loki/formalism/repository.hpp"
 
-#include <yggdrasil/formalism/builder_instantiations.hpp>
 #include <yggdrasil/formalism/repository_impl.hpp>
 #include <yggdrasil/formalism/repository_instantiations.hpp>
 
-// The repository's members, which the library's other sources only declare (yggdrasil/formalism/repository.hpp).
-YGG_FORMALISM_REPOSITORY(, loki::formalism::Repository, 36, 0)
-YGG_FORMALISM_BUILDER(, loki::formalism::Builder, 36)
+// The repository's members, which the library's other sources only declare (yggdrasil/formalism/repository.hpp). The
+// builder storage's are in builder_storage.cpp: in one source with these, GCC 13's LTO streams bytecode that its linker
+// cannot read back (an internal compiler error in lto_tag_to_tree_code) once the formalism is as large as it is.
+YGG_FORMALISM_REPOSITORY(, loki::formalism::Repository, 51, 0)

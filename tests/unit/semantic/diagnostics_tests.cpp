@@ -171,7 +171,8 @@ TEST(LokiSemanticDiagnostics, OnlyIdentifiedChildEffectsOwnTheirErrors)
              std::tuple { std::string("(forall bare (p))"), "forall effect", "(forall" },
              std::tuple { std::string("(forall (bare) (p))"), "forall parameters", "(bare" },
              std::tuple { std::string("(forall (?x) bare)"), "forall effect", "(forall" },
-             std::tuple { std::string("(assign bare 1)"), "numeric effect", "(assign" },
+             // A 0-ary function is written bare as an effect's target (PDDL 2.1), but not as its expression.
+             std::tuple { std::string("(assign (f) bare)"), "numeric effect", "(assign" },
              std::tuple { std::string("(not bare)"), "negated literal", "(not" },
          })
     {
@@ -196,7 +197,7 @@ TEST(LokiSemanticDiagnostics, ExpectedSubjectsHaveReadableGrammarNames)
     for (const auto& [source, expected] : {
              std::pair { std::string("(define (domain))"), "Expected identifier while parsing domain header" },
              std::pair { std::string("(define (domain d) (:action))"), "Expected identifier while parsing action" },
-             std::pair { std::string("(define (domain d) (:action a))"), "Expected :parameters while parsing action" },
+             std::pair { std::string("(define (domain d) (:action a :precondition))"), "Expected condition while parsing action" },
              std::pair { std::string("(define (domain d) (:action a :parameters bare))"), "Expected action parameters while parsing action" },
              std::pair { std::string("(define (domain d) (:action a :parameters () :precondition))"), "Expected condition while parsing action" },
              std::pair { std::string("(define (domain d) (:action a :parameters () :precondition (exists bare (p))))"),

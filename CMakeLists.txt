@@ -139,8 +139,9 @@ brokkr_register_native_dependency_prefix("${URD_NATIVE_PREFIX}")
 brokkr_register_python_native_runtime_prefix("pyyggdrasil" "${YGGDRASIL_NATIVE_PREFIX}")
 brokkr_register_python_native_runtime_prefix("pyurd_native" "${URD_NATIVE_PREFIX}")
 
-# Find Boost headers only according to https://cmake.org/cmake/help/latest/module/FindBoost.html
-find_package(Boost 1.74.0 REQUIRED PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
+# Find Boost according to https://cmake.org/cmake/help/latest/module/FindBoost.html: headers, and Boost.Charconv (1.85),
+# which reads real numbers correctly rounded (parser_def.hpp).
+find_package(Boost 1.85.0 REQUIRED COMPONENTS charconv PATHS ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     message(STATUS "Found Boost: ${Boost_DIR} (found version ${Boost_VERSION})")
@@ -168,7 +169,7 @@ if(LOKI_BUILD_TESTS)
     if(NOT LOKI_BENCHMARKS_RESULT EQUAL 0)
         message(
             FATAL_ERROR
-            "Could not resolve the benchmark data root; install 'pypddl-datasets>=0.0.17,<0.1' into the configuring Python (${Python_EXECUTABLE})."
+            "Could not resolve the benchmark data root; install 'pypddl-datasets>=0.0.22,<0.1' into the configuring Python (${Python_EXECUTABLE})."
         )
     endif()
     message(STATUS "Benchmark data: ${LOKI_BENCHMARKS_DIR}")

@@ -26,6 +26,8 @@ function(add_gtest test_name)
 endfunction()
 
 add_gtest(parser_counts_suite "parser/parser_counts_suite.cpp")
+# It instantiates the grammar itself (parser_def.hpp), which reads numbers with Boost.Charconv.
+target_link_libraries(parser_counts_suite PRIVATE Boost::charconv)
 add_gtest(public_facade "public_facade.cpp")
 
 file(
@@ -54,6 +56,9 @@ if(LOKI_PUBLIC_HEADER_SOURCES)
 endif()
 add_gtest(semantic_parser_tests "semantic/parser_tests.cpp")
 add_gtest(semantic_translator_tests "semantic/translator_tests.cpp")
+add_gtest(semantic_choice_tests "semantic/choice_tests.cpp")
+add_gtest(semantic_temporal_tests "semantic/temporal_tests.cpp")
+add_gtest(semantic_language_tests "semantic/language_tests.cpp")
 add_gtest(semantic_diagnostics_tests "semantic/diagnostics_tests.cpp")
 add_gtest(semantic_action_costs_tests "semantic/action_costs_tests.cpp")
 add_gtest(semantic_negative_suite "semantic/negative_suite.cpp")
@@ -77,7 +82,18 @@ add_gtest(
     "formalism/condition_not.cpp"
     "formalism/condition_numeric_constraint.cpp"
     "formalism/condition_or.cpp"
+    "formalism/condition_preference.cpp"
+    "formalism/condition_timed.cpp"
+    "formalism/constraint_and.cpp"
+    "formalism/constraint_exists.cpp"
+    "formalism/constraint_forall.cpp"
+    "formalism/constraint_modal.cpp"
+    "formalism/constraint_not.cpp"
+    "formalism/constraint_or.cpp"
+    "formalism/constraint_preference.cpp"
+    "formalism/constraint_state.cpp"
     "formalism/domain.cpp"
+    "formalism/durative_action.cpp"
     "formalism/effect_and.cpp"
     "formalism/effect_forall.cpp"
     "formalism/effect_literal.cpp"
@@ -85,7 +101,10 @@ add_gtest(
     "formalism/effect_one_of.cpp"
     "formalism/effect_probabilistic.cpp"
     "formalism/effect_probabilistic_alternative.cpp"
+    "formalism/effect_timed.cpp"
     "formalism/effect_when.cpp"
+    "formalism/function_expression_duration.cpp"
+    "formalism/function_expression_is_violated.cpp"
     "formalism/function_expression_number.cpp"
     "formalism/function_skeleton.cpp"
     "formalism/function_term.cpp"
@@ -98,6 +117,7 @@ add_gtest(
     "formalism/predicate.cpp"
     "formalism/requirement.cpp"
     "formalism/task.cpp"
+    "formalism/timed_initial_literal.cpp"
     "formalism/type.cpp"
     "formalism/unary_function_expression.cpp"
     "formalism/variable.cpp"

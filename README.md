@@ -21,17 +21,27 @@ The translator is based on the method presented in section four of the paper [*"
 - [x] :adl
 - [x] :derived-predicates
 - [x] :action-costs
-- [x] :non-deterministic (unsupported in the translator)
-- [x] :probabilistic-effects (unsupported in the translator)
+- [x] :non-deterministic
+- [x] :probabilistic-effects
+- [x] :durative-actions
+- [x] :duration-inequalities
+- [x] :timed-initial-literals
+- [x] :rewards (PPDDL)
+- [x] :preferences
+- [x] :constraints
+- [x] :trajectory-formulas (loki: LTLf, PLTLf and MTLf formulas over the state trajectory)
+
+The [language reference](docs/language.md) describes how loki reads and translates choices, the competitions' syntax,
+constraints and preferences, formulas over the state trajectory, and durative actions.
 
 ## Dependencies
 
-Loki depends on a fraction of [Boost's](https://www.boost.org) header-only libraries (Fusion, Spirit x3, Container), its performance benchmarking framework depends on [GoogleBenchmark](https://github.com/google/benchmark), and its testing framework depends on [GoogleTest](https://github.com/google/googletest).
+Loki depends on a fraction of [Boost's](https://www.boost.org) header-only libraries (Fusion, Spirit x3, Container) and on Boost.Charconv (1.85 or newer, which reads real numbers correctly rounded), its performance benchmarking framework depends on [GoogleBenchmark](https://github.com/google/benchmark), and its testing framework depends on [GoogleTest](https://github.com/google/googletest).
 
 Loki consumes native dependencies from Python packages:
 
 - `pyyggdrasil >= 0.12.0, < 0.13` for shared third-party native dependencies.
-- `pypddl-datasets >= 0.0.17, < 0.1` for the PDDL benchmark data used by the C++ test suite and the example executables (resolved from its cache at CMake configure time).
+- `pypddl-datasets >= 0.0.22, < 0.1` for the PDDL benchmark data used by the C++ test suite and the example executables (resolved from its cache at CMake configure time).
 
 The shared workspace layout, layered install order, and the common
 build-from-source and CMake-integration patterns are documented in the
@@ -52,7 +62,7 @@ Install Loki's native dependency providers into the active Python environment,
 then configure CMake with their native prefixes:
 
 ```console
-python -m pip install 'pyyggdrasil>=0.12.0,<0.13' 'pybrokkr>=0.3.0,<0.4' 'pypddl-datasets>=0.0.17,<0.1'
+python -m pip install 'pyyggdrasil>=0.12.0,<0.13' 'pybrokkr>=0.3.0,<0.4' 'pypddl-datasets>=0.0.22,<0.1'
 
 cmake -S . -B build
 ```

@@ -41,6 +41,7 @@
 #include <urd/repr/values/unordered_flat_set.hpp>
 #include <urd/repr/wrappers/scoped.hpp>
 #include <urd/store.hpp>
+#include <utility>
 #include <vector>
 
 namespace loki::semantic
@@ -83,6 +84,9 @@ struct DomainContext
     urd::Store<urd::set<formalism::RequirementKind>> requirement_kinds;
     bool action_costs = false;
     bool numeric_fluents = false;
+    bool rewards = false;
+    /// The names of the preferences of the domain (and, while a task is built, of the task): what is-violated reads.
+    urd::Store<urd::set<std::string>> preference_names;
 };
 
 // Transient state of a single domain or task parse.
@@ -94,6 +98,17 @@ struct ParseContext
     // Set by :fluents/:numeric-fluents only; bare :action-costs permits reads but restricts
     // numeric writes to (increase (total-cost) ...).
     bool active_numeric_fluents = false;
+    // Set by PPDDL's :rewards: the fluent (reward) exists undeclared, and bare :rewards restricts numeric writes to it.
+    bool active_rewards = false;
+    /// Where the builder is: in a durative action (which admits timed conditions, timed effects and ?duration), in
+    /// its duration constraint, and inside a timed condition or effect (which admits no other).
+    bool in_durative_action = false;
+    bool in_duration = false;
+    bool in_timed = false;
+    /// Where a preference may occur (a precondition, a goal, a constraint), and whether the builder is inside one.
+    bool preferences_allowed = false;
+    bool in_preference = false;
+    bool in_modal_operand = false;  ///< Directly an operand of a PDDL 3 modal operator, where a goal description stands.
     urd::Store<urd::map<formalism::VariableView, urd::Store<urd::sequence<formalism::TypeView>>>> variable_types;
     /// The variables in scope by name: a scope per quantifier or parameter list, inner ones shadowing outer ones.
     urd::Store<urd::map<std::string, formalism::VariableView>, urd::scoped> variable_scopes;
@@ -102,6 +117,24 @@ struct ParseContext
     // The sorted alternatives of the (either ...) types of variables: those known before the build, and those it found missing.
     urd::Store<urd::set<urd::Store<urd::sequence<std::string>>>, urd::sorted, urd::stable_refs> union_types;
     urd::Store<urd::set<urd::Store<urd::sequence<std::string>>>, urd::sorted, urd::stable_refs> missing_union_types;
+};
+
+/// Sets a flag of the parse context until the end of its scope, then restores what it was.
+class FlagScope
+{
+public:
+    FlagScope(bool& flag, bool value) : m_flag(flag), m_previous(std::exchange(flag, value)) {}
+
+    FlagScope(const FlagScope&) = delete;
+    FlagScope& operator=(const FlagScope&) = delete;
+    FlagScope(FlagScope&&) = delete;
+    FlagScope& operator=(FlagScope&&) = delete;
+
+    ~FlagScope() { m_flag = m_previous; }
+
+private:
+    bool& m_flag;
+    bool m_previous;
 };
 
 void remember_requirement(ParseContext& parse_context, formalism::RequirementKind kind);

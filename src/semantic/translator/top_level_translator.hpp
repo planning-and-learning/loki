@@ -31,6 +31,12 @@ public:
 
     formalism::ActionView copy(formalism::ActionView source);
 
+    /// A durative action: its parameters scope its duration, condition and effect. Its condition is never split or
+    /// lifted into parameters: a disjunctive or existential timed condition is a derived predicate instead
+    /// (RemoveUniversalQuantifiersTranslator), since an over all condition fixed to one disjunct or witness would hold
+    /// throughout the interval only for it. Compiling typing adds the type conditions to its at start condition.
+    formalism::DurativeActionView copy(formalism::DurativeActionView source);
+
     formalism::AxiomView copy(formalism::AxiomView source);
 
     formalism::MetricView copy(formalism::MetricView source);
@@ -88,6 +94,60 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
                         if (precondition)
                             urd::store(result->precondition, *precondition);
                         urd::store(result->effect, effect);
+                        auto out = this->copy_context().storage->repository.insert(*result, this->copy_context().storage->builder).first;
+                        this->self().leave_scope();
+                        return out;
+                    });
+}
+
+template<typename Derived>
+formalism::DurativeActionView TopLevelTranslator<Derived>::copy(formalism::DurativeActionView source)
+{
+    if (this->copy_context().phase == TranslationPhase::RenameQuantifiedVariables && this->copy_context().renaming_enabled)
+    {
+        this->copy_context().num_quantifications.clear();
+        this->copy_context().renamed_variable_names.clear();
+        const auto renamed = this->self().rename_variables(source);
+        const auto renaming_disabled = RenamingDisabled(this->copy_context());
+        auto out = this->self().copy(renamed);
+        remember(this->copy_context().storage->maps, source, out);
+        return out;
+    }
+
+    return memoized(this->copy_context().storage->maps,
+                    source,
+                    [&]
+                    {
+                        this->copy_context().num_quantifications.clear();
+                        this->self().increment_quantifications(source.get_parameters());
+                        auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+                        this->self().enter_scope(parameter_views);
+                        auto duration = std::optional<formalism::ConditionView> {};
+                        if (const auto source_duration = source.get_duration())
+                            duration = this->self().copy(source_duration.value());
+                        auto condition = std::optional<formalism::ConditionView> {};
+                        if (const auto source_condition = source.get_condition())
+                            condition = this->self().copy(source_condition.value());
+                        if (this->copy_context().phase == TranslationPhase::CompileTyping)
+                            condition = this->self().prepend_start_type_conditions(condition, source.get_parameters());
+                        auto effect = std::optional<formalism::EffectView> {};
+                        if (const auto source_effect = source.get_effect())
+                            effect = this->self().copy(source_effect.value());
+                        auto result = formalism::checkout<formalism::DurativeAction>(this->copy_context().builder);
+                        result->name = source.get_name();
+                        result->original_name = source.get_original_name();
+                        if (this->self().compiles_typing_now())
+                            this->self().copy_parameters_without_types(source.get_parameters(), result->parameters);
+                        else
+                            for (auto parameter : parameter_views)
+                                result->parameters.push_back(parameter.index());
+                        result->original_arity = source.get_original_arity();
+                        if (duration)
+                            urd::store(result->duration, *duration);
+                        if (condition)
+                            urd::store(result->condition, *condition);
+                        if (effect)
+                            urd::store(result->effect, *effect);
                         auto out = this->copy_context().storage->repository.insert(*result, this->copy_context().storage->builder).first;
                         this->self().leave_scope();
                         return out;

@@ -119,9 +119,26 @@ struct FunctionExpressionMulti : boost::spirit::x3::position_tagged
     urd::Store<urd::sequence<FunctionExpressionPtr>> expressions;
 };
 
+/// (is-violated name): the number of violations of the preferences of the name (PDDL 3).
+struct FunctionExpressionIsViolated : boost::spirit::x3::position_tagged
+{
+    Identifier name;
+};
+
+/// ?duration: the duration of the durative action it occurs in.
+struct FunctionExpressionDuration : boost::spirit::x3::position_tagged
+{
+};
+
 struct FunctionExpression :
     boost::spirit::x3::position_tagged,
-    boost::spirit::x3::variant<FunctionExpressionNumber, FunctionExpressionFunction, FunctionExpressionUnary, FunctionExpressionBinary, FunctionExpressionMulti>
+    boost::spirit::x3::variant<FunctionExpressionNumber,
+                               FunctionExpressionFunction,
+                               FunctionExpressionUnary,
+                               FunctionExpressionBinary,
+                               FunctionExpressionMulti,
+                               FunctionExpressionDuration,
+                               FunctionExpressionIsViolated>
 {
     using base_type::base_type;
     using base_type::operator=;
@@ -175,10 +192,32 @@ struct ConditionNumericConstraint : boost::spirit::x3::position_tagged
     FunctionExpressionPtr right;
 };
 
+/// (preference [name] c): a soft condition (PDDL 3).
+struct ConditionPreference : boost::spirit::x3::position_tagged
+{
+    boost::optional<Identifier> name;
+    ConditionPtr condition;
+};
+
+/// (at start c), (at end c) or (over all c): time is 's', 'e' or 'a'.
+struct ConditionTimed : boost::spirit::x3::position_tagged
+{
+    char time = 's';
+    ConditionPtr condition;
+};
+
 struct Condition :
     boost::spirit::x3::position_tagged,
-    boost::spirit::x3::
-        variant<ConditionLiteral, ConditionAnd, ConditionOr, ConditionNot, ConditionImply, ConditionExists, ConditionForall, ConditionNumericConstraint>
+    boost::spirit::x3::variant<ConditionLiteral,
+                               ConditionAnd,
+                               ConditionOr,
+                               ConditionNot,
+                               ConditionImply,
+                               ConditionExists,
+                               ConditionForall,
+                               ConditionNumericConstraint,
+                               ConditionTimed,
+                               ConditionPreference>
 {
     using base_type::base_type;
     using base_type::operator=;
@@ -221,9 +260,11 @@ struct EffectOneOf : boost::spirit::x3::position_tagged
     urd::Store<urd::sequence<EffectPtr>> effects;
 };
 
+/// p e, where p is a number or a fraction n/d (PPDDL).
 struct ProbabilisticEffectAlternative : boost::spirit::x3::position_tagged
 {
     double probability = 0.0;
+    boost::optional<double> denominator;
     EffectPtr effect;
 };
 
@@ -232,9 +273,16 @@ struct EffectProbabilistic : boost::spirit::x3::position_tagged
     urd::Store<urd::sequence<ProbabilisticEffectAlternative>> alternatives;
 };
 
+/// (at start e) or (at end e): time is 's' or 'e'.
+struct EffectTimed : boost::spirit::x3::position_tagged
+{
+    char time = 's';
+    EffectPtr effect;
+};
+
 struct Effect :
     boost::spirit::x3::position_tagged,
-    boost::spirit::x3::variant<EffectLiteral, EffectAnd, EffectNumeric, EffectForall, EffectWhen, EffectOneOf, EffectProbabilistic>
+    boost::spirit::x3::variant<EffectLiteral, EffectAnd, EffectNumeric, EffectForall, EffectWhen, EffectOneOf, EffectProbabilistic, EffectTimed>
 {
     using base_type::base_type;
     using base_type::operator=;
@@ -261,6 +309,91 @@ struct Action : boost::spirit::x3::position_tagged
     boost::optional<Effect> effect;
 };
 
+struct Constraint;
+using ConstraintPtr = boost::spirit::x3::forward_ast<Constraint>;
+
+struct ConstraintAnd : boost::spirit::x3::position_tagged
+{
+    urd::Store<urd::sequence<ConstraintPtr>> constraints;
+};
+
+struct ConstraintOr : boost::spirit::x3::position_tagged
+{
+    urd::Store<urd::sequence<ConstraintPtr>> constraints;
+};
+
+struct ConstraintNot : boost::spirit::x3::position_tagged
+{
+    ConstraintPtr constraint;
+};
+
+struct ConstraintImply : boost::spirit::x3::position_tagged
+{
+    ConstraintPtr left;
+    ConstraintPtr right;
+};
+
+struct ConstraintExists : boost::spirit::x3::position_tagged
+{
+    urd::Store<urd::sequence<TypedGroup>> parameters;
+    ConstraintPtr constraint;
+};
+
+/// A goal description as a formula: it holds at the position it is read at.
+struct ConstraintState : boost::spirit::x3::position_tagged
+{
+    Condition condition;
+};
+
+struct ConstraintForall : boost::spirit::x3::position_tagged
+{
+    urd::Store<urd::sequence<TypedGroup>> parameters;
+    ConstraintPtr constraint;
+};
+
+struct ConstraintPreference : boost::spirit::x3::position_tagged
+{
+    boost::optional<Identifier> name;
+    ConstraintPtr constraint;
+};
+
+/// A modal formula: its operator (PDDL 3's 'E' at end, 'A' always, 'S' sometime, 'W' within, 'O' at-most-once, 'a' sometime-after,
+/// 'b' sometime-before, 'w' always-within, 'h' hold-during, 'H' hold-after; :trajectory-formulas' 'n' next, 'N' weak-next,
+/// 'u' until, 'r' release, 'y' yesterday, 'Y' weak-yesterday, 's' since, 't' triggers, 'o' once, 'i' historically), its numbers
+/// (PDDL 3's time bounds, or the interval of a metric operator), then its operands.
+struct ConstraintModal : boost::spirit::x3::position_tagged
+{
+    char operation = 'A';
+    urd::Store<urd::sequence<double>> numbers;
+    urd::Store<urd::sequence<ConstraintPtr>> constraints;
+};
+
+/// A formula over the state trajectory: a PDDL 3 constraint, or one of :trajectory-formulas.
+struct Constraint :
+    boost::spirit::x3::position_tagged,
+    boost::spirit::x3::variant<ConstraintAnd,
+                               ConstraintOr,
+                               ConstraintNot,
+                               ConstraintImply,
+                               ConstraintExists,
+                               ConstraintForall,
+                               ConstraintPreference,
+                               ConstraintModal,
+                               ConstraintState>
+{
+    using base_type::base_type;
+    using base_type::operator=;
+};
+
+struct DurativeAction : boost::spirit::x3::position_tagged
+{
+    Identifier name;
+    urd::Store<urd::sequence<TypedGroup>> parameters;
+    Condition duration;
+    boost::optional<Condition> condition;
+    boost::optional<Effect> effect;
+};
+
 struct Axiom : boost::spirit::x3::position_tagged
 {
     PredicateDeclaration head;
@@ -279,24 +412,123 @@ struct InitialFunctionValue : boost::spirit::x3::position_tagged
     FunctionExpression value;
 };
 
-struct InitialElement : boost::spirit::x3::position_tagged, boost::spirit::x3::variant<Literal, InitialFunctionValue>
+/// (at time literal): a literal that becomes true at a time point.
+struct TimedInitialLiteral : boost::spirit::x3::position_tagged
+{
+    double time = 0.0;
+    Literal literal;
+};
+
+/// A literal or a function value of a probabilistic initial element.
+struct InitialAtom : boost::spirit::x3::position_tagged, boost::spirit::x3::variant<Literal, InitialFunctionValue>
 {
     using base_type::base_type;
     using base_type::operator=;
 };
 
-using DomainDeclaration = boost::spirit::x3::variant<Axiom, Action>;
+/// p e of a probabilistic initial element: e a literal, a function value, or a conjunction of them; p as in effects.
+struct ProbabilisticInitialAlternative : boost::spirit::x3::position_tagged
+{
+    double probability = 0.0;
+    boost::optional<double> denominator;
+    urd::Store<urd::sequence<InitialAtom>> atoms;
+};
+
+/// (probabilistic p1 e1 ... pn en) in :init (PPDDL): the initial state is drawn.
+struct InitialProbabilistic : boost::spirit::x3::position_tagged
+{
+    urd::Store<urd::sequence<ProbabilisticInitialAlternative>> alternatives;
+};
+
+struct InitialElement : boost::spirit::x3::position_tagged, boost::spirit::x3::variant<Literal, InitialFunctionValue, TimedInitialLiteral, InitialProbabilistic>
+{
+    using base_type::base_type;
+    using base_type::operator=;
+};
+
+using DomainDeclaration = boost::spirit::x3::variant<Axiom, Action, DurativeAction>;
+
+struct RequirementSection : boost::spirit::x3::position_tagged
+{
+    urd::Store<urd::sequence<Requirement>> requirements;
+};
+
+struct TypeSection : boost::spirit::x3::position_tagged
+{
+    urd::Store<urd::sequence<TypedGroup>> types;
+};
+
+struct ConstantSection : boost::spirit::x3::position_tagged
+{
+    urd::Store<urd::sequence<TypedGroup>> constants;
+};
+
+struct PredicateSection : boost::spirit::x3::position_tagged
+{
+    urd::Store<urd::sequence<PredicateDeclaration>> predicates;
+};
+
+struct FunctionSection : boost::spirit::x3::position_tagged
+{
+    urd::Store<urd::sequence<FunctionDeclaration>> functions;
+};
+
+struct ConstraintSection : boost::spirit::x3::position_tagged
+{
+    Constraint constraint;
+};
+
+/// A section or declaration of a domain, in the order of its source: domains of the competitions order their
+/// sections freely (constants after predicates, functions before types).
+using DomainElement = boost::spirit::x3::
+    variant<RequirementSection, TypeSection, ConstantSection, PredicateSection, FunctionSection, ConstraintSection, Axiom, Action, DurativeAction>;
 
 struct Domain : boost::spirit::x3::position_tagged
 {
     Identifier name;
+    urd::Store<urd::sequence<DomainElement>> elements;
+};
+
+/// A domain's sections, each kind concatenated in source order, and its declarations in source order.
+struct DomainParts
+{
     urd::Store<urd::sequence<Requirement>> requirements;
     urd::Store<urd::sequence<TypedGroup>> types;
     urd::Store<urd::sequence<TypedGroup>> constants;
     urd::Store<urd::sequence<PredicateDeclaration>> predicates;
     urd::Store<urd::sequence<FunctionDeclaration>> functions;
+    urd::Store<urd::sequence<Constraint>> constraints;
     urd::Store<urd::sequence<DomainDeclaration>> declarations;
 };
+
+inline DomainParts parts(const Domain& domain)
+{
+    auto result = DomainParts {};
+    const auto append = [](auto& to, const auto& from) { to.insert(to.end(), from.begin(), from.end()); };
+    for (const auto& element : domain.elements)
+    {
+        boost::apply_visitor(
+            [&]<typename Node>(const Node& node)
+            {
+                if constexpr (std::is_same_v<Node, RequirementSection>)
+                    append(result.requirements, node.requirements);
+                else if constexpr (std::is_same_v<Node, TypeSection>)
+                    append(result.types, node.types);
+                else if constexpr (std::is_same_v<Node, ConstantSection>)
+                    append(result.constants, node.constants);
+                else if constexpr (std::is_same_v<Node, PredicateSection>)
+                    append(result.predicates, node.predicates);
+                else if constexpr (std::is_same_v<Node, FunctionSection>)
+                    append(result.functions, node.functions);
+                else if constexpr (std::is_same_v<Node, ConstraintSection>)
+                    result.constraints.push_back(node.constraint);
+                else
+                    result.declarations.push_back(DomainDeclaration(node));
+            },
+            element);
+    }
+    return result;
+}
 
 struct Task : boost::spirit::x3::position_tagged
 {
@@ -307,7 +539,9 @@ struct Task : boost::spirit::x3::position_tagged
     urd::Store<urd::sequence<PredicateDeclaration>> predicates;  ///< Extends the domain's predicates; not standard PDDL.
     urd::Store<urd::sequence<TypedGroup>> objects;
     urd::Store<urd::sequence<InitialElement>> initial;
-    boost::optional<Condition> goal;
+    boost::optional<Constraint> goal;         ///< A goal description, or a formula over the state trajectory (:trajectory-formulas).
+    boost::optional<double> goal_reward;      ///< PPDDL's (:goal-reward n).
+    boost::optional<Constraint> constraints;  ///< PDDL 3's (:constraints c).
     boost::optional<Metric> metric;
     urd::Store<urd::sequence<Axiom>> axioms;
 };

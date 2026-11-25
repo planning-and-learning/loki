@@ -20,6 +20,7 @@
 
 #include "loki/ast/ast_fwd.hpp"
 #include "loki/formalism/conditions.hpp"
+#include "loki/formalism/constraints.hpp"
 #include "loki/formalism/declarations.hpp"
 #include "loki/formalism/effects.hpp"
 #include "loki/formalism/function_expressions.hpp"
@@ -122,6 +123,8 @@ private:
     formalism::ConditionView parse_condition_node(const ast::ConditionExists& node);
     formalism::ConditionView parse_condition_node(const ast::ConditionForall& node);
     formalism::ConditionView parse_condition_node(const ast::ConditionNumericConstraint& node);
+    formalism::ConditionView parse_condition_node(const ast::ConditionTimed& node);
+    formalism::ConditionView parse_condition_node(const ast::ConditionPreference& node);
 
     // Numeric expressions.
     formalism::FunctionTermView parse_function_term(const ast::FunctionTerm& node);
@@ -131,6 +134,28 @@ private:
     formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionUnary& node);
     formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionBinary& node);
     formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionMulti& node);
+    formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionDuration& node);
+    formalism::FunctionExpressionView parse_function_expression_node(const ast::FunctionExpressionIsViolated& node);
+
+    // PDDL 3 constraints.
+    formalism::ConstraintView parse_constraint(const ast::Constraint& constraint);
+    formalism::ConstraintView parse_constraint_node(const ast::ConstraintAnd& node);
+    formalism::ConstraintView parse_constraint_node(const ast::ConstraintForall& node);
+    formalism::ConstraintView parse_constraint_node(const ast::ConstraintPreference& node);
+    formalism::ConstraintView parse_constraint_node(const ast::ConstraintModal& node);
+    formalism::ConstraintView parse_constraint_node(const ast::ConstraintOr& node);
+    formalism::ConstraintView parse_constraint_node(const ast::ConstraintNot& node);
+    formalism::ConstraintView parse_constraint_node(const ast::ConstraintImply& node);
+    formalism::ConstraintView parse_constraint_node(const ast::ConstraintExists& node);
+    formalism::ConstraintView parse_constraint_node(const ast::ConstraintState& node);
+    formalism::ConstraintView negated(formalism::ConstraintView constraint);
+    /// The task's goal description, or none when its goal is a formula over the state trajectory, then conjoined with constraints.
+    std::optional<formalism::ConditionView> parse_goal(const ast::Constraint& goal, std::optional<formalism::ConstraintView>& constraints);
+    /// The constraints of the sections as one: their conjunction if several. None if there are none.
+    std::optional<formalism::ConstraintView> parse_constraints(const urd::Store<urd::sequence<ast::Constraint>>& constraints);
+    /// The name of a preference, remembered for is-violated; empty if anonymous.
+    template<typename Node>
+    std::string preference_name(const Node& node);
 
     // Effects and top-level constructs.
     formalism::EffectView parse_effect(const ast::Effect& effect);
@@ -141,18 +166,40 @@ private:
     formalism::EffectView parse_effect_node(const ast::EffectWhen& node);
     formalism::EffectView parse_effect_node(const ast::EffectOneOf& node);
     formalism::EffectView parse_effect_node(const ast::EffectProbabilistic& node);
+    formalism::EffectView parse_effect_node(const ast::EffectTimed& node);
     formalism::ActionView parse_action(const ast::Action& node);
+    formalism::DurativeActionView parse_durative_action(const ast::DurativeAction& node);
+    /// A durative action's condition as a conjunction of one timed condition per time point (at start, over all, at
+    /// end), each of an untimed condition: (forall (?x) (at t c)) is (at t (forall (?x) c)). None if empty.
+    std::optional<formalism::ConditionView> group_timed_condition(formalism::ConditionView condition, const ast::DurativeAction& node);
+    /// A durative action's effect as a conjunction of one timed effect per time point (at start, at end), each of an
+    /// untimed effect; a conditional effect whose condition is timed at its effect's time point only reads it untimed.
+    std::optional<formalism::EffectView> group_timed_effect(formalism::EffectView effect, const ast::DurativeAction& node);
     formalism::AxiomView parse_axiom(const ast::Axiom& node);
-    void parse_initial_element(const ast::Literal& literal,
-                               urd::Store<urd::sequence<formalism::LiteralView>>& literals,
-                               urd::Store<urd::sequence<formalism::InitialFunctionValueView>>&);
-    void parse_initial_element(const ast::InitialFunctionValue& value,
-                               urd::Store<urd::sequence<formalism::LiteralView>>&,
-                               urd::Store<urd::sequence<formalism::InitialFunctionValueView>>& values);
+
+    /// The elements of a task's initial state, by kind.
+    struct InitialElements
+    {
+        urd::Store<urd::sequence<formalism::LiteralView>> literals;
+        urd::Store<urd::sequence<formalism::InitialFunctionValueView>> values;
+        urd::Store<urd::sequence<formalism::TimedInitialLiteralView>> timed_literals;
+        /// PPDDL's probabilistic initial elements: probabilistic effects on the initial state.
+        urd::Store<urd::sequence<formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>> effects;
+    };
+
+    void parse_initial_element(const ast::Literal& literal, InitialElements& elements);
+    void parse_initial_element(const ast::InitialFunctionValue& value, InitialElements& elements);
+    void parse_initial_element(const ast::TimedInitialLiteral& value, InitialElements& elements);
+    void parse_initial_element(const ast::InitialProbabilistic& value, InitialElements& elements);
     formalism::MetricView parse_metric(const ast::Metric& node);
+    /// What a metric over the makespan (total-time) or violated preferences alone requires instead of numeric fluents;
+    /// none if it reads another function.
+    std::optional<formalism::RequirementKind> implicit_metric_requirement(const ast::FunctionExpression& expression) const;
 
     // Action-costs completion.
     formalism::FunctionSkeletonView total_cost_function();
+    /// The number function of the name, declared once: (total-cost) of :action-costs, (reward) of :rewards.
+    formalism::FunctionSkeletonView number_function(const std::string& name);
     formalism::FunctionTermView total_cost_term();
     formalism::ActionView add_unit_cost(formalism::ActionView view);
     bool has_total_cost_initial_value(const urd::Store<urd::sequence<formalism::InitialFunctionValueView>>& values);

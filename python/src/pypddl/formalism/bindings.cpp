@@ -86,7 +86,41 @@ void bind_formalism_enums(nb::module_& m)
         .value("DurativeActions", formalism::RequirementKind::DurativeActions)
         .value("DerivedPredicates", formalism::RequirementKind::DerivedPredicates)
         .value("NonDeterministic", formalism::RequirementKind::NonDeterministic)
-        .value("ProbabilisticEffects", formalism::RequirementKind::ProbabilisticEffects);
+        .value("ProbabilisticEffects", formalism::RequirementKind::ProbabilisticEffects)
+        .value("DurationInequalities", formalism::RequirementKind::DurationInequalities)
+        .value("TimedInitialLiterals", formalism::RequirementKind::TimedInitialLiterals)
+        .value("Rewards", formalism::RequirementKind::Rewards)
+        .value("Preferences", formalism::RequirementKind::Preferences)
+        .value("Constraints", formalism::RequirementKind::Constraints)
+        .value("Mdp", formalism::RequirementKind::Mdp)
+        .value("TrajectoryFormulas", formalism::RequirementKind::TrajectoryFormulas);
+
+    nb::enum_<formalism::ConstraintOperator>(m, "ConstraintOperator")
+        .value("AtEnd", formalism::ConstraintOperator::AtEnd)
+        .value("Always", formalism::ConstraintOperator::Always)
+        .value("Sometime", formalism::ConstraintOperator::Sometime)
+        .value("Within", formalism::ConstraintOperator::Within)
+        .value("AtMostOnce", formalism::ConstraintOperator::AtMostOnce)
+        .value("SometimeAfter", formalism::ConstraintOperator::SometimeAfter)
+        .value("SometimeBefore", formalism::ConstraintOperator::SometimeBefore)
+        .value("AlwaysWithin", formalism::ConstraintOperator::AlwaysWithin)
+        .value("HoldDuring", formalism::ConstraintOperator::HoldDuring)
+        .value("HoldAfter", formalism::ConstraintOperator::HoldAfter)
+        .value("Next", formalism::ConstraintOperator::Next)
+        .value("WeakNext", formalism::ConstraintOperator::WeakNext)
+        .value("Until", formalism::ConstraintOperator::Until)
+        .value("Release", formalism::ConstraintOperator::Release)
+        .value("Yesterday", formalism::ConstraintOperator::Yesterday)
+        .value("WeakYesterday", formalism::ConstraintOperator::WeakYesterday)
+        .value("Since", formalism::ConstraintOperator::Since)
+        .value("Triggers", formalism::ConstraintOperator::Triggers)
+        .value("Once", formalism::ConstraintOperator::Once)
+        .value("Historically", formalism::ConstraintOperator::Historically);
+
+    nb::enum_<formalism::TimeSpecifier>(m, "TimeSpecifier")
+        .value("Start", formalism::TimeSpecifier::Start)
+        .value("End", formalism::TimeSpecifier::End)
+        .value("OverAll", formalism::TimeSpecifier::OverAll);
 }
 
 template<typename T>
@@ -193,6 +227,18 @@ void bind_records(nb::module_& m, RepositoryBinding& repository)
     urd::python::bind_view<EntityView<FunctionExpression<MultiTag>>>(m);
     bind_insert<FunctionExpression<MultiTag>>(repository);
 
+    urd::python::bind_index<FunctionExpression<DurationTag>>(m);
+    urd::python::bind_data<FunctionExpression<DurationTag>>(m);
+    urd::python::bind_builder<FunctionExpression<DurationTag>, Repository>(m);
+    urd::python::bind_view<EntityView<FunctionExpression<DurationTag>>>(m);
+    bind_insert<FunctionExpression<DurationTag>>(repository);
+
+    urd::python::bind_index<FunctionExpression<IsViolatedTag>>(m);
+    urd::python::bind_data<FunctionExpression<IsViolatedTag>>(m);
+    urd::python::bind_builder<FunctionExpression<IsViolatedTag>, Repository>(m);
+    urd::python::bind_view<EntityView<FunctionExpression<IsViolatedTag>>>(m);
+    bind_insert<FunctionExpression<IsViolatedTag>>(repository);
+
     urd::python::bind_index<Condition<LiteralTag>>(m);
     urd::python::bind_data<Condition<LiteralTag>>(m);
     urd::python::bind_builder<Condition<LiteralTag>, Repository>(m);
@@ -240,6 +286,18 @@ void bind_records(nb::module_& m, RepositoryBinding& repository)
     urd::python::bind_builder<Condition<NumericConstraintTag>, Repository>(m);
     urd::python::bind_view<EntityView<Condition<NumericConstraintTag>>>(m);
     bind_insert<Condition<NumericConstraintTag>>(repository);
+
+    urd::python::bind_index<Condition<TimedTag>>(m);
+    urd::python::bind_data<Condition<TimedTag>>(m);
+    urd::python::bind_builder<Condition<TimedTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Condition<TimedTag>>>(m);
+    bind_insert<Condition<TimedTag>>(repository);
+
+    urd::python::bind_index<Condition<PreferenceTag>>(m);
+    urd::python::bind_data<Condition<PreferenceTag>>(m);
+    urd::python::bind_builder<Condition<PreferenceTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Condition<PreferenceTag>>>(m);
+    bind_insert<Condition<PreferenceTag>>(repository);
 
     urd::python::bind_index<Effect<LiteralTag>>(m);
     urd::python::bind_data<Effect<LiteralTag>>(m);
@@ -289,11 +347,71 @@ void bind_records(nb::module_& m, RepositoryBinding& repository)
     urd::python::bind_view<EntityView<Effect<ProbabilisticTag>>>(m);
     bind_insert<Effect<ProbabilisticTag>>(repository);
 
+    urd::python::bind_index<Effect<TimedTag>>(m);
+    urd::python::bind_data<Effect<TimedTag>>(m);
+    urd::python::bind_builder<Effect<TimedTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Effect<TimedTag>>>(m);
+    bind_insert<Effect<TimedTag>>(repository);
+
+    urd::python::bind_index<Constraint<StateTag>>(m);
+    urd::python::bind_data<Constraint<StateTag>>(m);
+    urd::python::bind_builder<Constraint<StateTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Constraint<StateTag>>>(m);
+    bind_insert<Constraint<StateTag>>(repository);
+
+    urd::python::bind_index<Constraint<AndTag>>(m);
+    urd::python::bind_data<Constraint<AndTag>>(m);
+    urd::python::bind_builder<Constraint<AndTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Constraint<AndTag>>>(m);
+    bind_insert<Constraint<AndTag>>(repository);
+
+    urd::python::bind_index<Constraint<OrTag>>(m);
+    urd::python::bind_data<Constraint<OrTag>>(m);
+    urd::python::bind_builder<Constraint<OrTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Constraint<OrTag>>>(m);
+    bind_insert<Constraint<OrTag>>(repository);
+
+    urd::python::bind_index<Constraint<NotTag>>(m);
+    urd::python::bind_data<Constraint<NotTag>>(m);
+    urd::python::bind_builder<Constraint<NotTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Constraint<NotTag>>>(m);
+    bind_insert<Constraint<NotTag>>(repository);
+
+    urd::python::bind_index<Constraint<ExistsTag>>(m);
+    urd::python::bind_data<Constraint<ExistsTag>>(m);
+    urd::python::bind_builder<Constraint<ExistsTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Constraint<ExistsTag>>>(m);
+    bind_insert<Constraint<ExistsTag>>(repository);
+
+    urd::python::bind_index<Constraint<ForallTag>>(m);
+    urd::python::bind_data<Constraint<ForallTag>>(m);
+    urd::python::bind_builder<Constraint<ForallTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Constraint<ForallTag>>>(m);
+    bind_insert<Constraint<ForallTag>>(repository);
+
+    urd::python::bind_index<Constraint<PreferenceTag>>(m);
+    urd::python::bind_data<Constraint<PreferenceTag>>(m);
+    urd::python::bind_builder<Constraint<PreferenceTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Constraint<PreferenceTag>>>(m);
+    bind_insert<Constraint<PreferenceTag>>(repository);
+
+    urd::python::bind_index<Constraint<ModalTag>>(m);
+    urd::python::bind_data<Constraint<ModalTag>>(m);
+    urd::python::bind_builder<Constraint<ModalTag>, Repository>(m);
+    urd::python::bind_view<EntityView<Constraint<ModalTag>>>(m);
+    bind_insert<Constraint<ModalTag>>(repository);
+
     urd::python::bind_index<Action>(m);
     urd::python::bind_data<Action>(m);
     urd::python::bind_builder<Action, Repository>(m);
     urd::python::bind_view<EntityView<Action>>(m);
     bind_insert<Action>(repository);
+
+    urd::python::bind_index<DurativeAction>(m);
+    urd::python::bind_data<DurativeAction>(m);
+    urd::python::bind_builder<DurativeAction, Repository>(m);
+    urd::python::bind_view<EntityView<DurativeAction>>(m);
+    bind_insert<DurativeAction>(repository);
 
     urd::python::bind_index<Axiom>(m);
     urd::python::bind_data<Axiom>(m);
@@ -312,6 +430,12 @@ void bind_records(nb::module_& m, RepositoryBinding& repository)
     urd::python::bind_builder<InitialFunctionValue, Repository>(m);
     urd::python::bind_view<EntityView<InitialFunctionValue>>(m);
     bind_insert<InitialFunctionValue>(repository);
+
+    urd::python::bind_index<TimedInitialLiteral>(m);
+    urd::python::bind_data<TimedInitialLiteral>(m);
+    urd::python::bind_builder<TimedInitialLiteral, Repository>(m);
+    urd::python::bind_view<EntityView<TimedInitialLiteral>>(m);
+    bind_insert<TimedInitialLiteral>(repository);
 
     urd::python::bind_index<Domain>(m);
     urd::python::bind_data<Domain>(m);

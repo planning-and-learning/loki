@@ -43,7 +43,95 @@ public:
     formalism::EffectView normalize_effect_node(formalism::EffectView, formalism::EntityView<formalism::Effect<formalism::AndTag>> node);
     formalism::EffectView normalize_effect_node(formalism::EffectView, formalism::EntityView<formalism::Effect<formalism::ForallTag>> node);
     formalism::EffectView normalize_effect_node(formalism::EffectView, formalism::EntityView<formalism::Effect<formalism::WhenTag>> node);
+    /// A oneof with a oneof outcome flattened into it; a single outcome is the effect itself.
+    formalism::EffectView normalize_effect_node(formalism::EffectView, formalism::EntityView<formalism::Effect<formalism::OneOfTag>> node);
+    /// A probabilistic effect with a probabilistic outcome flattened into it (probabilities multiplied), equal outcomes
+    /// merged (probabilities added), outcomes of probability 0 dropped, and the remaining probability mass an explicit
+    /// empty outcome; an outcome of probability 1 is the effect itself.
+    formalism::EffectView normalize_effect_node(formalism::EffectView, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> node);
+    /// A choice whose outcomes are all conditional on one condition (or empty) as that condition over the choice of their
+    /// effects: (oneof (when c a) (when c b)) is (when c (oneof a b)), since the condition reads the state the choice is
+    /// drawn in. One conditional effect instead of one per outcome: what compiling conditional effects multiplies.
+    formalism::EffectView factor_shared_condition(formalism::EffectView choice);
 };
+
+template<typename Derived>
+formalism::EffectView ToEffectNormalFormTranslator<Derived>::factor_shared_condition(formalism::EffectView choice)
+{
+    using WhenView = formalism::EntityView<formalism::Effect<formalism::WhenTag>>;
+    using AndView = formalism::EntityView<formalism::Effect<formalism::AndTag>>;
+    auto& context = this->copy_context();
+    auto condition = std::optional<formalism::ConditionView> {};
+    auto shared = true;
+    // An outcome is conditional on c if it is (when c e), or a conjunction of such (effect normal form distributes c over
+    // a conjunction), or empty.
+    const auto parts = [](formalism::EffectView outcome)
+    {
+        auto result = urd::Store<urd::sequence<formalism::EffectView>> {};
+        if (const auto* conjunction = std::get_if<AndView>(&outcome))
+            for (auto part : conjunction->get_effects())
+                result.push_back(part);
+        else
+            result.push_back(outcome);
+        return result;
+    };
+    const auto check = [&](formalism::EffectView outcome)
+    {
+        for (auto part : parts(outcome))
+        {
+            const auto* when = std::get_if<WhenView>(&part);
+            if (!when || (condition && !(*condition == when->get_condition())))
+                shared = false;
+            else
+                condition = when->get_condition();
+        }
+    };
+    const auto body = [&](formalism::EffectView outcome) -> formalism::EffectView
+    {
+        auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(context.builder);
+        for (auto part : parts(outcome))
+            urd::append(data->effects, std::get<WhenView>(part).get_effect());
+        const auto result = context.storage->repository.insert(*data, context.storage->builder).first;
+        return result.get_effects().size() == 1 ? result.get_effects()[0] : formalism::EffectView(result);
+    };
+    auto factored = std::optional<formalism::EffectView> {};
+    if (const auto* oneof = std::get_if<formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>(&choice))
+    {
+        for (auto outcome : oneof->get_effects())
+            check(outcome);
+        if (!shared || !condition)
+            return choice;
+        auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(context.builder);
+        for (auto outcome : oneof->get_effects())
+            urd::append(data->effects, body(outcome));
+        factored = formalism::EffectView(context.storage->repository.insert(*data, context.storage->builder).first);
+    }
+    else if (const auto* probabilistic = std::get_if<formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>(&choice))
+    {
+        for (auto alternative : probabilistic->get_alternatives())
+            check(alternative.get_effect());
+        if (!shared || !condition)
+            return choice;
+        auto data = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(context.builder);
+        auto alternative_data = formalism::checkout<formalism::EffectProbabilisticAlternative>(context.builder);
+        for (auto alternative : probabilistic->get_alternatives())
+        {
+            urd::clear_fields(*alternative_data);
+            alternative_data->probability = alternative.get_probability();
+            urd::store(alternative_data->effect, body(alternative.get_effect()));
+            data->alternatives.emplace_back(context.storage->repository.insert(*alternative_data, context.storage->builder).first.index());
+        }
+        factored = formalism::EffectView(context.storage->repository.insert(*data, context.storage->builder).first);
+    }
+    else
+    {
+        return choice;
+    }
+    auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(context.builder);
+    urd::store(when_data->condition, *condition);
+    urd::store(when_data->effect, this->self().normalize_effect(*factored));
+    return formalism::EffectView(context.storage->repository.insert(*when_data, context.storage->builder).first);
+}
 
 template<typename Derived>
 template<typename T>
@@ -244,6 +332,95 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
     urd::store(when_data->condition, condition);
     urd::store(when_data->effect, nested);
     return formalism::EffectView(this->copy_context().storage->repository.insert(*when_data, this->copy_context().storage->builder).first);
+}
+
+template<typename Derived>
+formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView,
+                                                                                   formalism::EntityView<formalism::Effect<formalism::OneOfTag>> node)
+{
+    auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(this->copy_context().builder);
+    for (auto child : node.get_effects())
+    {
+        const auto normalized = this->self().normalize_effect(child);
+        if (const auto nested = this->self().template as_effect<formalism::Effect<formalism::OneOfTag>>(normalized))
+        {
+            for (auto outcome : nested->get_effects())
+                urd::append(data->effects, outcome);
+        }
+        else
+        {
+            urd::append(data->effects, normalized);
+        }
+    }
+    // Inserting drops equal outcomes: a oneof is a set of outcomes.
+    const auto result = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
+    if (result.get_effects().size() == 1)
+        return result.get_effects()[0];
+    return this->self().factor_shared_condition(formalism::EffectView(result));
+}
+
+template<typename Derived>
+formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView,
+                                                                                   formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>> node)
+{
+    // The parser's tolerance for probabilities that sum to more than 1.
+    constexpr auto rounding_tolerance = 1e-9;
+
+    auto outcomes = urd::Store<urd::sequence<std::pair<formalism::EffectView, double>>> {};
+    const auto add_outcome = [&](formalism::EffectView effect, double probability)
+    {
+        if (probability <= 0.0)
+            return;
+        for (auto& [outcome, mass] : outcomes)
+        {
+            if (outcome == effect)
+            {
+                mass += probability;
+                return;
+            }
+        }
+        outcomes.emplace_back(effect, probability);
+    };
+
+    for (auto alternative : node.get_alternatives())
+    {
+        const auto normalized = this->self().normalize_effect(alternative.get_effect());
+        if (const auto nested = this->self().template as_effect<formalism::Effect<formalism::ProbabilisticTag>>(normalized))
+        {
+            for (auto nested_alternative : nested->get_alternatives())
+                add_outcome(nested_alternative.get_effect(), alternative.get_probability() * nested_alternative.get_probability());
+        }
+        else
+        {
+            add_outcome(normalized, alternative.get_probability());
+        }
+    }
+
+    auto total = 0.0;
+    for (const auto& [outcome, mass] : outcomes)
+        total += mass;
+    if (total < 1.0 - rounding_tolerance)
+    {
+        auto empty_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
+        add_outcome(formalism::EffectView(this->copy_context().storage->repository.insert(*empty_data, this->copy_context().storage->builder).first),
+                    1.0 - total);
+    }
+
+    if (outcomes.size() == 1)
+        return outcomes.front().first;
+
+    auto data = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(this->copy_context().builder);
+    auto alternative_data = formalism::checkout<formalism::EffectProbabilisticAlternative>(this->copy_context().builder);
+    for (const auto& [outcome, mass] : outcomes)
+    {
+        urd::clear_fields(*alternative_data);
+        alternative_data->probability = mass;
+        urd::store(alternative_data->effect, outcome);
+        data->alternatives.emplace_back(
+            this->copy_context().storage->repository.insert(*alternative_data, this->copy_context().storage->builder).first.index());
+    }
+    return this->self().factor_shared_condition(
+        formalism::EffectView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first));
 }
 
 }  // namespace loki::semantic::detail

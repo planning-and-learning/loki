@@ -21,9 +21,11 @@
 #include "loki/parser/ast_adapted.hpp"
 #include "loki/parser/parser.hpp"
 
+#include <boost/charconv.hpp>
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/utility/annotate_on_success.hpp>
 #include <string>
+#include <system_error>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 #include <vector>
@@ -39,7 +41,35 @@ namespace loki::parser::rules
 {
 using boost::spirit::x3::attr;
 using boost::spirit::x3::char_;
-using boost::spirit::x3::double_;
+
+/// A real number read correctly rounded: x3::double_ finds its extent, Boost.Charconv's from_chars its value. x3::double_
+/// alone is not correctly rounded (0.9666666666666667 reads as 0.9666666666666668: it accumulates the digits in a double,
+/// beyond 2^53, then scales), which breaks printing and rereading numbers. Boost.Charconv, not std::from_chars: libc++ of
+/// Apple's toolchains lacks the floating-point overloads.
+struct ExactDoubleParser : boost::spirit::x3::parser<ExactDoubleParser>
+{
+    using attribute_type = double;
+    static constexpr bool has_attribute = true;
+
+    template<typename Iterator, typename Context, typename RContext, typename Attribute>
+    bool parse(Iterator& first, const Iterator& last, const Context& context, RContext&, Attribute& attribute) const
+    {
+        boost::spirit::x3::skip_over(first, last, context);
+        auto end = first;
+        auto ignored = 0.0;
+        if (!boost::spirit::x3::double_.parse(end, last, boost::spirit::x3::unused, boost::spirit::x3::unused, ignored))
+            return false;
+        const auto text = std::string(first, end);
+        auto value = 0.0;
+        if (boost::charconv::from_chars(text.data(), text.data() + text.size(), value).ec != std::errc {})
+            value = ignored;  // ponytail: from_chars rejects a leading '+' or out-of-range text; x3's value then stands
+        boost::spirit::x3::traits::move_to(value, attribute);
+        first = end;
+        return true;
+    }
+};
+
+inline constexpr auto double_ = ExactDoubleParser {};
 using boost::spirit::x3::lexeme;
 using boost::spirit::x3::lit;
 using boost::spirit::x3::no_case;
@@ -62,6 +92,7 @@ constexpr effect_type effect = "effect";
 constexpr predicate_declaration_type predicate_declaration = "predicate_declaration";
 constexpr function_declaration_type function_declaration = "function_declaration";
 constexpr action_type action = "action";
+constexpr durative_action_type durative_action = "durative_action";
 constexpr axiom_type axiom = "axiom";
 constexpr metric_type metric = "metric";
 constexpr initial_function_value_type initial_function_value = "initial_function_value";
@@ -100,6 +131,94 @@ struct FunctionExpressionBinaryClass : ygg::diagnostics::ErrorHandlerBase
 };
 
 struct FunctionExpressionMultiClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct FunctionExpressionDurationClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConditionTimedClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConditionPreferenceClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct FunctionExpressionIsViolatedClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintAndClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintForallClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintPreferenceClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintModalClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintOrClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintNotClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintImplyClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintExistsClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintStateClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintTemporalClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ConstraintIntervalClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct DomainConstraintSectionClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct EffectTimedClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct TimedInitialLiteralClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct InitialAtomClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct ProbabilisticInitialAlternativeClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct InitialProbabilisticClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
 
@@ -195,6 +314,34 @@ struct InitialSectionClass : ygg::diagnostics::ErrorHandlerBase
 {
 };
 
+struct DomainRequirementSectionClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct DomainTypeSectionClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct DomainConstantSectionClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct DomainPredicateSectionClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct DomainFunctionSectionClass : ygg::diagnostics::ErrorHandlerBase
+{
+};
+
+struct TypedNameGroupClass : boost::spirit::x3::annotate_on_success
+{
+};
+
+struct TypedVariableGroupClass : boost::spirit::x3::annotate_on_success
+{
+};
+
 constexpr boost::spirit::x3::rule<VariableIdentifierClass, ast::Identifier> variable_identifier = "variable_identifier";
 constexpr boost::spirit::x3::rule<TypeReferenceClass, ast::TypeReference> type_reference = "type_reference";
 constexpr boost::spirit::x3::rule<EitherTypeClass, ast::EitherType> either_type = "either_type";
@@ -204,6 +351,31 @@ constexpr boost::spirit::x3::rule<FunctionExpressionFunctionClass, ast::Function
 constexpr boost::spirit::x3::rule<FunctionExpressionUnaryClass, ast::FunctionExpressionUnary> function_expression_unary = "function_expression_unary";
 constexpr boost::spirit::x3::rule<FunctionExpressionBinaryClass, ast::FunctionExpressionBinary> function_expression_binary = "function_expression_binary";
 constexpr boost::spirit::x3::rule<FunctionExpressionMultiClass, ast::FunctionExpressionMulti> function_expression_multi = "function_expression_multi";
+constexpr boost::spirit::x3::rule<FunctionExpressionDurationClass, ast::FunctionExpressionDuration> function_expression_duration =
+    "function_expression_duration";
+constexpr boost::spirit::x3::rule<ConditionTimedClass, ast::ConditionTimed> condition_timed = "condition_timed";
+constexpr boost::spirit::x3::rule<ConditionPreferenceClass, ast::ConditionPreference> condition_preference = "condition_preference";
+constexpr boost::spirit::x3::rule<FunctionExpressionIsViolatedClass, ast::FunctionExpressionIsViolated> function_expression_is_violated =
+    "function_expression_is_violated";
+constexpr boost::spirit::x3::rule<ConstraintClass, ast::Constraint> constraint = "constraint";
+constexpr boost::spirit::x3::rule<ConstraintAndClass, ast::ConstraintAnd> constraint_and = "constraint_and";
+constexpr boost::spirit::x3::rule<ConstraintForallClass, ast::ConstraintForall> constraint_forall = "constraint_forall";
+constexpr boost::spirit::x3::rule<ConstraintPreferenceClass, ast::ConstraintPreference> constraint_preference = "constraint_preference";
+constexpr boost::spirit::x3::rule<ConstraintModalClass, ast::ConstraintModal> constraint_modal = "constraint_modal";
+constexpr boost::spirit::x3::rule<ConstraintOrClass, ast::ConstraintOr> constraint_or = "constraint_or";
+constexpr boost::spirit::x3::rule<ConstraintNotClass, ast::ConstraintNot> constraint_not = "constraint_not";
+constexpr boost::spirit::x3::rule<ConstraintImplyClass, ast::ConstraintImply> constraint_imply = "constraint_imply";
+constexpr boost::spirit::x3::rule<ConstraintExistsClass, ast::ConstraintExists> constraint_exists = "constraint_exists";
+constexpr boost::spirit::x3::rule<ConstraintStateClass, ast::ConstraintState> constraint_state = "constraint_state";
+constexpr boost::spirit::x3::rule<ConstraintTemporalClass, ast::ConstraintModal> constraint_temporal = "constraint_temporal";
+constexpr boost::spirit::x3::rule<ConstraintIntervalClass, urd::Store<urd::sequence<double>>> constraint_interval = "constraint_interval";
+constexpr boost::spirit::x3::rule<DomainConstraintSectionClass, ast::ConstraintSection> domain_constraint_section = "constraints section";
+constexpr boost::spirit::x3::rule<EffectTimedClass, ast::EffectTimed> effect_timed = "effect_timed";
+constexpr boost::spirit::x3::rule<TimedInitialLiteralClass, ast::TimedInitialLiteral> timed_initial_literal = "timed_initial_literal";
+constexpr boost::spirit::x3::rule<InitialAtomClass, ast::InitialAtom> initial_atom = "initial_atom";
+constexpr boost::spirit::x3::rule<ProbabilisticInitialAlternativeClass, ast::ProbabilisticInitialAlternative> probabilistic_initial_alternative =
+    "probabilistic_initial_alternative";
+constexpr boost::spirit::x3::rule<InitialProbabilisticClass, ast::InitialProbabilistic> initial_probabilistic = "initial_probabilistic";
 constexpr boost::spirit::x3::rule<ConditionLiteralClass, ast::ConditionLiteral> condition_literal = "condition_literal";
 constexpr boost::spirit::x3::rule<ConditionAndClass, ast::ConditionAnd> condition_and = "condition_and";
 constexpr boost::spirit::x3::rule<ConditionOrClass, ast::ConditionOr> condition_or = "condition_or";
@@ -229,10 +401,17 @@ constexpr boost::spirit::x3::rule<PredicateSectionClass, urd::Store<urd::sequenc
 constexpr boost::spirit::x3::rule<FunctionSectionClass, urd::Store<urd::sequence<ast::FunctionDeclaration>>> function_section = "function_section";
 constexpr boost::spirit::x3::rule<ObjectSectionClass, urd::Store<urd::sequence<ast::TypedGroup>>> object_section = "object_section";
 constexpr boost::spirit::x3::rule<InitialSectionClass, urd::Store<urd::sequence<ast::InitialElement>>> initial_section = "init section";
+constexpr boost::spirit::x3::rule<DomainRequirementSectionClass, ast::RequirementSection> domain_requirement_section = "requirements section";
+constexpr boost::spirit::x3::rule<DomainTypeSectionClass, ast::TypeSection> domain_type_section = "types section";
+constexpr boost::spirit::x3::rule<DomainConstantSectionClass, ast::ConstantSection> domain_constant_section = "constants section";
+constexpr boost::spirit::x3::rule<DomainPredicateSectionClass, ast::PredicateSection> domain_predicate_section = "predicates section";
+constexpr boost::spirit::x3::rule<DomainFunctionSectionClass, ast::FunctionSection> domain_function_section = "functions section";
 
 inline constexpr auto symbol = lexeme[+symbol_character];
 inline constexpr auto operator_symbol =
-    lexeme[(string("scale-down") | string("scale-up") | string("increase") | string("decrease") | string("assign") | string("minus")) >> !symbol_character
+    // PDDL is case-insensitive: (DECREASE ...) is (decrease ...); the semantic parser reads the operator lowercased.
+    lexeme[boost::spirit::x3::raw[no_case[lit("scale-down") | lit("scale-up") | lit("increase") | lit("decrease") | lit("assign") | lit("minus")]]
+               >> !symbol_character
            | (char_('+') | char_('-') | char_('*') | char_('/') | char_('=') | char_('<') | char_('>') | char_('!')) >> -char_('=')];
 }  // namespace detail
 
@@ -244,16 +423,21 @@ using detail::condition_literal;
 using detail::condition_not;
 using detail::condition_numeric_constraint;
 using detail::condition_or;
+using detail::condition_preference;
+using detail::condition_timed;
 using detail::constant_section;
+using detail::constraint;
 using detail::effect_and;
 using detail::effect_forall;
 using detail::effect_literal;
 using detail::effect_numeric;
 using detail::effect_one_of;
 using detail::effect_probabilistic;
+using detail::effect_timed;
 using detail::effect_when;
 using detail::either_type;
 using detail::function_expression_binary;
+using detail::function_expression_duration;
 using detail::function_expression_function;
 using detail::function_expression_multi;
 using detail::function_expression_number;
@@ -264,6 +448,7 @@ using detail::object_section;
 using detail::predicate_section;
 using detail::probabilistic_effect_alternative;
 using detail::requirement_section;
+using detail::timed_initial_literal;
 using detail::type_reference;
 using detail::type_section;
 using detail::variable_identifier;
@@ -271,17 +456,10 @@ using detail::variable_identifier;
 constexpr auto identifier_def = detail::symbol;
 constexpr auto type_expression_def = detail::type_reference | detail::either_type;
 
-struct TypedNameGroupClass : boost::spirit::x3::annotate_on_success
-{
-};
-
-struct TypedVariableGroupClass : boost::spirit::x3::annotate_on_success
-{
-};
-
-constexpr auto typed_name_group = boost::spirit::x3::rule<TypedNameGroupClass, ast::TypedGroup> { "typed name group" } = +(!lit('-') >> identifier)
-                                                                                                                         >> -(lit('-') >> type_expression);
-constexpr auto typed_variable_group = boost::spirit::x3::rule<TypedVariableGroupClass, ast::TypedGroup> {
+constexpr auto typed_name_group = boost::spirit::x3::rule<detail::TypedNameGroupClass, ast::TypedGroup> { "typed name group" } = +(!lit('-') >> identifier)
+                                                                                                                                 >> -(lit('-')
+                                                                                                                                      >> type_expression);
+constexpr auto typed_variable_group = boost::spirit::x3::rule<detail::TypedVariableGroupClass, ast::TypedGroup> {
     "typed variable group"
 } = +(!lit('-') >> detail::variable_identifier) >> -(lit('-') >> type_expression);
 constexpr auto typed_name_list_def = *typed_name_group;
@@ -291,37 +469,45 @@ constexpr auto atom_def = context("atom")['(' >> identifier >> *term > ')'];
 constexpr auto literal_def = (context("negated literal")['(' >> keyword("not") > atom > ')'] >> attr(false)) | (atom >> attr(true));
 constexpr auto function_term_def = context("function term")['(' >> identifier >> *term > ')'];
 constexpr auto function_expression_def = detail::function_expression_number | detail::function_expression_binary | detail::function_expression_unary
-                                         | detail::function_expression_multi | detail::function_expression_function;
+                                         | detail::function_expression_multi | detail::function_expression_is_violated | detail::function_expression_function
+                                         | detail::function_expression_duration;
 constexpr auto condition_empty = boost::spirit::x3::rule<class ConditionEmptyClass, ast::Condition> { "condition_empty" } = lit('(') >> lit(')')
                                                                                                                             >> attr(ast::ConditionAnd {});
 constexpr auto condition_def = condition_empty | detail::condition_and | detail::condition_or | detail::condition_not | detail::condition_imply
-                               | detail::condition_exists | detail::condition_forall | detail::condition_numeric_constraint | detail::condition_literal;
+                               | detail::condition_exists | detail::condition_forall | detail::condition_timed | detail::condition_preference
+                               | detail::condition_numeric_constraint | detail::condition_literal;
 constexpr auto effect_def = detail::effect_and | detail::effect_forall | detail::effect_when | detail::effect_one_of | detail::effect_probabilistic
-                            | detail::effect_numeric | detail::effect_literal;
+                            | detail::effect_timed | detail::effect_numeric | detail::effect_literal;
 constexpr auto predicate_declaration_def = context("predicate declaration")['(' >> identifier >> typed_variable_list > ')'];
 constexpr auto function_declaration_def = context("function declaration")['(' >> identifier >> typed_variable_list > ')'] >> -(lit('-') >> type_expression);
 constexpr auto action_def =
-    context("action")[('(' >> keyword(":action") > identifier > keyword(":parameters") > context("action parameters")['(' >> typed_variable_list > ')'])
+    // :parameters is optional in PPDDL, which the probabilistic and nondeterministic competitions use.
+    context("action")[('(' >> keyword(":action") > identifier) >> -(keyword(":parameters") > context("action parameters")['(' >> typed_variable_list > ')'])
                       >> -(keyword(":precondition") > condition) >> -(keyword(":effect") > effect) > ')'];
+constexpr auto durative_action_def =
+    context("durative action")[('(' >> keyword(":durative-action") > identifier > keyword(":parameters")
+                                > context("durative action parameters")['(' >> typed_variable_list > ')'] > keyword(":duration") > condition)
+                               >> -(keyword(":condition") > condition) >> -(keyword(":effect") > effect) > ')'];
 constexpr auto axiom_def = context("derived predicate")['(' >> keyword(":derived") > predicate_declaration > condition > ')'];
 constexpr auto metric_def = context("metric")['(' >> keyword(":metric") > identifier > function_expression > ')'];
 // '=' also introduces object equality; a function term distinguishes a numeric initial value.
 constexpr auto initial_function_value_def = context("initial function value")['(' >> keyword("=") >> function_term > function_expression > ')'];
-constexpr auto domain_def =
-    context("domain definition")['(' >> keyword("define") >> context("domain header")['(' >> keyword("domain") > identifier > ')']
-                                 >> (detail::requirement_section | attr(urd::Store<urd::sequence<ast::Requirement>> {}))
-                                 >> (detail::type_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
-                                 >> (detail::constant_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
-                                 >> (detail::predicate_section | attr(urd::Store<urd::sequence<ast::PredicateDeclaration>> {}))
-                                 >> (detail::function_section | attr(urd::Store<urd::sequence<ast::FunctionDeclaration>> {})) >> *(axiom | action) > ')'];
-constexpr auto task_def = context("problem definition")[('(' >> keyword("define") >> context("problem header")['(' >> keyword("problem") > identifier > ')']
-                                                         > context("problem domain")['(' >> keyword(":domain") > identifier > ')'])
-                                                        >> (detail::requirement_section | attr(urd::Store<urd::sequence<ast::Requirement>> {}))
-                                                        >> (detail::type_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
-                                                        >> (detail::predicate_section | attr(urd::Store<urd::sequence<ast::PredicateDeclaration>> {}))
-                                                        >> (detail::object_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
-                                                        >> boost::spirit::x3::expect[detail::initial_section]
-                                                        >> -context("goal")['(' >> keyword(":goal") > condition > ')'] >> -metric >> *axiom > ')'];
+// The sections and declarations in any order, as the competitions' domains have them.
+constexpr auto domain_def = context("domain definition")['(' >> keyword("define") >> context("domain header")['(' >> keyword("domain") > identifier > ')']
+                                                         >> *(detail::domain_requirement_section | detail::domain_type_section | detail::domain_constant_section
+                                                              | detail::domain_predicate_section | detail::domain_function_section
+                                                              | detail::domain_constraint_section | axiom | action | durative_action)
+                                                         > ')'];
+constexpr auto task_def =
+    context("problem definition")[('(' >> keyword("define") >> context("problem header")['(' >> keyword("problem") > identifier > ')']
+                                   > context("problem domain")['(' >> keyword(":domain") > identifier > ')'])
+                                  >> (detail::requirement_section | attr(urd::Store<urd::sequence<ast::Requirement>> {}))
+                                  >> (detail::type_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
+                                  >> (detail::predicate_section | attr(urd::Store<urd::sequence<ast::PredicateDeclaration>> {}))
+                                  >> (detail::object_section | attr(urd::Store<urd::sequence<ast::TypedGroup>> {}))
+                                  >> boost::spirit::x3::expect[detail::initial_section] >> -context("goal")['(' >> keyword(":goal") > constraint > ')']
+                                  >> -context("goal reward")['(' >> keyword(":goal-reward") > double_ > ')']
+                                  >> -context("constraints section")['(' >> keyword(":constraints") > constraint > ')'] >> -metric >> *axiom > ')'];
 constexpr auto file_def = domain | task;
 
 BOOST_SPIRIT_DEFINE(identifier,
@@ -338,6 +524,7 @@ BOOST_SPIRIT_DEFINE(identifier,
                     predicate_declaration,
                     function_declaration,
                     action,
+                    durative_action,
                     axiom,
                     metric,
                     initial_function_value,
@@ -360,6 +547,52 @@ constexpr auto function_expression_unary_def =
 constexpr auto function_expression_binary_def = context("binary expression")[('(' >> string("-") >> function_expression >> function_expression > ')')
                                                                              | ('(' >> string("/") > function_expression > function_expression > ')')];
 constexpr auto function_expression_multi_def = context("arithmetic expression")['(' >> (string("+") | string("*")) >> *function_expression > ')'];
+constexpr auto function_expression_duration_def = keyword("?duration") >> attr(ast::FunctionExpressionDuration {});
+// "at start" and "at end" are tried only before a parenthesis: (at start end) is an atom of a predicate at.
+constexpr auto time_point = (keyword("start") >> attr('s')) | (keyword("end") >> attr('e'));
+constexpr auto condition_timed_def =
+    context("timed condition")[('(' >> ((keyword("at") >> time_point) | (keyword("over") >> keyword("all") >> attr('a'))) >> &lit('(')) > condition > ')'];
+constexpr auto effect_timed_def = context("timed effect")[('(' >> keyword("at") >> time_point >> &lit('(')) > effect > ')'];
+// A number distinguishes a timed initial literal from an atom of a predicate at.
+constexpr auto timed_initial_literal_def = context("timed initial literal")[('(' >> keyword("at") >> double_ >> &lit('(')) > literal > ')'];
+// The name of a preference is optional: a parenthesis starts its condition.
+constexpr auto condition_preference_def = context("preference")['(' >> keyword("preference") > -(!lit('(') >> identifier) > condition > ')'];
+constexpr auto function_expression_is_violated_def = context("is-violated expression")['(' >> keyword("is-violated") > identifier > ')'];
+constexpr auto constraint_empty = boost::spirit::x3::rule<class ConstraintEmptyClass, ast::ConstraintAnd> {
+    "constraint_empty"
+} = lit('(') >> lit(')') >> attr(ast::ConstraintAnd {});
+// A goal description is a formula too (constraint_state, last): the alternatives before it read the forms of formulas,
+// and an operator commits only before a parenthesis or a number, so that an atom named like one still reads as an atom.
+constexpr auto constraint_def = constraint_empty | constraint_and | constraint_or | constraint_not | constraint_imply | constraint_forall | constraint_exists
+                                | constraint_preference | constraint_modal | constraint_temporal | constraint_state;
+constexpr auto constraint_or_def = context("or formula")['(' >> keyword("or") >> *constraint > ')'];
+constexpr auto constraint_not_def = context("not formula")['(' >> keyword("not") >> constraint > ')'];
+constexpr auto constraint_imply_def = context("imply formula")['(' >> keyword("imply") >> constraint > constraint > ')'];
+constexpr auto constraint_exists_def =
+    context("exists formula")['(' >> keyword("exists") > context("exists parameters")['(' >> typed_variable_list > ')'] > constraint > ')'];
+constexpr auto constraint_state_def = condition;
+constexpr auto temporal_operator = (keyword("weak-next") >> attr('N')) | (keyword("next") >> attr('n')) | (keyword("until") >> attr('u'))
+                                   | (keyword("release") >> attr('r')) | (keyword("weak-yesterday") >> attr('Y')) | (keyword("yesterday") >> attr('y'))
+                                   | (keyword("since") >> attr('s')) | (keyword("triggers") >> attr('t')) | (keyword("once") >> attr('o'))
+                                   | (keyword("historically") >> attr('i'));
+constexpr auto constraint_interval_def = '(' >> keyword("interval") >> double_ > double_ > ')';
+constexpr auto constraint_temporal_def = context(
+    "temporal formula")[('(' >> temporal_operator >> &lit('(')) > (constraint_interval | attr(urd::Store<urd::sequence<double>> {})) > +constraint > ')'];
+constexpr auto constraint_and_def = context("and constraint")['(' >> keyword("and") >> *constraint > ')'];
+constexpr auto constraint_forall_def =
+    context("forall constraint")['(' >> keyword("forall") > context("forall parameters")['(' >> typed_variable_list > ')'] > constraint > ')'];
+constexpr auto constraint_preference_def = context("preference")['(' >> keyword("preference") > -(!lit('(') >> identifier) > constraint > ')'];
+constexpr auto constraint_operator = (keyword("at") >> keyword("end") >> attr('E')) | (keyword("always-within") >> attr('w')) | (keyword("always") >> attr('A'))
+                                     | (keyword("sometime-after") >> attr('a')) | (keyword("sometime-before") >> attr('b')) | (keyword("sometime") >> attr('S'))
+                                     | (keyword("within") >> attr('W')) | (keyword("at-most-once") >> attr('O')) | (keyword("hold-during") >> attr('h'))
+                                     | (keyword("hold-after") >> attr('H'));
+constexpr auto constraint_modal_def = context("modal constraint")[('(' >> constraint_operator >> &(lit('(') | double_)) > *double_ > +constraint > ')'];
+constexpr auto domain_constraint_section_def = '(' >> keyword(":constraints") > constraint > ')';
+constexpr auto initial_atom_def = initial_function_value | literal;
+constexpr auto probabilistic_initial_alternative_def = double_ >> -(lit('/') >> double_)
+                                                       >> (('(' >> keyword("and") >> *initial_atom > ')') | boost::spirit::x3::repeat(1)[initial_atom]);
+constexpr auto initial_probabilistic_def =
+    context("probabilistic initial element")['(' >> keyword("probabilistic") >> *probabilistic_initial_alternative > ')'];
 constexpr auto condition_literal_def = literal;
 constexpr auto condition_and_def = context("and condition")['(' >> keyword("and") >> *condition > ')'];
 constexpr auto condition_or_def = context("or condition")['(' >> keyword("or") >> *condition > ')'];
@@ -373,12 +606,16 @@ constexpr auto condition_forall_def =
 constexpr auto condition_numeric_constraint_def = context("numeric constraint")['(' >> operator_symbol >> function_expression > function_expression > ')'];
 constexpr auto effect_literal_def = literal;
 constexpr auto effect_and_def = context("and effect")['(' >> keyword("and") >> *effect > ')'];
-constexpr auto effect_numeric_def = context("numeric effect")['(' >> operator_symbol > function_term > function_expression > ')'];
+// PDDL 2.1 also writes a 0-ary function bare as the target of an effect: (increase total-fuel-used 5).
+constexpr auto bare_function_term = boost::spirit::x3::rule<class BareFunctionTermClass, ast::FunctionTerm> {
+    "function term"
+} = !lit('?') >> identifier >> attr(urd::Store<urd::sequence<ast::Term>> {});
+constexpr auto effect_numeric_def = context("numeric effect")['(' >> operator_symbol > (function_term | bare_function_term) > function_expression > ')'];
 constexpr auto effect_forall_def =
     context("forall effect")['(' >> keyword("forall") > context("forall parameters")['(' >> typed_variable_list > ')'] > effect > ')'];
 constexpr auto effect_when_def = context("when effect")['(' >> keyword("when") > condition > effect > ')'];
 constexpr auto effect_one_of_def = context("oneof effect")['(' >> keyword("oneof") >> *effect > ')'];
-constexpr auto probabilistic_effect_alternative_def = double_ >> effect;
+constexpr auto probabilistic_effect_alternative_def = double_ >> -(lit('/') >> double_) >> effect;
 constexpr auto effect_probabilistic_def = context("probabilistic effect")['(' >> keyword("probabilistic") >> *probabilistic_effect_alternative > ')'];
 
 struct RequirementNameClass : boost::spirit::x3::annotate_on_success
@@ -393,7 +630,13 @@ constexpr auto constant_section_def = context("constants section")['(' >> keywor
 constexpr auto predicate_section_def = context("predicates section")['(' >> keyword(":predicates") >> *predicate_declaration > ')'];
 constexpr auto function_section_def = context("functions section")['(' >> keyword(":functions") >> *function_declaration > ')'];
 constexpr auto object_section_def = context("objects section")['(' >> keyword(":objects") > typed_name_list > ')'];
-constexpr auto initial_section_def = context("init section")['(' >> keyword(":init") >> *((initial_function_value | literal)) > ')'];
+constexpr auto domain_requirement_section_def = requirement_section;
+constexpr auto domain_type_section_def = type_section;
+constexpr auto domain_constant_section_def = constant_section;
+constexpr auto domain_predicate_section_def = predicate_section;
+constexpr auto domain_function_section_def = function_section;
+constexpr auto initial_section_def =
+    context("init section")['(' >> keyword(":init") >> *((initial_function_value | initial_probabilistic | timed_initial_literal | literal)) > ')'];
 
 BOOST_SPIRIT_DEFINE(variable_identifier,
                     type_reference,
@@ -403,6 +646,28 @@ BOOST_SPIRIT_DEFINE(variable_identifier,
                     function_expression_unary,
                     function_expression_binary,
                     function_expression_multi,
+                    function_expression_duration,
+                    condition_timed,
+                    effect_timed,
+                    timed_initial_literal,
+                    initial_atom,
+                    probabilistic_initial_alternative,
+                    initial_probabilistic,
+                    condition_preference,
+                    function_expression_is_violated,
+                    constraint,
+                    constraint_and,
+                    constraint_forall,
+                    constraint_preference,
+                    constraint_modal,
+                    constraint_or,
+                    constraint_not,
+                    constraint_imply,
+                    constraint_exists,
+                    constraint_state,
+                    constraint_temporal,
+                    constraint_interval,
+                    domain_constraint_section,
                     condition_literal,
                     condition_and,
                     condition_or,
@@ -425,7 +690,12 @@ BOOST_SPIRIT_DEFINE(variable_identifier,
                     predicate_section,
                     function_section,
                     object_section,
-                    initial_section)
+                    initial_section,
+                    domain_requirement_section,
+                    domain_type_section,
+                    domain_constant_section,
+                    domain_predicate_section,
+                    domain_function_section)
 }  // namespace detail
 }  // namespace loki::parser::rules
 

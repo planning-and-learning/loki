@@ -20,6 +20,8 @@
 
 #include "copy_translator_component.hpp"
 
+#include <optional>
+#include <string>
 #include <urd/elements/flat.hpp>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
@@ -47,6 +49,14 @@ public:
     void prepend_type_conditions(std::optional<formalism::ConditionView>& condition, formalism::EntityListView<formalism::Parameter> parameters);
     void prepend_type_conditions(formalism::ConditionView& condition, formalism::EntityListView<formalism::Parameter> parameters);
     void compile_typing_to_domain(urd::builder<formalism::Domain, formalism::Repository>& data, formalism::DomainView domain);
+    /// The type conditions of the parameters implying the condition, a conjunction: the head of a generated derived
+    /// predicate loki-typed-*(free parameters) with an axiom per negated type condition and one for the condition, so that
+    /// each axiom stays a conjunction. A universal constraint or preference holds vacuously outside its types. Without a
+    /// condition, the parameters are outside their types: a disjunct that guards a universal formula over the trajectory.
+    formalism::ConditionView guard_with_types(std::optional<formalism::ConditionView> condition, formalism::EntityListView<formalism::Parameter> parameters);
+    /// A durative action's condition with the type conditions of its parameters added to its at start condition.
+    std::optional<formalism::ConditionView> prepend_start_type_conditions(std::optional<formalism::ConditionView> condition,
+                                                                          formalism::EntityListView<formalism::Parameter> parameters);
     void add_type_literals_for_object(urd::built_t<urd::flat_vector<urd::index<formalism::Literal>>, formalism::Repository>& literals,
                                       formalism::ObjectView object);
     void initialize_type_literals(urd::builder<formalism::Task, formalism::Repository>& data, formalism::TaskView task);
@@ -121,6 +131,7 @@ formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formal
     variable_data->name = urd::flat_string("?arg");
     parameter_data->variable = this->copy_context().storage->repository.insert(*variable_data, this->copy_context().storage->builder).first.index();
     auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
+    // Named after the type: a predicate of that name is the type itself (AstBuilder::parse_predicates).
     predicate_data->name = type.get_name();
     predicate_data->parameters.push_back(this->copy_context().storage->repository.insert(*parameter_data, this->copy_context().storage->builder).first.index());
     auto predicate = this->copy_context().storage->repository.insert(*predicate_data, this->copy_context().storage->builder).first;
@@ -186,6 +197,154 @@ void CompileTypingTranslator<Derived>::prepend_type_conditions(formalism::Condit
     auto optional = std::optional { condition };
     this->self().prepend_type_conditions(optional, parameters);
     condition = *optional;
+}
+
+template<typename Derived>
+formalism::ConditionView CompileTypingTranslator<Derived>::guard_with_types(std::optional<formalism::ConditionView> condition,
+                                                                            formalism::EntityListView<formalism::Parameter> parameters)
+{
+    auto& context = this->copy_context();
+    // The disjuncts: each type condition of the parameters (with the types' bases) negated, then the condition.
+    auto disjuncts = urd::Store<urd::sequence<formalism::ConditionView>> {};
+    auto literal_data = formalism::checkout<formalism::Literal>(context.builder);
+    auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(context.builder);
+    const auto add_negated = [&](auto&& self, formalism::TypeView type, formalism::VariableView variable) -> void
+    {
+        const auto type_literal = this->self().type_literal(type, this->self().copy(variable));
+        urd::clear_fields(*literal_data);
+        literal_data->atom = type_literal.get_atom().index();
+        literal_data->polarity = false;
+        urd::clear_fields(*condition_data);
+        condition_data->literal = context.storage->repository.insert(*literal_data, context.storage->builder).first.index();
+        disjuncts.push_back(formalism::ConditionView(context.storage->repository.insert(*condition_data, context.storage->builder).first));
+        for (auto base : type.get_bases())
+            self(self, base, variable);
+    };
+    for (auto parameter : parameters)
+        for (auto type : parameter.get_types())
+            add_negated(add_negated, type, parameter.get_variable());
+    if (disjuncts.empty())
+        return condition.value();  // without a condition, called for typed parameters only
+    if (condition)
+        disjuncts.push_back(*condition);
+
+    auto disjunction = formalism::checkout<formalism::Condition<formalism::OrTag>>(context.builder);
+    for (auto disjunct : disjuncts)
+        this->self().append_disjunct(*disjunction, disjunct);
+    const auto free_parameters = this->self().free_parameters_in_scope(this->self().make_disjunction(*disjunction));
+
+    // Compiling typing away, the derived predicate's parameters are untyped, as every other's after this phase.
+    auto parameters_of_guard = urd::Store<urd::sequence<urd::index<formalism::Parameter>>> {};
+    for (auto [parameter, variable] : free_parameters)
+    {
+        if (!this->self().compiles_typing_now())
+        {
+            parameters_of_guard.push_back(parameter.index());
+            continue;
+        }
+        auto parameter_data = formalism::checkout<formalism::Parameter>(context.builder);
+        parameter_data->variable = variable.index();
+        parameters_of_guard.push_back(context.storage->repository.insert(*parameter_data, context.storage->builder).first.index());
+    }
+    auto predicate_data = formalism::checkout<formalism::Predicate>(context.builder);
+    auto atom_data = formalism::checkout<formalism::Atom>(context.builder);
+    for (auto [parameter, variable] : free_parameters)
+        atom_data->terms.push_back(variable.index());
+    for (const auto parameter : parameters_of_guard)
+        predicate_data->parameters.push_back(parameter);
+    predicate_data->name = urd::flat_string(this->self().next_generated_predicate_name("loki-typed-"));
+    const auto predicate = context.storage->repository.insert(*predicate_data, context.storage->builder).first;
+    atom_data->predicate = predicate.index();
+    const auto atom = context.storage->repository.insert(*atom_data, context.storage->builder).first.index();
+    urd::clear_fields(*literal_data);
+    literal_data->atom = atom;
+    literal_data->polarity = true;
+    const auto head = context.storage->repository.insert(*literal_data, context.storage->builder).first.index();
+    // Compiling typing away, each axiom has the root type conditions of its parameters, as a reparsed axiom over untyped
+    // (object) parameters gets them: retranslating the output is a fixpoint.
+    auto root_conditions = urd::Store<urd::sequence<formalism::ConditionView>> {};
+    if (this->self().compiles_typing_now())
+        for (auto [parameter, variable] : free_parameters)
+            for (auto type : parameter.get_types())
+                for (auto ancestor : this->self().collect_type_hierarchy(type))
+                    if (ancestor.get_bases().empty())
+                    {
+                        urd::clear_fields(*condition_data);
+                        condition_data->literal = this->self().type_literal(ancestor, variable).index();
+                        root_conditions.push_back(
+                            formalism::ConditionView(context.storage->repository.insert(*condition_data, context.storage->builder).first));
+                    }
+    for (auto disjunct : disjuncts)
+    {
+        auto axiom_data = formalism::checkout<formalism::Axiom>(context.builder);
+        for (const auto parameter : parameters_of_guard)
+            axiom_data->parameters.push_back(parameter);
+        axiom_data->original_arity = axiom_data->parameters.size();
+        axiom_data->head = head;
+        auto body = disjunct;
+        if (!root_conditions.empty())
+        {
+            auto conjunction = formalism::checkout<formalism::Condition<formalism::AndTag>>(context.builder);
+            this->self().append_conjunct(*conjunction, disjunct);
+            for (auto root_condition : root_conditions)
+                this->self().append_conjunct(*conjunction, root_condition);
+            body = this->self().make_conjunction(*conjunction);
+        }
+        urd::store(axiom_data->condition, body);
+        urd::append(context.generated_axioms, context.storage->repository.insert(*axiom_data, context.storage->builder).first);
+    }
+    urd::append(context.generated_predicates, predicate);
+    urd::clear_fields(*condition_data);
+    condition_data->literal = head;
+    return formalism::ConditionView(context.storage->repository.insert(*condition_data, context.storage->builder).first);
+}
+
+template<typename Derived>
+std::optional<formalism::ConditionView>
+CompileTypingTranslator<Derived>::prepend_start_type_conditions(std::optional<formalism::ConditionView> condition,
+                                                                formalism::EntityListView<formalism::Parameter> parameters)
+{
+    using TimedView = formalism::EntityView<formalism::Condition<formalism::TimedTag>>;
+    auto types = std::optional<formalism::ConditionView> {};
+    this->self().prepend_type_conditions(types, parameters);
+    if (!types)
+        return condition;
+
+    // The condition is a timed condition or a conjunction of them (AstBuilder::group_timed_condition).
+    auto parts = urd::Store<urd::sequence<formalism::ConditionView>> {};
+    if (condition)
+    {
+        if (const auto* conjunction = std::get_if<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(&*condition))
+            for (auto part : conjunction->get_conditions())
+                parts.push_back(part);
+        else
+            parts.push_back(*condition);
+    }
+    auto start = std::optional<formalism::ConditionView> {};
+    auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
+    for (auto part : parts)
+    {
+        const auto* timed = std::get_if<TimedView>(&part);
+        if (timed && timed->get_time() == formalism::TimeSpecifier::Start)
+            start = timed->get_condition();
+        else
+            this->self().append_conjunct(*data, part);
+    }
+    auto start_condition = *types;
+    if (start)
+    {
+        auto start_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
+        this->self().append_conjunct(*start_data, *types);
+        this->self().append_conjunct(*start_data, *start);
+        start_condition = this->self().make_conjunction(*start_data);
+    }
+    auto timed_data = formalism::checkout<formalism::Condition<formalism::TimedTag>>(this->copy_context().builder);
+    timed_data->time = formalism::TimeSpecifier::Start;
+    urd::store(timed_data->condition, start_condition);
+    this->self().append_conjunct(
+        *data,
+        formalism::ConditionView(this->copy_context().storage->repository.insert(*timed_data, this->copy_context().storage->builder).first));
+    return this->self().make_conjunction(*data);
 }
 
 template<typename Derived>

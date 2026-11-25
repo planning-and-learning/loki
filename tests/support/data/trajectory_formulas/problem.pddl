@@ -1,0 +1,11 @@
+; A goal over the state trajectory: a hard constraint of the task, read from the initial state; (next r1 r2) is an atom.
+(define (problem trajectory-formulas-1)
+  (:domain trajectory-formulas)
+  (:objects r3 - room)
+  (:init (at r1) (next r1 r2) (next r2 r3))
+  (:goal (and (next r1 r2)
+              (sometime (visited r2))
+              (at end (at r3))
+              (preference fast (within 5 (visited r3)))))
+  (:constraints (once (interval 1 3) (door-open)))
+)

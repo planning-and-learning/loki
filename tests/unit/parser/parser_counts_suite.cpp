@@ -116,6 +116,8 @@ struct DomainExpectation
     std::size_t functions;
     std::size_t actions;
     std::size_t axioms;
+    std::size_t durative_actions;
+    bool has_constraints;
 };
 
 struct TaskExpectation
@@ -128,6 +130,10 @@ struct TaskExpectation
     std::size_t axioms;
     bool has_goal;
     bool has_metric;
+    std::size_t timed_initial_literals;
+    std::size_t initial_effects;
+    bool has_goal_reward;
+    bool has_constraints;
 };
 
 struct ConfigurationExpectation
@@ -154,6 +160,8 @@ void expect_counts(formalism::DomainView domain, formalism::TaskView task, const
     EXPECT_EQ(domain.get_functions().size(), expected.domain.functions);
     EXPECT_EQ(domain.get_actions().size(), expected.domain.actions);
     EXPECT_EQ(domain.get_axioms().size(), expected.domain.axioms);
+    EXPECT_EQ(domain.get_durative_actions().size(), expected.domain.durative_actions);
+    EXPECT_EQ(static_cast<bool>(domain.get_constraints()), expected.domain.has_constraints);
     EXPECT_EQ(task.get_requirements().size(), expected.task.requirements);
     EXPECT_EQ(task.get_objects().size(), expected.task.objects);
     EXPECT_EQ(task.get_initial_literals().size(), expected.task.initial_literals);
@@ -162,6 +170,10 @@ void expect_counts(formalism::DomainView domain, formalism::TaskView task, const
     EXPECT_EQ(task.get_axioms().size(), expected.task.axioms);
     EXPECT_EQ(static_cast<bool>(task.get_goal()), expected.task.has_goal);
     EXPECT_EQ(static_cast<bool>(task.get_metric()), expected.task.has_metric);
+    EXPECT_EQ(task.get_timed_initial_literals().size(), expected.task.timed_initial_literals);
+    EXPECT_EQ(task.get_initial_effects().size(), expected.task.initial_effects);
+    EXPECT_EQ(static_cast<bool>(task.get_goal_reward()), expected.task.has_goal_reward);
+    EXPECT_EQ(static_cast<bool>(task.get_constraints()), expected.task.has_constraints);
 }
 
 template<typename Node, typename ParseFn>
@@ -199,7 +211,9 @@ ConfigurationExpectation parse_configuration(const boost::json::object& configur
                                                           ygg::common::as_size(domain, "predicates", "case.configuration.domain"),
                                                           ygg::common::as_size(domain, "functions", "case.configuration.domain"),
                                                           ygg::common::as_size(domain, "actions", "case.configuration.domain"),
-                                                          ygg::common::as_size(domain, "axioms", "case.configuration.domain") },
+                                                          ygg::common::as_size(domain, "axioms", "case.configuration.domain"),
+                                                          ygg::common::as_size(domain, "durative_actions", "case.configuration.domain"),
+                                                          ygg::common::as_bool(domain, "has_constraints", "case.configuration.domain") },
                                       TaskExpectation { ygg::common::as_size(task, "requirements", "case.configuration.task"),
                                                         ygg::common::as_size(task, "objects", "case.configuration.task"),
                                                         ygg::common::as_size(task, "initial_literals", "case.configuration.task"),
@@ -207,7 +221,11 @@ ConfigurationExpectation parse_configuration(const boost::json::object& configur
                                                         ygg::common::as_size(task, "predicates", "case.configuration.task"),
                                                         ygg::common::as_size(task, "axioms", "case.configuration.task"),
                                                         ygg::common::as_bool(task, "has_goal", "case.configuration.task"),
-                                                        ygg::common::as_bool(task, "has_metric", "case.configuration.task") } };
+                                                        ygg::common::as_bool(task, "has_metric", "case.configuration.task"),
+                                                        ygg::common::as_size(task, "timed_initial_literals", "case.configuration.task"),
+                                                        ygg::common::as_size(task, "initial_effects", "case.configuration.task"),
+                                                        ygg::common::as_bool(task, "has_goal_reward", "case.configuration.task"),
+                                                        ygg::common::as_bool(task, "has_constraints", "case.configuration.task") } };
 }
 
 urd::Store<urd::sequence<ParserCountExpectation>> load_expectations()
@@ -241,7 +259,11 @@ TEST(LokiParserCountsSuite, GeneratedSuiteCoversEveryBenchmarkProblem)
                       + std::filesystem::relative(item.task_file, benchmark_root).generic_string());
 
     auto discovered = std::set<std::string> {};
-    for (const auto& tree : { benchmark_root / "classical" / "tests", benchmark_root / "numeric" / "tests" })
+    for (const auto& tree : { benchmark_root / "classical" / "tests",
+                              benchmark_root / "numeric" / "tests",
+                              benchmark_root / "temporal" / "tests",
+                              benchmark_root / "probabilistic" / "tests",
+                              benchmark_root / "nondeterministic" / "tests" })
     {
         for (const auto& entry : std::filesystem::recursive_directory_iterator(tree))
         {
@@ -339,35 +361,36 @@ TEST(LokiParserCountsSuite, GroupedAstRetainsNamesTypesSpansAndDeclarationOrder)
         EXPECT_EQ(span.source()->text().substr(span.begin(), span.end() - span.begin()), expected);
     };
     expect_span(domain.name, "grouped");
-    ASSERT_EQ(domain.requirements.size(), 3);
-    const auto& requirement = domain.requirements[0];
+    const auto domain_parts = ast::parts(domain);
+    ASSERT_EQ(domain_parts.requirements.size(), 3);
+    const auto& requirement = domain_parts.requirements[0];
     EXPECT_EQ(requirement.name.text, "strips");
     expect_span(requirement.name, "strips");
     EXPECT_EQ(fmt::format("{}", requirement), ":strips");
-    ASSERT_EQ(domain.types.size(), 2);
-    ASSERT_EQ(domain.types[0].names.size(), 2);
-    EXPECT_EQ(domain.types[0].names[0].text, "child");
-    EXPECT_EQ(domain.types[0].names[1].text, "sibling");
-    ASSERT_TRUE(domain.types[0].type);
-    expect_span(*domain.types[0].type, "parent");
-    expect_span(domain.types[0], "child sibling - parent");
-    EXPECT_FALSE(domain.types[1].type);
-    ASSERT_EQ(domain.constants.size(), 2);
-    ASSERT_EQ(domain.constants[0].names.size(), 2);
-    expect_span(domain.constants[0].names[1], "two");
-    EXPECT_FALSE(domain.constants[1].type);
-    ASSERT_EQ(domain.predicates.size(), 1);
-    ASSERT_EQ(domain.predicates[0].parameters.size(), 3);
-    ASSERT_EQ(domain.functions.size(), 1);
-    ASSERT_EQ(domain.functions[0].parameters.size(), 2);
-    ASSERT_TRUE(domain.functions[0].type);
-    expect_span(*domain.functions[0].type, "number");
+    ASSERT_EQ(domain_parts.types.size(), 2);
+    ASSERT_EQ(domain_parts.types[0].names.size(), 2);
+    EXPECT_EQ(domain_parts.types[0].names[0].text, "child");
+    EXPECT_EQ(domain_parts.types[0].names[1].text, "sibling");
+    ASSERT_TRUE(domain_parts.types[0].type);
+    expect_span(*domain_parts.types[0].type, "parent");
+    expect_span(domain_parts.types[0], "child sibling - parent");
+    EXPECT_FALSE(domain_parts.types[1].type);
+    ASSERT_EQ(domain_parts.constants.size(), 2);
+    ASSERT_EQ(domain_parts.constants[0].names.size(), 2);
+    expect_span(domain_parts.constants[0].names[1], "two");
+    EXPECT_FALSE(domain_parts.constants[1].type);
+    ASSERT_EQ(domain_parts.predicates.size(), 1);
+    ASSERT_EQ(domain_parts.predicates[0].parameters.size(), 3);
+    ASSERT_EQ(domain_parts.functions.size(), 1);
+    ASSERT_EQ(domain_parts.functions[0].parameters.size(), 2);
+    ASSERT_TRUE(domain_parts.functions[0].type);
+    expect_span(*domain_parts.functions[0].type, "number");
 
-    ASSERT_EQ(domain.declarations.size(), 4);
-    const auto* first = boost::get<ast::Action>(&domain.declarations[0].get());
-    const auto* first_axiom = boost::get<ast::Axiom>(&domain.declarations[1].get());
-    const auto* second = boost::get<ast::Action>(&domain.declarations[2].get());
-    const auto* second_axiom = boost::get<ast::Axiom>(&domain.declarations[3].get());
+    ASSERT_EQ(domain_parts.declarations.size(), 4);
+    const auto* first = boost::get<ast::Action>(&domain_parts.declarations[0].get());
+    const auto* first_axiom = boost::get<ast::Axiom>(&domain_parts.declarations[1].get());
+    const auto* second = boost::get<ast::Action>(&domain_parts.declarations[2].get());
+    const auto* second_axiom = boost::get<ast::Axiom>(&domain_parts.declarations[3].get());
     ASSERT_NE(first, nullptr);
     ASSERT_NE(first_axiom, nullptr);
     ASSERT_NE(second, nullptr);
@@ -402,8 +425,8 @@ TEST(LokiParserCountsSuite, GroupedAstRetainsNamesTypesSpansAndDeclarationOrder)
     auto reparsed = ast::Domain {};
     ASSERT_TRUE(parser::parse_domain(printed, reparsed, printed_handler));
     EXPECT_EQ(fmt::format("{}", reparsed), printed);
-    EXPECT_EQ(reparsed.declarations.size(), domain.declarations.size());
-    EXPECT_EQ(reparsed.types.size(), domain.types.size());
+    EXPECT_EQ(ast::parts(reparsed).declarations.size(), domain_parts.declarations.size());
+    EXPECT_EQ(ast::parts(reparsed).types.size(), domain_parts.types.size());
 }
 
 TEST(LokiParserCountsSuite, TaskObjectGroupsAndTaskAxiomsRoundTrip)

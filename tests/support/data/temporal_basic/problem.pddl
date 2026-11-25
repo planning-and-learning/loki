@@ -1,0 +1,8 @@
+(define (problem temporal-basic-1)
+  (:domain temporal-basic)
+  (:requirements :timed-initial-literals)
+  (:objects t1 - truck a b - location)
+  (:init (at t1 a) (road a b) (free b) (= (distance a b) 5) (= (fuel t1) 100)
+         (at 10 (sunny)) (at 20.5 (not (sunny))))
+  (:goal (at t1 b))
+)
