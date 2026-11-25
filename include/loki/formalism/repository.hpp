@@ -24,6 +24,7 @@
 #include "loki/formalism/declarations.hpp"
 #include "loki/formalism/views.hpp"
 
+#include <boost/mp11.hpp>
 #include <yggdrasil/formalism/builder.hpp>
 #include <yggdrasil/formalism/interning.hpp>
 #include <yggdrasil/formalism/relation_repository.hpp>
@@ -35,7 +36,11 @@ namespace loki::formalism
 
 /// The builder storage of the records: what checkout<T> draws a builder from and repository.insert(builder, storage)
 /// interns it through.
-using Builder = ygg::formalism::BasicBuilderStorage<Repository, SymbolRepositoryTypes>;
+struct Builders : boost::mp11::mp_apply<ygg::formalism::Builders, SymbolRepositoryTypes>
+{
+};
+
+using Builder = ygg::formalism::BasicBuilderStorage<Repository, Builders>;
 
 using ygg::formalism::checkout;
 

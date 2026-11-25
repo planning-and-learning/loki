@@ -27,17 +27,6 @@
 #include <urd/tags.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
 
-namespace ygg::formalism
-{
-
-template<typename... Ts>
-class RelationRepository;
-
-template<typename SymbolRepo, typename RelationRepo>
-class Repository;
-
-}
-
 namespace loki::formalism
 {
 
@@ -257,12 +246,19 @@ using SymbolRepositoryTypes =
                                                 Domain,
                                                 Task>>;
 
-/// No family has rows in loki.
-using RelationRepository = ::ygg::formalism::RelationRepository<>;
+/// Its symbols and relations (no family has rows in loki), named by what they hold (yggdrasil's Symbols and Relations),
+/// not by their stores, and by classes of their own: a call with a repository argument then never instantiates the
+/// stores (yggdrasil/formalism/declarations.hpp), and the names of everything over a Repository spell these, not every
+/// one of its types (brokkr's template rule T20).
+struct Symbols : boost::mp11::mp_apply<::ygg::formalism::Symbols, SymbolRepositoryTypes>
+{
+};
 
-/// Named by what it holds (yggdrasil's Symbols and Relations), not by its stores: a call with a repository argument
-/// then never instantiates them (yggdrasil/formalism/declarations.hpp).
-using Repository = ::ygg::formalism::Repository<boost::mp11::mp_apply<::ygg::formalism::Symbols, SymbolRepositoryTypes>, ::ygg::formalism::Relations<>>;
+struct Relations : ::ygg::formalism::Relations<>
+{
+};
+
+using Repository = ::ygg::formalism::Repository<Symbols, Relations>;
 
 template<typename T>
 using EntityView = urd::index_view<T, Repository>;
