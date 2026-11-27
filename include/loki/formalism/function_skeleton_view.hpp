@@ -18,10 +18,13 @@
 #ifndef LOKI_FORMALISM_FUNCTION_SKELETON_VIEW_HPP_
 #define LOKI_FORMALISM_FUNCTION_SKELETON_VIEW_HPP_
 
+#include "loki/formalism/declarations.hpp"
 #include "loki/formalism/function_skeleton_data.hpp"
 
+#include <fmt/base.h>
 #include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
+#include <yggdrasil/formatting/without_format_spec.hpp>
 
 namespace urd
 {
@@ -43,5 +46,12 @@ public:
     static constexpr auto functions() noexcept { return urd::Functions<urd::function<"get_arity", &view_mixin::get_arity>> {}; }
 };
 }  // namespace urd
+
+/// Written in PDDL (src/formalism/formatter.cpp).
+template<>
+struct fmt::formatter<loki::formalism::FunctionSkeletonView, char> : ygg::without_format_spec
+{
+    fmt::format_context::iterator format(const loki::formalism::FunctionSkeletonView& value, fmt::format_context& ctx) const;
+};
 
 #endif

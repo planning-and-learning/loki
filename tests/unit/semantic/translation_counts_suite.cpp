@@ -16,8 +16,8 @@
  */
 
 #include <filesystem>
+#include <fmt/format.h>
 #include <gtest/gtest.h>
-#include <loki/formalism/formatter.hpp>
 #include <loki/formalism/repository.hpp>
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
@@ -26,6 +26,7 @@
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 #include <vector>
+#include <yggdrasil/formatting/cista_formatters.hpp>
 #include <yggdrasil/io/project_path.hpp>
 #include <yggdrasil/serialization/json.hpp>
 
@@ -164,8 +165,8 @@ TEST(LokiSemanticTranslationCountsSuite, TranslatedBenchmarkCountsStayStable)
             EXPECT_EQ(translated_task.get_axioms().size(), configuration.task_axioms);
 
             // The formatted translation must reparse in strict mode with stable counts.
-            const auto domain_text = formalism::format::to_string(translated_domain);
-            const auto task_text = formalism::format::to_string(translated_task);
+            const auto domain_text = fmt::format("{}", translated_domain);
+            const auto task_text = fmt::format("{}", translated_task);
             auto strict_options = configuration.parser_options;
             strict_options.strict = true;
             auto reparsed = semantic::Parser(domain_text, strict_options);
@@ -208,8 +209,8 @@ TEST(LokiSemanticTranslationCountsSuite, TranslatedBenchmarkCountsStayStable)
             EXPECT_EQ(retranslated_task.get_axioms().size(), configuration.task_axioms);
 
             // Text stability: retranslation must reproduce the exact string representations.
-            EXPECT_TRUE(formalism::format::to_string(retranslated_domain) == domain_text) << "domain text not stable under retranslation";
-            EXPECT_TRUE(formalism::format::to_string(retranslated_task) == task_text) << "task text not stable under retranslation";
+            EXPECT_TRUE(fmt::format("{}", retranslated_domain) == domain_text) << "domain text not stable under retranslation";
+            EXPECT_TRUE(fmt::format("{}", retranslated_task) == task_text) << "task text not stable under retranslation";
         }
     }
 }

@@ -17,7 +17,6 @@
 
 #include "module.hpp"
 
-#include <loki/formalism/formatter.hpp>
 #include <loki/formalism/repository.hpp>
 #include <loki/semantic/translator.hpp>
 #include <nanobind/stl/string.h>

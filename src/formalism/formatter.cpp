@@ -15,9 +15,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "loki/formalism/formatter.hpp"
+// How each record of loki's formalism is written: in PDDL, as a domain and a problem file write it (the formatters are
+// declared beside each record's view).
 
 #include "loki/formalism/conditions.hpp"
+#include "loki/formalism/constraints.hpp"
 #include "loki/formalism/effects.hpp"
 #include "loki/formalism/function_expressions.hpp"
 #include "loki/formalism/repository.hpp"
@@ -31,186 +33,51 @@
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <urd/repr/maps/std_map.hpp>
 #include <urd/repr/maps/unordered_flat_map.hpp>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
 #include <urd/store.hpp>
-#include <vector>
+#include <variant>
 #include <yggdrasil/formatting/cista_formatters.hpp>
+#include <yggdrasil/formatting/formatter.hpp>
 #include <yggdrasil/io/iostream.hpp>
 
-namespace loki::formalism::format
+namespace lf = loki::formalism;
+
+namespace loki::formalism
+{
+namespace
 {
 
-namespace detail
-{
-
-static inline bool is_builtin_type(TypeView type)
+bool is_builtin_type(TypeView type)
 {
     const auto name = std::string_view(type.get_name().data(), type.get_name().size());
     return name == "object" || name == "number";
 }
 
-// Serializes a range as " e1 e2 ..." with a leading space per element; an empty range yields "".
-template<typename Range>
-static inline std::string spaced(const Range& range)
+/// A range as " e1 e2 ...", a space before each element; an empty range writes nothing.
+template<typename Out, typename Range>
+Out spaced(Out out, const Range& range)
 {
-    auto result = std::string {};
     for (auto element : range)
-        fmt::format_to(std::back_inserter(result), " {}", to_string(element));
-    return result;
+        out = fmt::format_to(out, " {}", element);
+    return out;
 }
 
-// Renders " - type" or " - (either t1 t2 ...)"; multiple types require an either wrapper to reparse.
-template<typename Types>
-static inline std::string type_annotation(const Types& types)
+/// " - type", or " - (either t1 t2 ...)": several types need an either to read back.
+template<typename Out, typename Types>
+Out type_annotation(Out out, const Types& types)
 {
     if (types.size() == 1)
-        return fmt::format(" - {}", to_string(types[0]));
-    return fmt::format(" - (either{})", spaced(types));
+        return fmt::format_to(out, " - {}", types[0]);
+    return fmt::format_to(spaced(fmt::format_to(out, " - (either"), types), ")");
 }
-
-}  // namespace detail
-
-std::string to_string(RequirementView value) { return std::string(loki::formalism::to_string(value.get_kind())); }
-
-std::string to_string(TypeView value) { return fmt::format("{}", value.get_name()); }
-
-std::string to_string(ObjectView value) { return fmt::format("{}", value.get_name()); }
-
-std::string to_string(VariableView value) { return fmt::format("{}", value.get_name()); }
-
-std::string to_string(ParameterView value)
-{ return fmt::format("{}{}", to_string(value.get_variable()), value.get_types().empty() ? "" : detail::type_annotation(value.get_types())); }
-
-std::string to_string(PredicateView value) { return fmt::format("({}{})", value.get_name(), detail::spaced(value.get_parameters())); }
-
-std::string to_string(FunctionSkeletonView value)
-{
-    // number is the default function type; writing it out would demand :typing of a domain without types.
-    if (std::string_view(value.get_type().get_name()) == "number")
-        return fmt::format("({}{})", value.get_name(), detail::spaced(value.get_parameters()));
-    return fmt::format("({}{}) - {}", value.get_name(), detail::spaced(value.get_parameters()), to_string(value.get_type()));
-}
-
-std::string to_string(TermView value)
-{
-    auto result = std::string {};
-    visit([&](const auto& node) { result = to_string(node); }, value);
-    return result;
-}
-
-std::string to_string(AtomView value) { return fmt::format("({}{})", value.get_predicate().get_name(), detail::spaced(value.get_terms())); }
-
-std::string to_string(LiteralView value)
-{
-    if (value.get_polarity())
-        return to_string(value.get_atom());
-    return fmt::format("(not {})", to_string(value.get_atom()));
-}
-
-std::string to_string(EntityView<FunctionExpression<NumberTag>> value) { return fmt::format("{}", value.get_value()); }
-
-std::string to_string(FunctionTermView value) { return fmt::format("({}{})", value.get_function().get_name(), detail::spaced(value.get_terms())); }
-
-std::string to_string(EntityView<FunctionExpression<UnaryTag>> value) { return fmt::format("(- {})", to_string(value.get_expression())); }
-
-std::string to_string(EntityView<FunctionExpression<BinaryTag>> value)
-{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_operation()), to_string(value.get_left()), to_string(value.get_right())); }
-
-std::string to_string(EntityView<FunctionExpression<MultiTag>> value)
-{ return fmt::format("({}{})", loki::formalism::to_string(value.get_operation()), detail::spaced(value.get_args())); }
-
-std::string to_string(EntityView<FunctionExpression<DurationTag>>) { return "?duration"; }
-
-std::string to_string(EntityView<FunctionExpression<IsViolatedTag>> value) { return fmt::format("(is-violated {})", value.get_name()); }
-
-std::string to_string(FunctionExpressionView value)
-{
-    auto result = std::string {};
-    visit([&](const auto& node) { result = to_string(node); }, value);
-    return result;
-}
-
-std::string to_string(EntityView<Condition<LiteralTag>> value) { return to_string(value.get_literal()); }
-
-std::string to_string(EntityView<Condition<AndTag>> value) { return fmt::format("(and{})", detail::spaced(value.get_conditions())); }
-
-std::string to_string(EntityView<Condition<OrTag>> value) { return fmt::format("(or{})", detail::spaced(value.get_conditions())); }
-
-std::string to_string(EntityView<Condition<NotTag>> value) { return fmt::format("(not {})", to_string(value.get_condition())); }
-
-std::string to_string(EntityView<Condition<ImplyTag>> value) { return fmt::format("(imply {} {})", to_string(value.get_left()), to_string(value.get_right())); }
-
-namespace detail
-{
-
-// Materializes element strings so fmt::join never needs the guarded view formatters.
-template<typename Range>
-static inline urd::Store<urd::sequence<std::string>> to_strings(const Range& range)
-{
-    auto result = urd::Store<urd::sequence<std::string>> {};
-    for (auto element : range)
-        result.push_back(to_string(element));
-    return result;
-}
-
-}  // namespace detail
-
-std::string to_string(EntityView<Condition<ExistsTag>> value)
-{ return fmt::format("(exists ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_condition())); }
-
-std::string to_string(EntityView<Condition<ForallTag>> value)
-{ return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_condition())); }
-
-std::string to_string(EntityView<Condition<NumericConstraintTag>> value)
-{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_comparator()), to_string(value.get_left()), to_string(value.get_right())); }
-
-std::string to_string(EntityView<Condition<TimedTag>> value)
-{ return fmt::format("({} {})", loki::formalism::to_string(value.get_time()), to_string(value.get_condition())); }
-
-std::string to_string(EntityView<Condition<PreferenceTag>> value)
-{
-    if (value.get_name().empty())
-        return fmt::format("(preference {})", to_string(value.get_condition()));
-    return fmt::format("(preference {} {})", value.get_name(), to_string(value.get_condition()));
-}
-
-std::string to_string(ConditionView value)
-{
-    auto result = std::string {};
-    visit([&](const auto& node) { result = to_string(node); }, value);
-    return result;
-}
-
-std::string to_string(EntityView<Effect<LiteralTag>> value) { return to_string(value.get_literal()); }
-
-std::string to_string(EntityView<Effect<AndTag>> value) { return fmt::format("(and{})", detail::spaced(value.get_effects())); }
-
-std::string to_string(EntityView<Effect<NumericTag>> value)
-{ return fmt::format("({} {} {})", loki::formalism::to_string(value.get_operation()), to_string(value.get_function()), to_string(value.get_expression())); }
-
-std::string to_string(EntityView<Effect<ForallTag>> value)
-{ return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_effect())); }
-
-std::string to_string(EntityView<Effect<WhenTag>> value)
-{ return fmt::format("(when {} {})", to_string(value.get_condition()), to_string(value.get_effect())); }
-
-std::string to_string(EntityView<Effect<OneOfTag>> value) { return fmt::format("(oneof{})", detail::spaced(value.get_effects())); }
-
-std::string to_string(EffectProbabilisticAlternativeView value) { return fmt::format("{} {}", value.get_probability(), to_string(value.get_effect())); }
-
-std::string to_string(EntityView<Effect<ProbabilisticTag>> value) { return fmt::format("(probabilistic{})", detail::spaced(value.get_alternatives())); }
-
-namespace detail
-{
 
 /// Whether the condition is a timed condition or a conjunction of them (the condition of a conditional effect of a
 /// durative action that reads another time point than its effect's).
-static bool is_timed(ConditionView condition)
+bool is_timed(ConditionView condition)
 {
     if (std::holds_alternative<EntityView<Condition<TimedTag>>>(condition))
         return true;
@@ -225,346 +92,442 @@ static bool is_timed(ConditionView condition)
 
 /// An effect at a time point in PDDL 2.1's form: the time specifier on each simple effect, conjunctions, universal
 /// effects and conditional effects outside it, and an untimed condition of a conditional effect at the effect's time.
-static std::string timed_effect_to_string(TimeSpecifier time, EffectView effect)
+template<typename Out>
+Out write_timed_effect(Out out, TimeSpecifier time, EffectView effect)
 {
-    const auto at = [&](const std::string& text) { return fmt::format("({} {})", loki::formalism::to_string(time), text); };
-    auto result = std::string {};
-    visit(
-        [&]<typename Node>(const Node& node)
+    return visit(
+        [&]<typename Node>(const Node& node) -> Out
         {
             if constexpr (std::same_as<Node, EntityView<Effect<AndTag>>>)
             {
-                result = "(and";
+                out = fmt::format_to(out, "(and");
                 for (auto part : node.get_effects())
-                    result += " " + timed_effect_to_string(time, part);
-                result += ")";
+                    out = write_timed_effect(fmt::format_to(out, " "), time, part);
+                return fmt::format_to(out, ")");
             }
             else if constexpr (std::same_as<Node, EntityView<Effect<ForallTag>>>)
-                result = fmt::format("(forall ({}) {})", fmt::join(to_strings(node.get_parameters()), " "), timed_effect_to_string(time, node.get_effect()));
+                return fmt::format_to(write_timed_effect(fmt::format_to(out, "(forall ({}) ", fmt::join(node.get_parameters(), " ")), time, node.get_effect()), ")");
             else if constexpr (std::same_as<Node, EntityView<Effect<WhenTag>>>)
-                result = fmt::format("(when {} {})",
-                                     is_timed(node.get_condition()) ? to_string(node.get_condition()) : at(to_string(node.get_condition())),
-                                     timed_effect_to_string(time, node.get_effect()));
+            {
+                out = is_timed(node.get_condition()) ? fmt::format_to(out, "(when {} ", node.get_condition())
+                                                     : fmt::format_to(out, "(when ({} {}) ", time, node.get_condition());
+                return fmt::format_to(write_timed_effect(out, time, node.get_effect()), ")");
+            }
             else
-                result = at(to_string(node));
+                return fmt::format_to(out, "({} {})", time, node);
         },
         effect);
-    return result;
 }
 
-}  // namespace detail
-
-std::string to_string(EntityView<Effect<TimedTag>> value) { return detail::timed_effect_to_string(value.get_time(), value.get_effect()); }
-
-std::string to_string(EffectView value)
+/// A probabilistic initial element (PPDDL) as :init writes it: function values as (= f n), not as assignments.
+template<typename Out>
+Out write_initial_effect(Out out, EffectView effect)
 {
-    auto result = std::string {};
-    visit([&](const auto& node) { result = to_string(node); }, value);
-    return result;
+    return visit(
+        [&]<typename Node>(const Node& node) -> Out
+        {
+            if constexpr (std::same_as<Node, EntityView<Effect<ProbabilisticTag>>>)
+            {
+                out = fmt::format_to(out, "(probabilistic");
+                for (auto alternative : node.get_alternatives())
+                    out = write_initial_effect(fmt::format_to(out, " {} ", alternative.get_probability()), alternative.get_effect());
+                return fmt::format_to(out, ")");
+            }
+            else if constexpr (std::same_as<Node, EntityView<Effect<AndTag>>>)
+            {
+                out = fmt::format_to(out, "(and");
+                for (auto part : node.get_effects())
+                    out = write_initial_effect(fmt::format_to(out, " "), part);
+                return fmt::format_to(out, ")");
+            }
+            else if constexpr (std::same_as<Node, EntityView<Effect<NumericTag>>>)
+                return fmt::format_to(out, "(= {} {})", node.get_function(), node.get_expression());
+            else
+                return fmt::format_to(out, "{}", node);
+        },
+        effect);
 }
 
-std::string to_string(EntityView<Constraint<StateTag>> value) { return to_string(value.get_condition()); }
+/// A section's objects (:constants or :objects), each with its types.
+template<typename Objects>
+void write_objects(std::ostream& os, std::string_view section, const Objects& objects)
+{
+    auto text = fmt::memory_buffer {};
+    auto out = fmt::format_to(std::back_inserter(text), "({} ", section);
+    auto first = true;
+    for (auto object : objects)
+    {
+        out = fmt::format_to(out, "{}{}", first ? "" : " ", object);
+        first = false;
+        if (!object.get_types().empty())
+            out = type_annotation(out, object.get_types());
+    }
+    fmt::format_to(out, ")");
+    os << '\n' << ygg::print_indent << fmt::to_string(text);
+}
 
-std::string to_string(EntityView<Constraint<AndTag>> value) { return fmt::format("(and{})", detail::spaced(value.get_constraints())); }
+/// A section's types (:types), each with its bases, the builtin ones left out where skip_builtin.
+template<typename Types>
+void write_types(std::ostream& os, const Types& types, bool skip_builtin)
+{
+    auto text = fmt::memory_buffer {};
+    auto out = std::back_inserter(text);
+    auto wrote_header = false;
+    for (auto type : types)
+    {
+        if (skip_builtin && is_builtin_type(type))
+            continue;
+        if (!wrote_header)
+            out = fmt::format_to(out, "(:types");
+        wrote_header = true;
+        out = fmt::format_to(out, " {}", type);
+        if (!type.get_bases().empty())
+            out = type_annotation(out, type.get_bases());
+    }
+    if (wrote_header)
+    {
+        fmt::format_to(out, ")");
+        os << '\n' << ygg::print_indent << fmt::to_string(text);
+    }
+}
 
-std::string to_string(EntityView<Constraint<OrTag>> value) { return fmt::format("(or{})", detail::spaced(value.get_constraints())); }
+/// A section that lists its elements one per line, one level deeper (:predicates, :functions).
+template<typename Range>
+void write_lines(std::ostream& os, std::string_view section, const Range& range)
+{
+    if (range.empty())
+        return;
+    os << '\n' << ygg::print_indent << '(' << section;
+    {
+        ygg::IndentScope lines(os);
+        for (auto element : range)
+            os << '\n' << ygg::print_indent << fmt::format("{}", element);
+    }
+    os << ')';
+}
 
-std::string to_string(EntityView<Constraint<NotTag>> value) { return fmt::format("(not {})", to_string(value.get_constraint())); }
+/// A section that lists the requirements (:requirements).
+template<typename Range>
+void write_requirements(std::ostream& os, const Range& requirements)
+{
+    if (requirements.empty())
+        return;
+    auto text = fmt::memory_buffer {};
+    fmt::format_to(spaced(fmt::format_to(std::back_inserter(text), "(:requirements"), requirements), ")");
+    os << '\n' << ygg::print_indent << fmt::to_string(text);
+}
 
-std::string to_string(EntityView<Constraint<ExistsTag>> value)
-{ return fmt::format("(exists ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_constraint())); }
+}  // namespace
+}  // namespace loki::formalism
 
-std::string to_string(EntityView<Constraint<ForallTag>> value)
-{ return fmt::format("(forall ({}) {})", fmt::join(detail::to_strings(value.get_parameters()), " "), to_string(value.get_constraint())); }
+using Out = fmt::format_context::iterator;
 
-std::string to_string(EntityView<Constraint<PreferenceTag>> value)
+Out fmt::formatter<lf::RequirementView>::format(const lf::RequirementView& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "{}", value.get_kind()); }
+
+Out fmt::formatter<lf::TypeView>::format(const lf::TypeView& value, fmt::format_context& ctx) const { return fmt::format_to(ctx.out(), "{}", value.get_name()); }
+
+Out fmt::formatter<lf::ObjectView>::format(const lf::ObjectView& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "{}", value.get_name()); }
+
+Out fmt::formatter<lf::VariableView>::format(const lf::VariableView& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "{}", value.get_name()); }
+
+Out fmt::formatter<lf::ParameterView>::format(const lf::ParameterView& value, fmt::format_context& ctx) const
+{
+    auto out = fmt::format_to(ctx.out(), "{}", value.get_variable());
+    return value.get_types().empty() ? out : lf::type_annotation(out, value.get_types());
+}
+
+Out fmt::formatter<lf::PredicateView>::format(const lf::PredicateView& value, fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "({}", value.get_name()), value.get_parameters()), ")"); }
+
+Out fmt::formatter<lf::FunctionSkeletonView>::format(const lf::FunctionSkeletonView& value, fmt::format_context& ctx) const
+{
+    auto out = fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "({}", value.get_name()), value.get_parameters()), ")");
+    // number is the default function type; writing it out would demand :typing of a domain without types.
+    if (std::string_view(value.get_type().get_name()) == "number")
+        return out;
+    return fmt::format_to(out, " - {}", value.get_type());
+}
+
+Out fmt::formatter<lf::AtomView>::format(const lf::AtomView& value, fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "({}", value.get_predicate().get_name()), value.get_terms()), ")"); }
+
+Out fmt::formatter<lf::LiteralView>::format(const lf::LiteralView& value, fmt::format_context& ctx) const
+{
+    if (value.get_polarity())
+        return fmt::format_to(ctx.out(), "{}", value.get_atom());
+    return fmt::format_to(ctx.out(), "(not {})", value.get_atom());
+}
+
+Out fmt::formatter<lf::FunctionTermView>::format(const lf::FunctionTermView& value, fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "({}", value.get_function().get_name()), value.get_terms()), ")"); }
+
+Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::NumberTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::NumberTag>>& value,
+                                                                                   fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "{}", value.get_value()); }
+
+Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::UnaryTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::UnaryTag>>& value,
+                                                                                  fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(- {})", value.get_expression()); }
+
+Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::BinaryTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::BinaryTag>>& value,
+                                                                                   fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "({} {} {})", value.get_operation(), value.get_left(), value.get_right()); }
+
+Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::MultiTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::MultiTag>>& value,
+                                                                                  fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "({}", value.get_operation()), value.get_args()), ")"); }
+
+Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::DurationTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::DurationTag>>&,
+                                                                                     fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "?duration"); }
+
+Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::IsViolatedTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::IsViolatedTag>>& value,
+                                                                                       fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(is-violated {})", value.get_name()); }
+
+Out fmt::formatter<lf::EntityView<lf::Condition<lf::LiteralTag>>>::format(const lf::EntityView<lf::Condition<lf::LiteralTag>>& value,
+                                                                           fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "{}", value.get_literal()); }
+
+Out fmt::formatter<lf::EntityView<lf::Condition<lf::AndTag>>>::format(const lf::EntityView<lf::Condition<lf::AndTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "(and"), value.get_conditions()), ")"); }
+
+Out fmt::formatter<lf::EntityView<lf::Condition<lf::OrTag>>>::format(const lf::EntityView<lf::Condition<lf::OrTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "(or"), value.get_conditions()), ")"); }
+
+Out fmt::formatter<lf::EntityView<lf::Condition<lf::NotTag>>>::format(const lf::EntityView<lf::Condition<lf::NotTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(not {})", value.get_condition()); }
+
+Out fmt::formatter<lf::EntityView<lf::Condition<lf::ImplyTag>>>::format(const lf::EntityView<lf::Condition<lf::ImplyTag>>& value,
+                                                                        fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(imply {} {})", value.get_left(), value.get_right()); }
+
+Out fmt::formatter<lf::EntityView<lf::Condition<lf::ExistsTag>>>::format(const lf::EntityView<lf::Condition<lf::ExistsTag>>& value,
+                                                                         fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(exists ({}) {})", fmt::join(value.get_parameters(), " "), value.get_condition()); }
+
+Out fmt::formatter<lf::EntityView<lf::Condition<lf::ForallTag>>>::format(const lf::EntityView<lf::Condition<lf::ForallTag>>& value,
+                                                                         fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(forall ({}) {})", fmt::join(value.get_parameters(), " "), value.get_condition()); }
+
+Out fmt::formatter<lf::EntityView<lf::Condition<lf::NumericConstraintTag>>>::format(const lf::EntityView<lf::Condition<lf::NumericConstraintTag>>& value,
+                                                                                    fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "({} {} {})", value.get_comparator(), value.get_left(), value.get_right()); }
+
+Out fmt::formatter<lf::EntityView<lf::Condition<lf::TimedTag>>>::format(const lf::EntityView<lf::Condition<lf::TimedTag>>& value,
+                                                                        fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "({} {})", value.get_time(), value.get_condition()); }
+
+Out fmt::formatter<lf::EntityView<lf::Condition<lf::PreferenceTag>>>::format(const lf::EntityView<lf::Condition<lf::PreferenceTag>>& value,
+                                                                             fmt::format_context& ctx) const
 {
     if (value.get_name().empty())
-        return fmt::format("(preference {})", to_string(value.get_constraint()));
-    return fmt::format("(preference {} {})", value.get_name(), to_string(value.get_constraint()));
+        return fmt::format_to(ctx.out(), "(preference {})", value.get_condition());
+    return fmt::format_to(ctx.out(), "(preference {} {})", value.get_name(), value.get_condition());
 }
 
-std::string to_string(EntityView<Constraint<ModalTag>> value)
+Out fmt::formatter<lf::EntityView<lf::Effect<lf::LiteralTag>>>::format(const lf::EntityView<lf::Effect<lf::LiteralTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "{}", value.get_literal()); }
+
+Out fmt::formatter<lf::EntityView<lf::Effect<lf::AndTag>>>::format(const lf::EntityView<lf::Effect<lf::AndTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "(and"), value.get_effects()), ")"); }
+
+Out fmt::formatter<lf::EntityView<lf::Effect<lf::NumericTag>>>::format(const lf::EntityView<lf::Effect<lf::NumericTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "({} {} {})", value.get_operation(), value.get_function(), value.get_expression()); }
+
+Out fmt::formatter<lf::EntityView<lf::Effect<lf::ForallTag>>>::format(const lf::EntityView<lf::Effect<lf::ForallTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(forall ({}) {})", fmt::join(value.get_parameters(), " "), value.get_effect()); }
+
+Out fmt::formatter<lf::EntityView<lf::Effect<lf::WhenTag>>>::format(const lf::EntityView<lf::Effect<lf::WhenTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(when {} {})", value.get_condition(), value.get_effect()); }
+
+Out fmt::formatter<lf::EntityView<lf::Effect<lf::OneOfTag>>>::format(const lf::EntityView<lf::Effect<lf::OneOfTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "(oneof"), value.get_effects()), ")"); }
+
+Out fmt::formatter<lf::EffectProbabilisticAlternativeView>::format(const lf::EffectProbabilisticAlternativeView& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "{} {}", value.get_probability(), value.get_effect()); }
+
+Out fmt::formatter<lf::EntityView<lf::Effect<lf::ProbabilisticTag>>>::format(const lf::EntityView<lf::Effect<lf::ProbabilisticTag>>& value,
+                                                                             fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "(probabilistic"), value.get_alternatives()), ")"); }
+
+Out fmt::formatter<lf::EntityView<lf::Effect<lf::TimedTag>>>::format(const lf::EntityView<lf::Effect<lf::TimedTag>>& value, fmt::format_context& ctx) const
+{ return lf::write_timed_effect(ctx.out(), value.get_time(), value.get_effect()); }
+
+Out fmt::formatter<lf::EntityView<lf::Constraint<lf::StateTag>>>::format(const lf::EntityView<lf::Constraint<lf::StateTag>>& value,
+                                                                         fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "{}", value.get_condition()); }
+
+Out fmt::formatter<lf::EntityView<lf::Constraint<lf::AndTag>>>::format(const lf::EntityView<lf::Constraint<lf::AndTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "(and"), value.get_constraints()), ")"); }
+
+Out fmt::formatter<lf::EntityView<lf::Constraint<lf::OrTag>>>::format(const lf::EntityView<lf::Constraint<lf::OrTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "(or"), value.get_constraints()), ")"); }
+
+Out fmt::formatter<lf::EntityView<lf::Constraint<lf::NotTag>>>::format(const lf::EntityView<lf::Constraint<lf::NotTag>>& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(not {})", value.get_constraint()); }
+
+Out fmt::formatter<lf::EntityView<lf::Constraint<lf::ExistsTag>>>::format(const lf::EntityView<lf::Constraint<lf::ExistsTag>>& value,
+                                                                          fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(exists ({}) {})", fmt::join(value.get_parameters(), " "), value.get_constraint()); }
+
+Out fmt::formatter<lf::EntityView<lf::Constraint<lf::ForallTag>>>::format(const lf::EntityView<lf::Constraint<lf::ForallTag>>& value,
+                                                                          fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(forall ({}) {})", fmt::join(value.get_parameters(), " "), value.get_constraint()); }
+
+Out fmt::formatter<lf::EntityView<lf::Constraint<lf::PreferenceTag>>>::format(const lf::EntityView<lf::Constraint<lf::PreferenceTag>>& value,
+                                                                              fmt::format_context& ctx) const
 {
-    auto result = fmt::format("({}", loki::formalism::to_string(value.get_operation()));
+    if (value.get_name().empty())
+        return fmt::format_to(ctx.out(), "(preference {})", value.get_constraint());
+    return fmt::format_to(ctx.out(), "(preference {} {})", value.get_name(), value.get_constraint());
+}
+
+Out fmt::formatter<lf::EntityView<lf::Constraint<lf::ModalTag>>>::format(const lf::EntityView<lf::Constraint<lf::ModalTag>>& value,
+                                                                         fmt::format_context& ctx) const
+{
+    auto out = fmt::format_to(ctx.out(), "({}", value.get_operation());
     const auto numbers = value.get_numbers();
     // PDDL 3's time bounds stand before the operands, a metric operator's interval as (interval lo hi).
-    if (is_trajectory_operator(value.get_operation()) && !numbers.empty())
-        result += fmt::format(" (interval {} {})", numbers[0], numbers[1]);
+    if (lf::is_trajectory_operator(value.get_operation()) && !numbers.empty())
+        out = fmt::format_to(out, " (interval {} {})", numbers[0], numbers[1]);
     else
         for (const auto number : numbers)
-            result += fmt::format(" {}", number);
-    for (const auto constraint : value.get_constraints())
-        result += " " + to_string(constraint);
-    return result + ")";
+            out = fmt::format_to(out, " {}", number);
+    return fmt::format_to(lf::spaced(out, value.get_constraints()), ")");
 }
 
-std::string to_string(ConstraintView value)
+Out fmt::formatter<lf::ActionView>::format(const lf::ActionView& value, fmt::format_context& ctx) const
 {
-    auto result = std::string {};
-    visit([&](const auto& node) { result = to_string(node); }, value);
-    return result;
+    auto out = fmt::format_to(ctx.out(), "(:action {} :parameters ({})", value.get_name(), fmt::join(value.get_parameters(), " "));
+    if (value.get_precondition())
+        out = fmt::format_to(out, " :precondition {}", value.get_precondition().value());
+    if (value.get_effect())
+        out = fmt::format_to(out, " :effect {}", value.get_effect().value());
+    return fmt::format_to(out, ")");
 }
 
-std::string to_string(ActionView value)
+Out fmt::formatter<lf::DurativeActionView>::format(const lf::DurativeActionView& value, fmt::format_context& ctx) const
 {
-    return fmt::format("(:action {} :parameters ({}){}{})",
-                       value.get_name(),
-                       fmt::join(detail::to_strings(value.get_parameters()), " "),
-                       value.get_precondition() ? fmt::format(" :precondition {}", to_string(value.get_precondition().value())) : "",
-                       value.get_effect() ? fmt::format(" :effect {}", to_string(value.get_effect().value())) : "");
+    auto out = fmt::format_to(ctx.out(), "(:durative-action {} :parameters ({}) :duration ", value.get_name(), fmt::join(value.get_parameters(), " "));
+    out = value.get_duration() ? fmt::format_to(out, "{}", value.get_duration().value()) : fmt::format_to(out, "()");
+    if (value.get_condition())
+        out = fmt::format_to(out, " :condition {}", value.get_condition().value());
+    if (value.get_effect())
+        out = fmt::format_to(out, " :effect {}", value.get_effect().value());
+    return fmt::format_to(out, ")");
 }
 
-std::string to_string(DurativeActionView value)
+Out fmt::formatter<lf::AxiomView>::format(const lf::AxiomView& value, fmt::format_context& ctx) const
 {
-    return fmt::format("(:durative-action {} :parameters ({}) :duration {}{}{})",
-                       value.get_name(),
-                       fmt::join(detail::to_strings(value.get_parameters()), " "),
-                       value.get_duration() ? to_string(value.get_duration().value()) : "()",
-                       value.get_condition() ? fmt::format(" :condition {}", to_string(value.get_condition().value())) : "",
-                       value.get_effect() ? fmt::format(" :effect {}", to_string(value.get_effect().value())) : "");
-}
-
-std::string to_string(AxiomView value)
-{
-    auto head_variables = urd::Store<urd::set<VariableView>> {};
+    auto head_variables = urd::Store<urd::set<lf::VariableView>> {};
     for (auto term : value.get_head().get_atom().get_terms())
-    {
         visit(
             [&]<typename T>(const T& node)
             {
-                if constexpr (std::same_as<T, VariableView>)
+                if constexpr (std::same_as<T, lf::VariableView>)
                     head_variables.insert(node);
             },
             term);
-    }
 
-    auto existential_parameters = urd::Store<urd::sequence<ParameterView>> {};
+    auto existential_parameters = urd::Store<urd::sequence<lf::ParameterView>> {};
     for (auto parameter : value.get_parameters())
-    {
         if (!head_variables.contains(parameter.get_variable()))
             existential_parameters.push_back(parameter);
-    }
 
     // The head declares the types of its variables, as in (:derived (p ?x - t) ...).
-    auto parameters = urd::Store<urd::map<VariableView, ParameterView>> {};
+    auto parameters = urd::Store<urd::map<lf::VariableView, lf::ParameterView>> {};
     for (auto parameter : value.get_parameters())
         parameters.emplace(parameter.get_variable(), parameter);
-    auto head = fmt::format("({}", value.get_head().get_atom().get_predicate().get_name());
+    auto out = fmt::format_to(ctx.out(), "(:derived ({}", value.get_head().get_atom().get_predicate().get_name());
     for (auto term : value.get_head().get_atom().get_terms())
-    {
-        auto text = to_string(term);
         visit(
             [&]<typename T>(const T& node)
             {
-                if constexpr (std::same_as<T, VariableView>)
+                if constexpr (std::same_as<T, lf::VariableView>)
                     if (const auto it = parameters.find(node); it != parameters.end())
-                        text = to_string(it->second);
+                    {
+                        out = fmt::format_to(out, " {}", it->second);
+                        return;
+                    }
+                out = fmt::format_to(out, " {}", node);
             },
             term);
-        head += " " + text;
-    }
-    auto result = fmt::format("(:derived {}) ", head);
+    out = fmt::format_to(out, ") ");
     if (!existential_parameters.empty())
-        return result + fmt::format("(exists ({}) {}))", fmt::join(detail::to_strings(existential_parameters), " "), to_string(value.get_condition()));
-    return result + fmt::format("{})", to_string(value.get_condition()));
+        return fmt::format_to(out, "(exists ({}) {}))", fmt::join(existential_parameters, " "), value.get_condition());
+    return fmt::format_to(out, "{})", value.get_condition());
 }
 
-std::string to_string(MetricView value)
-{ return fmt::format("(:metric {} {})", formalism::to_string(value.get_optimization_direction()), to_string(value.get_expression())); }
+Out fmt::formatter<lf::MetricView>::format(const lf::MetricView& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(:metric {} {})", value.get_optimization_direction(), value.get_expression()); }
 
-std::string to_string(InitialFunctionValueView value) { return fmt::format("(= {} {})", to_string(value.get_function()), to_string(value.get_value())); }
+Out fmt::formatter<lf::InitialFunctionValueView>::format(const lf::InitialFunctionValueView& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(= {} {})", value.get_function(), value.get_value()); }
 
-std::string to_string(TimedInitialLiteralView value) { return fmt::format("(at {} {})", value.get_time(), to_string(value.get_literal())); }
+Out fmt::formatter<lf::TimedInitialLiteralView>::format(const lf::TimedInitialLiteralView& value, fmt::format_context& ctx) const
+{ return fmt::format_to(ctx.out(), "(at {} {})", value.get_time(), value.get_literal()); }
 
-std::string to_string(DomainView value)
+Out fmt::formatter<lf::DomainView>::format(const lf::DomainView& value, fmt::format_context& ctx) const
 {
     auto os = std::stringstream {};
     os << fmt::format("(define (domain {})", value.get_name());
     {
         ygg::IndentScope section(os);
-        if (!value.get_requirements().empty())
-        {
-            os << '\n' << ygg::print_indent << "(:requirements";
-            for (auto requirement : value.get_requirements())
-                os << ' ' << to_string(requirement);
-            os << ')';
-        }
-        if (!value.get_types().empty())
-        {
-            auto wrote_header = false;
-            for (auto type : value.get_types())
-            {
-                if (detail::is_builtin_type(type))
-                    continue;
-                if (!wrote_header)
-                {
-                    os << '\n' << ygg::print_indent << "(:types";
-                    wrote_header = true;
-                }
-                os << ' ' << to_string(type);
-                if (!type.get_bases().empty())
-                    os << detail::type_annotation(type.get_bases());
-            }
-            if (wrote_header)
-                os << ')';
-        }
+        lf::write_requirements(os, value.get_requirements());
+        lf::write_types(os, value.get_types(), true);
         if (!value.get_constants().empty())
-        {
-            os << '\n' << ygg::print_indent << "(:constants ";
-            auto first = true;
-            for (auto object : value.get_constants())
-            {
-                if (!first)
-                    os << ' ';
-                first = false;
-                os << to_string(object);
-                if (!object.get_types().empty())
-                    os << detail::type_annotation(object.get_types());
-            }
-            os << ')';
-        }
-        if (!value.get_predicates().empty())
-        {
-            os << '\n' << ygg::print_indent << "(:predicates";
-            {
-                ygg::IndentScope predicates(os);
-                for (auto predicate : value.get_predicates())
-                    os << '\n' << ygg::print_indent << to_string(predicate);
-            }
-            os << ')';
-        }
-        if (!value.get_functions().empty())
-        {
-            os << '\n' << ygg::print_indent << "(:functions";
-            {
-                ygg::IndentScope functions(os);
-                for (auto function : value.get_functions())
-                    os << '\n' << ygg::print_indent << to_string(function);
-            }
-            os << ')';
-        }
+            lf::write_objects(os, ":constants", value.get_constants());
+        lf::write_lines(os, ":predicates", value.get_predicates());
+        lf::write_lines(os, ":functions", value.get_functions());
         for (auto axiom : value.get_axioms())
-            os << '\n' << ygg::print_indent << to_string(axiom);
+            os << '\n' << ygg::print_indent << fmt::format("{}", axiom);
         for (auto action : value.get_actions())
-            os << '\n' << ygg::print_indent << to_string(action);
+            os << '\n' << ygg::print_indent << fmt::format("{}", action);
         for (auto action : value.get_durative_actions())
-            os << '\n' << ygg::print_indent << to_string(action);
+            os << '\n' << ygg::print_indent << fmt::format("{}", action);
         if (value.get_constraints())
-            os << '\n' << ygg::print_indent << "(:constraints " << to_string(value.get_constraints().value()) << ')';
+            os << '\n' << ygg::print_indent << fmt::format("(:constraints {})", value.get_constraints().value());
     }
     os << "\n)";
-    return os.str();
+    return fmt::format_to(ctx.out(), "{}", os.view());
 }
 
-namespace detail
-{
-
-/// A probabilistic initial element (PPDDL) as :init writes it: function values as (= f n), not as assignments.
-static std::string initial_effect_to_string(EffectView effect)
-{
-    auto result = std::string {};
-    visit(
-        [&]<typename Node>(const Node& node)
-        {
-            if constexpr (std::same_as<Node, EntityView<Effect<ProbabilisticTag>>>)
-            {
-                result = "(probabilistic";
-                for (auto alternative : node.get_alternatives())
-                    result += fmt::format(" {} {}", alternative.get_probability(), initial_effect_to_string(alternative.get_effect()));
-                result += ")";
-            }
-            else if constexpr (std::same_as<Node, EntityView<Effect<AndTag>>>)
-            {
-                result = "(and";
-                for (auto part : node.get_effects())
-                    result += " " + initial_effect_to_string(part);
-                result += ")";
-            }
-            else if constexpr (std::same_as<Node, EntityView<Effect<NumericTag>>>)
-                result = fmt::format("(= {} {})", to_string(node.get_function()), to_string(node.get_expression()));
-            else
-                result = to_string(node);
-        },
-        effect);
-    return result;
-}
-
-}  // namespace detail
-
-std::string to_string(TaskView value)
+Out fmt::formatter<lf::TaskView>::format(const lf::TaskView& value, fmt::format_context& ctx) const
 {
     auto os = std::stringstream {};
     os << fmt::format("(define (problem {})", value.get_name());
     {
         ygg::IndentScope section(os);
         os << '\n' << ygg::print_indent << fmt::format("(:domain {})", value.get_domain().get_name());
-        if (!value.get_requirements().empty())
-        {
-            os << '\n' << ygg::print_indent << "(:requirements";
-            for (auto requirement : value.get_requirements())
-                os << ' ' << to_string(requirement);
-            os << ')';
-        }
-        if (!value.get_types().empty())
-        {
-            os << '\n' << ygg::print_indent << "(:types";
-            for (auto type : value.get_types())
-            {
-                os << ' ' << to_string(type);
-                if (!type.get_bases().empty())
-                    os << detail::type_annotation(type.get_bases());
-            }
-            os << ')';
-        }
-        if (!value.get_predicates().empty())
-        {
-            os << '\n' << ygg::print_indent << "(:predicates";
-            {
-                ygg::IndentScope predicates(os);
-                for (auto predicate : value.get_predicates())
-                    os << '\n' << ygg::print_indent << to_string(predicate);
-            }
-            os << ')';
-        }
+        lf::write_requirements(os, value.get_requirements());
+        lf::write_types(os, value.get_types(), false);
+        lf::write_lines(os, ":predicates", value.get_predicates());
         if (!value.get_objects().empty())
-        {
-            os << '\n' << ygg::print_indent << "(:objects ";
-            auto first = true;
-            for (auto object : value.get_objects())
-            {
-                if (!first)
-                    os << ' ';
-                first = false;
-                os << to_string(object);
-                if (!object.get_types().empty())
-                    os << detail::type_annotation(object.get_types());
-            }
-            os << ')';
-        }
-        os << '\n' << ygg::print_indent << "(:init";
-        for (auto literal : value.get_initial_literals())
-            os << ' ' << to_string(literal);
-        for (auto initial_value : value.get_initial_function_values())
-            os << ' ' << to_string(initial_value);
-        for (auto timed_literal : value.get_timed_initial_literals())
-            os << ' ' << to_string(timed_literal);
+            lf::write_objects(os, ":objects", value.get_objects());
+        auto init = fmt::memory_buffer {};
+        auto out = fmt::format_to(std::back_inserter(init), "(:init");
+        out = lf::spaced(out, value.get_initial_literals());
+        out = lf::spaced(out, value.get_initial_function_values());
+        out = lf::spaced(out, value.get_timed_initial_literals());
         for (auto effect : value.get_initial_effects())
-            os << ' ' << detail::initial_effect_to_string(EffectView(effect));
-        os << ')';
+            out = lf::write_initial_effect(fmt::format_to(out, " "), lf::EffectView(effect));
+        fmt::format_to(out, ")");
+        os << '\n' << ygg::print_indent << fmt::to_string(init);
         if (value.get_goal())
-            os << '\n' << ygg::print_indent << "(:goal " << to_string(value.get_goal().value()) << ')';
+            os << '\n' << ygg::print_indent << fmt::format("(:goal {})", value.get_goal().value());
         if (value.get_goal_reward())
             os << '\n' << ygg::print_indent << fmt::format("(:goal-reward {})", value.get_goal_reward().value());
         if (value.get_constraints())
-            os << '\n' << ygg::print_indent << "(:constraints " << to_string(value.get_constraints().value()) << ')';
+            os << '\n' << ygg::print_indent << fmt::format("(:constraints {})", value.get_constraints().value());
         if (value.get_metric())
-            os << '\n' << ygg::print_indent << to_string(value.get_metric().value());
+            os << '\n' << ygg::print_indent << fmt::format("{}", value.get_metric().value());
         for (auto axiom : value.get_axioms())
-            os << '\n' << ygg::print_indent << to_string(axiom);
+            os << '\n' << ygg::print_indent << fmt::format("{}", axiom);
     }
     os << "\n)";
-    return os.str();
+    return fmt::format_to(ctx.out(), "{}", os.view());
 }
-
-}  // namespace loki::formalism::format

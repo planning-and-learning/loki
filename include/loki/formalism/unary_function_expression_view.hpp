@@ -18,10 +18,13 @@
 #ifndef LOKI_FORMALISM_UNARY_FUNCTION_EXPRESSION_VIEW_HPP_
 #define LOKI_FORMALISM_UNARY_FUNCTION_EXPRESSION_VIEW_HPP_
 
+#include "loki/formalism/declarations.hpp"
 #include "loki/formalism/unary_function_expression_data.hpp"
 
+#include <fmt/base.h>
 #include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
+#include <yggdrasil/formatting/without_format_spec.hpp>
 
 namespace urd
 {
@@ -37,5 +40,12 @@ public:
     auto get_expression() const noexcept { return self().template member<&urd::record_of<V>::expression>(); }
 };
 }  // namespace urd
+
+/// Written in PDDL (src/formalism/formatter.cpp).
+template<>
+struct fmt::formatter<loki::formalism::EntityView<loki::formalism::FunctionExpression<loki::formalism::UnaryTag>>, char> : ygg::without_format_spec
+{
+    fmt::format_context::iterator format(const loki::formalism::EntityView<loki::formalism::FunctionExpression<loki::formalism::UnaryTag>>& value, fmt::format_context& ctx) const;
+};
 
 #endif

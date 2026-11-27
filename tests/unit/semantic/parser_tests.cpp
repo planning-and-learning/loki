@@ -18,8 +18,8 @@
 #include "../benchmark_utils.hpp"
 
 #include <cstddef>
+#include <fmt/format.h>
 #include <gtest/gtest.h>
-#include <loki/formalism/formatter.hpp>
 #include <loki/formalism/repository.hpp>
 #include <loki/formalism/views.hpp>
 #include <loki/semantic/errors.hpp>
@@ -34,6 +34,7 @@
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
 #include <vector>
+#include <yggdrasil/formatting/cista_formatters.hpp>
 
 namespace loki::tests
 {
@@ -151,7 +152,7 @@ TEST(LokiSemanticParser, NormalizesMultiExpressionArityAndSortsOperandsWithoutDe
     auto options = semantic::ParserOptions {};
     options.add_action_costs = false;
     const auto parser = semantic::Parser(std::string(source), options);
-    const auto text = formalism::format::to_string(parser.get_domain());
+    const auto text = fmt::format("{}", parser.get_domain());
 
     EXPECT_NE(text.find("(assign (empty-add) 0)"), std::string::npos);
     EXPECT_NE(text.find("(assign (empty-mul) 1)"), std::string::npos);

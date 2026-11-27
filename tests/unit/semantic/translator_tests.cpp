@@ -20,10 +20,10 @@
 #include "semantic/translator/copy_translator.hpp"
 
 #include <algorithm>
+#include <fmt/format.h>
 #include <gtest/gtest.h>
 #include <initializer_list>
 #include <loki/formalism/conditions.hpp>
-#include <loki/formalism/formatter.hpp>
 #include <loki/formalism/function_expressions.hpp>
 #include <loki/formalism/repository.hpp>
 #include <loki/semantic/errors.hpp>
@@ -42,6 +42,7 @@
 #include <urd/store.hpp>
 #include <utility>
 #include <vector>
+#include <yggdrasil/formatting/cista_formatters.hpp>
 
 namespace loki::tests
 {
@@ -391,14 +392,14 @@ TEST(LokiSemanticTranslator, DeclaresTypesInTask)
         EXPECT_EQ(count_initial_literals_for_predicate(literals, "either_a_b"), 4);
 
         // The printed translation reparses in strict mode and retranslates to the same text.
-        const auto domain_text = formalism::format::to_string(domain_translation.get_translated_domain());
-        const auto task_text = formalism::format::to_string(translated_task);
+        const auto domain_text = fmt::format("{}", domain_translation.get_translated_domain());
+        const auto task_text = fmt::format("{}", translated_task);
         auto reparsed = semantic::Parser(domain_text, semantic::ParserOptions { .strict = true });
         const auto reparsed_task = reparsed.parse_task(task_text);
         const auto retranslation = semantic::translate(reparsed.get_domain(), options);
         const auto task_retranslation = semantic::translate(reparsed_task, retranslation, options);
-        EXPECT_EQ(formalism::format::to_string(retranslation.get_translated_domain()), domain_text);
-        EXPECT_EQ(formalism::format::to_string(task_retranslation.get_translated_task()), task_text);
+        EXPECT_EQ(fmt::format("{}", retranslation.get_translated_domain()), domain_text);
+        EXPECT_EQ(fmt::format("{}", task_retranslation.get_translated_task()), task_text);
     }
 }
 
@@ -412,9 +413,9 @@ TEST(LokiSemanticTranslator, ConstantMetricUsesNumericFluents)
     // The translated task declares :numeric-fluents for its metric, so it reparses in strict mode.
     const auto domain_translation = semantic::translate(parser.get_domain());
     const auto task_translation = semantic::translate(task, domain_translation);
-    const auto task_text = formalism::format::to_string(task_translation.get_translated_task());
+    const auto task_text = fmt::format("{}", task_translation.get_translated_task());
     EXPECT_TRUE(has_requirement_kind(task_translation.get_translated_task().get_requirements(), formalism::RequirementKind::NumericFluents));
-    auto reparsed = semantic::Parser(formalism::format::to_string(domain_translation.get_translated_domain()), strict);
+    auto reparsed = semantic::Parser(fmt::format("{}", domain_translation.get_translated_domain()), strict);
     EXPECT_NO_THROW(static_cast<void>(reparsed.parse_task(task_text)));
 }
 
@@ -655,8 +656,8 @@ TEST(LokiSemanticTranslator, NormalizesArithmeticExpressionsModuloAcu)
     const auto unary_product = translator.copy(multi_expression(repository, builder, formalism::MultiArithmeticOperator::Mul, { three }));
 
     EXPECT_EQ(normalized_first, normalized_second);
-    EXPECT_EQ(formalism::format::to_string(normalized_first), "(+ 2 2 3)");
-    EXPECT_EQ(formalism::format::to_string(empty_sum), "0");
+    EXPECT_EQ(fmt::format("{}", normalized_first), "(+ 2 2 3)");
+    EXPECT_EQ(fmt::format("{}", empty_sum), "0");
     EXPECT_EQ(unary_product, translator.copy(three));
     EXPECT_FALSE(contains_binary_add_or_multiply(normalized_first));
 
@@ -665,10 +666,10 @@ TEST(LokiSemanticTranslator, NormalizesArithmeticExpressionsModuloAcu)
                                          builder,
                                          formalism::MultiArithmeticOperator::Mul,
                                          { one, binary_expression(repository, builder, formalism::BinaryArithmeticOperator::Mul, three, one) }));
-    EXPECT_EQ(formalism::format::to_string(collapsed_product), "3");
+    EXPECT_EQ(fmt::format("{}", collapsed_product), "3");
 
     const auto zero_product = translator.copy(binary_expression(repository, builder, formalism::BinaryArithmeticOperator::Mul, zero, three));
-    EXPECT_EQ(formalism::format::to_string(zero_product), "(* 0 3)");
+    EXPECT_EQ(fmt::format("{}", zero_product), "(* 0 3)");
 
     const auto product_exposed_by_sum = translator.copy(
         binary_expression(repository,
@@ -679,14 +680,14 @@ TEST(LokiSemanticTranslator, NormalizesArithmeticExpressionsModuloAcu)
                                            formalism::MultiArithmeticOperator::Add,
                                            { zero, binary_expression(repository, builder, formalism::BinaryArithmeticOperator::Mul, two, three) }),
                           two));
-    EXPECT_EQ(formalism::format::to_string(product_exposed_by_sum), "(* 2 2 3)");
+    EXPECT_EQ(fmt::format("{}", product_exposed_by_sum), "(* 2 2 3)");
 
     const auto subtraction = translator.copy(binary_expression(repository,
                                                                builder,
                                                                formalism::BinaryArithmeticOperator::Sub,
                                                                first,
                                                                binary_expression(repository, builder, formalism::BinaryArithmeticOperator::Mul, three, one)));
-    EXPECT_EQ(formalism::format::to_string(subtraction), "(- (+ 2 2 3) 3)");
+    EXPECT_EQ(fmt::format("{}", subtraction), "(- (+ 2 2 3) 3)");
     EXPECT_FALSE(contains_binary_add_or_multiply(subtraction));
 }
 
@@ -737,23 +738,23 @@ TEST(LokiSemanticTranslator, AppliesArithmeticNormalizationAfterEffectNormalForm
     ASSERT_FALSE(defaults.normalize_arithmetic_expressions);
     const auto unnormalized_domain = semantic::translate(parser.get_domain(), defaults);
     const auto unnormalized_task = semantic::translate(parser.parse_task(task_source), unnormalized_domain, defaults);
-    EXPECT_NE(formalism::format::to_string(unnormalized_domain.get_translated_domain()).find("(+ (+ (x) (y) 0) (x))"), std::string::npos);
+    EXPECT_NE(fmt::format("{}", unnormalized_domain.get_translated_domain()).find("(+ (+ (x) (y) 0) (x))"), std::string::npos);
     ASSERT_TRUE(unnormalized_task.get_translated_task().get_metric().has_value());
-    EXPECT_EQ(formalism::format::to_string(unnormalized_task.get_translated_task().get_metric().value().get_expression()), "(+ (+ (x) 0) (x) (y))");
+    EXPECT_EQ(fmt::format("{}", unnormalized_task.get_translated_task().get_metric().value().get_expression()), "(+ (+ (x) 0) (x) (y))");
 
     auto options = semantic::TranslatorOptions {};
     options.normalize_arithmetic_expressions = true;
     const auto normalized_domain = semantic::translate(parser.get_domain(), options);
     const auto normalized_task = semantic::translate(parser.parse_task(task_source), normalized_domain, options);
-    const auto normalized_domain_text = formalism::format::to_string(normalized_domain.get_translated_domain());
+    const auto normalized_domain_text = fmt::format("{}", normalized_domain.get_translated_domain());
     EXPECT_NE(normalized_domain_text.find("(increase (f) (+ (x) (x) (y)))"), std::string::npos);
     ASSERT_TRUE(normalized_task.get_translated_task().get_goal().has_value());
-    EXPECT_EQ(formalism::format::to_string(normalized_task.get_translated_task().get_goal().value()), "(> (+ (x) (x) (y)) 0)");
+    EXPECT_EQ(fmt::format("{}", normalized_task.get_translated_task().get_goal().value()), "(> (+ (x) (x) (y)) 0)");
     ASSERT_TRUE(normalized_task.get_translated_task().get_metric().has_value());
-    EXPECT_EQ(formalism::format::to_string(normalized_task.get_translated_task().get_metric().value().get_expression()), "(+ (x) (x) (y))");
+    EXPECT_EQ(fmt::format("{}", normalized_task.get_translated_task().get_metric().value().get_expression()), "(+ (x) (x) (y))");
 
     const auto normalized_again = semantic::translate(normalized_domain.get_translated_domain(), options);
-    EXPECT_EQ(formalism::format::to_string(normalized_again.get_translated_domain()), normalized_domain_text);
+    EXPECT_EQ(fmt::format("{}", normalized_again.get_translated_domain()), normalized_domain_text);
 }
 
 TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInterning)

@@ -18,10 +18,13 @@
 #ifndef LOKI_FORMALISM_FUNCTION_EXPRESSION_IS_VIOLATED_VIEW_HPP_
 #define LOKI_FORMALISM_FUNCTION_EXPRESSION_IS_VIOLATED_VIEW_HPP_
 
+#include "loki/formalism/declarations.hpp"
 #include "loki/formalism/function_expression_is_violated_data.hpp"
 
+#include <fmt/base.h>
 #include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
+#include <yggdrasil/formatting/without_format_spec.hpp>
 
 namespace urd
 {
@@ -35,5 +38,12 @@ public:
     const auto& get_name() const noexcept { return self().template member<&urd::record_of<V>::name>(); }
 };
 }  // namespace urd
+
+/// Written in PDDL (src/formalism/formatter.cpp).
+template<>
+struct fmt::formatter<loki::formalism::EntityView<loki::formalism::FunctionExpression<loki::formalism::IsViolatedTag>>, char> : ygg::without_format_spec
+{
+    fmt::format_context::iterator format(const loki::formalism::EntityView<loki::formalism::FunctionExpression<loki::formalism::IsViolatedTag>>& value, fmt::format_context& ctx) const;
+};
 
 #endif

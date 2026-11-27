@@ -20,7 +20,8 @@
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <iostream>
-#include <loki/ast/formatter.hpp>
+#include <fmt/format.h>
+#include <loki/ast/ast.hpp>
 #include <loki/formalism/domain_view.hpp>
 #include <loki/formalism/repository.hpp>
 #include <loki/formalism/task_view.hpp>

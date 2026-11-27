@@ -1,5 +1,6 @@
 add_library(
     parsers SHARED
+    ast/formatter.cpp
     formalism/builder_storage.cpp
     formalism/canonicalization.cpp
     formalism/formatter.cpp

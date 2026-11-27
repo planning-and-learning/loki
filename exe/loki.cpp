@@ -19,9 +19,9 @@
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
+#include <fmt/format.h>
 #include <fstream>
 #include <iostream>
-#include <loki/formalism/formatter.hpp>
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
 #include <loki/semantic/translator.hpp>
@@ -70,7 +70,7 @@ static int run(const argparse::ArgumentParser& program)
     const auto domain = parser.get_domain();
 
     const auto domain_translation_result = loki::semantic::translate(domain, translator_options);
-    const auto translated_domain_text = loki::formalism::format::to_string(domain_translation_result.get_translated_domain());
+    const auto translated_domain_text = fmt::format("{}", domain_translation_result.get_translated_domain());
     if (verbose)
         std::cout << translated_domain_text << '\n';
 
@@ -82,7 +82,7 @@ static int run(const argparse::ArgumentParser& program)
         auto task = parser.parse_task(problem_filepath);
 
         const auto translated_task_result = loki::semantic::translate(task, domain_translation_result, translator_options);
-        const auto translated_task_text = loki::formalism::format::to_string(translated_task_result.get_translated_task());
+        const auto translated_task_text = fmt::format("{}", translated_task_result.get_translated_task());
         if (verbose)
             std::cout << translated_task_text << '\n';
 

@@ -18,10 +18,13 @@
 #ifndef LOKI_FORMALISM_DOMAIN_VIEW_HPP_
 #define LOKI_FORMALISM_DOMAIN_VIEW_HPP_
 
+#include "loki/formalism/declarations.hpp"
 #include "loki/formalism/domain_data.hpp"
 
+#include <fmt/base.h>
 #include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
+#include <yggdrasil/formatting/without_format_spec.hpp>
 
 namespace urd
 {
@@ -53,5 +56,12 @@ public:
     auto get_constraints() const noexcept { return self().template member<&urd::record_of<V>::constraints>(); }
 };
 }  // namespace urd
+
+/// Written in PDDL (src/formalism/formatter.cpp).
+template<>
+struct fmt::formatter<loki::formalism::DomainView, char> : ygg::without_format_spec
+{
+    fmt::format_context::iterator format(const loki::formalism::DomainView& value, fmt::format_context& ctx) const;
+};
 
 #endif

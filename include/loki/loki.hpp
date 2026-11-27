@@ -18,9 +18,11 @@
 #ifndef LOKI_LOKI_HPP_
 #define LOKI_LOKI_HPP_
 
-#include "loki/ast.hpp"
+#include "loki/ast/ast.hpp"
 #include "loki/formalism/formalism.hpp"
-#include "loki/parser.hpp"
-#include "loki/semantic.hpp"
+#include "loki/parser/parser.hpp"
+#include "loki/semantic/errors.hpp"
+#include "loki/semantic/parser.hpp"
+#include "loki/semantic/translator.hpp"
 
 #endif

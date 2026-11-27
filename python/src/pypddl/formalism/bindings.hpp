@@ -20,7 +20,6 @@
 
 #include "pypddl/formalism/module.hpp"
 
-#include <loki/formalism/formatter.hpp>
 #include <loki/formalism/repository.hpp>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/optional.h>

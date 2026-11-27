@@ -19,11 +19,11 @@
 #include "../formalism_utils.hpp"
 
 #include <cstdint>
+#include <fmt/format.h>
 #include <gtest/gtest.h>
 #include <loki/formalism/choices.hpp>
 #include <loki/formalism/conditions.hpp>
 #include <loki/formalism/effects.hpp>
-#include <loki/formalism/formatter.hpp>
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
 #include <loki/semantic/translator.hpp>
@@ -34,6 +34,7 @@
 #include <urd/repr/values/std_set.hpp>
 #include <urd/repr/values/unordered_flat_set.hpp>
 #include <urd/store.hpp>
+#include <yggdrasil/formatting/cista_formatters.hpp>
 
 namespace loki::tests
 {
@@ -91,7 +92,7 @@ void expect_distinct_children(const Children& children, const std::string& what)
         if constexpr (std::is_same_v<std::decay_t<decltype(child)>, formalism::EffectView>)
             if (formalism::contains_choice(child))
                 continue;
-        EXPECT_TRUE(seen.insert(formalism::format::to_string(child)).second) << what << ": duplicate child in canonical list";
+        EXPECT_TRUE(seen.insert(fmt::format("{}", child)).second) << what << ": duplicate child in canonical list";
     }
 }
 
@@ -120,7 +121,7 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
                                 auto key = std::string(formalism::to_string(grandchild.get_operation())) + " "
                                            + std::string(grandchild.get_function().get_function().get_name());
                                 for (auto term : grandchild.get_function().get_terms())
-                                    key += "," + formalism::format::to_string(term);
+                                    key += "," + fmt::format("{}", term);
                                 EXPECT_TRUE(numeric_targets.insert(key).second) << what << ": unaggregated numeric effects on target " << key;
                             }
                         },
@@ -377,7 +378,7 @@ TEST(LokiSemanticInvariantSuite, TranslatorOptionCombinationsKeepInvariants)
 
                     if (!task)
                     {
-                        const auto domain_text = formalism::format::to_string(translated_domain);
+                        const auto domain_text = fmt::format("{}", translated_domain);
                         auto reparsed = semantic::Parser(domain_text);
                         EXPECT_EQ(reparsed.get_domain().get_name(), translated_domain.get_name());
                         continue;
@@ -403,8 +404,8 @@ TEST(LokiSemanticInvariantSuite, TranslatorOptionCombinationsKeepInvariants)
                     }
 
                     // Formatted output must reparse for every option combination.
-                    const auto domain_text = formalism::format::to_string(translated_domain);
-                    const auto task_text = formalism::format::to_string(translated_task);
+                    const auto domain_text = fmt::format("{}", translated_domain);
+                    const auto task_text = fmt::format("{}", translated_task);
                     auto reparsed = semantic::Parser(domain_text);
                     const auto reparsed_task = reparsed.parse_task(task_text);
                     EXPECT_EQ(reparsed.get_domain().get_name(), translated_domain.get_name());
@@ -497,8 +498,8 @@ TEST(LokiSemanticInvariantSuite, AddActionCostsOptionHoldsAcrossFixtures)
         EXPECT_TRUE(has_total_cost_init);
 
         // The completed output must still reparse.
-        auto reparsed = semantic::Parser(formalism::format::to_string(domain));
-        const auto reparsed_task = reparsed.parse_task(formalism::format::to_string(task));
+        auto reparsed = semantic::Parser(fmt::format("{}", domain));
+        const auto reparsed_task = reparsed.parse_task(fmt::format("{}", task));
         EXPECT_EQ(reparsed_task.get_name(), task.get_name());
     }
 }

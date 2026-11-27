@@ -18,10 +18,13 @@
 #ifndef LOKI_FORMALISM_EFFECT_PROBABILISTIC_VIEW_HPP_
 #define LOKI_FORMALISM_EFFECT_PROBABILISTIC_VIEW_HPP_
 
+#include "loki/formalism/declarations.hpp"
 #include "loki/formalism/effect_probabilistic_data.hpp"
 
+#include <fmt/base.h>
 #include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
+#include <yggdrasil/formatting/without_format_spec.hpp>
 
 namespace urd
 {
@@ -35,5 +38,12 @@ public:
     auto get_alternatives() const noexcept { return self().template member<&urd::record_of<V>::alternatives>(); }
 };
 }  // namespace urd
+
+/// Written in PDDL (src/formalism/formatter.cpp).
+template<>
+struct fmt::formatter<loki::formalism::EntityView<loki::formalism::Effect<loki::formalism::ProbabilisticTag>>, char> : ygg::without_format_spec
+{
+    fmt::format_context::iterator format(const loki::formalism::EntityView<loki::formalism::Effect<loki::formalism::ProbabilisticTag>>& value, fmt::format_context& ctx) const;
+};
 
 #endif

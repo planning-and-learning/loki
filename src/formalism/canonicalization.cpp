@@ -18,7 +18,6 @@
 #include "loki/formalism/canonicalization.hpp"
 
 #include "loki/formalism/choices.hpp"
-#include "loki/formalism/formatter.hpp"
 #include "loki/formalism/views.hpp"
 
 #include <algorithm>

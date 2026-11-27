@@ -21,6 +21,7 @@
 #include <boost/optional.hpp>
 #include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
+#include <fmt/base.h>
 #include <string>
 #include <urd/repr/sequences/sequence.hpp>
 #include <urd/store.hpp>
@@ -548,5 +549,527 @@ struct Task : boost::spirit::x3::position_tagged
 
 using File = boost::spirit::x3::variant<Domain, Task>;
 }
+
+// How each node is written (PDDL), defined in src/ast/formatter.cpp.
+
+template<>
+struct fmt::formatter<loki::ast::Identifier, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Identifier& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::TypeReference, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::TypeReference& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::EitherType, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::EitherType& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::TypeExpression, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::TypeExpression& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::TypedGroup, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::TypedGroup& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Requirement, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Requirement& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Term, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Term& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Atom, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Atom& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Literal, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Literal& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::FunctionTerm, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::FunctionTerm& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::FunctionExpressionNumber, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::FunctionExpressionNumber& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::FunctionExpressionFunction, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::FunctionExpressionFunction& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::FunctionExpressionUnary, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::FunctionExpressionUnary& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::FunctionExpressionBinary, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::FunctionExpressionBinary& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::FunctionExpressionMulti, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::FunctionExpressionMulti& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::FunctionExpressionDuration, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::FunctionExpressionDuration& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::FunctionExpressionIsViolated, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::FunctionExpressionIsViolated& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::FunctionExpression, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::FunctionExpression& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConditionLiteral, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConditionLiteral& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConditionAnd, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConditionAnd& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConditionOr, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConditionOr& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConditionNot, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConditionNot& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConditionImply, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConditionImply& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConditionExists, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConditionExists& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConditionForall, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConditionForall& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConditionNumericConstraint, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConditionNumericConstraint& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConditionTimed, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConditionTimed& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConditionPreference, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConditionPreference& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Condition, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Condition& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::EffectLiteral, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::EffectLiteral& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::EffectAnd, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::EffectAnd& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::EffectNumeric, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::EffectNumeric& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::EffectForall, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::EffectForall& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::EffectWhen, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::EffectWhen& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::EffectOneOf, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::EffectOneOf& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ProbabilisticEffectAlternative, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ProbabilisticEffectAlternative& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::EffectProbabilistic, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::EffectProbabilistic& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::EffectTimed, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::EffectTimed& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Effect, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Effect& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::PredicateDeclaration, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::PredicateDeclaration& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::FunctionDeclaration, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::FunctionDeclaration& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Action, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Action& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConstraintAnd, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConstraintAnd& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConstraintOr, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConstraintOr& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConstraintNot, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConstraintNot& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConstraintImply, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConstraintImply& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConstraintExists, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConstraintExists& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConstraintState, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConstraintState& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConstraintForall, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConstraintForall& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConstraintPreference, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConstraintPreference& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConstraintModal, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConstraintModal& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Constraint, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Constraint& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ConstraintSection, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ConstraintSection& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::DurativeAction, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::DurativeAction& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Axiom, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Axiom& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Metric, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Metric& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::InitialFunctionValue, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::InitialFunctionValue& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::TimedInitialLiteral, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::TimedInitialLiteral& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::InitialAtom, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::InitialAtom& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::ProbabilisticInitialAlternative, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::ProbabilisticInitialAlternative& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::InitialProbabilistic, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::InitialProbabilistic& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::InitialElement, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::InitialElement& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Domain, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Domain& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::Task, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::Task& value, fmt::format_context& ctx) const;
+};
+
+template<>
+struct fmt::formatter<loki::ast::File, char>
+{
+    constexpr fmt::format_parse_context::iterator parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+
+    fmt::format_context::iterator format(const loki::ast::File& value, fmt::format_context& ctx) const;
+};
 
 #endif

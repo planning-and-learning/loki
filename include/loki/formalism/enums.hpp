@@ -212,25 +212,6 @@ inline const char* to_string(RequirementKind kind) { return requirement_kind_nam
 
 inline const char* to_string(UnaryArithmeticOperator op) { return unary_arithmetic_operator_names.at(static_cast<std::size_t>(op)); }
 
-// How fmt writes each (found by ADL): as to_string names it.
-inline const char* format_as(BinaryComparator op) { return to_string(op); }
-
-inline const char* format_as(UnaryArithmeticOperator op) { return to_string(op); }
-
-inline const char* format_as(BinaryArithmeticOperator op) { return to_string(op); }
-
-inline const char* format_as(MultiArithmeticOperator op) { return to_string(op); }
-
-inline const char* format_as(NumericEffectOperator op) { return to_string(op); }
-
-inline const char* format_as(OptimizationDirection direction) { return to_string(direction); }
-
-inline const char* format_as(RequirementKind kind) { return to_string(kind); }
-
-inline const char* format_as(TimeSpecifier time) { return to_string(time); }
-
-inline const char* format_as(ConstraintOperator operation) { return to_string(operation); }
-
 }  // namespace loki::formalism
 
 #endif

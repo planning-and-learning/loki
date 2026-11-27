@@ -159,19 +159,19 @@ Headers and templates follow the [template and include rules](https://planning-a
 
 ## C++ API
 
-The umbrella header includes the semantic parser (`loki::semantic`), translator
-(`loki::semantic`), and reparseable PDDL formatter (`loki::formalism::format`):
+The umbrella header includes the semantic parser (`loki::semantic`) and translator
+(`loki::semantic`); every view of the formalism writes reparseable PDDL through fmt:
 
 ```cpp
+#include <fmt/format.h>
 #include <loki/loki.hpp>
-
 #include <string>
 
 int main()
 {
     auto parser = loki::semantic::Parser(std::string { "(define (domain ready-domain) (:predicates (ready)))" });
     const auto translation = loki::semantic::translate(parser.get_domain());
-    const auto domain_text = loki::formalism::format::to_string(translation.get_translated_domain());
+    const auto domain_text = fmt::format("{}", translation.get_translated_domain());
     auto reparsed = loki::semantic::Parser(domain_text);
     return reparsed.get_domain().get_name() == "ready-domain" ? 0 : 1;
 }

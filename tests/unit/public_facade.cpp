@@ -17,10 +17,12 @@
 
 #include "benchmark_utils.hpp"
 
+#include <fmt/format.h>
 #include <gtest/gtest.h>
 #include <loki/loki.hpp>
 #include <string>
 #include <type_traits>
+#include <yggdrasil/formatting/cista_formatters.hpp>
 
 namespace loki::tests
 {
@@ -174,8 +176,8 @@ TEST(LokiPublicFacade, FormatsSemanticDomainAndTaskAsReparseablePddl)
     const auto domain = parser.get_domain();
     const auto task = parser.parse_task(fixture_path("facade_format", "task.pddl"));
 
-    const auto domain_text = loki::formalism::format::to_string(domain);
-    const auto task_text = loki::formalism::format::to_string(task);
+    const auto domain_text = fmt::format("{}", domain);
+    const auto task_text = fmt::format("{}", task);
 
     auto reparsed = loki::semantic::Parser(domain_text);
 
@@ -192,7 +194,7 @@ TEST(LokiPublicFacade, FormatsAlternativeEffectsAsReparseablePddl)
     auto parser = loki::semantic::Parser(fixture_path("alternative_effects"), loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
 
     const auto domain = parser.get_domain();
-    const auto domain_text = loki::formalism::format::to_string(domain);
+    const auto domain_text = fmt::format("{}", domain);
 
     auto reparsed = loki::semantic::Parser(domain_text, loki::semantic::ParserOptions { .strict = false, .add_action_costs = false });
     const auto reparsed_domain = reparsed.get_domain();
@@ -224,8 +226,8 @@ TEST(LokiPublicFacade, FormatsTypedNumericTaskSectionsAsReparseablePddl)
     const auto domain = parser.get_domain();
     const auto task = parser.parse_task(fixture_path("facade_format_numeric", "task.pddl"));
 
-    const auto domain_text = loki::formalism::format::to_string(domain);
-    const auto task_text = loki::formalism::format::to_string(task);
+    const auto domain_text = fmt::format("{}", domain);
+    const auto task_text = fmt::format("{}", task);
 
     EXPECT_NE(domain_text.find("(:types item - object)"), std::string::npos);
     EXPECT_NE(domain_text.find("(:constants depot - item)"), std::string::npos);

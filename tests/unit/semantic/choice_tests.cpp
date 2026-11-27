@@ -17,9 +17,9 @@
 
 #include "../benchmark_utils.hpp"
 
+#include <fmt/format.h>
 #include <gtest/gtest.h>
 #include <loki/formalism/choices.hpp>
-#include <loki/formalism/formatter.hpp>
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
 #include <loki/semantic/translator.hpp>
@@ -27,6 +27,7 @@
 #include <string_view>
 #include <urd/repr/maps/unordered_flat_map.hpp>
 #include <urd/store.hpp>
+#include <yggdrasil/formatting/cista_formatters.hpp>
 
 namespace loki::tests
 {
@@ -44,7 +45,7 @@ urd::Store<urd::map<std::string, std::string>> translated_effects(std::string_vi
     const auto translation = semantic::translate(parser.get_domain(), options);
     auto result = urd::Store<urd::map<std::string, std::string>> {};
     for (auto action : translation.get_translated_domain().get_actions())
-        result[std::string(action.get_name())] = action.get_effect() ? formalism::format::to_string(action.get_effect().value()) : "";
+        result[std::string(action.get_name())] = action.get_effect() ? fmt::format("{}", action.get_effect().value()) : "";
     return result;
 }
 
@@ -71,7 +72,7 @@ TEST(LokiSemanticChoices, GuardsNonConjunctiveConditionsOfChoicesWithDerivedPred
 
     auto effects = urd::Store<urd::map<std::string, std::string>> {};
     for (auto action : domain.get_actions())
-        effects[std::string(action.get_name())] = formalism::format::to_string(action.get_effect().value());
+        effects[std::string(action.get_name())] = fmt::format("{}", action.get_effect().value());
     EXPECT_EQ(effects.at("disjunctive"), "(when (loki-choice-0 ?x) (oneof (p ?x) (q ?x)))");
     EXPECT_EQ(effects.at("existential"), "(when (loki-choice-1) (oneof (not (r)) (r)))");
     // A deterministic effect is split per disjunct as before.

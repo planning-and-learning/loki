@@ -19,9 +19,12 @@
 #define LOKI_FORMALISM_ATOM_VIEW_HPP_
 
 #include "loki/formalism/atom_data.hpp"
+#include "loki/formalism/declarations.hpp"
 
+#include <fmt/base.h>
 #include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
+#include <yggdrasil/formatting/without_format_spec.hpp>
 
 namespace urd
 {
@@ -37,5 +40,12 @@ public:
     auto get_terms() const noexcept { return self().template member<&urd::record_of<V>::terms>(); }
 };
 }  // namespace urd
+
+/// Written in PDDL (src/formalism/formatter.cpp).
+template<>
+struct fmt::formatter<loki::formalism::AtomView, char> : ygg::without_format_spec
+{
+    fmt::format_context::iterator format(const loki::formalism::AtomView& value, fmt::format_context& ctx) const;
+};
 
 #endif

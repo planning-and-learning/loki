@@ -19,9 +19,12 @@
 #define LOKI_FORMALISM_CONDITION_OR_VIEW_HPP_
 
 #include "loki/formalism/condition_or_data.hpp"
+#include "loki/formalism/declarations.hpp"
 
+#include <fmt/base.h>
 #include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
+#include <yggdrasil/formatting/without_format_spec.hpp>
 
 namespace urd
 {
@@ -35,5 +38,12 @@ public:
     auto get_conditions() const noexcept { return self().template member<&urd::record_of<V>::conditions>(); }
 };
 }  // namespace urd
+
+/// Written in PDDL (src/formalism/formatter.cpp).
+template<>
+struct fmt::formatter<loki::formalism::EntityView<loki::formalism::Condition<loki::formalism::OrTag>>, char> : ygg::without_format_spec
+{
+    fmt::format_context::iterator format(const loki::formalism::EntityView<loki::formalism::Condition<loki::formalism::OrTag>>& value, fmt::format_context& ctx) const;
+};
 
 #endif

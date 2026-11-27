@@ -18,10 +18,13 @@
 #ifndef LOKI_FORMALISM_FUNCTION_EXPRESSION_DURATION_VIEW_HPP_
 #define LOKI_FORMALISM_FUNCTION_EXPRESSION_DURATION_VIEW_HPP_
 
+#include "loki/formalism/declarations.hpp"
 #include "loki/formalism/function_expression_duration_data.hpp"
 
+#include <fmt/base.h>
 #include <urd/elements/flat.hpp>
 #include <yggdrasil/formalism/declarations.hpp>
+#include <yggdrasil/formatting/without_format_spec.hpp>
 
 namespace urd
 {
@@ -30,5 +33,12 @@ struct view_mixin<::loki::formalism::FunctionExpression<::loki::formalism::Durat
 {
 };
 }  // namespace urd
+
+/// Written in PDDL (src/formalism/formatter.cpp).
+template<>
+struct fmt::formatter<loki::formalism::EntityView<loki::formalism::FunctionExpression<loki::formalism::DurationTag>>, char> : ygg::without_format_spec
+{
+    fmt::format_context::iterator format(const loki::formalism::EntityView<loki::formalism::FunctionExpression<loki::formalism::DurationTag>>& value, fmt::format_context& ctx) const;
+};
 
 #endif

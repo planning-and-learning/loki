@@ -17,13 +17,14 @@
 
 #include "../benchmark_utils.hpp"
 
+#include <fmt/format.h>
 #include <gtest/gtest.h>
-#include <loki/formalism/formatter.hpp>
 #include <loki/semantic/errors.hpp>
 #include <loki/semantic/options.hpp>
 #include <loki/semantic/parser.hpp>
 #include <loki/semantic/translator.hpp>
 #include <string>
+#include <yggdrasil/formatting/cista_formatters.hpp>
 
 namespace loki::tests
 {
@@ -53,10 +54,10 @@ TEST(LokiSemanticTemporal, GroupsConditionsAndEffectsPerTimePoint)
                                             "(and (at start (not (p))) (at end (p)) (at end (increase (f) ?duration)))"),
                             parser_options);
     const auto action = parser.get_domain().get_durative_actions()[0];
-    EXPECT_EQ(formalism::format::to_string(action.get_duration().value()), "(= ?duration 2)");
-    EXPECT_EQ(formalism::format::to_string(action.get_condition().value()),
+    EXPECT_EQ(fmt::format("{}", action.get_duration().value()), "(= ?duration 2)");
+    EXPECT_EQ(fmt::format("{}", action.get_condition().value()),
               "(and (at end (forall (?y - object) (r ?y))) (at start (and (p) (r ?x))) (over all (q)))");
-    EXPECT_EQ(formalism::format::to_string(action.get_effect().value()), "(and (and (at end (increase (f) ?duration)) (at end (p))) (at start (not (p))))");
+    EXPECT_EQ(fmt::format("{}", action.get_effect().value()), "(and (and (at end (increase (f) ?duration)) (at end (p))) (at start (not (p))))");
 }
 
 TEST(LokiSemanticTemporal, ReadsAConditionAtTheEffectsTimeUntimed)
@@ -66,15 +67,15 @@ TEST(LokiSemanticTemporal, ReadsAConditionAtTheEffectsTimeUntimed)
     const auto action = parser.get_domain().get_durative_actions()[0];
     EXPECT_FALSE(action.get_condition().has_value());
     // Printed in PDDL 2.1's form: the condition timed again.
-    EXPECT_EQ(formalism::format::to_string(action.get_effect().value()), "(and (when (at start (p)) (at end (q))) (when (at end (p)) (at end (q))))");
+    EXPECT_EQ(fmt::format("{}", action.get_effect().value()), "(and (when (at start (p)) (at end (q))) (when (at end (p)) (at end (q))))");
 }
 
 TEST(LokiSemanticTemporal, DistinguishesThePredicateAtFromTimeSpecifiers)
 {
     semantic::Parser parser(durative_domain("(= ?duration 1)", "(at start (at ?x ?x))", "(at end (at ?x ?x))"), parser_options);
     const auto action = parser.get_domain().get_durative_actions()[0];
-    EXPECT_EQ(formalism::format::to_string(action.get_condition().value()), "(at start (at ?x ?x))");
-    EXPECT_EQ(formalism::format::to_string(action.get_effect().value()), "(at end (at ?x ?x))");
+    EXPECT_EQ(fmt::format("{}", action.get_condition().value()), "(at start (at ?x ?x))");
+    EXPECT_EQ(fmt::format("{}", action.get_effect().value()), "(at end (at ?x ?x))");
 }
 
 TEST(LokiSemanticTemporal, TranslatesNonConjunctiveTimedConditionsToDerivedPredicates)
@@ -83,7 +84,7 @@ TEST(LokiSemanticTemporal, TranslatesNonConjunctiveTimedConditionsToDerivedPredi
     const auto translation = semantic::translate(parser.get_domain(), semantic::TranslatorOptions { .compile_typing = false });
     const auto domain = translation.get_translated_domain();
     const auto action = domain.get_durative_actions()[0];
-    EXPECT_EQ(formalism::format::to_string(action.get_condition().value()), "(and (at start (and (object ?x) (p))) (over all (loki-timed-0)))");
+    EXPECT_EQ(fmt::format("{}", action.get_condition().value()), "(and (at start (and (object ?x) (p))) (over all (loki-timed-0)))");
     EXPECT_EQ(domain.get_axioms().size(), 2);
 }
 
@@ -94,7 +95,7 @@ TEST(LokiSemanticTemporal, ParsesTimedInitialLiterals)
   (:init (at o o) (at 1.5 (p)) (at 3 (not (q)))) (:goal (p))))"));
     EXPECT_EQ(task.get_initial_literals().size(), 1);
     ASSERT_EQ(task.get_timed_initial_literals().size(), 2);
-    const auto text = formalism::format::to_string(task);
+    const auto text = fmt::format("{}", task);
     EXPECT_NE(text.find("(at 1.5 (p))"), std::string::npos);
     EXPECT_NE(text.find("(at 3 (not (q)))"), std::string::npos);
 }
@@ -142,8 +143,8 @@ TEST(LokiSemanticTemporal, ReparsesTheTranslation)
     const auto task = parser.parse_task(fixture_path("temporal_basic", "problem.pddl"));
     const auto domain_translation = semantic::translate(parser.get_domain());
     const auto task_translation = semantic::translate(task, domain_translation);
-    const auto domain_text = formalism::format::to_string(domain_translation.get_translated_domain());
-    const auto task_text = formalism::format::to_string(task_translation.get_translated_task());
+    const auto domain_text = fmt::format("{}", domain_translation.get_translated_domain());
+    const auto task_text = fmt::format("{}", task_translation.get_translated_task());
     semantic::Parser reparsed(domain_text, semantic::ParserOptions { .strict = true, .add_action_costs = false });
     const auto reparsed_task = reparsed.parse_task(task_text);
     EXPECT_EQ(reparsed.get_domain().get_durative_actions().size(), 2);
