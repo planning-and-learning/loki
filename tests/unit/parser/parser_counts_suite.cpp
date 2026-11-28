@@ -18,9 +18,9 @@
 #include "../benchmark_utils.hpp"
 
 #include <filesystem>
+#include <fmt/format.h>
 #include <gtest/gtest.h>
 #include <iostream>
-#include <fmt/format.h>
 #include <loki/ast/ast.hpp>
 #include <loki/formalism/domain_view.hpp>
 #include <loki/formalism/repository.hpp>

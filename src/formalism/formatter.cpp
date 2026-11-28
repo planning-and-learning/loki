@@ -109,8 +109,8 @@ Out write_timed_effect(Out out, TimeSpecifier time, EffectView effect)
                 return fmt::format_to(write_timed_effect(fmt::format_to(out, "(forall ({}) ", fmt::join(node.parameters(), " ")), time, node.effect()), ")");
             else if constexpr (std::same_as<Node, EntityView<Effect<WhenTag>>>)
             {
-                out = is_timed(node.condition()) ? fmt::format_to(out, "(when {} ", node.condition())
-                                                     : fmt::format_to(out, "(when ({} {}) ", time, node.condition());
+                out = is_timed(node.condition()) ? fmt::format_to(out, "(when {} ", node.condition()) :
+                                                   fmt::format_to(out, "(when ({} {}) ", time, node.condition());
                 return fmt::format_to(write_timed_effect(out, time, node.effect()), ")");
             }
             else
@@ -265,31 +265,31 @@ Out fmt::formatter<lf::FunctionTermView>::format(const lf::FunctionTermView& val
 { return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "({}", value.function().name()), value.terms()), ")"); }
 
 Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::NumberTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::NumberTag>>& value,
-                                                                                   fmt::format_context& ctx) const
+                                                                                  fmt::format_context& ctx) const
 { return fmt::format_to(ctx.out(), "{}", value.value()); }
 
 Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::UnaryTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::UnaryTag>>& value,
-                                                                                  fmt::format_context& ctx) const
+                                                                                 fmt::format_context& ctx) const
 { return fmt::format_to(ctx.out(), "(- {})", value.expression()); }
 
 Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::BinaryTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::BinaryTag>>& value,
-                                                                                   fmt::format_context& ctx) const
+                                                                                  fmt::format_context& ctx) const
 { return fmt::format_to(ctx.out(), "({} {} {})", value.operation(), value.left(), value.right()); }
 
 Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::MultiTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::MultiTag>>& value,
-                                                                                  fmt::format_context& ctx) const
+                                                                                 fmt::format_context& ctx) const
 { return fmt::format_to(lf::spaced(fmt::format_to(ctx.out(), "({}", value.operation()), value.args()), ")"); }
 
 Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::DurationTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::DurationTag>>&,
-                                                                                     fmt::format_context& ctx) const
+                                                                                    fmt::format_context& ctx) const
 { return fmt::format_to(ctx.out(), "?duration"); }
 
 Out fmt::formatter<lf::EntityView<lf::FunctionExpression<lf::IsViolatedTag>>>::format(const lf::EntityView<lf::FunctionExpression<lf::IsViolatedTag>>& value,
-                                                                                       fmt::format_context& ctx) const
+                                                                                      fmt::format_context& ctx) const
 { return fmt::format_to(ctx.out(), "(is-violated {})", value.name()); }
 
 Out fmt::formatter<lf::EntityView<lf::Condition<lf::LiteralTag>>>::format(const lf::EntityView<lf::Condition<lf::LiteralTag>>& value,
-                                                                           fmt::format_context& ctx) const
+                                                                          fmt::format_context& ctx) const
 { return fmt::format_to(ctx.out(), "{}", value.literal()); }
 
 Out fmt::formatter<lf::EntityView<lf::Condition<lf::AndTag>>>::format(const lf::EntityView<lf::Condition<lf::AndTag>>& value, fmt::format_context& ctx) const

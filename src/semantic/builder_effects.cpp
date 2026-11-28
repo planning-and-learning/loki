@@ -354,8 +354,7 @@ formalism::FunctionTermView AstBuilder::total_cost_term()
 
 namespace
 {
-bool writes_total_cost(formalism::EntityView<formalism::Effect<formalism::NumericTag>> effect)
-{ return effect.function().function().name() == "total-cost"; }
+bool writes_total_cost(formalism::EntityView<formalism::Effect<formalism::NumericTag>> effect) { return effect.function().function().name() == "total-cost"; }
 
 /// Whether a numeric effect on total-cost occurs in node.
 template<typename T>

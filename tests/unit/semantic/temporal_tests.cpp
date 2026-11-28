@@ -55,8 +55,7 @@ TEST(LokiSemanticTemporal, GroupsConditionsAndEffectsPerTimePoint)
                             parser_options);
     const auto action = parser.get_domain().durative_actions()[0];
     EXPECT_EQ(fmt::format("{}", action.duration().value()), "(= ?duration 2)");
-    EXPECT_EQ(fmt::format("{}", action.condition().value()),
-              "(and (at end (forall (?y - object) (r ?y))) (at start (and (p) (r ?x))) (over all (q)))");
+    EXPECT_EQ(fmt::format("{}", action.condition().value()), "(and (at end (forall (?y - object) (r ?y))) (at start (and (p) (r ?x))) (over all (q)))");
     EXPECT_EQ(fmt::format("{}", action.effect().value()), "(and (and (at end (increase (f) ?duration)) (at end (p))) (at start (not (p))))");
 }
 

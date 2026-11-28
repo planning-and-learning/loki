@@ -395,9 +395,7 @@ def test_translation_bindings_return_translated_views() -> None:
     assert domain_translation.original_domain.name() == "facade"
     assert domain_translation.translated_domain.actions()
     assert problem_translation.original_task.name() == "facade-task"
-    assert (
-        problem_translation.translated_task.domain().name() == domain_translation.translated_domain.name()
-    )
+    assert problem_translation.translated_task.domain().name() == domain_translation.translated_domain.name()
     assert temporary_translated_task.domain().name() == domain_translation.translated_domain.name()
 
 

@@ -47,7 +47,8 @@ public:
 template<>
 struct fmt::formatter<loki::formalism::EntityView<loki::formalism::Condition<loki::formalism::NumericConstraintTag>>, char> : ygg::without_format_spec
 {
-    fmt::format_context::iterator format(const loki::formalism::EntityView<loki::formalism::Condition<loki::formalism::NumericConstraintTag>>& value, fmt::format_context& ctx) const;
+    fmt::format_context::iterator format(const loki::formalism::EntityView<loki::formalism::Condition<loki::formalism::NumericConstraintTag>>& value,
+                                         fmt::format_context& ctx) const;
 };
 
 #endif

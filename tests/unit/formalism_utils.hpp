@@ -174,8 +174,7 @@ bool has_requirement_kind(const RequirementRange& requirements, formalism::Requi
     return false;
 }
 
-inline bool has_requirement_kind(formalism::DomainView domain, formalism::RequirementKind kind)
-{ return has_requirement_kind(domain.requirements(), kind); }
+inline bool has_requirement_kind(formalism::DomainView domain, formalism::RequirementKind kind) { return has_requirement_kind(domain.requirements(), kind); }
 
 inline std::optional<std::string> object_term_name(formalism::TermView term)
 {

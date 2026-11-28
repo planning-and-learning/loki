@@ -45,7 +45,8 @@ public:
 template<>
 struct fmt::formatter<loki::formalism::EntityView<loki::formalism::Effect<loki::formalism::ForallTag>>, char> : ygg::without_format_spec
 {
-    fmt::format_context::iterator format(const loki::formalism::EntityView<loki::formalism::Effect<loki::formalism::ForallTag>>& value, fmt::format_context& ctx) const;
+    fmt::format_context::iterator format(const loki::formalism::EntityView<loki::formalism::Effect<loki::formalism::ForallTag>>& value,
+                                         fmt::format_context& ctx) const;
 };
 
 #endif

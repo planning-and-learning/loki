@@ -87,16 +87,19 @@ format_context::iterator formatter<loki::ast::FunctionTerm, char>::format(const 
     return fmt::format_to(out, fmt::runtime(")"));
 }
 
-format_context::iterator formatter<loki::ast::FunctionExpressionNumber, char>::format(const loki::ast::FunctionExpressionNumber& value, format_context& ctx) const
+format_context::iterator formatter<loki::ast::FunctionExpressionNumber, char>::format(const loki::ast::FunctionExpressionNumber& value,
+                                                                                      format_context& ctx) const
 { return fmt::format_to(ctx.out(), fmt::runtime("{}"), value.value); }
 
-format_context::iterator formatter<loki::ast::FunctionExpressionFunction, char>::format(const loki::ast::FunctionExpressionFunction& value, format_context& ctx) const
+format_context::iterator formatter<loki::ast::FunctionExpressionFunction, char>::format(const loki::ast::FunctionExpressionFunction& value,
+                                                                                        format_context& ctx) const
 { return fmt::format_to(ctx.out(), fmt::runtime("{}"), value.term); }
 
 format_context::iterator formatter<loki::ast::FunctionExpressionUnary, char>::format(const loki::ast::FunctionExpressionUnary& value, format_context& ctx) const
 { return fmt::format_to(ctx.out(), fmt::runtime("({} {})"), value.op, value.expression.get()); }
 
-format_context::iterator formatter<loki::ast::FunctionExpressionBinary, char>::format(const loki::ast::FunctionExpressionBinary& value, format_context& ctx) const
+format_context::iterator formatter<loki::ast::FunctionExpressionBinary, char>::format(const loki::ast::FunctionExpressionBinary& value,
+                                                                                      format_context& ctx) const
 { return fmt::format_to(ctx.out(), fmt::runtime("({} {} {})"), value.op, value.left.get(), value.right.get()); }
 
 format_context::iterator formatter<loki::ast::FunctionExpressionMulti, char>::format(const loki::ast::FunctionExpressionMulti& value, format_context& ctx) const
@@ -107,13 +110,15 @@ format_context::iterator formatter<loki::ast::FunctionExpressionMulti, char>::fo
     return fmt::format_to(out, fmt::runtime(")"));
 }
 
-format_context::iterator formatter<loki::ast::FunctionExpressionDuration, char>::format(const loki::ast::FunctionExpressionDuration& value, format_context& ctx) const
+format_context::iterator formatter<loki::ast::FunctionExpressionDuration, char>::format(const loki::ast::FunctionExpressionDuration& value,
+                                                                                        format_context& ctx) const
 {
     (void) value;
     return fmt::format_to(ctx.out(), fmt::runtime("?duration"));
 }
 
-format_context::iterator formatter<loki::ast::FunctionExpressionIsViolated, char>::format(const loki::ast::FunctionExpressionIsViolated& value, format_context& ctx) const
+format_context::iterator formatter<loki::ast::FunctionExpressionIsViolated, char>::format(const loki::ast::FunctionExpressionIsViolated& value,
+                                                                                          format_context& ctx) const
 { return fmt::format_to(ctx.out(), fmt::runtime("(is-violated {})"), value.name); }
 
 format_context::iterator formatter<loki::ast::FunctionExpression, char>::format(const loki::ast::FunctionExpression& value, format_context& ctx) const
@@ -176,7 +181,8 @@ format_context::iterator formatter<loki::ast::ConditionForall, char>::format(con
     return fmt::format_to(out, fmt::runtime(") {})"), value.condition.get());
 }
 
-format_context::iterator formatter<loki::ast::ConditionNumericConstraint, char>::format(const loki::ast::ConditionNumericConstraint& value, format_context& ctx) const
+format_context::iterator formatter<loki::ast::ConditionNumericConstraint, char>::format(const loki::ast::ConditionNumericConstraint& value,
+                                                                                        format_context& ctx) const
 { return fmt::format_to(ctx.out(), fmt::runtime("({} {} {})"), value.comparator, value.left.get(), value.right.get()); }
 
 format_context::iterator formatter<loki::ast::ConditionTimed, char>::format(const loki::ast::ConditionTimed& value, format_context& ctx) const
@@ -238,7 +244,8 @@ format_context::iterator formatter<loki::ast::EffectOneOf, char>::format(const l
     return fmt::format_to(out, fmt::runtime(")"));
 }
 
-format_context::iterator formatter<loki::ast::ProbabilisticEffectAlternative, char>::format(const loki::ast::ProbabilisticEffectAlternative& value, format_context& ctx) const
+format_context::iterator formatter<loki::ast::ProbabilisticEffectAlternative, char>::format(const loki::ast::ProbabilisticEffectAlternative& value,
+                                                                                            format_context& ctx) const
 {
     if (value.denominator)
         return fmt::format_to(ctx.out(), fmt::runtime("{}/{} {}"), value.probability, *value.denominator, value.effect.get());
@@ -447,7 +454,8 @@ format_context::iterator formatter<loki::ast::InitialAtom, char>::format(const l
     return out;
 }
 
-format_context::iterator formatter<loki::ast::ProbabilisticInitialAlternative, char>::format(const loki::ast::ProbabilisticInitialAlternative& value, format_context& ctx) const
+format_context::iterator formatter<loki::ast::ProbabilisticInitialAlternative, char>::format(const loki::ast::ProbabilisticInitialAlternative& value,
+                                                                                             format_context& ctx) const
 {
     auto out = ctx.out();
     if (value.denominator)

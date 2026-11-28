@@ -88,15 +88,13 @@ TEST(LokiSemanticLanguage, ParsesAndTranslatesConstraintsAndPreferences)
     ASSERT_TRUE(domain.constraints().has_value());
     const auto task = parser.parse_task(fixture_path("pddl3_basic", "problem.pddl"));
     ASSERT_TRUE(task.constraints().has_value());
-    EXPECT_EQ(fmt::format("{}", task.constraints().value()),
-              "(and (always-within 2 (held a) (clear table)) (hold-during 1 3 (clear b)) (within 5 (held a)))");
+    EXPECT_EQ(fmt::format("{}", task.constraints().value()), "(and (always-within 2 (held a) (clear table)) (hold-during 1 3 (clear b)) (within 5 (held a)))");
 
     const auto translation = semantic::translate(domain, semantic::TranslatorOptions { .compile_typing = false });
     const auto translated = translation.get_translated_domain();
     // The disjunction of the preference is a derived predicate, not a split: one preference, one count.
     ASSERT_EQ(translated.actions().size(), 1);
-    EXPECT_NE(fmt::format("{}", translated.actions()[0].precondition().value()).find("(preference careful (loki-preference-"),
-              std::string::npos);
+    EXPECT_NE(fmt::format("{}", translated.actions()[0].precondition().value()).find("(preference careful (loki-preference-"), std::string::npos);
     // Keeping typing, the universal constraint's typed parameter restricts it: no guard (CompileTyping guards it).
     EXPECT_NE(fmt::format("{}", translated.constraints().value()).find("(forall (?x - block) (always (loki-constraint-"), std::string::npos);
 

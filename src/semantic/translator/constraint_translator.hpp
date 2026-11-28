@@ -79,8 +79,7 @@ private:
     {
         return this->self().compiles_typing_now()
                && std::ranges::any_of(parameters,
-                                      [](auto parameter)
-                                      { return std::ranges::any_of(parameter.types(), [](auto type) { return !type.bases().empty(); }); });
+                                      [](auto parameter) { return std::ranges::any_of(parameter.types(), [](auto type) { return !type.bases().empty(); }); });
     }
 
     template<typename Tag>

@@ -118,8 +118,8 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
                             if constexpr (std::is_same_v<Grandchild, formalism::EntityView<formalism::Effect<formalism::NumericTag>>>)
                             {
                                 // The normal form aggregates per operator and target: (increase f) and (decrease f) may meet.
-                                auto key = std::string(formalism::to_string(grandchild.operation())) + " "
-                                           + std::string(grandchild.function().function().name());
+                                auto key =
+                                    std::string(formalism::to_string(grandchild.operation())) + " " + std::string(grandchild.function().function().name());
                                 for (auto term : grandchild.function().terms())
                                     key += "," + fmt::format("{}", term);
                                 EXPECT_TRUE(numeric_targets.insert(key).second) << what << ": unaggregated numeric effects on target " << key;
