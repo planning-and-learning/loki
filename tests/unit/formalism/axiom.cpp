@@ -23,11 +23,11 @@ static_assert(requires(Data& data) {
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_parameters();
-    view.get_arity();
-    view.get_original_arity();
-    view.get_head();
-    view.get_condition();
+    view.parameters();
+    view.arity();
+    view.original_arity();
+    view.head();
+    view.condition();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
 });

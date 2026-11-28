@@ -152,17 +152,17 @@ TEST(LokiSemanticTranslationCountsSuite, TranslatedBenchmarkCountsStayStable)
             const auto task_translation = semantic::translate(task, domain_translation, configuration.options);
             const auto translated_task = task_translation.get_translated_task();
 
-            EXPECT_EQ(translated_domain.get_types().size(), configuration.domain_types);
-            EXPECT_EQ(translated_domain.get_predicates().size(), configuration.domain_predicates);
-            EXPECT_EQ(translated_domain.get_functions().size(), configuration.domain_functions);
-            EXPECT_EQ(translated_domain.get_actions().size(), configuration.domain_actions);
-            EXPECT_EQ(translated_domain.get_axioms().size(), configuration.domain_axioms);
-            EXPECT_EQ(translated_task.get_objects().size(), configuration.task_objects);
-            EXPECT_EQ(translated_task.get_predicates().size(), configuration.task_predicates);
-            EXPECT_EQ(translated_task.get_initial_literals().size(), configuration.task_initial_literals);
-            EXPECT_EQ(translated_task.get_initial_function_values().size(), configuration.task_initial_function_values);
-            EXPECT_EQ(translated_task.get_domain().get_actions().size(), configuration.task_actions);
-            EXPECT_EQ(translated_task.get_axioms().size(), configuration.task_axioms);
+            EXPECT_EQ(translated_domain.types().size(), configuration.domain_types);
+            EXPECT_EQ(translated_domain.predicates().size(), configuration.domain_predicates);
+            EXPECT_EQ(translated_domain.functions().size(), configuration.domain_functions);
+            EXPECT_EQ(translated_domain.actions().size(), configuration.domain_actions);
+            EXPECT_EQ(translated_domain.axioms().size(), configuration.domain_axioms);
+            EXPECT_EQ(translated_task.objects().size(), configuration.task_objects);
+            EXPECT_EQ(translated_task.predicates().size(), configuration.task_predicates);
+            EXPECT_EQ(translated_task.initial_literals().size(), configuration.task_initial_literals);
+            EXPECT_EQ(translated_task.initial_function_values().size(), configuration.task_initial_function_values);
+            EXPECT_EQ(translated_task.domain().actions().size(), configuration.task_actions);
+            EXPECT_EQ(translated_task.axioms().size(), configuration.task_axioms);
 
             // The formatted translation must reparse in strict mode with stable counts.
             const auto domain_text = fmt::format("{}", translated_domain);
@@ -172,21 +172,21 @@ TEST(LokiSemanticTranslationCountsSuite, TranslatedBenchmarkCountsStayStable)
             auto reparsed = semantic::Parser(domain_text, strict_options);
             const auto reparsed_domain = reparsed.get_domain();
             const auto reparsed_task = reparsed.parse_task(task_text);
-            EXPECT_EQ(reparsed_domain.get_name(), translated_domain.get_name());
-            EXPECT_EQ(reparsed_task.get_name(), translated_task.get_name());
+            EXPECT_EQ(reparsed_domain.name(), translated_domain.name());
+            EXPECT_EQ(reparsed_task.name(), translated_task.name());
             // Reparsing re-interns the built-in object and number types that typing compilation removed.
-            EXPECT_EQ(reparsed_domain.get_types().size(), configuration.options.compile_typing ? 2 : configuration.domain_types);
-            EXPECT_EQ(reparsed_domain.get_predicates().size(), configuration.domain_predicates);
-            EXPECT_EQ(reparsed_domain.get_functions().size(), configuration.domain_functions);
-            EXPECT_EQ(reparsed_domain.get_actions().size(), configuration.domain_actions);
-            EXPECT_EQ(reparsed_domain.get_axioms().size(), configuration.domain_axioms);
-            EXPECT_EQ(reparsed_task.get_objects().size(), configuration.task_objects);
+            EXPECT_EQ(reparsed_domain.types().size(), configuration.options.compile_typing ? 2 : configuration.domain_types);
+            EXPECT_EQ(reparsed_domain.predicates().size(), configuration.domain_predicates);
+            EXPECT_EQ(reparsed_domain.functions().size(), configuration.domain_functions);
+            EXPECT_EQ(reparsed_domain.actions().size(), configuration.domain_actions);
+            EXPECT_EQ(reparsed_domain.axioms().size(), configuration.domain_axioms);
+            EXPECT_EQ(reparsed_task.objects().size(), configuration.task_objects);
             // The task's :predicates section declares the generated goal predicates.
-            EXPECT_EQ(reparsed_task.get_predicates().size(), configuration.task_predicates);
-            EXPECT_EQ(reparsed_task.get_initial_literals().size(), configuration.task_initial_literals);
-            EXPECT_EQ(reparsed_task.get_initial_function_values().size(), configuration.task_initial_function_values);
-            EXPECT_EQ(reparsed_task.get_domain().get_actions().size(), configuration.task_actions);
-            EXPECT_EQ(reparsed_task.get_axioms().size(), configuration.task_axioms);
+            EXPECT_EQ(reparsed_task.predicates().size(), configuration.task_predicates);
+            EXPECT_EQ(reparsed_task.initial_literals().size(), configuration.task_initial_literals);
+            EXPECT_EQ(reparsed_task.initial_function_values().size(), configuration.task_initial_function_values);
+            EXPECT_EQ(reparsed_task.domain().actions().size(), configuration.task_actions);
+            EXPECT_EQ(reparsed_task.axioms().size(), configuration.task_axioms);
 
             // Retranslating the reparsed output must be a fixpoint: same counts as the first translation.
             const auto retranslation = semantic::translate(reparsed_domain, configuration.options);
@@ -194,19 +194,19 @@ TEST(LokiSemanticTranslationCountsSuite, TranslatedBenchmarkCountsStayStable)
             const auto task_retranslation = semantic::translate(reparsed_task, retranslation, configuration.options);
             const auto retranslated_task = task_retranslation.get_translated_task();
 
-            EXPECT_EQ(retranslated_domain.get_types().size(), configuration.domain_types);
-            EXPECT_EQ(retranslated_domain.get_predicates().size(), configuration.domain_predicates);
-            EXPECT_EQ(retranslated_domain.get_functions().size(), configuration.domain_functions);
-            EXPECT_EQ(retranslated_domain.get_actions().size(), configuration.domain_actions);
-            EXPECT_EQ(retranslated_domain.get_axioms().size(), configuration.domain_axioms);
-            EXPECT_EQ(retranslated_task.get_objects().size(), configuration.task_objects);
+            EXPECT_EQ(retranslated_domain.types().size(), configuration.domain_types);
+            EXPECT_EQ(retranslated_domain.predicates().size(), configuration.domain_predicates);
+            EXPECT_EQ(retranslated_domain.functions().size(), configuration.domain_functions);
+            EXPECT_EQ(retranslated_domain.actions().size(), configuration.domain_actions);
+            EXPECT_EQ(retranslated_domain.axioms().size(), configuration.domain_axioms);
+            EXPECT_EQ(retranslated_task.objects().size(), configuration.task_objects);
             // Goal simplification never axiomatizes literals or conjunctions of literals; after the
             // round-trip every goal is in that form, so the task keeps exactly the reparsed goal predicates.
-            EXPECT_EQ(retranslated_task.get_predicates().size(), configuration.task_predicates);
-            EXPECT_EQ(retranslated_task.get_initial_literals().size(), configuration.task_initial_literals);
-            EXPECT_EQ(retranslated_task.get_initial_function_values().size(), configuration.task_initial_function_values);
-            EXPECT_EQ(retranslated_task.get_domain().get_actions().size(), configuration.task_actions);
-            EXPECT_EQ(retranslated_task.get_axioms().size(), configuration.task_axioms);
+            EXPECT_EQ(retranslated_task.predicates().size(), configuration.task_predicates);
+            EXPECT_EQ(retranslated_task.initial_literals().size(), configuration.task_initial_literals);
+            EXPECT_EQ(retranslated_task.initial_function_values().size(), configuration.task_initial_function_values);
+            EXPECT_EQ(retranslated_task.domain().actions().size(), configuration.task_actions);
+            EXPECT_EQ(retranslated_task.axioms().size(), configuration.task_axioms);
 
             // Text stability: retranslation must reproduce the exact string representations.
             EXPECT_TRUE(fmt::format("{}", retranslated_domain) == domain_text) << "domain text not stable under retranslation";

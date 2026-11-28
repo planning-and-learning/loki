@@ -62,12 +62,12 @@ TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
     const auto [copied_domain, domain_inserted] = semantic::detail::copy(domain, context);
     EXPECT_TRUE(domain_inserted);
     EXPECT_EQ(&copied_domain.context(), &destination->repository);
-    ASSERT_EQ(copied_domain.get_types().size(), 1);
-    EXPECT_NE(copied_domain.get_types()[0].index(), type.index());
-    EXPECT_EQ(std::string_view(copied_domain.get_types()[0].get_name()), "type");
+    ASSERT_EQ(copied_domain.types().size(), 1);
+    EXPECT_NE(copied_domain.types()[0].index(), type.index());
+    EXPECT_EQ(std::string_view(copied_domain.types()[0].name()), "type");
     const auto [copied_task, task_inserted] = semantic::detail::copy(task, context);
     EXPECT_TRUE(task_inserted);
-    EXPECT_EQ(copied_task.get_domain(), copied_domain);
+    EXPECT_EQ(copied_task.domain(), copied_domain);
     EXPECT_EQ(semantic::detail::copy(domain, context), std::make_pair(copied_domain, false));
     EXPECT_EQ(semantic::detail::copy(task, context), std::make_pair(copied_task, false));
     EXPECT_EQ(semantic::detail::copy(copied_domain, context), std::make_pair(copied_domain, false));
@@ -80,8 +80,8 @@ TEST(LokiTests, CopyRootsRetainCanonicalValuesAndReportInsertion)
     EXPECT_EQ(semantic::detail::copy(domain, phase), std::make_pair(phase_domain, false));
 
     source.clear_all();
-    EXPECT_EQ(std::string_view(copied_task.get_name()), "task");
-    EXPECT_EQ(std::string_view(copied_task.get_domain().get_types()[0].get_name()), "type");
+    EXPECT_EQ(std::string_view(copied_task.name()), "task");
+    EXPECT_EQ(std::string_view(copied_task.domain().types()[0].name()), "type");
 }
 
 TEST(LokiTests, GeneratedUniversalPredicateKeepsNumericFreeVariables)
@@ -91,14 +91,14 @@ TEST(LokiTests, GeneratedUniversalPredicateKeepsNumericFreeVariables)
     const auto domain = translation.get_translated_domain();
 
     auto found = false;
-    for (auto predicate : domain.get_predicates())
+    for (auto predicate : domain.predicates())
     {
-        const auto name = std::string(predicate.get_name());
+        const auto name = std::string(predicate.name());
         if (!name.starts_with("loki-universal-"))
             continue;
 
         found = true;
-        EXPECT_EQ(predicate.get_parameters().size(), std::size_t { 1 });
+        EXPECT_EQ(predicate.parameters().size(), std::size_t { 1 });
     }
     EXPECT_TRUE(found);
 }
@@ -114,14 +114,14 @@ TEST(LokiTests, CompileConditionalEffectsSplitsActions)
 
     EXPECT_FALSE(has_requirement_kind(domain, formalism::RequirementKind::ConditionalEffects));
 
-    ASSERT_EQ(domain.get_actions().size(), std::size_t { 4 });
-    for (auto action : domain.get_actions())
+    ASSERT_EQ(domain.actions().size(), std::size_t { 4 });
+    for (auto action : domain.actions())
     {
-        EXPECT_TRUE(std::string_view(action.get_name()).starts_with("a_"));
-        EXPECT_EQ(std::string_view(action.get_original_name()), "a");
-        ASSERT_TRUE(action.get_precondition().has_value());
-        EXPECT_EQ(count_nodes<formalism::Condition<formalism::LiteralTag>>(action.get_precondition().value()), std::size_t { 3 });
-        if (const auto effect = action.get_effect())
+        EXPECT_TRUE(std::string_view(action.name()).starts_with("a_"));
+        EXPECT_EQ(std::string_view(action.original_name()), "a");
+        ASSERT_TRUE(action.precondition().has_value());
+        EXPECT_EQ(count_nodes<formalism::Condition<formalism::LiteralTag>>(action.precondition().value()), std::size_t { 3 });
+        if (const auto effect = action.effect())
         {
             EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(effect.value()), std::size_t { 0 });
         }
@@ -143,18 +143,18 @@ TEST(LokiTests, ExistentialConditionalEffectBecomesUniversalEffect)
     const auto translation = semantic::translate(parser.get_domain());
     const auto domain = translation.get_translated_domain();
 
-    for (auto predicate : domain.get_predicates())
-        EXPECT_FALSE(std::string_view(predicate.get_name()).starts_with("_condition_"));
+    for (auto predicate : domain.predicates())
+        EXPECT_FALSE(std::string_view(predicate.name()).starts_with("_condition_"));
 
-    ASSERT_FALSE(domain.get_actions().empty());
-    const auto action = domain.get_actions().front();
-    ASSERT_TRUE(action.get_effect().has_value());
-    EXPECT_EQ(count_nodes<formalism::Effect<formalism::ForallTag>>(action.get_effect().value()), std::size_t { 1 });
-    EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(action.get_effect().value()), std::size_t { 1 });
+    ASSERT_FALSE(domain.actions().empty());
+    const auto action = domain.actions().front();
+    ASSERT_TRUE(action.effect().has_value());
+    EXPECT_EQ(count_nodes<formalism::Effect<formalism::ForallTag>>(action.effect().value()), std::size_t { 1 });
+    EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(action.effect().value()), std::size_t { 1 });
 
-    const auto effect_forall = effect_node<formalism::ForallTag>(action.get_effect().value());
-    const auto effect_when = std::get<formalism::EntityView<formalism::Effect<formalism::WhenTag>>>(effect_forall.get_effect());
-    EXPECT_EQ(count_nodes<formalism::Condition<formalism::ExistsTag>>(effect_when.get_condition()), std::size_t { 0 });
+    const auto effect_forall = effect_node<formalism::ForallTag>(action.effect().value());
+    const auto effect_when = std::get<formalism::EntityView<formalism::Effect<formalism::WhenTag>>>(effect_forall.effect());
+    EXPECT_EQ(count_nodes<formalism::Condition<formalism::ExistsTag>>(effect_when.condition()), std::size_t { 0 });
 }
 
 TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
@@ -164,13 +164,13 @@ TEST(LokiTests, DnfDistributesUniversalOverDisjunction)
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::ToDisjunctiveNormalForm);
     const auto domain = semantic::detail::copy(parser.get_domain(), translator).first;
 
-    ASSERT_FALSE(domain.get_actions().empty());
-    const auto action = domain.get_actions().front();
-    ASSERT_TRUE(action.get_precondition().has_value());
+    ASSERT_FALSE(domain.actions().empty());
+    const auto action = domain.actions().front();
+    ASSERT_TRUE(action.precondition().has_value());
 
-    const auto condition_or = std::get<formalism::EntityView<formalism::Condition<formalism::OrTag>>>(action.get_precondition().value());
-    ASSERT_EQ(condition_or.get_conditions().size(), std::size_t { 2 });
-    for (auto condition : condition_or.get_conditions())
+    const auto condition_or = std::get<formalism::EntityView<formalism::Condition<formalism::OrTag>>>(action.precondition().value());
+    ASSERT_EQ(condition_or.conditions().size(), std::size_t { 2 });
+    for (auto condition : condition_or.conditions())
     {
         std::visit(
             [](const auto& node)
@@ -188,11 +188,11 @@ TEST(LokiTests, UntypedUniversalEffectKeepsEmptyGuardWhen)
     const auto translation = semantic::translate(parser.get_domain());
     const auto domain = translation.get_translated_domain();
 
-    ASSERT_FALSE(domain.get_actions().empty());
-    const auto action = domain.get_actions().front();
-    ASSERT_TRUE(action.get_effect().has_value());
-    EXPECT_EQ(count_nodes<formalism::Effect<formalism::ForallTag>>(action.get_effect().value()), std::size_t { 1 });
-    EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(action.get_effect().value()), std::size_t { 1 });
+    ASSERT_FALSE(domain.actions().empty());
+    const auto action = domain.actions().front();
+    ASSERT_TRUE(action.effect().has_value());
+    EXPECT_EQ(count_nodes<formalism::Effect<formalism::ForallTag>>(action.effect().value()), std::size_t { 1 });
+    EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(action.effect().value()), std::size_t { 1 });
 }
 
 TEST(LokiTests, KeepTypingPreservesPersistentParameters)
@@ -201,30 +201,30 @@ TEST(LokiTests, KeepTypingPreservesPersistentParameters)
     const auto translation = semantic::translate(parser.get_domain(), semantic::TranslatorOptions { .compile_typing = false });
     const auto domain = translation.get_translated_domain();
 
-    ASSERT_FALSE(domain.get_types().empty());
+    ASSERT_FALSE(domain.types().empty());
 
     EXPECT_TRUE(has_requirement_kind(domain, formalism::RequirementKind::Typing));
 
-    for (auto predicate : domain.get_predicates())
+    for (auto predicate : domain.predicates())
     {
-        if (std::string(predicate.get_name()) == "thing")
+        if (std::string(predicate.name()) == "thing")
             continue;
-        for (auto parameter : predicate.get_parameters())
-            EXPECT_FALSE(parameter.get_types().empty());
+        for (auto parameter : predicate.parameters())
+            EXPECT_FALSE(parameter.types().empty());
     }
 
-    for (auto function : domain.get_functions())
+    for (auto function : domain.functions())
     {
-        for (auto parameter : function.get_parameters())
-            EXPECT_FALSE(parameter.get_types().empty());
+        for (auto parameter : function.parameters())
+            EXPECT_FALSE(parameter.types().empty());
     }
 
-    for (auto action : domain.get_actions())
+    for (auto action : domain.actions())
     {
-        for (auto parameter : action.get_parameters())
-            EXPECT_FALSE(parameter.get_types().empty());
-        ASSERT_TRUE(action.get_precondition().has_value());
-        EXPECT_GT(count_nodes<formalism::Condition<formalism::LiteralTag>>(action.get_precondition().value()), std::size_t { 1 });
+        for (auto parameter : action.parameters())
+            EXPECT_FALSE(parameter.types().empty());
+        ASSERT_TRUE(action.precondition().has_value());
+        EXPECT_GT(count_nodes<formalism::Condition<formalism::LiteralTag>>(action.precondition().value()), std::size_t { 1 });
     }
 }
 
@@ -233,24 +233,24 @@ TEST(LokiTests, RemoveTypingStripsPersistentParameters)
     auto parser = semantic::Parser(fixture_path("typed_signatures"));
     const auto translation = semantic::translate(parser.get_domain(), semantic::TranslatorOptions { .compile_typing = true });
     const auto domain = translation.get_translated_domain();
-    EXPECT_TRUE(domain.get_types().empty());
+    EXPECT_TRUE(domain.types().empty());
 
-    for (auto predicate : domain.get_predicates())
+    for (auto predicate : domain.predicates())
     {
-        for (auto parameter : predicate.get_parameters())
-            EXPECT_TRUE(parameter.get_types().empty());
+        for (auto parameter : predicate.parameters())
+            EXPECT_TRUE(parameter.types().empty());
     }
 
-    for (auto function : domain.get_functions())
+    for (auto function : domain.functions())
     {
-        for (auto parameter : function.get_parameters())
-            EXPECT_TRUE(parameter.get_types().empty());
+        for (auto parameter : function.parameters())
+            EXPECT_TRUE(parameter.types().empty());
     }
 
-    for (auto action : domain.get_actions())
+    for (auto action : domain.actions())
     {
-        for (auto parameter : action.get_parameters())
-            EXPECT_TRUE(parameter.get_types().empty());
+        for (auto parameter : action.parameters())
+            EXPECT_TRUE(parameter.types().empty());
     }
 }
 
@@ -260,21 +260,21 @@ TEST(LokiTests, RenameQuantifiedVariablesSeparatesNestedBinders)
     auto storage = std::make_shared<semantic::detail::TranslationStorage>();
     auto translator = semantic::detail::CopyTranslator(storage, true, semantic::TranslationPhase::RenameQuantifiedVariables);
     const auto domain = semantic::detail::copy(parser.get_domain(), translator).first;
-    const auto variable_name = [](formalism::ParameterView parameter) { return std::string(parameter.get_variable().get_name()); };
+    const auto variable_name = [](formalism::ParameterView parameter) { return std::string(parameter.variable().name()); };
 
-    ASSERT_FALSE(domain.get_actions().empty());
-    const auto action = domain.get_actions().front();
-    ASSERT_EQ(action.get_parameters().size(), std::size_t { 1 });
-    EXPECT_EQ(variable_name(action.get_parameters().front()), "?x");
+    ASSERT_FALSE(domain.actions().empty());
+    const auto action = domain.actions().front();
+    ASSERT_EQ(action.parameters().size(), std::size_t { 1 });
+    EXPECT_EQ(variable_name(action.parameters().front()), "?x");
 
-    ASSERT_TRUE(action.get_precondition().has_value());
-    const auto exists = std::get<formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>(action.get_precondition().value());
-    ASSERT_EQ(exists.get_parameters().size(), std::size_t { 1 });
-    EXPECT_EQ(variable_name(exists.get_parameters().front()), "?x_0");
+    ASSERT_TRUE(action.precondition().has_value());
+    const auto exists = std::get<formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>(action.precondition().value());
+    ASSERT_EQ(exists.parameters().size(), std::size_t { 1 });
+    EXPECT_EQ(variable_name(exists.parameters().front()), "?x_0");
 
-    const auto conjunction = std::get<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(exists.get_condition());
+    const auto conjunction = std::get<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(exists.condition());
     auto checked_forall = false;
-    for (auto child : conjunction.get_conditions())
+    for (auto child : conjunction.conditions())
     {
         std::visit(
             [&](const auto& node)
@@ -283,18 +283,18 @@ TEST(LokiTests, RenameQuantifiedVariablesSeparatesNestedBinders)
                 if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
                 {
                     checked_forall = true;
-                    ASSERT_EQ(node.get_parameters().size(), std::size_t { 1 });
-                    EXPECT_EQ(variable_name(node.get_parameters().front()), "?x_1");
+                    ASSERT_EQ(node.parameters().size(), std::size_t { 1 });
+                    EXPECT_EQ(variable_name(node.parameters().front()), "?x_1");
                 }
             },
             child);
     }
     EXPECT_TRUE(checked_forall);
 
-    ASSERT_TRUE(action.get_effect().has_value());
-    const auto effect_forall = effect_node<formalism::ForallTag>(action.get_effect().value());
-    ASSERT_EQ(effect_forall.get_parameters().size(), std::size_t { 1 });
-    EXPECT_EQ(variable_name(effect_forall.get_parameters().front()), "?x_2");
+    ASSERT_TRUE(action.effect().has_value());
+    const auto effect_forall = effect_node<formalism::ForallTag>(action.effect().value());
+    ASSERT_EQ(effect_forall.parameters().size(), std::size_t { 1 });
+    EXPECT_EQ(variable_name(effect_forall.parameters().front()), "?x_2");
 }
 
 }  // namespace loki::tests

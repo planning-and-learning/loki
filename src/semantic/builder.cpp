@@ -154,8 +154,8 @@ formalism::TaskView AstBuilder::build_task(const ast::Task& task)
         for (const auto& node : task.requirements)
         {
             const auto kind = requirement_kind(node, m_diagnostics);
-            for (const auto domain_requirement : m_domain_context.get_domain().get_requirements())
-                if (domain_requirement.get_kind() == kind)
+            for (const auto domain_requirement : m_domain_context.get_domain().requirements())
+                if (domain_requirement.kind() == kind)
                     m_diagnostics.throw_at(node.name, RedundantRequirementError(node.name.text));
         }
     }

@@ -60,33 +60,33 @@ def make_options(config: dict[str, bool]) -> pypddl.ParserOptions:
 def domain_counts(domain: pypddl.Domain) -> dict[str, int | bool]:
     """How many of each part the domain has."""
     return {
-        "requirements": len(domain.get_requirements()),
-        "types": len(domain.get_types()),
-        "constants": len(domain.get_constants()),
-        "predicates": len(domain.get_predicates()),
-        "functions": len(domain.get_functions()),
-        "actions": len(domain.get_actions()),
-        "axioms": len(domain.get_axioms()),
-        "durative_actions": len(domain.get_durative_actions()),
-        "has_constraints": domain.get_constraints() is not None,
+        "requirements": len(domain.requirements()),
+        "types": len(domain.types()),
+        "constants": len(domain.constants()),
+        "predicates": len(domain.predicates()),
+        "functions": len(domain.functions()),
+        "actions": len(domain.actions()),
+        "axioms": len(domain.axioms()),
+        "durative_actions": len(domain.durative_actions()),
+        "has_constraints": domain.constraints() is not None,
     }
 
 
 def task_counts(task: pypddl.Task) -> dict[str, int | bool]:
     """How many of each part the task has, and whether it has a goal and a metric."""
     return {
-        "requirements": len(task.get_requirements()),
-        "objects": len(task.get_objects()),
-        "initial_literals": len(task.get_initial_literals()),
-        "initial_function_values": len(task.get_initial_function_values()),
-        "predicates": len(task.get_predicates()),
-        "axioms": len(task.get_axioms()),
-        "has_goal": task.get_goal() is not None,
-        "has_metric": task.get_metric() is not None,
-        "timed_initial_literals": len(task.get_timed_initial_literals()),
-        "initial_effects": len(task.get_initial_effects()),
-        "has_goal_reward": task.get_goal_reward() is not None,
-        "has_constraints": task.get_constraints() is not None,
+        "requirements": len(task.requirements()),
+        "objects": len(task.objects()),
+        "initial_literals": len(task.initial_literals()),
+        "initial_function_values": len(task.initial_function_values()),
+        "predicates": len(task.predicates()),
+        "axioms": len(task.axioms()),
+        "has_goal": task.goal() is not None,
+        "has_metric": task.metric() is not None,
+        "timed_initial_literals": len(task.timed_initial_literals()),
+        "initial_effects": len(task.initial_effects()),
+        "has_goal_reward": task.goal_reward() is not None,
+        "has_constraints": task.constraints() is not None,
     }
 
 

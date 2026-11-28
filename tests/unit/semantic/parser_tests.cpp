@@ -43,7 +43,7 @@ TEST(LokiSemanticParser, AllowsDuplicateActionNamesAndInternsIdenticalBodies)
 {
     auto parser = semantic::Parser(fixture_path("duplicate_action_name"));
 
-    EXPECT_EQ(parser.get_domain().get_actions().size(), 2);
+    EXPECT_EQ(parser.get_domain().actions().size(), 2);
 }
 
 TEST(LokiSemanticParser, LowercasesSourceBeforeParsing)
@@ -52,14 +52,14 @@ TEST(LokiSemanticParser, LowercasesSourceBeforeParsing)
     options.add_action_costs = false;
     auto parser = semantic::Parser(ygg::common::read_file(fixture_path("mixed_case")), options);
 
-    EXPECT_EQ(parser.get_domain().get_name(), "mixed-domain");
-    ASSERT_EQ(parser.get_domain().get_predicates().size(), 1);
-    EXPECT_EQ(parser.get_domain().get_predicates()[0].get_name(), "ready");
+    EXPECT_EQ(parser.get_domain().name(), "mixed-domain");
+    ASSERT_EQ(parser.get_domain().predicates().size(), 1);
+    EXPECT_EQ(parser.get_domain().predicates()[0].name(), "ready");
 
     const auto task = parser.parse_task(ygg::common::read_file(fixture_path("mixed_case", "task.pddl")));
-    EXPECT_EQ(task.get_name(), "mixed-task");
-    ASSERT_EQ(task.get_objects().size(), 1);
-    EXPECT_EQ(task.get_objects()[0].get_name(), "item");
+    EXPECT_EQ(task.name(), "mixed-task");
+    ASSERT_EQ(task.objects().size(), 1);
+    EXPECT_EQ(task.objects()[0].name(), "item");
 }
 
 TEST(LokiSemanticParser, ReturnedRequirementsAreDeclaredVerbatim)
@@ -71,8 +71,8 @@ TEST(LokiSemanticParser, ReturnedRequirementsAreDeclaredVerbatim)
     // Permissive mode neither validates nor rewrites requirements: the domain
     // declares :adl, so :adl is what comes back.
     auto kinds = std::set<formalism::RequirementKind> {};
-    for (const auto requirement : parser.get_domain().get_requirements())
-        kinds.insert(requirement.get_kind());
+    for (const auto requirement : parser.get_domain().requirements())
+        kinds.insert(requirement.kind());
 
     const auto expected = std::set<formalism::RequirementKind> { formalism::RequirementKind::Adl };
     EXPECT_EQ(kinds, expected);
@@ -87,18 +87,18 @@ TEST(LokiSemanticParser, StrictModeAllowsForwardTypeReferences)
 
     auto saw_child = false;
     auto saw_parent = false;
-    for (const auto type : parser.get_domain().get_types())
+    for (const auto type : parser.get_domain().types())
     {
-        if (type.get_name() == "child")
+        if (type.name() == "child")
         {
-            ASSERT_EQ(type.get_bases().size(), 1);
-            EXPECT_EQ(type.get_bases()[0].get_name(), "parent");
+            ASSERT_EQ(type.bases().size(), 1);
+            EXPECT_EQ(type.bases()[0].name(), "parent");
             saw_child = true;
         }
-        else if (type.get_name() == "parent")
+        else if (type.name() == "parent")
         {
-            ASSERT_EQ(type.get_bases().size(), 1);
-            EXPECT_EQ(type.get_bases()[0].get_name(), "object");
+            ASSERT_EQ(type.bases().size(), 1);
+            EXPECT_EQ(type.bases()[0].name(), "object");
             saw_parent = true;
         }
     }
@@ -121,17 +121,17 @@ TEST(LokiSemanticParser, PreservesComplementaryLiteralsInConjunctions)
     auto options = semantic::ParserOptions {};
     options.add_action_costs = false;
     auto parser = semantic::Parser(fixture_path("complementary_literals"), options);
-    const auto action = parser.get_domain().get_actions()[0];
-    ASSERT_TRUE(action.get_precondition().has_value());
+    const auto action = parser.get_domain().actions()[0];
+    ASSERT_TRUE(action.precondition().has_value());
     auto conjuncts = std::size_t { 0 };
     std::visit(
         [&](const auto& node)
         {
             using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
-                conjuncts = node.get_conditions().size();
+                conjuncts = node.conditions().size();
         },
-        action.get_precondition().value());
+        action.precondition().value());
     // A complementary literal pair must not be canonicalized away.
     EXPECT_EQ(conjuncts, 3);
 }
@@ -177,20 +177,20 @@ TEST(LokiSemanticParser, ParsesAndTranslatesDistinctTasksAfterOneDomain)
 
     auto has_object = [](formalism::TaskView task, const std::string& name)
     {
-        for (auto object : task.get_objects())
-            if (std::string(object.get_name()) == name)
+        for (auto object : task.objects())
+            if (std::string(object.name()) == name)
                 return true;
         return false;
     };
 
     EXPECT_NE(first_translated.context().layer(), translation.get_translated_domain().context().layer());
     EXPECT_NE(second_translated.context().layer(), translation.get_translated_domain().context().layer());
-    EXPECT_TRUE(first_translated.get_domain().context().contains(translation.get_translated_domain()));
-    EXPECT_TRUE(second_translated.get_domain().context().contains(translation.get_translated_domain()));
+    EXPECT_TRUE(first_translated.domain().context().contains(translation.get_translated_domain()));
+    EXPECT_TRUE(second_translated.domain().context().contains(translation.get_translated_domain()));
     EXPECT_TRUE(has_object(first_translated, "a"));
     EXPECT_TRUE(has_object(second_translated, "b"));
     EXPECT_NE(&first_translated.context(), &second_translated.context());
-    EXPECT_NE(std::string(first_translated.get_name()), std::string(second_translated.get_name()));
+    EXPECT_NE(std::string(first_translated.name()), std::string(second_translated.name()));
 }
 
 TEST(LokiSemanticParser, FailedTaskDoesNotLeakVariableScopes)
@@ -204,7 +204,7 @@ TEST(LokiSemanticParser, FailedTaskDoesNotLeakVariableScopes)
     EXPECT_THROW(parser.parse_task(fixture_path("task_isolation", "leaked-variable-task.pddl")), semantic::UndefinedVariableError);
 
     const auto task = parser.parse_task(fixture_path("task_isolation", "task.pddl"));
-    EXPECT_EQ(task.get_name(), "good");
+    EXPECT_EQ(task.name(), "good");
 }
 
 TEST(LokiSemanticParser, FlattensTypedGroupsAndInterleavedDeclarations)
@@ -222,33 +222,33 @@ TEST(LokiSemanticParser, FlattensTypedGroupsAndInterleavedDeclarations)
     const auto options = semantic::ParserOptions { .strict = true, .add_action_costs = false };
     auto parser = semantic::Parser(source, options);
     const auto domain = parser.get_domain();
-    ASSERT_EQ(domain.get_actions().size(), 2);
-    ASSERT_EQ(domain.get_axioms().size(), 2);
+    ASSERT_EQ(domain.actions().size(), 2);
+    ASSERT_EQ(domain.axioms().size(), 2);
     const auto object_types = [](const auto& objects)
     {
         auto result = std::map<std::string, std::set<std::string>> {};
         for (const auto object : objects)
-            for (const auto type : object.get_types())
-                result[std::string(object.get_name())].insert(std::string(type.get_name()));
+            for (const auto type : object.types())
+                result[std::string(object.name())].insert(std::string(type.name()));
         return result;
     };
     const auto expected_constants = std::map<std::string, std::set<std::string>> { { "one", { "child" } }, { "two", { "child" } }, { "loose", { "object" } } };
-    EXPECT_EQ(object_types(domain.get_constants()), expected_constants);
+    EXPECT_EQ(object_types(domain.constants()), expected_constants);
     auto type_bases = urd::Store<urd::map<std::string, std::string>> {};
-    for (const auto type : domain.get_types())
-        if (type.get_bases().size() == 1)
-            type_bases.emplace(std::string(type.get_name()), std::string(type.get_bases()[0].get_name()));
+    for (const auto type : domain.types())
+        if (type.bases().size() == 1)
+            type_bases.emplace(std::string(type.name()), std::string(type.bases()[0].name()));
     EXPECT_EQ(type_bases.at("child"), "parent");
     EXPECT_EQ(type_bases.at("sibling"), "parent");
     EXPECT_EQ(type_bases.at("parent"), "object");
-    for (const auto action : domain.get_actions())
-        if (action.get_name() == "first")
+    for (const auto action : domain.actions())
+        if (action.name() == "first")
         {
             auto parameters = urd::Store<urd::sequence<std::pair<std::string, std::string>>> {};
-            for (const auto parameter : action.get_parameters())
+            for (const auto parameter : action.parameters())
             {
-                ASSERT_EQ(parameter.get_types().size(), 1);
-                parameters.emplace_back(std::string(parameter.get_variable().get_name()), std::string(parameter.get_types()[0].get_name()));
+                ASSERT_EQ(parameter.types().size(), 1);
+                parameters.emplace_back(std::string(parameter.variable().name()), std::string(parameter.types()[0].name()));
             }
             const auto expected = urd::Store<urd::sequence<std::pair<std::string, std::string>>> { { "?x", "child" },
                                                                                                    { "?y", "child" },
@@ -257,22 +257,22 @@ TEST(LokiSemanticParser, FlattensTypedGroupsAndInterleavedDeclarations)
             EXPECT_EQ(parameters, expected);
         }
     auto found_grouped_axiom = false;
-    for (const auto axiom : domain.get_axioms())
-        if (axiom.get_head().get_atom().get_predicate().get_name() == "q")
+    for (const auto axiom : domain.axioms())
+        if (axiom.head().atom().predicate().name() == "q")
         {
             found_grouped_axiom = true;
-            EXPECT_EQ(axiom.get_arity(), 2);
-            EXPECT_EQ(axiom.get_original_arity(), 2);
-            ASSERT_EQ(axiom.get_parameters().size(), 2);
-            EXPECT_EQ(axiom.get_parameters()[0].get_variable().get_name(), "?x");
-            EXPECT_EQ(axiom.get_parameters()[1].get_variable().get_name(), "?y");
-            EXPECT_EQ(axiom.get_head().get_atom().get_terms().size(), 2);
+            EXPECT_EQ(axiom.arity(), 2);
+            EXPECT_EQ(axiom.original_arity(), 2);
+            ASSERT_EQ(axiom.parameters().size(), 2);
+            EXPECT_EQ(axiom.parameters()[0].variable().name(), "?x");
+            EXPECT_EQ(axiom.parameters()[1].variable().name(), "?y");
+            EXPECT_EQ(axiom.head().atom().terms().size(), 2);
         }
     EXPECT_TRUE(found_grouped_axiom);
     const auto task = parser.parse_task(std::string("(define (problem grouped-task) (:domain grouped) "
                                                     "(:objects a b - child tail) (:init) (:goal (q a b)))"));
     const auto expected_objects = std::map<std::string, std::set<std::string>> { { "a", { "child" } }, { "b", { "child" } }, { "tail", { "object" } } };
-    EXPECT_EQ(object_types(task.get_objects()), expected_objects);
+    EXPECT_EQ(object_types(task.objects()), expected_objects);
 }
 
 TEST(LokiSemanticParser, GroupedDuplicatesAndCyclesRetainIdentifierDiagnostics)

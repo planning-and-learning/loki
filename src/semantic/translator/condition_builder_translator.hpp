@@ -55,7 +55,7 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
             {
                 auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
-                for (auto child : node.get_conditions())
+                for (auto child : node.conditions())
                 {
                     const auto flat = this->self().flatten_condition(child);
                     std::visit(
@@ -63,7 +63,7 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                         {
                             if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
                             {
-                                for (auto part : flat_node.get_conditions())
+                                for (auto part : flat_node.conditions())
                                     urd::append(data->conditions, part);
                             }
                             else
@@ -78,7 +78,7 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
             {
                 auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
-                for (auto child : node.get_conditions())
+                for (auto child : node.conditions())
                 {
                     const auto flat = this->self().flatten_condition(child);
                     std::visit(
@@ -86,7 +86,7 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
                         {
                             if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
                             {
-                                for (auto part : flat_node.get_conditions())
+                                for (auto part : flat_node.conditions())
                                     urd::append(data->conditions, part);
                             }
                             else
@@ -100,25 +100,25 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>)
             {
-                const auto flat = this->self().flatten_condition(node.get_condition());
+                const auto flat = this->self().flatten_condition(node.condition());
                 return std::visit(
                     [&]<typename FlatNode>(const FlatNode& flat_node) -> formalism::ConditionView
                     {
                         if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::ExistsTag>>>)
                         {
                             auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
-                            for (auto parameter : node.get_parameters())
+                            for (auto parameter : node.parameters())
                                 data->parameters.push_back(parameter.index());
-                            for (auto parameter : flat_node.get_parameters())
+                            for (auto parameter : flat_node.parameters())
                                 data->parameters.push_back(parameter.index());
-                            urd::store(data->condition, flat_node.get_condition());
+                            urd::store(data->condition, flat_node.condition());
                             return formalism::ConditionView(
                                 this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
                         }
                         else
                         {
                             auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
-                            for (auto parameter : node.get_parameters())
+                            for (auto parameter : node.parameters())
                                 data->parameters.push_back(parameter.index());
                             urd::store(data->condition, flat);
                             return formalism::ConditionView(
@@ -129,25 +129,25 @@ formalism::ConditionView ConditionBuilderTranslator<Derived>::flatten_condition(
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
             {
-                const auto flat = this->self().flatten_condition(node.get_condition());
+                const auto flat = this->self().flatten_condition(node.condition());
                 return std::visit(
                     [&]<typename FlatNode>(const FlatNode& flat_node) -> formalism::ConditionView
                     {
                         if constexpr (std::is_same_v<FlatNode, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
                         {
                             auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
-                            for (auto parameter : node.get_parameters())
+                            for (auto parameter : node.parameters())
                                 data->parameters.push_back(parameter.index());
-                            for (auto parameter : flat_node.get_parameters())
+                            for (auto parameter : flat_node.parameters())
                                 data->parameters.push_back(parameter.index());
-                            urd::store(data->condition, flat_node.get_condition());
+                            urd::store(data->condition, flat_node.condition());
                             return formalism::ConditionView(
                                 this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
                         }
                         else
                         {
                             auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
-                            for (auto parameter : node.get_parameters())
+                            for (auto parameter : node.parameters())
                                 data->parameters.push_back(parameter.index());
                             urd::store(data->condition, flat);
                             return formalism::ConditionView(
@@ -173,7 +173,7 @@ void ConditionBuilderTranslator<Derived>::append_conjunct(urd::builder<formalism
         {
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
             {
-                for (auto part : node.get_conditions())
+                for (auto part : node.conditions())
                     this->self().append_conjunct(data, part);
             }
             else
@@ -193,7 +193,7 @@ void ConditionBuilderTranslator<Derived>::append_disjunct(urd::builder<formalism
         {
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::OrTag>>>)
             {
-                for (auto part : node.get_conditions())
+                for (auto part : node.conditions())
                     this->self().append_disjunct(data, part);
             }
             else

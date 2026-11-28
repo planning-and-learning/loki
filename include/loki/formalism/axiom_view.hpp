@@ -35,17 +35,17 @@ private:
     [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
 public:
-    auto get_parameters() const noexcept { return self().template member<&urd::record_of<V>::parameters>(); }
+    auto parameters() const noexcept { return self().template member<&urd::record_of<V>::parameters>(); }
 
-    auto get_original_arity() const noexcept { return self().template member<&urd::record_of<V>::original_arity>(); }
+    auto original_arity() const noexcept { return self().template member<&urd::record_of<V>::original_arity>(); }
 
-    auto get_head() const noexcept { return self().template member<&urd::record_of<V>::head>(); }
+    auto head() const noexcept { return self().template member<&urd::record_of<V>::head>(); }
 
-    auto get_condition() const noexcept { return self().template member<&urd::record_of<V>::condition>(); }
+    auto condition() const noexcept { return self().template member<&urd::record_of<V>::condition>(); }
 
-    auto get_arity() const noexcept { return get_parameters().size(); }
+    auto arity() const noexcept { return parameters().size(); }
 
-    static constexpr auto functions() noexcept { return urd::Functions<urd::function<"get_arity", &view_mixin::get_arity>> {}; }
+    static constexpr auto functions() noexcept { return urd::Functions<urd::function<"arity", &view_mixin::arity>> {}; }
 };
 }  // namespace urd
 

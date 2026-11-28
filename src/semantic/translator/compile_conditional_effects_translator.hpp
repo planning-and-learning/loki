@@ -72,18 +72,18 @@ void CompileConditionalEffectsTranslator<Derived>::collect_choice_conditional_ef
                 if (std::ranges::find(result, node) == result.end())
                     result.push_back(node);
                 // A conditional effect over a choice (ToEffectNormalFormTranslator::factor_shared_condition) holds more.
-                this->collect_choice_conditional_effects(node.get_effect(), result);
+                this->collect_choice_conditional_effects(node.effect(), result);
             }
             else if constexpr (std::same_as<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
                                || std::same_as<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
-                for (auto child : node.get_effects())
+                for (auto child : node.effects())
                     this->collect_choice_conditional_effects(child, result);
             }
             else if constexpr (std::same_as<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
             {
-                for (auto alternative : node.get_alternatives())
-                    this->collect_choice_conditional_effects(alternative.get_effect(), result);
+                for (auto alternative : node.alternatives())
+                    this->collect_choice_conditional_effects(alternative.effect(), result);
             }
         },
         effect);
@@ -101,18 +101,18 @@ formalism::EffectView CompileConditionalEffectsTranslator<Derived>::select_condi
             if constexpr (std::same_as<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
             {
                 if (selected.contains(node))
-                    return this->select_conditional_effects(node.get_effect(), selected);
+                    return this->select_conditional_effects(node.effect(), selected);
                 auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(context.builder);
                 return context.storage->repository.insert(*data, context.storage->builder).first;
             }
             else if constexpr (std::same_as<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>)
             {
                 auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(context.builder);
-                for (auto child : node.get_effects())
+                for (auto child : node.effects())
                 {
                     const auto part = this->select_conditional_effects(child, selected);
                     if (const auto* nested = std::get_if<formalism::EntityView<formalism::Effect<formalism::AndTag>>>(&part))
-                        for (auto nested_part : nested->get_effects())
+                        for (auto nested_part : nested->effects())
                             urd::append(data->effects, nested_part);
                     else
                         urd::append(data->effects, part);
@@ -122,7 +122,7 @@ formalism::EffectView CompileConditionalEffectsTranslator<Derived>::select_condi
             else if constexpr (std::same_as<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(context.builder);
-                for (auto child : node.get_effects())
+                for (auto child : node.effects())
                     urd::append(data->effects, this->select_conditional_effects(child, selected));
                 return context.storage->repository.insert(*data, context.storage->builder).first;
             }
@@ -130,11 +130,11 @@ formalism::EffectView CompileConditionalEffectsTranslator<Derived>::select_condi
             {
                 auto data = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(context.builder);
                 auto alternative_data = formalism::checkout<formalism::EffectProbabilisticAlternative>(context.builder);
-                for (auto alternative : node.get_alternatives())
+                for (auto alternative : node.alternatives())
                 {
                     urd::clear_fields(*alternative_data);
-                    alternative_data->probability = alternative.get_probability();
-                    urd::store(alternative_data->effect, this->select_conditional_effects(alternative.get_effect(), selected));
+                    alternative_data->probability = alternative.probability();
+                    urd::store(alternative_data->effect, this->select_conditional_effects(alternative.effect(), selected));
                     data->alternatives.emplace_back(context.storage->repository.insert(*alternative_data, context.storage->builder).first.index());
                 }
                 return context.storage->repository.insert(*data, context.storage->builder).first;
@@ -165,14 +165,14 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
         auto unconditional = formalism::EffectList {};
         auto conditional = urd::Store<urd::sequence<ConditionalEffect>> {};
 
-        const auto effect_view = action.get_effect();
+        const auto effect_view = action.effect();
         const auto has_choice = effect_view && formalism::contains_choice(effect_view.value());
         if (has_choice)
         {
             auto whens = urd::Store<urd::sequence<formalism::EntityView<formalism::Effect<formalism::WhenTag>>>> {};
             this->self().collect_choice_conditional_effects(effect_view.value(), whens);
             for (auto when : whens)
-                conditional.push_back({ when, when.get_condition(), when.get_effect() });
+                conditional.push_back({ when, when.condition(), when.effect() });
         }
         else if (effect_view)
         {
@@ -180,14 +180,14 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
             if (const auto effect_and = this->self().template as_effect<formalism::Effect<formalism::AndTag>>(effect_view.value()))
             {
                 effects.clear();
-                for (auto effect : effect_and->get_effects())
+                for (auto effect : effect_and->effects())
                     effects.push_back(effect);
             }
 
             for (auto effect : effects)
             {
                 if (const auto effect_when = this->self().template as_effect<formalism::Effect<formalism::WhenTag>>(effect))
-                    conditional.push_back({ *effect_when, effect_when->get_condition(), effect_when->get_effect() });
+                    conditional.push_back({ *effect_when, effect_when->condition(), effect_when->effect() });
                 else
                     urd::append(unconditional, effect);
             }
@@ -208,7 +208,7 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
         for (auto mask = size_t { 0 }; mask < num_variants; ++mask)
         {
             urd::clear_fields(*condition_data);
-            if (const auto precondition = action.get_precondition())
+            if (const auto precondition = action.precondition())
                 this->self().append_conjunct(*condition_data, *precondition);
 
             urd::clear_fields(*effect_data);
@@ -252,22 +252,22 @@ void CompileConditionalEffectsTranslator<Derived>::compile_conditional_effect_ac
                     formalism::EffectView(this->copy_context().storage->repository.insert(*effect_data, this->copy_context().storage->builder).first);
                 auto normalized = this->self().normalize_effect(conjunction);
                 if (const auto single = this->self().template as_effect<formalism::Effect<formalism::AndTag>>(normalized);
-                    single && single->get_effects().size() == 1)
-                    normalized = single->get_effects()[0];
+                    single && single->effects().size() == 1)
+                    normalized = single->effects()[0];
                 urd::store(effect, normalized);
             }
 
-            auto name = std::string(action.get_name()) + "_" + std::to_string(action.index().value);
+            auto name = std::string(action.name()) + "_" + std::to_string(action.index().value);
             for (const auto& item : conditional)
                 name += "_" + std::to_string(item.when.index().value);
             name += "_" + std::to_string(mask);
 
             auto action_data = formalism::checkout<formalism::Action>(this->copy_context().builder);
             action_data->name = urd::flat_string(name);
-            action_data->original_name = action.get_original_name();
-            for (auto parameter : action.get_parameters())
+            action_data->original_name = action.original_name();
+            for (auto parameter : action.parameters())
                 action_data->parameters.push_back(parameter.index());
-            action_data->original_arity = action.get_original_arity();
+            action_data->original_arity = action.original_arity();
             action_data->precondition = std::move(precondition);
             action_data->effect = std::move(effect);
             this->self().push_unique(result, seen, this->copy_context().storage->repository.insert(*action_data, this->copy_context().storage->builder).first);

@@ -127,16 +127,16 @@ formalism::DurativeActionView AstBuilder::parse_durative_action(const ast::Durat
             if (std::holds_alternative<formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>>(condition))
                 return true;
             const auto* timed = std::get_if<formalism::EntityView<formalism::Condition<formalism::TimedTag>>>(&condition);
-            return timed && timed->get_time() != formalism::TimeSpecifier::OverAll
-                   && std::holds_alternative<formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>>(timed->get_condition());
+            return timed && timed->time() != formalism::TimeSpecifier::OverAll
+                   && std::holds_alternative<formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>>>(timed->condition());
         };
         auto valid = is_comparison(constraint);
         if (const auto* conjunction = std::get_if<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(&constraint))
         {
             valid = true;
-            for (auto conjunct : conjunction->get_conditions())
+            for (auto conjunct : conjunction->conditions())
                 valid = valid && is_comparison(conjunct);
-            if (!conjunction->get_conditions().empty())
+            if (!conjunction->conditions().empty())
                 duration = constraint;
         }
         else if (valid)
@@ -190,18 +190,18 @@ std::optional<formalism::ConditionView> AstBuilder::group_timed_condition(formal
             {
                 if constexpr (std::same_as<Node, formalism::EntityView<formalism::Condition<formalism::AndTag>>>)
                 {
-                    for (auto child : part.get_conditions())
+                    for (auto child : part.conditions())
                         self(self, child, buckets);
                 }
                 else if constexpr (std::same_as<Node, formalism::EntityView<formalism::Condition<formalism::TimedTag>>>)
                 {
-                    buckets.at(static_cast<std::size_t>(part.get_time())).push_back(part.get_condition());
+                    buckets.at(static_cast<std::size_t>(part.time())).push_back(part.condition());
                 }
                 else if constexpr (std::same_as<Node, formalism::EntityView<formalism::Condition<formalism::PreferenceTag>>>)
                 {
                     // (preference p (at t c)) is (at t (preference p c)): a preference reads one time point or the interval.
                     auto inner = Buckets<formalism::ConditionView> {};
-                    self(self, part.get_condition(), inner);
+                    self(self, part.condition(), inner);
                     const auto times = std::ranges::count_if(inner, [](const auto& bucket) { return !bucket.empty(); });
                     if (times != 1)
                         m_diagnostics.throw_at(node, InvalidTemporalExpressionError("a preference of a durative action reads one time point"));
@@ -211,7 +211,7 @@ std::optional<formalism::ConditionView> AstBuilder::group_timed_condition(formal
                         if (bucket.empty())
                             continue;
                         auto data = formalism::checkout<formalism::Condition<formalism::PreferenceTag>>(m_builder);
-                        data->name = part.get_name();
+                        data->name = part.name();
                         urd::store(data->condition, conjunction(bucket));
                         buckets.at(static_cast<std::size_t>(time)).push_back(repo().insert(*data, m_builder).first);
                     }
@@ -219,14 +219,14 @@ std::optional<formalism::ConditionView> AstBuilder::group_timed_condition(formal
                 else if constexpr (std::same_as<Node, formalism::EntityView<formalism::Condition<formalism::ForallTag>>>)
                 {
                     auto inner = Buckets<formalism::ConditionView> {};
-                    self(self, part.get_condition(), inner);
+                    self(self, part.condition(), inner);
                     for (const auto time : condition_times)
                     {
                         auto& bucket = inner.at(static_cast<std::size_t>(time));
                         if (bucket.empty())
                             continue;
                         auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(m_builder);
-                        for (auto parameter : part.get_parameters())
+                        for (auto parameter : part.parameters())
                             data->parameters.push_back(parameter.index());
                         urd::store(data->condition, conjunction(bucket));
                         buckets.at(static_cast<std::size_t>(time)).push_back(repo().insert(*data, m_builder).first);
@@ -279,24 +279,24 @@ std::optional<formalism::EffectView> AstBuilder::group_timed_effect(formalism::E
             {
                 if constexpr (std::same_as<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>)
                 {
-                    for (auto child : part.get_effects())
+                    for (auto child : part.effects())
                         self(self, child, buckets);
                 }
                 else if constexpr (std::same_as<Node, formalism::EntityView<formalism::Effect<formalism::TimedTag>>>)
                 {
-                    buckets.at(static_cast<std::size_t>(part.get_time())).push_back(part.get_effect());
+                    buckets.at(static_cast<std::size_t>(part.time())).push_back(part.effect());
                 }
                 else if constexpr (std::same_as<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
                 {
                     auto inner = Buckets<formalism::EffectView> {};
-                    self(self, part.get_effect(), inner);
+                    self(self, part.effect(), inner);
                     for (const auto time : effect_times)
                     {
                         auto& bucket = inner.at(static_cast<std::size_t>(time));
                         if (bucket.empty())
                             continue;
                         auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(m_builder);
-                        for (auto parameter : part.get_parameters())
+                        for (auto parameter : part.parameters())
                             data->parameters.push_back(parameter.index());
                         urd::store(data->effect, conjunction(bucket));
                         buckets.at(static_cast<std::size_t>(time)).push_back(repo().insert(*data, m_builder).first);
@@ -305,8 +305,8 @@ std::optional<formalism::EffectView> AstBuilder::group_timed_effect(formalism::E
                 else if constexpr (std::same_as<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
                 {
                     auto inner = Buckets<formalism::EffectView> {};
-                    self(self, part.get_effect(), inner);
-                    const auto condition = group_timed_condition(part.get_condition(), node);
+                    self(self, part.effect(), inner);
+                    const auto condition = group_timed_condition(part.condition(), node);
                     for (const auto time : effect_times)
                     {
                         auto& bucket = inner.at(static_cast<std::size_t>(time));
@@ -320,8 +320,8 @@ std::optional<formalism::EffectView> AstBuilder::group_timed_effect(formalism::E
                             auto empty = formalism::checkout<formalism::Condition<formalism::AndTag>>(m_builder);
                             urd::store(data->condition, repo().insert(*empty, m_builder).first);
                         }
-                        else if (timed && timed->get_time() == time)
-                            urd::store(data->condition, timed->get_condition());
+                        else if (timed && timed->time() == time)
+                            urd::store(data->condition, timed->condition());
                         else
                             urd::store(data->condition, *condition);
                         urd::store(data->effect, conjunction(bucket));

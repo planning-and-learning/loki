@@ -69,8 +69,8 @@ urd::Store<urd::set<std::string>> CopyTranslatorFacade<Derived>::used_predicate_
     auto names = this->copy_context().used_predicate_names;
     if (this->copy_context().storage->translated_domain)
     {
-        for (auto predicate : this->copy_context().storage->translated().get_predicates())
-            names.insert(std::string(predicate.get_name()));
+        for (auto predicate : this->copy_context().storage->translated().predicates())
+            names.insert(std::string(predicate.name()));
     }
     return names;
 }
@@ -96,16 +96,16 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
     if (auto mapped = find_mapped(this->copy_context().storage->maps, domain))
         return { *mapped, false };
     auto data = formalism::checkout<formalism::Domain>(this->copy_context().builder);
-    data->name = domain.get_name();
-    this->self().template copy_list<formalism::Requirement>(domain.get_requirements(), data->requirements);
-    this->self().template copy_list<formalism::Type>(domain.get_types(), data->types);
-    this->self().template copy_list<formalism::Object>(domain.get_constants(), data->constants);
-    this->self().template copy_list<formalism::Predicate>(domain.get_predicates(), data->predicates);
-    this->self().template copy_list<formalism::FunctionSkeleton>(domain.get_functions(), data->functions);
-    this->self().template copy_list<formalism::Action>(domain.get_actions(), data->actions);
-    this->self().template copy_list<formalism::DurativeAction>(domain.get_durative_actions(), data->durative_actions);
-    this->self().template copy_list<formalism::Axiom>(domain.get_axioms(), data->axioms);
-    if (const auto constraints = domain.get_constraints())
+    data->name = domain.name();
+    this->self().template copy_list<formalism::Requirement>(domain.requirements(), data->requirements);
+    this->self().template copy_list<formalism::Type>(domain.types(), data->types);
+    this->self().template copy_list<formalism::Object>(domain.constants(), data->constants);
+    this->self().template copy_list<formalism::Predicate>(domain.predicates(), data->predicates);
+    this->self().template copy_list<formalism::FunctionSkeleton>(domain.functions(), data->functions);
+    this->self().template copy_list<formalism::Action>(domain.actions(), data->actions);
+    this->self().template copy_list<formalism::DurativeAction>(domain.durative_actions(), data->durative_actions);
+    this->self().template copy_list<formalism::Axiom>(domain.axioms(), data->axioms);
+    if (const auto constraints = domain.constraints())
         urd::store(data->constraints, this->self().copy(constraints.value()));
     else
         data->constraints = {};
@@ -120,11 +120,11 @@ std::pair<formalism::DomainView, bool> CopyTranslatorFacade<Derived>::copy(forma
             this->self().append_generated_domain_objects(*data);
             break;
         case TranslationPhase::SplitDisjunctiveConditions:
-            this->self().split_disjunctive_actions(copied_domain.get_actions(), data->actions);
-            this->self().split_disjunctive_axioms(copied_domain.get_axioms(), data->axioms);
+            this->self().split_disjunctive_actions(copied_domain.actions(), data->actions);
+            this->self().split_disjunctive_axioms(copied_domain.axioms(), data->axioms);
             break;
         case TranslationPhase::CompileConditionalEffects:
-            this->self().compile_conditional_effect_actions(copied_domain.get_actions(), data->actions);
+            this->self().compile_conditional_effect_actions(copied_domain.actions(), data->actions);
             break;
         case TranslationPhase::CompileTyping:
             this->self().compile_typing_to_domain(*data, copied_domain);
@@ -155,15 +155,15 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
     if (auto mapped = find_mapped(this->copy_context().storage->maps, task))
         return { *mapped, false };
     auto data = formalism::checkout<formalism::Task>(this->copy_context().builder);
-    data->name = task.get_name();
+    data->name = task.name();
     data->domain = this->copy_context().storage->translated().index();
-    this->self().template copy_list<formalism::Requirement>(task.get_requirements(), data->requirements);
-    this->self().template copy_list<formalism::Object>(task.get_objects(), data->objects);
-    this->self().template copy_list<formalism::Literal>(task.get_initial_literals(), data->initial_literals);
-    this->self().template copy_list<formalism::InitialFunctionValue>(task.get_initial_function_values(), data->initial_function_values);
-    this->self().template copy_list<formalism::TimedInitialLiteral>(task.get_timed_initial_literals(), data->timed_initial_literals);
+    this->self().template copy_list<formalism::Requirement>(task.requirements(), data->requirements);
+    this->self().template copy_list<formalism::Object>(task.objects(), data->objects);
+    this->self().template copy_list<formalism::Literal>(task.initial_literals(), data->initial_literals);
+    this->self().template copy_list<formalism::InitialFunctionValue>(task.initial_function_values(), data->initial_function_values);
+    this->self().template copy_list<formalism::TimedInitialLiteral>(task.timed_initial_literals(), data->timed_initial_literals);
     // A probabilistic initial element stays one, its outcomes normalized (EffectTranslator, ToEffectNormalFormTranslator).
-    for (auto effect : task.get_initial_effects())
+    for (auto effect : task.initial_effects())
     {
         const auto copied = this->self().copy(formalism::EffectView(effect));
         if (const auto* probabilistic = std::get_if<formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>(&copied))
@@ -181,7 +181,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
         }
     }
 
-    if (const auto goal = task.get_goal())
+    if (const auto goal = task.goal())
     {
         if (this->copy_context().phase == TranslationPhase::RenameQuantifiedVariables)
         {
@@ -202,15 +202,15 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
         data->goal = {};
     }
 
-    data->goal_reward = task.get_goal_reward();
-    if (const auto metric = task.get_metric())
+    data->goal_reward = task.goal_reward();
+    if (const auto metric = task.metric())
         urd::store(data->metric, this->self().copy(metric.value()));
     else
         data->metric = {};
-    this->self().template copy_list<formalism::Predicate>(task.get_predicates(), data->predicates);
-    this->self().template copy_list<formalism::Axiom>(task.get_axioms(), data->axioms);
-    this->self().template copy_list<formalism::Type>(task.get_types(), data->types);
-    if (const auto constraints = task.get_constraints())
+    this->self().template copy_list<formalism::Predicate>(task.predicates(), data->predicates);
+    this->self().template copy_list<formalism::Axiom>(task.axioms(), data->axioms);
+    this->self().template copy_list<formalism::Type>(task.types(), data->types);
+    if (const auto constraints = task.constraints())
         urd::store(data->constraints, this->self().copy(constraints.value()));
     else
         data->constraints = {};
@@ -225,12 +225,12 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
         case TranslationPhase::CompileTyping:
         {
             if (this->copy_context().phase == TranslationPhase::SimplifyGoal && data->goal)
-                urd::store(data->goal, this->self().simplify_goal_condition(copied_task.get_goal().value()));
+                urd::store(data->goal, this->self().simplify_goal_condition(copied_task.goal().value()));
 
             // The task's predicates and axioms, then the generated ones not among them, each list written once (urd::store).
             auto existing_predicates = urd::Store<urd::set<formalism::PredicateView>> {};
             auto predicates = urd::Store<urd::sequence<formalism::PredicateView>> {};
-            for (auto predicate : copied_task.get_predicates())
+            for (auto predicate : copied_task.predicates())
                 if (existing_predicates.insert(predicate).second)
                     predicates.push_back(predicate);
             for (auto predicate : this->copy_context().generated_predicates)
@@ -240,7 +240,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
 
             auto existing_axioms = urd::Store<urd::set<formalism::AxiomView>> {};
             auto axioms = urd::Store<urd::sequence<formalism::AxiomView>> {};
-            for (auto axiom : copied_task.get_axioms())
+            for (auto axiom : copied_task.axioms())
                 if (existing_axioms.insert(axiom).second)
                     axioms.push_back(axiom);
             for (auto axiom : this->copy_context().generated_axioms)
@@ -253,7 +253,7 @@ std::pair<formalism::TaskView, bool> CopyTranslatorFacade<Derived>::copy(formali
             break;
         }
         case TranslationPhase::SplitDisjunctiveConditions:
-            this->self().split_disjunctive_axioms(copied_task.get_axioms(), data->axioms);
+            this->self().split_disjunctive_axioms(copied_task.axioms(), data->axioms);
             break;
         case TranslationPhase::MaterializeEquality:
             this->self().materialize_equality(*data, task);

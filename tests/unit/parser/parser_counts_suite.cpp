@@ -154,27 +154,27 @@ struct ParserCountExpectation
 
 void expect_counts(formalism::DomainView domain, formalism::TaskView task, const ConfigurationExpectation& expected)
 {
-    EXPECT_EQ(domain.get_requirements().size(), expected.domain.requirements);
-    EXPECT_EQ(domain.get_types().size(), expected.domain.types);
-    EXPECT_EQ(domain.get_constants().size(), expected.domain.constants);
-    EXPECT_EQ(domain.get_predicates().size(), expected.domain.predicates);
-    EXPECT_EQ(domain.get_functions().size(), expected.domain.functions);
-    EXPECT_EQ(domain.get_actions().size(), expected.domain.actions);
-    EXPECT_EQ(domain.get_axioms().size(), expected.domain.axioms);
-    EXPECT_EQ(domain.get_durative_actions().size(), expected.domain.durative_actions);
-    EXPECT_EQ(static_cast<bool>(domain.get_constraints()), expected.domain.has_constraints);
-    EXPECT_EQ(task.get_requirements().size(), expected.task.requirements);
-    EXPECT_EQ(task.get_objects().size(), expected.task.objects);
-    EXPECT_EQ(task.get_initial_literals().size(), expected.task.initial_literals);
-    EXPECT_EQ(task.get_initial_function_values().size(), expected.task.initial_function_values);
-    EXPECT_EQ(task.get_predicates().size(), expected.task.predicates);
-    EXPECT_EQ(task.get_axioms().size(), expected.task.axioms);
-    EXPECT_EQ(static_cast<bool>(task.get_goal()), expected.task.has_goal);
-    EXPECT_EQ(static_cast<bool>(task.get_metric()), expected.task.has_metric);
-    EXPECT_EQ(task.get_timed_initial_literals().size(), expected.task.timed_initial_literals);
-    EXPECT_EQ(task.get_initial_effects().size(), expected.task.initial_effects);
-    EXPECT_EQ(static_cast<bool>(task.get_goal_reward()), expected.task.has_goal_reward);
-    EXPECT_EQ(static_cast<bool>(task.get_constraints()), expected.task.has_constraints);
+    EXPECT_EQ(domain.requirements().size(), expected.domain.requirements);
+    EXPECT_EQ(domain.types().size(), expected.domain.types);
+    EXPECT_EQ(domain.constants().size(), expected.domain.constants);
+    EXPECT_EQ(domain.predicates().size(), expected.domain.predicates);
+    EXPECT_EQ(domain.functions().size(), expected.domain.functions);
+    EXPECT_EQ(domain.actions().size(), expected.domain.actions);
+    EXPECT_EQ(domain.axioms().size(), expected.domain.axioms);
+    EXPECT_EQ(domain.durative_actions().size(), expected.domain.durative_actions);
+    EXPECT_EQ(static_cast<bool>(domain.constraints()), expected.domain.has_constraints);
+    EXPECT_EQ(task.requirements().size(), expected.task.requirements);
+    EXPECT_EQ(task.objects().size(), expected.task.objects);
+    EXPECT_EQ(task.initial_literals().size(), expected.task.initial_literals);
+    EXPECT_EQ(task.initial_function_values().size(), expected.task.initial_function_values);
+    EXPECT_EQ(task.predicates().size(), expected.task.predicates);
+    EXPECT_EQ(task.axioms().size(), expected.task.axioms);
+    EXPECT_EQ(static_cast<bool>(task.goal()), expected.task.has_goal);
+    EXPECT_EQ(static_cast<bool>(task.metric()), expected.task.has_metric);
+    EXPECT_EQ(task.timed_initial_literals().size(), expected.task.timed_initial_literals);
+    EXPECT_EQ(task.initial_effects().size(), expected.task.initial_effects);
+    EXPECT_EQ(static_cast<bool>(task.goal_reward()), expected.task.has_goal_reward);
+    EXPECT_EQ(static_cast<bool>(task.constraints()), expected.task.has_constraints);
 }
 
 template<typename Node, typename ParseFn>

@@ -44,7 +44,7 @@ formalism::AtomView AstBuilder::parse_atom(const ast::Atom& node)
     const auto name = key(node.predicate.text);
     auto pred = name == "=" ? equality_predicate(node.predicate, node.terms.size()) : predicate(node.predicate, node.terms.size());
     if (m_domain_context.declared_predicates.contains(name))
-        checks().check_argument_types(name, pred.get_parameters(), node.terms, node.predicate);
+        checks().check_argument_types(name, pred.parameters(), node.terms, node.predicate);
     auto data = formalism::checkout<formalism::Atom>(m_builder);
     data->predicate = pred.index();
     for (const auto& term : node.terms)
@@ -149,7 +149,7 @@ formalism::ConditionView AstBuilder::parse_condition_node(const ast::ConditionFo
     {
         auto preferences = urd::Store<urd::sequence<formalism::ConditionView>> {};
         auto hard = urd::Store<urd::sequence<formalism::ConditionView>> {};
-        for (auto conjunct : conjunction->get_conditions())
+        for (auto conjunct : conjunction->conditions())
             (formalism::contains_preference(conjunct) ? preferences : hard).push_back(conjunct);
         auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(m_builder);
         for (const auto* part : { &preferences, &hard })
@@ -205,7 +205,7 @@ formalism::FunctionTermView AstBuilder::parse_function_term(const ast::FunctionT
         checks().require_requirement(formalism::RequirementKind::NumericFluents, node.function);
     auto skeleton = function(node.function, node.terms.size());
     if (m_domain_context.declared_functions.contains(name))
-        checks().check_argument_types(name, skeleton.get_parameters(), node.terms, node.function);
+        checks().check_argument_types(name, skeleton.parameters(), node.terms, node.function);
     auto data = formalism::checkout<formalism::FunctionTerm>(m_builder);
     data->function = skeleton.index();
     for (const auto& term : node.terms)

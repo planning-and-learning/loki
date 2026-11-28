@@ -107,7 +107,7 @@ RemoveUniversalQuantifiersTranslator<Derived>::make_conjunctive_condition(formal
     if (!conjunction)
         return make_generated_axiom_literal(condition, prefix, true, cache);
     auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
-    for (auto conjunct : conjunction->get_conditions())
+    for (auto conjunct : conjunction->conditions())
         this->self().append_conjunct(*data, is_basic(conjunct) ? conjunct : make_generated_axiom_literal(conjunct, prefix, true, cache));
     return this->self().make_conjunction(*data);
 }
@@ -173,7 +173,7 @@ formalism::ConditionView
 RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::AndTag>> source)
 {
     auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
-    for (auto condition : source.get_conditions())
+    for (auto condition : source.conditions())
         this->self().append_conjunct(*data, this->self().remove_universal_quantifiers(condition));
     return this->self().make_conjunction(*data);
 }
@@ -183,7 +183,7 @@ formalism::ConditionView
 RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::OrTag>> source)
 {
     auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
-    for (auto condition : source.get_conditions())
+    for (auto condition : source.conditions())
         this->self().append_disjunct(*data, this->self().remove_universal_quantifiers(condition));
     return this->self().make_disjunction(*data);
 }
@@ -206,10 +206,10 @@ template<typename Derived>
 formalism::ConditionView
 RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ExistsTag>> source)
 {
-    this->self().increment_quantifications(source.get_parameters());
-    auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+    this->self().increment_quantifications(source.parameters());
+    auto parameter_views = this->self().copy_parameter_views(source.parameters());
     this->self().enter_scope(parameter_views);
-    auto condition = this->self().remove_universal_quantifiers(source.get_condition());
+    auto condition = this->self().remove_universal_quantifiers(source.condition());
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
@@ -223,11 +223,11 @@ template<typename Derived>
 formalism::ConditionView
 RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::PreferenceTag>> source)
 {
-    const auto condition = this->self().make_conjunctive_condition(this->self().remove_universal_quantifiers(source.get_condition()),
+    const auto condition = this->self().make_conjunctive_condition(this->self().remove_universal_quantifiers(source.condition()),
                                                                    "loki-preference-",
                                                                    this->copy_context().generated_preference_conditions);
     auto data = formalism::checkout<formalism::Condition<formalism::PreferenceTag>>(this->copy_context().builder);
-    data->name = source.get_name();
+    data->name = source.name();
     urd::store(data->condition, condition);
     return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
 }
@@ -237,12 +237,12 @@ formalism::ConditionView
 RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::ForallTag>> source)
 {
     // A universal preference is a preference per binding: it stays universal (the parser separates it from hard conditions).
-    if (formalism::contains_preference(source.get_condition()))
+    if (formalism::contains_preference(source.condition()))
     {
-        this->self().increment_quantifications(source.get_parameters());
-        auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+        this->self().increment_quantifications(source.parameters());
+        auto parameter_views = this->self().copy_parameter_views(source.parameters());
         this->self().enter_scope(parameter_views);
-        const auto condition = this->self().remove_universal_quantifiers(source.get_condition());
+        const auto condition = this->self().remove_universal_quantifiers(source.condition());
         this->self().leave_scope();
         auto data = formalism::checkout<formalism::Condition<formalism::ForallTag>>(this->copy_context().builder);
         for (auto parameter : parameter_views)
@@ -251,10 +251,10 @@ RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node
         return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
     }
 
-    this->self().increment_quantifications(source.get_parameters());
-    auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+    this->self().increment_quantifications(source.parameters());
+    auto parameter_views = this->self().copy_parameter_views(source.parameters());
     this->self().enter_scope(parameter_views);
-    auto negated = this->self().negate_condition(source.get_condition());
+    auto negated = this->self().negate_condition(source.condition());
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<formalism::ExistsTag>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
@@ -270,9 +270,9 @@ template<typename Derived>
 formalism::ConditionView
 RemoveUniversalQuantifiersTranslator<Derived>::remove_universal_quantifiers_node(formalism::EntityView<formalism::Condition<formalism::TimedTag>> source)
 {
-    const auto condition = this->self().make_timed_condition(this->self().remove_universal_quantifiers(source.get_condition()));
+    const auto condition = this->self().make_timed_condition(this->self().remove_universal_quantifiers(source.condition()));
     auto data = formalism::checkout<formalism::Condition<formalism::TimedTag>>(this->copy_context().builder);
-    data->time = source.get_time();
+    data->time = source.time();
     urd::store(data->condition, condition);
     return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
 }

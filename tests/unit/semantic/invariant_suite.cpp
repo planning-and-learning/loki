@@ -49,24 +49,24 @@ void collect_effect_binder_names(formalism::EffectView effect, urd::Store<urd::s
             using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
             {
-                for (auto parameter : node.get_parameters())
-                    names.insert(std::string(parameter.get_variable().get_name()));
-                collect_effect_binder_names(node.get_effect(), names);
+                for (auto parameter : node.parameters())
+                    names.insert(std::string(parameter.variable().name()));
+                collect_effect_binder_names(node.effect(), names);
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>
                                || std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
-                for (auto child : node.get_effects())
+                for (auto child : node.effects())
                     collect_effect_binder_names(child, names);
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
             {
-                collect_effect_binder_names(node.get_effect(), names);
+                collect_effect_binder_names(node.effect(), names);
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
             {
-                for (auto alternative : node.get_alternatives())
-                    collect_effect_binder_names(alternative.get_effect(), names);
+                for (auto alternative : node.alternatives())
+                    collect_effect_binder_names(alternative.effect(), names);
             }
         },
         effect);
@@ -107,9 +107,9 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::AndTag>>>)
             {
                 EXPECT_TRUE(top_level) << what << ": nested effect conjunction";
-                expect_distinct_children(node.get_effects(), what);
+                expect_distinct_children(node.effects(), what);
                 auto numeric_targets = urd::Store<urd::set<std::string>> {};
-                for (auto child : node.get_effects())
+                for (auto child : node.effects())
                 {
                     std::visit(
                         [&](const auto& grandchild)
@@ -118,9 +118,9 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
                             if constexpr (std::is_same_v<Grandchild, formalism::EntityView<formalism::Effect<formalism::NumericTag>>>)
                             {
                                 // The normal form aggregates per operator and target: (increase f) and (decrease f) may meet.
-                                auto key = std::string(formalism::to_string(grandchild.get_operation())) + " "
-                                           + std::string(grandchild.get_function().get_function().get_name());
-                                for (auto term : grandchild.get_function().get_terms())
+                                auto key = std::string(formalism::to_string(grandchild.operation())) + " "
+                                           + std::string(grandchild.function().function().name());
+                                for (auto term : grandchild.function().terms())
                                     key += "," + fmt::format("{}", term);
                                 EXPECT_TRUE(numeric_targets.insert(key).second) << what << ": unaggregated numeric effects on target " << key;
                             }
@@ -131,32 +131,32 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::WhenTag>>>)
             {
-                EXPECT_EQ(count_nodes<formalism::Condition<formalism::OrTag>>(node.get_condition()), 0) << what << ": disjunctive when-condition";
-                if (formalism::contains_choice(node.get_effect()))
+                EXPECT_EQ(count_nodes<formalism::Condition<formalism::OrTag>>(node.condition()), 0) << what << ": disjunctive when-condition";
+                if (formalism::contains_choice(node.effect()))
                 {
                     // A choice is drawn once: its condition is a single atom or a conjunction, never split or lifted.
-                    EXPECT_TRUE(is_conjunctive(node.get_condition())) << what << ": non-conjunctive condition of a choice";
-                    expect_effect_normal_form(node.get_effect(), false, what);
+                    EXPECT_TRUE(is_conjunctive(node.condition())) << what << ": non-conjunctive condition of a choice";
+                    expect_effect_normal_form(node.effect(), false, what);
                 }
                 else
                 {
-                    EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(node.get_effect()), 0) << what << ": nested when";
+                    EXPECT_EQ(count_nodes<formalism::Effect<formalism::WhenTag>>(node.effect()), 0) << what << ": nested when";
                 }
-                EXPECT_FALSE(std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::AndTag>>>(node.get_effect()))
+                EXPECT_FALSE(std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::AndTag>>>(node.effect()))
                     << what << ": conjunctive when-body";
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ForallTag>>>)
             {
-                EXPECT_FALSE(std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::AndTag>>>(node.get_effect()))
+                EXPECT_FALSE(std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::AndTag>>>(node.effect()))
                     << what << ": undistributed universal effect";
-                expect_effect_normal_form(node.get_effect(), false, what);
+                expect_effect_normal_form(node.effect(), false, what);
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>)
             {
                 // Choices: flattened, at least two outcomes, each outcome an effect in normal form of its own.
-                EXPECT_GE(node.get_effects().size(), 2) << what << ": oneof with a single outcome";
-                expect_distinct_children(node.get_effects(), what);
-                for (auto child : node.get_effects())
+                EXPECT_GE(node.effects().size(), 2) << what << ": oneof with a single outcome";
+                expect_distinct_children(node.effects(), what);
+                for (auto child : node.effects())
                 {
                     EXPECT_FALSE(std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>(child)) << what << ": nested oneof";
                     expect_effect_normal_form(child, true, what);
@@ -164,15 +164,15 @@ void expect_effect_normal_form(formalism::EffectView effect, bool top_level, con
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>)
             {
-                EXPECT_GE(node.get_alternatives().size(), 2) << what << ": probabilistic effect with a single outcome";
+                EXPECT_GE(node.alternatives().size(), 2) << what << ": probabilistic effect with a single outcome";
                 auto total = 0.0;
-                for (auto alternative : node.get_alternatives())
+                for (auto alternative : node.alternatives())
                 {
-                    total += alternative.get_probability();
-                    EXPECT_GT(alternative.get_probability(), 0.0) << what << ": outcome of probability 0";
-                    EXPECT_FALSE(std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>(alternative.get_effect()))
+                    total += alternative.probability();
+                    EXPECT_GT(alternative.probability(), 0.0) << what << ": outcome of probability 0";
+                    EXPECT_FALSE(std::holds_alternative<formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>(alternative.effect()))
                         << what << ": nested probabilistic effect";
-                    expect_effect_normal_form(alternative.get_effect(), true, what);
+                    expect_effect_normal_form(alternative.effect(), true, what);
                 }
                 EXPECT_NEAR(total, 1.0, 1e-9) << what << ": outcome probabilities do not sum to 1";
             }
@@ -185,31 +185,31 @@ void expect_axiom_invariants(const AxiomRange& axioms, const std::string& what)
 {
     for (auto axiom : axioms)
     {
-        const auto atom = axiom.get_head().get_atom();
-        EXPECT_EQ(atom.get_predicate().get_parameters().size(), atom.get_terms().size()) << what;
-        EXPECT_GE(axiom.get_parameters().size(), atom.get_terms().size()) << what;
-        expect_flat_condition(axiom.get_condition(), what + ": axiom condition");
+        const auto atom = axiom.head().atom();
+        EXPECT_EQ(atom.predicate().parameters().size(), atom.terms().size()) << what;
+        EXPECT_GE(axiom.parameters().size(), atom.terms().size()) << what;
+        expect_flat_condition(axiom.condition(), what + ": axiom condition");
     }
 }
 
 void expect_domain_invariants(formalism::DomainView domain)
 {
     auto predicate_names = urd::Store<urd::set<std::string>> {};
-    for (auto predicate : domain.get_predicates())
-        EXPECT_TRUE(predicate_names.insert(std::string(predicate.get_name())).second) << "duplicate domain predicate name " << predicate.get_name();
+    for (auto predicate : domain.predicates())
+        EXPECT_TRUE(predicate_names.insert(std::string(predicate.name())).second) << "duplicate domain predicate name " << predicate.name();
 
-    for (auto action : domain.get_actions())
+    for (auto action : domain.actions())
     {
-        const auto what = "action " + std::string(action.get_name());
+        const auto what = "action " + std::string(action.name());
 
         auto parameter_names = urd::Store<urd::set<std::string>> {};
-        for (auto parameter : action.get_parameters())
-            EXPECT_TRUE(parameter_names.insert(std::string(parameter.get_variable().get_name())).second) << what << ": duplicate parameter";
+        for (auto parameter : action.parameters())
+            EXPECT_TRUE(parameter_names.insert(std::string(parameter.variable().name())).second) << what << ": duplicate parameter";
 
-        if (const auto precondition = action.get_precondition())
+        if (const auto precondition = action.precondition())
             expect_flat_condition(precondition.value(), what + ": precondition");
 
-        if (const auto effect = action.get_effect())
+        if (const auto effect = action.effect())
         {
             expect_effect_normal_form(effect.value(), true, what + ": effect");
             auto binder_names = urd::Store<urd::set<std::string>> {};
@@ -219,68 +219,68 @@ void expect_domain_invariants(formalism::DomainView domain)
         }
     }
 
-    for (auto action : domain.get_durative_actions())
+    for (auto action : domain.durative_actions())
     {
-        const auto what = "durative action " + std::string(action.get_name());
+        const auto what = "durative action " + std::string(action.name());
         // A conjunction of timed conditions, one per time point, each a conjunction of literals and numeric constraints.
-        if (const auto condition = action.get_condition())
+        if (const auto condition = action.condition())
         {
             auto times = urd::Store<urd::set<formalism::TimeSpecifier>> {};
             const auto expect_timed = [&](formalism::ConditionView part)
             {
                 const auto* timed = std::get_if<formalism::EntityView<formalism::Condition<formalism::TimedTag>>>(&part);
                 ASSERT_NE(timed, nullptr) << what << ": untimed condition";
-                EXPECT_TRUE(times.insert(timed->get_time()).second) << what << ": two conditions at one time point";
-                EXPECT_TRUE(is_conjunctive(timed->get_condition())) << what << ": non-conjunctive timed condition";
+                EXPECT_TRUE(times.insert(timed->time()).second) << what << ": two conditions at one time point";
+                EXPECT_TRUE(is_conjunctive(timed->condition())) << what << ": non-conjunctive timed condition";
             };
             if (const auto* conjunction = std::get_if<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(&condition.value()))
-                for (auto part : conjunction->get_conditions())
+                for (auto part : conjunction->conditions())
                     expect_timed(part);
             else
                 expect_timed(condition.value());
         }
         // A conjunction of timed effects, one per time point, each in effect normal form.
-        if (const auto effect = action.get_effect())
+        if (const auto effect = action.effect())
         {
             auto times = urd::Store<urd::set<formalism::TimeSpecifier>> {};
             const auto expect_timed = [&](formalism::EffectView part)
             {
                 const auto* timed = std::get_if<formalism::EntityView<formalism::Effect<formalism::TimedTag>>>(&part);
                 ASSERT_NE(timed, nullptr) << what << ": untimed effect";
-                EXPECT_NE(timed->get_time(), formalism::TimeSpecifier::OverAll) << what << ": over all effect";
-                EXPECT_TRUE(times.insert(timed->get_time()).second) << what << ": two effects at one time point";
-                expect_effect_normal_form(timed->get_effect(), true, what + ": effect");
+                EXPECT_NE(timed->time(), formalism::TimeSpecifier::OverAll) << what << ": over all effect";
+                EXPECT_TRUE(times.insert(timed->time()).second) << what << ": two effects at one time point";
+                expect_effect_normal_form(timed->effect(), true, what + ": effect");
             };
             if (const auto* conjunction = std::get_if<formalism::EntityView<formalism::Effect<formalism::AndTag>>>(&effect.value()))
-                for (auto part : conjunction->get_effects())
+                for (auto part : conjunction->effects())
                     expect_timed(part);
             else
                 expect_timed(effect.value());
         }
     }
 
-    expect_axiom_invariants(domain.get_axioms(), "domain " + std::string(domain.get_name()));
-    if (!domain.get_axioms().empty())
+    expect_axiom_invariants(domain.axioms(), "domain " + std::string(domain.name()));
+    if (!domain.axioms().empty())
     {
-        EXPECT_TRUE(has_requirement_kind(domain, formalism::RequirementKind::DerivedPredicates)) << domain.get_name();
+        EXPECT_TRUE(has_requirement_kind(domain, formalism::RequirementKind::DerivedPredicates)) << domain.name();
     }
 }
 
 void expect_task_invariants(formalism::DomainView translated_domain, formalism::TaskView task)
 {
-    EXPECT_EQ(task.get_domain().get_name(), translated_domain.get_name());
+    EXPECT_EQ(task.domain().name(), translated_domain.name());
 
     auto object_names = urd::Store<urd::set<std::string>> {};
-    for (auto object : task.get_objects())
-        EXPECT_TRUE(object_names.insert(std::string(object.get_name())).second) << "duplicate task object name " << object.get_name();
+    for (auto object : task.objects())
+        EXPECT_TRUE(object_names.insert(std::string(object.name())).second) << "duplicate task object name " << object.name();
     auto domain_predicate_names = urd::Store<urd::set<std::string>> {};
-    for (auto predicate : translated_domain.get_predicates())
-        domain_predicate_names.insert(std::string(predicate.get_name()));
+    for (auto predicate : translated_domain.predicates())
+        domain_predicate_names.insert(std::string(predicate.name()));
 
     auto task_predicate_names = urd::Store<urd::set<std::string>> {};
-    for (auto predicate : task.get_predicates())
+    for (auto predicate : task.predicates())
     {
-        const auto name = std::string(predicate.get_name());
+        const auto name = std::string(predicate.name());
         EXPECT_TRUE(task_predicate_names.insert(name).second) << "duplicate task predicate name " << name;
         if (name.starts_with("loki-"))
         {
@@ -288,32 +288,32 @@ void expect_task_invariants(formalism::DomainView translated_domain, formalism::
         }
     }
 
-    if (const auto goal = task.get_goal())
+    if (const auto goal = task.goal())
     {
         // A conjunction of literals, and of preferences (each universal or not) over such conjunctions.
         const auto conjuncts = std::holds_alternative<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(goal.value()) ?
-                                   std::get<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(goal.value()).get_conditions().size() :
+                                   std::get<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(goal.value()).conditions().size() :
                                    std::size_t { 1 };
         for (auto index = std::size_t { 0 }; index < conjuncts; ++index)
         {
             auto conjunct = goal.value();
             if (const auto* conjunction = std::get_if<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(&goal.value()))
-                conjunct = conjunction->get_conditions()[static_cast<std::ptrdiff_t>(index)];
+                conjunct = conjunction->conditions()[static_cast<std::ptrdiff_t>(index)];
             if (const auto* forall = std::get_if<formalism::EntityView<formalism::Condition<formalism::ForallTag>>>(&conjunct))
-                conjunct = forall->get_condition();
+                conjunct = forall->condition();
             if (const auto* preference = std::get_if<formalism::EntityView<formalism::Condition<formalism::PreferenceTag>>>(&conjunct))
-                conjunct = preference->get_condition();
+                conjunct = preference->condition();
             EXPECT_TRUE(is_conjunctive(conjunct)) << "task goal is not a conjunction of literals and preferences";
         }
     }
 
-    expect_axiom_invariants(task.get_axioms(), "task " + std::string(task.get_name()));
+    expect_axiom_invariants(task.axioms(), "task " + std::string(task.name()));
     // The task declares a requirement only if its domain does not; redeclaring it is redundant in strict mode.
-    if (!task.get_axioms().empty())
+    if (!task.axioms().empty())
     {
-        EXPECT_TRUE(has_requirement_kind(task.get_requirements(), formalism::RequirementKind::DerivedPredicates)
-                    || has_requirement_kind(task.get_domain().get_requirements(), formalism::RequirementKind::DerivedPredicates))
-            << task.get_name();
+        EXPECT_TRUE(has_requirement_kind(task.requirements(), formalism::RequirementKind::DerivedPredicates)
+                    || has_requirement_kind(task.domain().requirements(), formalism::RequirementKind::DerivedPredicates))
+            << task.name();
     }
 }
 
@@ -356,21 +356,21 @@ TEST(LokiSemanticInvariantSuite, TranslatorOptionCombinationsKeepInvariants)
 
                     if (compile_typing)
                     {
-                        EXPECT_TRUE(translated_domain.get_types().empty());
-                        for (auto action : translated_domain.get_actions())
-                            for (auto parameter : action.get_parameters())
-                                EXPECT_TRUE(parameter.get_types().empty());
+                        EXPECT_TRUE(translated_domain.types().empty());
+                        for (auto action : translated_domain.actions())
+                            for (auto parameter : action.parameters())
+                                EXPECT_TRUE(parameter.types().empty());
                     }
                     else
                     {
-                        EXPECT_FALSE(translated_domain.get_types().empty());
+                        EXPECT_FALSE(translated_domain.types().empty());
                     }
 
                     if (compile_conditional_effects)
                     {
                         // Multiplied-out actions must expose plain conjunctive preconditions.
-                        for (auto action : translated_domain.get_actions())
-                            if (const auto precondition = action.get_precondition())
+                        for (auto action : translated_domain.actions())
+                            if (const auto precondition = action.precondition())
                             {
                                 EXPECT_TRUE(is_conjunctive(precondition.value()));
                             }
@@ -380,27 +380,27 @@ TEST(LokiSemanticInvariantSuite, TranslatorOptionCombinationsKeepInvariants)
                     {
                         const auto domain_text = fmt::format("{}", translated_domain);
                         auto reparsed = semantic::Parser(domain_text);
-                        EXPECT_EQ(reparsed.get_domain().get_name(), translated_domain.get_name());
+                        EXPECT_EQ(reparsed.get_domain().name(), translated_domain.name());
                         continue;
                     }
 
                     const auto task_translation = semantic::translate(*task, domain_translation, options);
                     const auto translated_task = task_translation.get_translated_task();
 
-                    EXPECT_TRUE(translated_task.get_domain().context().contains(translated_domain));
+                    EXPECT_TRUE(translated_task.domain().context().contains(translated_domain));
                     expect_task_invariants(translated_domain, translated_task);
 
                     if (materialize_equality)
                     {
                         if (has_equality_predicate(translated_domain))
                         {
-                            EXPECT_EQ(count_equality_literals(translated_task.get_initial_literals()),
+                            EXPECT_EQ(count_equality_literals(translated_task.initial_literals()),
                                       count_unique_object_names(translated_domain, translated_task));
                         }
                     }
                     else
                     {
-                        EXPECT_EQ(count_equality_literals(translated_task.get_initial_literals()), 0);
+                        EXPECT_EQ(count_equality_literals(translated_task.initial_literals()), 0);
                     }
 
                     // Formatted output must reparse for every option combination.
@@ -408,8 +408,8 @@ TEST(LokiSemanticInvariantSuite, TranslatorOptionCombinationsKeepInvariants)
                     const auto task_text = fmt::format("{}", translated_task);
                     auto reparsed = semantic::Parser(domain_text);
                     const auto reparsed_task = reparsed.parse_task(task_text);
-                    EXPECT_EQ(reparsed.get_domain().get_name(), translated_domain.get_name());
-                    EXPECT_EQ(reparsed_task.get_name(), translated_task.get_name());
+                    EXPECT_EQ(reparsed.get_domain().name(), translated_domain.name());
+                    EXPECT_EQ(reparsed_task.name(), translated_task.name());
                 }
             }
         }
@@ -432,7 +432,7 @@ TEST(LokiSemanticInvariantSuite, ParsesAllCasesWithContiguousTopLevelIndices)
         if (item.task_file)
         {
             const auto task = parser.parse_task(*item.task_file);
-            EXPECT_EQ(task.get_domain(), domain);
+            EXPECT_EQ(task.domain(), domain);
             expect_contiguous_task_indices(task);
         }
     }
@@ -475,11 +475,11 @@ TEST(LokiSemanticInvariantSuite, AddActionCostsOptionHoldsAcrossFixtures)
         EXPECT_TRUE(has_function_named(domain, "total-cost"));
         if (!declares_action_costs)
         {
-            for (auto action : domain.get_actions())
+            for (auto action : domain.actions())
             {
-                SCOPED_TRACE(std::string(action.get_name()));
-                ASSERT_TRUE(action.get_effect().has_value());
-                EXPECT_TRUE(writes_function_named(action.get_effect().value(), "total-cost"));
+                SCOPED_TRACE(std::string(action.name()));
+                ASSERT_TRUE(action.effect().has_value());
+                EXPECT_TRUE(writes_function_named(action.effect().value(), "total-cost"));
             }
         }
 
@@ -487,20 +487,20 @@ TEST(LokiSemanticInvariantSuite, AddActionCostsOptionHoldsAcrossFixtures)
             continue;
         const auto task = parser.parse_task(item.task_file.value());
 
-        ASSERT_TRUE(task.get_metric().has_value());
+        ASSERT_TRUE(task.metric().has_value());
         // A problem's own metric stays, e.g. an IPPC problem's (:metric maximize (reward)); a missing one minimizes total-cost.
         const auto baseline_task = baseline_parser.parse_task(item.task_file.value());
-        EXPECT_EQ(task.get_metric().value().get_optimization_direction(),
-                  baseline_task.get_metric() ? baseline_task.get_metric().value().get_optimization_direction() : formalism::OptimizationDirection::Minimize);
+        EXPECT_EQ(task.metric().value().optimization_direction(),
+                  baseline_task.metric() ? baseline_task.metric().value().optimization_direction() : formalism::OptimizationDirection::Minimize);
         auto has_total_cost_init = false;
-        for (auto value : task.get_initial_function_values())
-            has_total_cost_init = has_total_cost_init || std::string_view(value.get_function().get_function().get_name()) == "total-cost";
+        for (auto value : task.initial_function_values())
+            has_total_cost_init = has_total_cost_init || std::string_view(value.function().function().name()) == "total-cost";
         EXPECT_TRUE(has_total_cost_init);
 
         // The completed output must still reparse.
         auto reparsed = semantic::Parser(fmt::format("{}", domain));
         const auto reparsed_task = reparsed.parse_task(fmt::format("{}", task));
-        EXPECT_EQ(reparsed_task.get_name(), task.get_name());
+        EXPECT_EQ(reparsed_task.name(), task.name());
     }
 }
 

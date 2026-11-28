@@ -74,7 +74,7 @@ formalism::EffectView AstBuilder::parse_effect_node(const ast::EffectNumeric& no
         m_diagnostics.throw_at(node, MissingRequirementError("numeric-fluents"));
     auto skeleton = function(node.function.function, node.function.terms.size());
     if (m_domain_context.declared_functions.contains(key(node.function.function.text)))
-        checks().check_argument_types(key(node.function.function.text), skeleton.get_parameters(), node.function.terms, node.function.function);
+        checks().check_argument_types(key(node.function.function.text), skeleton.parameters(), node.function.terms, node.function.function);
     auto function_data = formalism::checkout<formalism::FunctionTerm>(m_builder);
     function_data->function = skeleton.index();
     for (const auto& term : node.function.terms)
@@ -355,7 +355,7 @@ formalism::FunctionTermView AstBuilder::total_cost_term()
 namespace
 {
 bool writes_total_cost(formalism::EntityView<formalism::Effect<formalism::NumericTag>> effect)
-{ return effect.get_function().get_function().get_name() == "total-cost"; }
+{ return effect.function().function().name() == "total-cost"; }
 
 /// Whether a numeric effect on total-cost occurs in node.
 template<typename T>
@@ -382,7 +382,7 @@ formalism::ActionView AstBuilder::add_unit_cost(formalism::ActionView view)
     numeric_data->expression = one.index();
     const auto increase = repo().insert(*numeric_data, m_builder).first;
     auto combined = formalism::EffectView(increase);
-    if (const auto effect = view.get_effect())
+    if (const auto effect = view.effect())
     {
         auto and_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(m_builder);
         urd::append(and_data->effects, effect.value());
@@ -391,13 +391,13 @@ formalism::ActionView AstBuilder::add_unit_cost(formalism::ActionView view)
     }
 
     auto data = formalism::checkout<formalism::Action>(m_builder);
-    data->name = view.get_name();
+    data->name = view.name();
     data->original_name = data->name;
-    data->parameters.reserve(view.get_parameters().size());
-    for (auto parameter : view.get_parameters())
+    data->parameters.reserve(view.parameters().size());
+    for (auto parameter : view.parameters())
         data->parameters.emplace_back(parameter.index());
     data->original_arity = data->parameters.size();
-    urd::store(data->precondition, view.get_precondition());
+    urd::store(data->precondition, view.precondition());
     urd::store(data->effect, combined);
     return repo().insert(*data, m_builder).first;
 }
@@ -406,8 +406,8 @@ bool AstBuilder::has_total_cost_initial_value(const urd::Store<urd::sequence<for
 {
     for (auto value : values)
     {
-        const auto function = value.get_function();
-        if (function.get_function().get_name() == "total-cost" && function.get_terms().empty())
+        const auto function = value.function();
+        if (function.function().name() == "total-cost" && function.terms().empty())
             return true;
     }
     return false;

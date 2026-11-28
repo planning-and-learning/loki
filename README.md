@@ -135,7 +135,7 @@ parser = pddl.Parser("""
 translation = pddl.translate_domain(parser.domain())
 domain_text = str(translation.translated_domain)
 reparsed = pddl.Parser(domain_text)
-assert reparsed.domain().get_name() == "ready-domain"
+assert reparsed.domain().name() == "ready-domain"
 ```
 
 With default options the parser completes `:action-costs` artifacts and the
@@ -173,7 +173,7 @@ int main()
     const auto translation = loki::semantic::translate(parser.get_domain());
     const auto domain_text = fmt::format("{}", translation.get_translated_domain());
     auto reparsed = loki::semantic::Parser(domain_text);
-    return reparsed.get_domain().get_name() == "ready-domain" ? 0 : 1;
+    return reparsed.get_domain().name() == "ready-domain" ? 0 : 1;
 }
 ```
 

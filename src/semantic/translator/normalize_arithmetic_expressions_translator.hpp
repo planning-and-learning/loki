@@ -93,9 +93,9 @@ template<typename Derived>
 formalism::FunctionExpressionView
 NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>> source)
 {
-    const auto expression = normalize_arithmetic_expression(source.get_expression());
+    const auto expression = normalize_arithmetic_expression(source.expression());
     auto data = formalism::checkout<formalism::FunctionExpression<formalism::UnaryTag>>(this->copy_context().builder);
-    data->operation = source.get_operation();
+    data->operation = source.operation();
     urd::store(data->expression, expression);
     return formalism::FunctionExpressionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
 }
@@ -104,19 +104,19 @@ template<typename Derived>
 formalism::FunctionExpressionView
 NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>> source)
 {
-    switch (source.get_operation())
+    switch (source.operation())
     {
         case formalism::BinaryArithmeticOperator::Add:
-            return normalize_associative(formalism::MultiArithmeticOperator::Add, std::array { source.get_left(), source.get_right() });
+            return normalize_associative(formalism::MultiArithmeticOperator::Add, std::array { source.left(), source.right() });
         case formalism::BinaryArithmeticOperator::Mul:
-            return normalize_associative(formalism::MultiArithmeticOperator::Mul, std::array { source.get_left(), source.get_right() });
+            return normalize_associative(formalism::MultiArithmeticOperator::Mul, std::array { source.left(), source.right() });
         case formalism::BinaryArithmeticOperator::Sub:
         case formalism::BinaryArithmeticOperator::Div:
         {
-            const auto left = normalize_arithmetic_expression(source.get_left());
-            const auto right = normalize_arithmetic_expression(source.get_right());
+            const auto left = normalize_arithmetic_expression(source.left());
+            const auto right = normalize_arithmetic_expression(source.right());
             auto data = formalism::checkout<formalism::FunctionExpression<formalism::BinaryTag>>(this->copy_context().builder);
-            data->operation = source.get_operation();
+            data->operation = source.operation();
             urd::store(data->left, left);
             urd::store(data->right, right);
             return formalism::FunctionExpressionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
@@ -128,7 +128,7 @@ NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::Ent
 template<typename Derived>
 formalism::FunctionExpressionView
 NormalizeArithmeticExpressionsTranslator<Derived>::normalize_node(formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>> source)
-{ return normalize_associative(source.get_operation(), source.get_args()); }
+{ return normalize_associative(source.operation(), source.args()); }
 
 template<typename Derived>
 formalism::FunctionExpressionView NormalizeArithmeticExpressionsTranslator<Derived>::make_number(double value)
@@ -169,20 +169,20 @@ void NormalizeArithmeticExpressionsTranslator<Derived>::append_source_operand(fo
     if (std::holds_alternative<formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>>(source))
     {
         const auto binary = std::get<formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>>(source);
-        if ((op == formalism::MultiArithmeticOperator::Add && binary.get_operation() == formalism::BinaryArithmeticOperator::Add)
-            || (op == formalism::MultiArithmeticOperator::Mul && binary.get_operation() == formalism::BinaryArithmeticOperator::Mul))
+        if ((op == formalism::MultiArithmeticOperator::Add && binary.operation() == formalism::BinaryArithmeticOperator::Add)
+            || (op == formalism::MultiArithmeticOperator::Mul && binary.operation() == formalism::BinaryArithmeticOperator::Mul))
         {
-            append_source_operand(op, binary.get_left(), operands, first_operand);
-            append_source_operand(op, binary.get_right(), operands, first_operand);
+            append_source_operand(op, binary.left(), operands, first_operand);
+            append_source_operand(op, binary.right(), operands, first_operand);
             return;
         }
     }
     else if (std::holds_alternative<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(source))
     {
         const auto multi = std::get<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(source);
-        if (multi.get_operation() == op)
+        if (multi.operation() == op)
         {
-            for (const auto expression : multi.get_args())
+            for (const auto expression : multi.args())
                 append_source_operand(op, expression, operands, first_operand);
             return;
         }
@@ -201,9 +201,9 @@ void NormalizeArithmeticExpressionsTranslator<Derived>::append_normalized_operan
     if (std::holds_alternative<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized))
     {
         const auto multi = std::get<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized);
-        if (multi.get_operation() == op)
+        if (multi.operation() == op)
         {
-            for (const auto expression : multi.get_args())
+            for (const auto expression : multi.args())
             {
                 if (operands.empty())
                     first_operand = expression;
@@ -224,7 +224,7 @@ template<typename Derived>
 bool NormalizeArithmeticExpressionsTranslator<Derived>::is_unit(formalism::MultiArithmeticOperator op, formalism::FunctionExpressionView expression) const
 {
     return std::holds_alternative<formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>>(expression)
-           && std::get<formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>>(expression).get_value()
+           && std::get<formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>>(expression).value()
                   == (op == formalism::MultiArithmeticOperator::Add ? 0.0 : 1.0);
 }
 

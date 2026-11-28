@@ -30,17 +30,17 @@ static_assert(requires(Data& data) {
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_name();
-    view.get_domain();
-    view.get_requirements();
-    view.get_types();
-    view.get_predicates();
-    view.get_objects();
-    view.get_initial_literals();
-    view.get_initial_function_values();
-    view.get_goal();
-    view.get_metric();
-    view.get_axioms();
+    view.name();
+    view.domain();
+    view.requirements();
+    view.types();
+    view.predicates();
+    view.objects();
+    view.initial_literals();
+    view.initial_function_values();
+    view.goal();
+    view.metric();
+    view.axioms();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
 });

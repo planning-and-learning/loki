@@ -84,7 +84,7 @@ void BasicCopyTranslator<Derived>::increment_quantifications(formalism::EntityLi
 {
     for (auto parameter : parameters)
     {
-        const auto variable = parameter.get_variable();
+        const auto variable = parameter.variable();
         if (const auto [it, inserted] = this->copy_context().num_quantifications.try_emplace(variable, 0); !inserted)
             ++it->second;
     }
@@ -113,7 +113,7 @@ void BasicCopyTranslator<Derived>::enter_scope(const urd::Store<urd::sequence<fo
     auto& active = this->copy_context().active_parameters;
     this->copy_context().active_parameter_scopes.push_back(active.size());
     for (auto parameter : parameters)
-        active.emplace_back(parameter, parameter.get_variable());
+        active.emplace_back(parameter, parameter.variable());
 }
 
 template<typename Derived>
@@ -181,12 +181,12 @@ formalism::ObjectView BasicCopyTranslator<Derived>::copy(formalism::ObjectView s
                     [&]
                     {
                         auto source_types = urd::Store<urd::sequence<formalism::TypeView>> {};
-                        for (auto type : source.get_types())
+                        for (auto type : source.types())
                             source_types.push_back(type);
                         auto data = formalism::checkout<formalism::Object>(this->copy_context().builder);
-                        data->name = source.get_name();
+                        data->name = source.name();
                         if (!this->self().compiles_typing_now())
-                            this->self().copy_type_hierarchy(source.get_types(), data->types);
+                            this->self().copy_type_hierarchy(source.types(), data->types);
                         auto out = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
                         this->copy_context().storage->object_type_views[out] = std::move(source_types);
                         return out;
@@ -196,7 +196,7 @@ formalism::ObjectView BasicCopyTranslator<Derived>::copy(formalism::ObjectView s
 template<typename Derived>
 formalism::VariableView BasicCopyTranslator<Derived>::copy(formalism::VariableView source)
 {
-    auto name = std::string(source.get_name());
+    auto name = std::string(source.name());
     if (this->copy_context().phase == TranslationPhase::RenameQuantifiedVariables && this->copy_context().renaming_enabled)
     {
         if (auto it = this->copy_context().num_quantifications.find(source); it != this->copy_context().num_quantifications.end())
@@ -217,11 +217,11 @@ formalism::EntityView<T> BasicCopyTranslator<Derived>::copy_declaration(formalis
                     {
                         const auto renaming_disabled = RenamingDisabled(this->copy_context());
                         auto data = formalism::checkout<T>(this->copy_context().builder);
-                        data->name = source.get_name();
+                        data->name = source.name();
                         if (this->self().compiles_typing_now())
-                            this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
+                            this->self().copy_parameters_without_types(source.parameters(), data->parameters);
                         else
-                            for (auto parameter : source.get_parameters())
+                            for (auto parameter : source.parameters())
                                 urd::append(data->parameters, this->self().copy(parameter));
                         finish(*data);
                         return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
@@ -231,13 +231,13 @@ formalism::EntityView<T> BasicCopyTranslator<Derived>::copy_declaration(formalis
 template<typename Derived>
 formalism::PredicateView BasicCopyTranslator<Derived>::copy(formalism::PredicateView source)
 {
-    return this->copy_declaration(source, [&](auto&) { this->copy_context().used_predicate_names.insert(std::string(source.get_name())); });
+    return this->copy_declaration(source, [&](auto&) { this->copy_context().used_predicate_names.insert(std::string(source.name())); });
 }
 
 template<typename Derived>
 formalism::FunctionSkeletonView BasicCopyTranslator<Derived>::copy(formalism::FunctionSkeletonView source)
 {
-    return this->copy_declaration(source, [&](auto& data) { urd::store(data.type, this->self().copy(source.get_type())); });
+    return this->copy_declaration(source, [&](auto& data) { urd::store(data.type, this->self().copy(source.type())); });
 }
 
 template<typename Derived>

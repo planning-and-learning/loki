@@ -35,7 +35,7 @@ private:
     [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
 public:
-    auto get_effects() const noexcept { return self().template member<&urd::record_of<V>::effects>(); }
+    auto effects() const noexcept { return self().template member<&urd::record_of<V>::effects>(); }
 };
 }  // namespace urd
 

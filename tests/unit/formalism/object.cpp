@@ -21,8 +21,8 @@ static_assert(requires(Data& data) {
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_name();
-    view.get_types();
+    view.name();
+    view.types();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
 });

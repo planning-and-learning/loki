@@ -76,7 +76,7 @@ urd::Store<urd::sequence<formalism::TypeView>> CompileTypingTranslator<Derived>:
         if (!seen.insert(current).second)
             return;
         result.push_back(current);
-        for (auto base : current.get_bases())
+        for (auto base : current.bases())
             self(self, base);
     };
     visit(visit, type);
@@ -105,7 +105,7 @@ void CompileTypingTranslator<Derived>::copy_parameters_without_types(
 {
     for (auto parameter : parameters)
     {
-        const auto variable = this->self().copy(parameter.get_variable());
+        const auto variable = this->self().copy(parameter.variable());
         auto data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
         urd::store(data->variable, variable);
         result.push_back(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first.index());
@@ -122,7 +122,7 @@ formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formal
     // A type predicate tests any object for membership, so its argument has the root of the type's hierarchy (object, or number).
     if (!this->self().compiles_typing_now())
         for (auto ancestor : this->self().collect_type_hierarchy(type))
-            if (ancestor.get_bases().empty())
+            if (ancestor.bases().empty())
             {
                 urd::append(parameter_data->types, this->self().copy(ancestor));
                 break;
@@ -132,11 +132,11 @@ formalism::PredicateView CompileTypingTranslator<Derived>::type_predicate(formal
     parameter_data->variable = this->copy_context().storage->repository.insert(*variable_data, this->copy_context().storage->builder).first.index();
     auto predicate_data = formalism::checkout<formalism::Predicate>(this->copy_context().builder);
     // Named after the type: a predicate of that name is the type itself (AstBuilder::parse_predicates).
-    predicate_data->name = type.get_name();
+    predicate_data->name = type.name();
     predicate_data->parameters.push_back(this->copy_context().storage->repository.insert(*parameter_data, this->copy_context().storage->builder).first.index());
     auto predicate = this->copy_context().storage->repository.insert(*predicate_data, this->copy_context().storage->builder).first;
     this->copy_context().type_predicates.emplace(type, predicate);
-    this->copy_context().used_predicate_names.insert(std::string(type.get_name()));
+    this->copy_context().used_predicate_names.insert(std::string(type.name()));
     return predicate;
 }
 
@@ -170,12 +170,12 @@ void CompileTypingTranslator<Derived>::type_conditions_for_parameters(formalism:
     auto add_conditions = [&](auto&& self, formalism::TypeView type, formalism::VariableView variable) -> void
     {
         this->self().append_conjunct(data, this->self().type_condition(type, variable));
-        for (auto base : type.get_bases())
+        for (auto base : type.bases())
             self(self, base, variable);
     };
     for (auto parameter : parameters)
-        for (auto type : parameter.get_types())
-            add_conditions(add_conditions, type, parameter.get_variable());
+        for (auto type : parameter.types())
+            add_conditions(add_conditions, type, parameter.variable());
 }
 
 template<typename Derived>
@@ -212,17 +212,17 @@ formalism::ConditionView CompileTypingTranslator<Derived>::guard_with_types(std:
     {
         const auto type_literal = this->self().type_literal(type, this->self().copy(variable));
         urd::clear_fields(*literal_data);
-        literal_data->atom = type_literal.get_atom().index();
+        literal_data->atom = type_literal.atom().index();
         literal_data->polarity = false;
         urd::clear_fields(*condition_data);
         condition_data->literal = context.storage->repository.insert(*literal_data, context.storage->builder).first.index();
         disjuncts.push_back(formalism::ConditionView(context.storage->repository.insert(*condition_data, context.storage->builder).first));
-        for (auto base : type.get_bases())
+        for (auto base : type.bases())
             self(self, base, variable);
     };
     for (auto parameter : parameters)
-        for (auto type : parameter.get_types())
-            add_negated(add_negated, type, parameter.get_variable());
+        for (auto type : parameter.types())
+            add_negated(add_negated, type, parameter.variable());
     if (disjuncts.empty())
         return condition.value();  // without a condition, called for typed parameters only
     if (condition)
@@ -265,9 +265,9 @@ formalism::ConditionView CompileTypingTranslator<Derived>::guard_with_types(std:
     auto root_conditions = urd::Store<urd::sequence<formalism::ConditionView>> {};
     if (this->self().compiles_typing_now())
         for (auto [parameter, variable] : free_parameters)
-            for (auto type : parameter.get_types())
+            for (auto type : parameter.types())
                 for (auto ancestor : this->self().collect_type_hierarchy(type))
-                    if (ancestor.get_bases().empty())
+                    if (ancestor.bases().empty())
                     {
                         urd::clear_fields(*condition_data);
                         condition_data->literal = this->self().type_literal(ancestor, variable).index();
@@ -315,7 +315,7 @@ CompileTypingTranslator<Derived>::prepend_start_type_conditions(std::optional<fo
     if (condition)
     {
         if (const auto* conjunction = std::get_if<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(&*condition))
-            for (auto part : conjunction->get_conditions())
+            for (auto part : conjunction->conditions())
                 parts.push_back(part);
         else
             parts.push_back(*condition);
@@ -325,8 +325,8 @@ CompileTypingTranslator<Derived>::prepend_start_type_conditions(std::optional<fo
     for (auto part : parts)
     {
         const auto* timed = std::get_if<TimedView>(&part);
-        if (timed && timed->get_time() == formalism::TimeSpecifier::Start)
-            start = timed->get_condition();
+        if (timed && timed->time() == formalism::TimeSpecifier::Start)
+            start = timed->condition();
         else
             this->self().append_conjunct(*data, part);
     }
@@ -351,7 +351,7 @@ template<typename Derived>
 void CompileTypingTranslator<Derived>::compile_typing_to_domain(urd::builder<formalism::Domain, formalism::Repository>& data, formalism::DomainView domain)
 {
     auto existing = urd::Store<urd::set<formalism::PredicateView>> {};
-    for (auto predicate : domain.get_predicates())
+    for (auto predicate : domain.predicates())
         existing.insert(predicate);
 
     auto add_type = [&](auto&& self, formalism::TypeView type) -> void
@@ -359,14 +359,14 @@ void CompileTypingTranslator<Derived>::compile_typing_to_domain(urd::builder<for
         const auto predicate = this->self().type_predicate(type);
         if (existing.insert(predicate).second)
             data.predicates.push_back(predicate.index());
-        for (auto base : type.get_bases())
+        for (auto base : type.bases())
             self(self, base);
     };
 
-    for (auto type : domain.get_types())
+    for (auto type : domain.types())
         add_type(add_type, type);
-    for (auto object : domain.get_constants())
-        for (auto type : object.get_types())
+    for (auto object : domain.constants())
+        for (auto type : object.types())
             add_type(add_type, type);
 
     if (this->self().compiles_typing_now())
@@ -382,11 +382,11 @@ void CompileTypingTranslator<Derived>::add_type_literals_for_object(
     auto add_literal = [&](auto&& self, formalism::TypeView type) -> void
     {
         urd::append(literals, this->self().type_literal(type, copied_object));
-        for (auto base : type.get_bases())
+        for (auto base : type.bases())
             self(self, base);
     };
     auto has_source_types = false;
-    for (auto type : object.get_types())
+    for (auto type : object.types())
     {
         has_source_types = true;
         add_literal(add_literal, type);
@@ -404,16 +404,16 @@ void CompileTypingTranslator<Derived>::add_type_literals_for_object(
 template<typename Derived>
 void CompileTypingTranslator<Derived>::initialize_type_literals(urd::builder<formalism::Task, formalism::Repository>& data, formalism::TaskView task)
 {
-    for (auto object : this->copy_context().storage->translated().get_constants())
+    for (auto object : this->copy_context().storage->translated().constants())
         this->self().add_type_literals_for_object(data.initial_literals, object);
-    for (auto object : task.get_objects())
+    for (auto object : task.objects())
         this->self().add_type_literals_for_object(data.initial_literals, object);
 
     // The task's own types need type predicates; a reparsed translation may declare them already.
     auto existing = urd::Store<urd::set<urd::index<formalism::Predicate>>> {};
     for (const auto& predicate : data.predicates)
         existing.insert(std::get<0>(predicate));  // its predicates are interned
-    for (auto type : task.get_types())
+    for (auto type : task.types())
         if (const auto predicate = this->self().type_predicate(type).index(); existing.insert(predicate).second)
             data.predicates.push_back(predicate);
     if (this->self().compiles_typing_now())

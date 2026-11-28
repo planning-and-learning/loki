@@ -25,8 +25,8 @@ static_assert(requires(Data& data) {
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_operation();
-    view.get_args();
+    view.operation();
+    view.args();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
 });
@@ -45,7 +45,7 @@ TEST(LokiTests, FunctionExpressionMultiAllowsAnyArity)
     auto data = Data {};
     const auto [expression, created] = repository.insert(data);
     EXPECT_TRUE(created);
-    EXPECT_TRUE(expression.get_args().empty());
+    EXPECT_TRUE(expression.args().empty());
 }
 
 TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
@@ -92,6 +92,6 @@ TEST(LokiTests, FunctionExpressionMultiBreaksEqualRenderTiesByIndex)
     const auto second = make_product(multi, binary);
 
     EXPECT_EQ(first, second);
-    EXPECT_EQ(first.get_args().size(), 2);
-    EXPECT_NE(first.get_args()[0], first.get_args()[1]);
+    EXPECT_EQ(first.args().size(), 2);
+    EXPECT_NE(first.args()[0], first.args()[1]);
 }

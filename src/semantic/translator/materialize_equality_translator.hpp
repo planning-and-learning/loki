@@ -36,7 +36,7 @@ public:
     template<typename T>
     [[nodiscard]] bool uses_equality(formalism::EntityView<T> node) const;
 
-    [[nodiscard]] bool uses_equality(formalism::PredicateView predicate) const { return std::string_view(predicate.get_name()) == "="; }
+    [[nodiscard]] bool uses_equality(formalism::PredicateView predicate) const { return std::string_view(predicate.name()) == "="; }
 
     [[nodiscard]] bool equality_required(formalism::TaskView task) const;
     [[nodiscard]] std::optional<formalism::PredicateView> find_domain_equality_predicate() const;
@@ -50,7 +50,7 @@ bool MaterializeEqualityTranslator<Derived>::has_requirement(formalism::EntityLi
                                                              formalism::RequirementKind kind) const
 {
     for (auto requirement : requirements)
-        if (requirement.get_kind() == kind)
+        if (requirement.kind() == kind)
             return true;
     return false;
 }
@@ -67,18 +67,18 @@ bool MaterializeEqualityTranslator<Derived>::uses_equality(formalism::EntityView
 template<typename Derived>
 bool MaterializeEqualityTranslator<Derived>::equality_required(formalism::TaskView task) const
 {
-    if (this->self().has_requirement(task.get_requirements(), formalism::RequirementKind::Equality))
+    if (this->self().has_requirement(task.requirements(), formalism::RequirementKind::Equality))
         return true;
-    return this->self().has_requirement(this->copy_context().storage->translated().get_requirements(), formalism::RequirementKind::Equality)
+    return this->self().has_requirement(this->copy_context().storage->translated().requirements(), formalism::RequirementKind::Equality)
            || this->self().uses_equality(this->copy_context().storage->translated());
 }
 
 template<typename Derived>
 std::optional<formalism::PredicateView> MaterializeEqualityTranslator<Derived>::find_domain_equality_predicate() const
 {
-    for (auto predicate : this->copy_context().storage->translated().get_predicates())
+    for (auto predicate : this->copy_context().storage->translated().predicates())
     {
-        if (std::string_view(predicate.get_name()) == "=")
+        if (std::string_view(predicate.name()) == "=")
             return predicate;
     }
     return {};
@@ -102,12 +102,12 @@ template<typename Derived>
 void MaterializeEqualityTranslator<Derived>::add_equality_predicate_to_domain(urd::builder<formalism::Domain, formalism::Repository>& data,
                                                                               formalism::DomainView domain)
 {
-    if (!this->self().has_requirement(domain.get_requirements(), formalism::RequirementKind::Equality) && !this->self().uses_equality(domain))
+    if (!this->self().has_requirement(domain.requirements(), formalism::RequirementKind::Equality) && !this->self().uses_equality(domain))
         return;
 
-    for (auto predicate : domain.get_predicates())
+    for (auto predicate : domain.predicates())
     {
-        if (std::string_view(predicate.get_name()) == "=")
+        if (std::string_view(predicate.name()) == "=")
         {
             data.predicates.emplace_back(predicate.index());
             return;
@@ -115,9 +115,9 @@ void MaterializeEqualityTranslator<Derived>::add_equality_predicate_to_domain(ur
     }
 
     auto object_type = std::optional<urd::index<formalism::Type>> {};
-    for (auto type : domain.get_types())
+    for (auto type : domain.types())
     {
-        if (std::string_view(type.get_name()) == "object")
+        if (std::string_view(type.name()) == "object")
         {
             object_type = type.index();
             break;
@@ -154,7 +154,7 @@ void MaterializeEqualityTranslator<Derived>::materialize_equality(urd::builder<f
     const auto predicate = this->self().find_domain_equality_predicate();
     if (!predicate)
         throw InvalidEqualityError("expected equality predicate to be declared in the translated domain");
-    for (auto object : this->copy_context().storage->translated().get_constants())
+    for (auto object : this->copy_context().storage->translated().constants())
         urd::append(data.initial_literals, this->self().equality_literal(*predicate, object.index()));
     for (const auto& object : data.objects)
         urd::append(data.initial_literals, this->self().equality_literal(*predicate, std::get<0>(object)));  // its objects are interned

@@ -27,14 +27,14 @@ static_assert(requires(Data& data) {
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_name();
-    view.get_requirements();
-    view.get_types();
-    view.get_constants();
-    view.get_predicates();
-    view.get_functions();
-    view.get_actions();
-    view.get_axioms();
+    view.name();
+    view.requirements();
+    view.types();
+    view.constants();
+    view.predicates();
+    view.functions();
+    view.actions();
+    view.axioms();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
 });

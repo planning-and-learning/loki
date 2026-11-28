@@ -416,7 +416,7 @@ std::optional<formalism::ConditionView> AstBuilder::parse_goal(const ast::Constr
     for (const auto part : { *constraints, formula })
     {
         if (const auto* conjunction = std::get_if<formalism::EntityView<formalism::Constraint<formalism::AndTag>>>(&part))
-            for (const auto child : conjunction->get_constraints())
+            for (const auto child : conjunction->constraints())
                 urd::append(data->constraints, child);
         else
             urd::append(data->constraints, part);

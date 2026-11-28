@@ -70,19 +70,19 @@ def main() -> None:
                 {
                     **config,
                     "translated_domain": {
-                        "types": len(translated_domain.get_types()),
-                        "predicates": len(translated_domain.get_predicates()),
-                        "functions": len(translated_domain.get_functions()),
-                        "actions": len(translated_domain.get_actions()),
-                        "axioms": len(translated_domain.get_axioms()),
+                        "types": len(translated_domain.types()),
+                        "predicates": len(translated_domain.predicates()),
+                        "functions": len(translated_domain.functions()),
+                        "actions": len(translated_domain.actions()),
+                        "axioms": len(translated_domain.axioms()),
                     },
                     "translated_task": {
-                        "objects": len(translated_task.get_objects()),
-                        "predicates": len(translated_task.get_predicates()),
-                        "initial_literals": len(translated_task.get_initial_literals()),
-                        "initial_function_values": len(translated_task.get_initial_function_values()),
-                        "actions": len(translated_task.get_domain().get_actions()),
-                        "axioms": len(translated_task.get_axioms()),
+                        "objects": len(translated_task.objects()),
+                        "predicates": len(translated_task.predicates()),
+                        "initial_literals": len(translated_task.initial_literals()),
+                        "initial_function_values": len(translated_task.initial_function_values()),
+                        "actions": len(translated_task.domain().actions()),
+                        "axioms": len(translated_task.axioms()),
                     },
                 }
             )

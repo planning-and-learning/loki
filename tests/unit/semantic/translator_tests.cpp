@@ -54,7 +54,7 @@ std::optional<std::string> conjunct_variable(formalism::ConditionView condition,
     if (!std::holds_alternative<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(condition))
         return std::nullopt;
 
-    for (auto child : std::get<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(condition).get_conditions())
+    for (auto child : std::get<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(condition).conditions())
     {
         auto result = std::optional<std::string> {};
         std::visit(
@@ -63,9 +63,9 @@ std::optional<std::string> conjunct_variable(formalism::ConditionView condition,
                 using Node = std::decay_t<decltype(node)>;
                 if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::Condition<formalism::LiteralTag>>>)
                 {
-                    const auto atom = node.get_literal().get_atom();
-                    if (atom.get_predicate().get_name() == predicate_name && atom.get_terms().size() > term_index)
-                        result = variable_term_name(atom.get_terms()[term_index]);
+                    const auto atom = node.literal().atom();
+                    if (atom.predicate().name() == predicate_name && atom.terms().size() > term_index)
+                        result = variable_term_name(atom.terms()[term_index]);
                 }
             },
             child);
@@ -127,17 +127,17 @@ bool contains_binary_add_or_multiply(formalism::FunctionExpressionView expressio
             using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::FunctionExpression<formalism::UnaryTag>>>)
             {
-                return contains_binary_add_or_multiply(node.get_expression());
+                return contains_binary_add_or_multiply(node.expression());
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::FunctionExpression<formalism::BinaryTag>>>)
             {
-                if (node.get_operation() == formalism::BinaryArithmeticOperator::Add || node.get_operation() == formalism::BinaryArithmeticOperator::Mul)
+                if (node.operation() == formalism::BinaryArithmeticOperator::Add || node.operation() == formalism::BinaryArithmeticOperator::Mul)
                     return true;
-                return contains_binary_add_or_multiply(node.get_left()) || contains_binary_add_or_multiply(node.get_right());
+                return contains_binary_add_or_multiply(node.left()) || contains_binary_add_or_multiply(node.right());
             }
             else if constexpr (std::is_same_v<Node, formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>)
             {
-                for (const auto child : node.get_args())
+                for (const auto child : node.args())
                     if (contains_binary_add_or_multiply(child))
                         return true;
             }
@@ -154,31 +154,31 @@ TEST(LokiSemanticTranslator, RenamesQuantifiedVariablesDeterministically)
 
     const auto translation = semantic::translate(parser.get_domain());
     const auto translated_domain = translation.get_translated_domain();
-    ASSERT_EQ(translated_domain.get_actions().size(), 1);
-    const auto action = translated_domain.get_actions()[0];
-    ASSERT_EQ(action.get_parameters().size(), 2);
-    EXPECT_EQ(std::string(action.get_parameters()[0].get_variable().get_name()), "?x");
-    EXPECT_EQ(std::string(action.get_parameters()[1].get_variable().get_name()), "?x_0");
-    ASSERT_TRUE(action.get_precondition().has_value());
-    EXPECT_FALSE(contains_exists(action.get_precondition().value()));
+    ASSERT_EQ(translated_domain.actions().size(), 1);
+    const auto action = translated_domain.actions()[0];
+    ASSERT_EQ(action.parameters().size(), 2);
+    EXPECT_EQ(std::string(action.parameters()[0].variable().name()), "?x");
+    EXPECT_EQ(std::string(action.parameters()[1].variable().name()), "?x_0");
+    ASSERT_TRUE(action.precondition().has_value());
+    EXPECT_FALSE(contains_exists(action.precondition().value()));
 }
 
 TEST(LokiSemanticTranslator, SeparatesSiblingExistentialsOverSameVariable)
 {
     semantic::Parser parser(fixture_path("sibling_exists"));
     const auto translation = semantic::translate(parser.get_domain());
-    const auto action = translation.get_translated_domain().get_actions()[0];
+    const auto action = translation.get_translated_domain().actions()[0];
 
     // Both existentials are lifted; the sibling scopes must stay independent bindings.
-    ASSERT_EQ(action.get_parameters().size(), 2);
-    const auto first = std::string(action.get_parameters()[0].get_variable().get_name());
-    const auto second = std::string(action.get_parameters()[1].get_variable().get_name());
+    ASSERT_EQ(action.parameters().size(), 2);
+    const auto first = std::string(action.parameters()[0].variable().name());
+    const auto second = std::string(action.parameters()[1].variable().name());
     EXPECT_NE(first, second);
 
     // Each conjunct must reference its own hoisted variable.
-    ASSERT_TRUE(action.get_precondition().has_value());
-    const auto first_reference = conjunct_variable(action.get_precondition().value(), "a", 0);
-    const auto second_reference = conjunct_variable(action.get_precondition().value(), "b", 0);
+    ASSERT_TRUE(action.precondition().has_value());
+    const auto first_reference = conjunct_variable(action.precondition().value(), "a", 0);
+    const auto second_reference = conjunct_variable(action.precondition().value(), "b", 0);
     ASSERT_TRUE(first_reference.has_value());
     ASSERT_TRUE(second_reference.has_value());
     EXPECT_EQ(first_reference.value(), first);
@@ -191,18 +191,18 @@ TEST(LokiSemanticTranslator, LiftedParameterAvoidsFreeVariablesWhenRenaming)
     // which occurs free in the sibling body.
     semantic::Parser parser(fixture_path("lift_capture"));
     const auto translation = semantic::translate(parser.get_domain());
-    const auto action = translation.get_translated_domain().get_actions()[0];
+    const auto action = translation.get_translated_domain().actions()[0];
 
-    ASSERT_EQ(action.get_parameters().size(), 3);
+    ASSERT_EQ(action.parameters().size(), 3);
     auto names = urd::Store<urd::sequence<std::string>> {};
-    for (auto parameter : action.get_parameters())
-        names.emplace_back(parameter.get_variable().get_name());
+    for (auto parameter : action.parameters())
+        names.emplace_back(parameter.variable().name());
     // All parameters distinct, and the renamed binder did not capture the free ?p_0.
     EXPECT_EQ(names.size(), std::size_t { 3 });
     std::sort(names.begin(), names.end());
     EXPECT_EQ(std::unique(names.begin(), names.end()), names.end());
-    ASSERT_TRUE(action.get_precondition().has_value());
-    const auto free_reference = conjunct_variable(action.get_precondition().value(), "b", 1);
+    ASSERT_TRUE(action.precondition().has_value());
+    const auto free_reference = conjunct_variable(action.precondition().value(), "b", 1);
     ASSERT_TRUE(free_reference.has_value());
     EXPECT_EQ(free_reference.value(), "?p_0");
 }
@@ -213,15 +213,15 @@ TEST(LokiSemanticTranslator, RenamesBeforeNegationNormalFormOnlyOnce)
 
     const auto translation = semantic::translate(parser.get_domain());
     const auto translated_domain = translation.get_translated_domain();
-    ASSERT_EQ(translated_domain.get_axioms().size(), 1);
-    const auto axiom = translated_domain.get_axioms()[0];
-    ASSERT_EQ(axiom.get_parameters().size(), 1);
-    EXPECT_EQ(std::string(axiom.get_parameters()[0].get_variable().get_name()), "?x_0");
+    ASSERT_EQ(translated_domain.axioms().size(), 1);
+    const auto axiom = translated_domain.axioms()[0];
+    ASSERT_EQ(axiom.parameters().size(), 1);
+    EXPECT_EQ(std::string(axiom.parameters()[0].variable().name()), "?x_0");
 
-    ASSERT_EQ(translated_domain.get_actions().size(), 1);
-    const auto action = translated_domain.get_actions()[0];
-    ASSERT_EQ(action.get_parameters().size(), 1);
-    EXPECT_EQ(std::string(action.get_parameters()[0].get_variable().get_name()), "?x");
+    ASSERT_EQ(translated_domain.actions().size(), 1);
+    const auto action = translated_domain.actions()[0];
+    ASSERT_EQ(action.parameters().size(), 1);
+    EXPECT_EQ(std::string(action.parameters()[0].variable().name()), "?x");
 }
 
 TEST(LokiSemanticTranslator, LowersNegatedExistsWithoutNegatingInnerCondition)
@@ -230,14 +230,14 @@ TEST(LokiSemanticTranslator, LowersNegatedExistsWithoutNegatingInnerCondition)
 
     const auto translation = semantic::translate(parser.get_domain());
     const auto translated_domain = translation.get_translated_domain();
-    ASSERT_EQ(translated_domain.get_axioms().size(), 1);
-    const auto axiom = translated_domain.get_axioms()[0];
-    EXPECT_TRUE(condition_mentions_predicate(axiom.get_condition(), "p"));
-    EXPECT_TRUE(condition_mentions_predicate(axiom.get_condition(), "object"));
-    ASSERT_EQ(translated_domain.get_actions().size(), 1);
-    const auto action = translated_domain.get_actions()[0];
-    ASSERT_TRUE(action.get_precondition().has_value());
-    EXPECT_FALSE(contains_exists(action.get_precondition().value()));
+    ASSERT_EQ(translated_domain.axioms().size(), 1);
+    const auto axiom = translated_domain.axioms()[0];
+    EXPECT_TRUE(condition_mentions_predicate(axiom.condition(), "p"));
+    EXPECT_TRUE(condition_mentions_predicate(axiom.condition(), "object"));
+    ASSERT_EQ(translated_domain.actions().size(), 1);
+    const auto action = translated_domain.actions()[0];
+    ASSERT_TRUE(action.precondition().has_value());
+    EXPECT_FALSE(contains_exists(action.precondition().value()));
 }
 
 TEST(LokiSemanticTranslator, GeneratesFreshAxiomsForIdenticalUniversalConditions)
@@ -249,27 +249,27 @@ TEST(LokiSemanticTranslator, GeneratesFreshAxiomsForIdenticalUniversalConditions
 
     auto generated_predicates = std::size_t {};
     auto generated_parameter_types = urd::Store<urd::set<std::string>> {};
-    for (auto predicate : translated_domain.get_predicates())
+    for (auto predicate : translated_domain.predicates())
     {
-        if (!std::string(predicate.get_name()).starts_with("loki-universal-"))
+        if (!std::string(predicate.name()).starts_with("loki-universal-"))
             continue;
         ++generated_predicates;
-        ASSERT_EQ(predicate.get_parameters().size(), std::size_t { 1 });
-        const auto parameter = predicate.get_parameters().front();
-        ASSERT_EQ(parameter.get_types().size(), std::size_t { 1 });
-        generated_parameter_types.insert(std::string(parameter.get_types().front().get_name()));
+        ASSERT_EQ(predicate.parameters().size(), std::size_t { 1 });
+        const auto parameter = predicate.parameters().front();
+        ASSERT_EQ(parameter.types().size(), std::size_t { 1 });
+        generated_parameter_types.insert(std::string(parameter.types().front().name()));
     }
 
     EXPECT_EQ(generated_predicates, 2);
     EXPECT_EQ(generated_parameter_types.size(), std::size_t { 2 });
     EXPECT_TRUE(generated_parameter_types.contains("left"));
     EXPECT_TRUE(generated_parameter_types.contains("right"));
-    EXPECT_EQ(translated_domain.get_axioms().size(), 2);
-    ASSERT_EQ(translated_domain.get_actions().size(), 2);
-    for (auto action : translated_domain.get_actions())
+    EXPECT_EQ(translated_domain.axioms().size(), 2);
+    ASSERT_EQ(translated_domain.actions().size(), 2);
+    for (auto action : translated_domain.actions())
     {
-        ASSERT_TRUE(action.get_precondition().has_value());
-        EXPECT_FALSE(contains_forall(action.get_precondition().value()));
+        ASSERT_TRUE(action.precondition().has_value());
+        EXPECT_FALSE(contains_forall(action.precondition().value()));
     }
 }
 
@@ -279,13 +279,13 @@ TEST(LokiSemanticTranslator, MovesExistentialPreconditionVariablesToActionParame
 
     const auto translation = semantic::translate(parser.get_domain());
     const auto translated_domain = translation.get_translated_domain();
-    ASSERT_EQ(translated_domain.get_actions().size(), 1);
-    const auto action = translated_domain.get_actions()[0];
-    EXPECT_EQ(action.get_arity(), 2);
-    EXPECT_EQ(action.get_original_arity(), 1);
-    EXPECT_EQ(action.get_parameters().size(), 2);
-    ASSERT_TRUE(action.get_precondition().has_value());
-    EXPECT_FALSE(contains_exists(action.get_precondition().value()));
+    ASSERT_EQ(translated_domain.actions().size(), 1);
+    const auto action = translated_domain.actions()[0];
+    EXPECT_EQ(action.arity(), 2);
+    EXPECT_EQ(action.original_arity(), 1);
+    EXPECT_EQ(action.parameters().size(), 2);
+    ASSERT_TRUE(action.precondition().has_value());
+    EXPECT_FALSE(contains_exists(action.precondition().value()));
 }
 
 TEST(LokiSemanticTranslator, CompilesTypingWhenEnabled)
@@ -299,23 +299,23 @@ TEST(LokiSemanticTranslator, CompilesTypingWhenEnabled)
     EXPECT_TRUE(has_predicate_named(translated_domain, "thing"));
     EXPECT_TRUE(has_predicate_named(translated_domain, "object"));
     EXPECT_FALSE(has_requirement_kind(translated_domain, formalism::RequirementKind::Typing));
-    EXPECT_TRUE(translated_domain.get_types().empty());
-    ASSERT_EQ(translated_domain.get_actions().size(), 1);
-    const auto action = translated_domain.get_actions().front();
-    ASSERT_EQ(action.get_parameters().size(), 1);
-    EXPECT_TRUE(action.get_parameters().front().get_types().empty());
-    ASSERT_TRUE(action.get_precondition().has_value());
-    EXPECT_TRUE(condition_mentions_predicate(action.get_precondition().value(), "thing"));
+    EXPECT_TRUE(translated_domain.types().empty());
+    ASSERT_EQ(translated_domain.actions().size(), 1);
+    const auto action = translated_domain.actions().front();
+    ASSERT_EQ(action.parameters().size(), 1);
+    EXPECT_TRUE(action.parameters().front().types().empty());
+    ASSERT_TRUE(action.precondition().has_value());
+    EXPECT_TRUE(condition_mentions_predicate(action.precondition().value(), "thing"));
 
     const auto task = parser.parse_task(fixture_path("compile_typing", "task.pddl"));
     const auto translated_task_result = semantic::translate(task, translation, options);
     const auto translated_task = translated_task_result.get_translated_task();
-    EXPECT_GE(count_initial_literals_for_predicate(translated_task.get_initial_literals(), "thing"), 2);
-    EXPECT_GE(count_initial_literals_for_predicate(translated_task.get_initial_literals(), "object"), 2);
+    EXPECT_GE(count_initial_literals_for_predicate(translated_task.initial_literals(), "thing"), 2);
+    EXPECT_GE(count_initial_literals_for_predicate(translated_task.initial_literals(), "object"), 2);
 
     const auto thing_predicate = predicate_named(translated_domain, "thing");
     ASSERT_TRUE(thing_predicate.has_value());
-    EXPECT_TRUE(initial_literals_use_predicate(translated_task.get_initial_literals(), "thing", thing_predicate.value()));
+    EXPECT_TRUE(initial_literals_use_predicate(translated_task.initial_literals(), "thing", thing_predicate.value()));
 }
 
 TEST(LokiSemanticTranslator, CompilesEitherTypesIntoUnionTypes)
@@ -329,20 +329,20 @@ TEST(LokiSemanticTranslator, CompilesEitherTypesIntoUnionTypes)
     // (either a b) and (either b a) share one union type predicate.
     EXPECT_TRUE(has_predicate_named(translated_domain, "either_a_b"));
     EXPECT_FALSE(has_predicate_named(translated_domain, "either_b_a"));
-    ASSERT_EQ(translated_domain.get_actions().size(), 1);
-    const auto precondition = translated_domain.get_actions().front().get_precondition();
+    ASSERT_EQ(translated_domain.actions().size(), 1);
+    const auto precondition = translated_domain.actions().front().precondition();
     ASSERT_TRUE(precondition.has_value());
     EXPECT_TRUE(condition_mentions_predicate(precondition.value(), "either_a_b"));
     EXPECT_FALSE(condition_mentions_predicate(precondition.value(), "a"));
     EXPECT_FALSE(condition_mentions_predicate(precondition.value(), "b"));
-    ASSERT_EQ(translated_domain.get_axioms().size(), 1);
-    EXPECT_TRUE(condition_mentions_predicate(translated_domain.get_axioms().front().get_condition(), "either_a_b"));
+    ASSERT_EQ(translated_domain.axioms().size(), 1);
+    EXPECT_TRUE(condition_mentions_predicate(translated_domain.axioms().front().condition(), "either_a_b"));
 
     const auto task = parser.parse_task(fixture_path("either_typing", "task.pddl"));
     const auto translated_task_result = semantic::translate(task, translation, options);
     const auto translated_task = translated_task_result.get_translated_task();
     // oa - a, ob - b, oc - c and the constant k - c, with c a subtype of a; ou - u is in neither.
-    EXPECT_EQ(count_initial_literals_for_predicate(translated_task.get_initial_literals(), "either_a_b"), 4);
+    EXPECT_EQ(count_initial_literals_for_predicate(translated_task.initial_literals(), "either_a_b"), 4);
 }
 
 TEST(LokiSemanticTranslator, UnionTypeNamesAvoidDeclaredTypes)
@@ -355,7 +355,7 @@ TEST(LokiSemanticTranslator, UnionTypeNamesAvoidDeclaredTypes)
     const auto translated_domain = translation.get_translated_domain();
     EXPECT_TRUE(has_predicate_named(translated_domain, "either_a_b"));
     EXPECT_TRUE(has_predicate_named(translated_domain, "either_a_b_2"));
-    const auto precondition = translated_domain.get_actions().front().get_precondition();
+    const auto precondition = translated_domain.actions().front().precondition();
     ASSERT_TRUE(precondition.has_value());
     EXPECT_TRUE(condition_mentions_predicate(precondition.value(), "either_a_b_2"));
     EXPECT_FALSE(condition_mentions_predicate(precondition.value(), "either_a_b"));
@@ -363,7 +363,7 @@ TEST(LokiSemanticTranslator, UnionTypeNamesAvoidDeclaredTypes)
     // The declared type either_a_b is unrelated to the union of a and b.
     const auto task = parser.parse_task(std::string("(define (problem q) (:domain d) (:objects oa - a ox - either_a_b) (:init) (:goal (p oa)))"));
     const auto task_translation = semantic::translate(task, translation, semantic::TranslatorOptions { .compile_typing = true });
-    const auto literals = task_translation.get_translated_task().get_initial_literals();
+    const auto literals = task_translation.get_translated_task().initial_literals();
     EXPECT_EQ(count_initial_literals_for_predicate(literals, "either_a_b_2"), 1);
     EXPECT_EQ(count_initial_literals_for_predicate(literals, "either_a_b"), 1);
 }
@@ -379,11 +379,11 @@ TEST(LokiSemanticTranslator, DeclaresTypesInTask)
 
         // The task declares special and vip below the domain type u, and its goal uses (either special vip).
         const auto task = parser.parse_task(fixture_path("either_typing", "task-extension.pddl"));
-        ASSERT_EQ(task.get_predicates().size(), 1);
-        EXPECT_EQ(std::string(task.get_predicates().front().get_name()), "marked");
+        ASSERT_EQ(task.predicates().size(), 1);
+        EXPECT_EQ(std::string(task.predicates().front().name()), "marked");
         const auto task_translation = semantic::translate(task, domain_translation, options);
         const auto translated_task = task_translation.get_translated_task();
-        const auto literals = translated_task.get_initial_literals();
+        const auto literals = translated_task.initial_literals();
 
         EXPECT_EQ(count_initial_literals_for_predicate(literals, "special"), 1);
         EXPECT_EQ(count_initial_literals_for_predicate(literals, "u"), 3);
@@ -414,7 +414,7 @@ TEST(LokiSemanticTranslator, ConstantMetricUsesNumericFluents)
     const auto domain_translation = semantic::translate(parser.get_domain());
     const auto task_translation = semantic::translate(task, domain_translation);
     const auto task_text = fmt::format("{}", task_translation.get_translated_task());
-    EXPECT_TRUE(has_requirement_kind(task_translation.get_translated_task().get_requirements(), formalism::RequirementKind::NumericFluents));
+    EXPECT_TRUE(has_requirement_kind(task_translation.get_translated_task().requirements(), formalism::RequirementKind::NumericFluents));
     auto reparsed = semantic::Parser(fmt::format("{}", domain_translation.get_translated_domain()), strict);
     EXPECT_NO_THROW(static_cast<void>(reparsed.parse_task(task_text)));
 }
@@ -482,9 +482,9 @@ TEST(LokiSemanticTranslator, ComposesMappingsAfterRecoveringObjectTypeMetadata)
     EXPECT_EQ(target.maps.get<formalism::Type>().at(original_base), final_base);
     const auto final_type = target.maps.get<formalism::Type>().at(original_type);
     EXPECT_EQ(final_type.context().layer(), target.repository.layer());
-    EXPECT_EQ(std::string(final_type.get_name()), "child");
-    ASSERT_EQ(final_type.get_bases().size(), 1);
-    EXPECT_EQ(final_type.get_bases().front(), final_base);
+    EXPECT_EQ(std::string(final_type.name()), "child");
+    ASSERT_EQ(final_type.bases().size(), 1);
+    EXPECT_EQ(final_type.bases().front(), final_base);
     ASSERT_EQ(target.object_type_views.size(), 1);
     EXPECT_EQ(target.object_type_views.at(final_object), decltype(target.object_type_views)::mapped_type { final_type });
     EXPECT_EQ(previous.maps.get<formalism::Object>().at(original_object), middle_object);
@@ -501,7 +501,7 @@ TEST(LokiSemanticTranslator, TranslationStorageRetainsParent)
 
     parent.reset();
     ASSERT_FALSE(lifetime.expired());
-    EXPECT_EQ(std::string(child->repository.view(object.index()).get_name()), "inherited");
+    EXPECT_EQ(std::string(child->repository.view(object.index()).name()), "inherited");
 
     child.reset();
     EXPECT_TRUE(lifetime.expired());
@@ -517,13 +517,13 @@ TEST(LokiSemanticTranslator, ProblemTranslationRetainsDomainStorage)
         return semantic::translate(task, domain_translation);
     }();
     const auto translated = translated_result.get_translated_task();
-    const auto domain = translated.get_domain();
+    const auto domain = translated.domain();
 
-    EXPECT_EQ(std::string(domain.get_name()), "task-object-types");
-    ASSERT_EQ(domain.get_actions().size(), 1);
-    EXPECT_EQ(std::string(domain.get_actions().front().get_name()), "mark-ready");
-    EXPECT_TRUE(has_initial_unary_literal(translated.get_initial_literals(), "bread-portion", "bread1"));
-    EXPECT_TRUE(has_initial_unary_literal(translated.get_initial_literals(), "content-portion", "content1"));
+    EXPECT_EQ(std::string(domain.name()), "task-object-types");
+    ASSERT_EQ(domain.actions().size(), 1);
+    EXPECT_EQ(std::string(domain.actions().front().name()), "mark-ready");
+    EXPECT_TRUE(has_initial_unary_literal(translated.initial_literals(), "bread-portion", "bread1"));
+    EXPECT_TRUE(has_initial_unary_literal(translated.initial_literals(), "content-portion", "content1"));
 }
 
 TEST(LokiSemanticTranslator, PreservesTaskObjectTypesAfterDomainCanonicalization)
@@ -533,10 +533,10 @@ TEST(LokiSemanticTranslator, PreservesTaskObjectTypesAfterDomainCanonicalization
     const auto translated_result = semantic::translate(parser.parse_task(fixture_path("task_object_types", "task.pddl")), domain_translation);
     const auto translated = translated_result.get_translated_task();
 
-    EXPECT_TRUE(has_initial_unary_literal(translated.get_initial_literals(), "bread-portion", "bread1"));
-    EXPECT_TRUE(has_initial_unary_literal(translated.get_initial_literals(), "content-portion", "content1"));
-    EXPECT_TRUE(has_initial_unary_literal(translated.get_initial_literals(), "place", "table1"));
-    EXPECT_FALSE(has_initial_unary_literal(translated.get_initial_literals(), "place", "bread1"));
+    EXPECT_TRUE(has_initial_unary_literal(translated.initial_literals(), "bread-portion", "bread1"));
+    EXPECT_TRUE(has_initial_unary_literal(translated.initial_literals(), "content-portion", "content1"));
+    EXPECT_TRUE(has_initial_unary_literal(translated.initial_literals(), "place", "table1"));
+    EXPECT_FALSE(has_initial_unary_literal(translated.initial_literals(), "place", "bread1"));
 }
 
 TEST(LokiSemanticTranslator, AddsEqualityPredicateWhenAdlDomainUsesEquality)
@@ -548,8 +548,8 @@ TEST(LokiSemanticTranslator, AddsEqualityPredicateWhenAdlDomainUsesEquality)
 
     const auto translated_result = semantic::translate(parser.parse_task(fixture_path("adl_equality", "task.pddl")), translation, options);
     const auto translated = translated_result.get_translated_task();
-    EXPECT_TRUE(has_equality_predicate(translated.get_domain()));
-    EXPECT_EQ(count_equality_literals(translated.get_initial_literals()), count_unique_object_names(translation.get_translated_domain(), translated));
+    EXPECT_TRUE(has_equality_predicate(translated.domain()));
+    EXPECT_EQ(count_equality_literals(translated.initial_literals()), count_unique_object_names(translation.get_translated_domain(), translated));
 }
 
 TEST(LokiSemanticTranslator, InitializesEqualityForConstantsAndTaskObjects)
@@ -564,9 +564,9 @@ TEST(LokiSemanticTranslator, InitializesEqualityForConstantsAndTaskObjects)
     const auto translated_result = semantic::translate(task, translation, options);
     const auto translated = translated_result.get_translated_task();
 
-    EXPECT_TRUE(has_equality_predicate(translated.get_domain()));
-    EXPECT_EQ(count_equality_literals(translated.get_initial_literals()), count_unique_object_names(translation.get_translated_domain(), translated));
-    EXPECT_TRUE(translated.get_domain().context().contains(translation.get_translated_domain()));
+    EXPECT_TRUE(has_equality_predicate(translated.domain()));
+    EXPECT_EQ(count_equality_literals(translated.initial_literals()), count_unique_object_names(translation.get_translated_domain(), translated));
+    EXPECT_TRUE(translated.domain().context().contains(translation.get_translated_domain()));
 }
 
 TEST(LokiSemanticTranslator, SkipsEqualityInitializationWhenDisabled)
@@ -580,8 +580,8 @@ TEST(LokiSemanticTranslator, SkipsEqualityInitializationWhenDisabled)
 
     const auto translated_result = semantic::translate(parser.parse_task(fixture_path("equality_negated", "task.pddl")), translation, options);
     const auto translated = translated_result.get_translated_task();
-    EXPECT_FALSE(has_equality_predicate(translated.get_domain()));
-    EXPECT_EQ(count_equality_literals(translated.get_initial_literals()), 0);
+    EXPECT_FALSE(has_equality_predicate(translated.domain()));
+    EXPECT_EQ(count_equality_literals(translated.initial_literals()), 0);
 }
 
 TEST(LokiSemanticTranslator, RejectsTaskFromDifferentDomainTranslationRepository)
@@ -622,10 +622,10 @@ TEST(LokiSemanticTranslator, RenamesTaskGoalVariablesBeforeGoalSimplificationOnl
     const auto domain_translation = semantic::translate(parser.get_domain());
     const auto translated_result = semantic::translate(parser.parse_task(fixture_path("task_rename_once", "task.pddl")), domain_translation);
     const auto translated = translated_result.get_translated_task();
-    ASSERT_EQ(translated.get_axioms().size(), 1);
-    const auto axiom = translated.get_axioms().front();
-    ASSERT_EQ(axiom.get_parameters().size(), 1);
-    EXPECT_EQ(std::string(axiom.get_parameters().front().get_variable().get_name()), "?x");
+    ASSERT_EQ(translated.axioms().size(), 1);
+    const auto axiom = translated.axioms().front();
+    ASSERT_EQ(axiom.parameters().size(), 1);
+    EXPECT_EQ(std::string(axiom.parameters().front().variable().name()), "?x");
 }
 
 TEST(LokiSemanticTranslator, NormalizesArithmeticExpressionsModuloAcu)
@@ -707,7 +707,7 @@ TEST(LokiSemanticTranslator, FlattensDeepArithmeticBeforeMaterializing)
 
     ASSERT_TRUE(std::holds_alternative<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized));
     const auto multi = std::get<formalism::EntityView<formalism::FunctionExpression<formalism::MultiTag>>>(normalized);
-    EXPECT_EQ(multi.get_args().size(), operand_count);
+    EXPECT_EQ(multi.args().size(), operand_count);
     EXPECT_EQ(storage->repository.size<formalism::FunctionExpression<formalism::MultiTag>>(), 1);
 }
 
@@ -739,8 +739,8 @@ TEST(LokiSemanticTranslator, AppliesArithmeticNormalizationAfterEffectNormalForm
     const auto unnormalized_domain = semantic::translate(parser.get_domain(), defaults);
     const auto unnormalized_task = semantic::translate(parser.parse_task(task_source), unnormalized_domain, defaults);
     EXPECT_NE(fmt::format("{}", unnormalized_domain.get_translated_domain()).find("(+ (+ (x) (y) 0) (x))"), std::string::npos);
-    ASSERT_TRUE(unnormalized_task.get_translated_task().get_metric().has_value());
-    EXPECT_EQ(fmt::format("{}", unnormalized_task.get_translated_task().get_metric().value().get_expression()), "(+ (+ (x) 0) (x) (y))");
+    ASSERT_TRUE(unnormalized_task.get_translated_task().metric().has_value());
+    EXPECT_EQ(fmt::format("{}", unnormalized_task.get_translated_task().metric().value().expression()), "(+ (+ (x) 0) (x) (y))");
 
     auto options = semantic::TranslatorOptions {};
     options.normalize_arithmetic_expressions = true;
@@ -748,10 +748,10 @@ TEST(LokiSemanticTranslator, AppliesArithmeticNormalizationAfterEffectNormalForm
     const auto normalized_task = semantic::translate(parser.parse_task(task_source), normalized_domain, options);
     const auto normalized_domain_text = fmt::format("{}", normalized_domain.get_translated_domain());
     EXPECT_NE(normalized_domain_text.find("(increase (f) (+ (x) (x) (y)))"), std::string::npos);
-    ASSERT_TRUE(normalized_task.get_translated_task().get_goal().has_value());
-    EXPECT_EQ(fmt::format("{}", normalized_task.get_translated_task().get_goal().value()), "(> (+ (x) (x) (y)) 0)");
-    ASSERT_TRUE(normalized_task.get_translated_task().get_metric().has_value());
-    EXPECT_EQ(fmt::format("{}", normalized_task.get_translated_task().get_metric().value().get_expression()), "(+ (x) (x) (y))");
+    ASSERT_TRUE(normalized_task.get_translated_task().goal().has_value());
+    EXPECT_EQ(fmt::format("{}", normalized_task.get_translated_task().goal().value()), "(> (+ (x) (x) (y)) 0)");
+    ASSERT_TRUE(normalized_task.get_translated_task().metric().has_value());
+    EXPECT_EQ(fmt::format("{}", normalized_task.get_translated_task().metric().value().expression()), "(+ (x) (x) (y))");
 
     const auto normalized_again = semantic::translate(normalized_domain.get_translated_domain(), options);
     EXPECT_EQ(fmt::format("{}", normalized_again.get_translated_domain()), normalized_domain_text);
@@ -808,9 +808,9 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
                                                                         });
 
     EXPECT_EQ(first, second);
-    ASSERT_EQ(first.get_conditions().size(), 2);
-    EXPECT_EQ(first.get_conditions()[0], p_condition_view);
-    EXPECT_EQ(first.get_conditions()[1], q_condition_view);
+    ASSERT_EQ(first.conditions().size(), 2);
+    EXPECT_EQ(first.conditions()[0], p_condition_view);
+    EXPECT_EQ(first.conditions()[1], q_condition_view);
 
     const auto first_domain = intern<formalism::Domain>(repository,
                                                         builder,
@@ -831,9 +831,9 @@ TEST(LokiCanonicalization, SortsSemanticFreeListsLexicographicallyBeforeInternin
                                                          });
 
     EXPECT_EQ(first_domain, second_domain);
-    ASSERT_EQ(first_domain.get_predicates().size(), 2);
-    EXPECT_EQ(first_domain.get_predicates()[0], p_predicate);
-    EXPECT_EQ(first_domain.get_predicates()[1], q_predicate);
+    ASSERT_EQ(first_domain.predicates().size(), 2);
+    EXPECT_EQ(first_domain.predicates()[0], p_predicate);
+    EXPECT_EQ(first_domain.predicates()[1], q_predicate);
 }
 
 }  // namespace loki::tests

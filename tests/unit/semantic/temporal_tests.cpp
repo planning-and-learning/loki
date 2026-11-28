@@ -53,29 +53,29 @@ TEST(LokiSemanticTemporal, GroupsConditionsAndEffectsPerTimePoint)
                                             "(and (at start (p)) (over all (q)) (at start (r ?x)) (forall (?y) (at end (r ?y))))",
                                             "(and (at start (not (p))) (at end (p)) (at end (increase (f) ?duration)))"),
                             parser_options);
-    const auto action = parser.get_domain().get_durative_actions()[0];
-    EXPECT_EQ(fmt::format("{}", action.get_duration().value()), "(= ?duration 2)");
-    EXPECT_EQ(fmt::format("{}", action.get_condition().value()),
+    const auto action = parser.get_domain().durative_actions()[0];
+    EXPECT_EQ(fmt::format("{}", action.duration().value()), "(= ?duration 2)");
+    EXPECT_EQ(fmt::format("{}", action.condition().value()),
               "(and (at end (forall (?y - object) (r ?y))) (at start (and (p) (r ?x))) (over all (q)))");
-    EXPECT_EQ(fmt::format("{}", action.get_effect().value()), "(and (and (at end (increase (f) ?duration)) (at end (p))) (at start (not (p))))");
+    EXPECT_EQ(fmt::format("{}", action.effect().value()), "(and (and (at end (increase (f) ?duration)) (at end (p))) (at start (not (p))))");
 }
 
 TEST(LokiSemanticTemporal, ReadsAConditionAtTheEffectsTimeUntimed)
 {
     semantic::Parser parser(durative_domain("(= ?duration 1)", "()", "(and (when (at end (p)) (at end (q))) (when (at start (p)) (at end (q))))"),
                             parser_options);
-    const auto action = parser.get_domain().get_durative_actions()[0];
-    EXPECT_FALSE(action.get_condition().has_value());
+    const auto action = parser.get_domain().durative_actions()[0];
+    EXPECT_FALSE(action.condition().has_value());
     // Printed in PDDL 2.1's form: the condition timed again.
-    EXPECT_EQ(fmt::format("{}", action.get_effect().value()), "(and (when (at start (p)) (at end (q))) (when (at end (p)) (at end (q))))");
+    EXPECT_EQ(fmt::format("{}", action.effect().value()), "(and (when (at start (p)) (at end (q))) (when (at end (p)) (at end (q))))");
 }
 
 TEST(LokiSemanticTemporal, DistinguishesThePredicateAtFromTimeSpecifiers)
 {
     semantic::Parser parser(durative_domain("(= ?duration 1)", "(at start (at ?x ?x))", "(at end (at ?x ?x))"), parser_options);
-    const auto action = parser.get_domain().get_durative_actions()[0];
-    EXPECT_EQ(fmt::format("{}", action.get_condition().value()), "(at start (at ?x ?x))");
-    EXPECT_EQ(fmt::format("{}", action.get_effect().value()), "(at end (at ?x ?x))");
+    const auto action = parser.get_domain().durative_actions()[0];
+    EXPECT_EQ(fmt::format("{}", action.condition().value()), "(at start (at ?x ?x))");
+    EXPECT_EQ(fmt::format("{}", action.effect().value()), "(at end (at ?x ?x))");
 }
 
 TEST(LokiSemanticTemporal, TranslatesNonConjunctiveTimedConditionsToDerivedPredicates)
@@ -83,9 +83,9 @@ TEST(LokiSemanticTemporal, TranslatesNonConjunctiveTimedConditionsToDerivedPredi
     semantic::Parser parser(durative_domain("(= ?duration 1)", "(and (over all (or (p) (q))) (at start (p)))", "(at end (p))"), parser_options);
     const auto translation = semantic::translate(parser.get_domain(), semantic::TranslatorOptions { .compile_typing = false });
     const auto domain = translation.get_translated_domain();
-    const auto action = domain.get_durative_actions()[0];
-    EXPECT_EQ(fmt::format("{}", action.get_condition().value()), "(and (at start (and (object ?x) (p))) (over all (loki-timed-0)))");
-    EXPECT_EQ(domain.get_axioms().size(), 2);
+    const auto action = domain.durative_actions()[0];
+    EXPECT_EQ(fmt::format("{}", action.condition().value()), "(and (at start (and (object ?x) (p))) (over all (loki-timed-0)))");
+    EXPECT_EQ(domain.axioms().size(), 2);
 }
 
 TEST(LokiSemanticTemporal, ParsesTimedInitialLiterals)
@@ -93,8 +93,8 @@ TEST(LokiSemanticTemporal, ParsesTimedInitialLiterals)
     semantic::Parser parser(durative_domain("(= ?duration 1)", "()", "(at end (p))"), parser_options);
     const auto task = parser.parse_task(std::string(R"((define (problem t) (:domain d) (:requirements :timed-initial-literals) (:objects o)
   (:init (at o o) (at 1.5 (p)) (at 3 (not (q)))) (:goal (p))))"));
-    EXPECT_EQ(task.get_initial_literals().size(), 1);
-    ASSERT_EQ(task.get_timed_initial_literals().size(), 2);
+    EXPECT_EQ(task.initial_literals().size(), 1);
+    ASSERT_EQ(task.timed_initial_literals().size(), 2);
     const auto text = fmt::format("{}", task);
     EXPECT_NE(text.find("(at 1.5 (p))"), std::string::npos);
     EXPECT_NE(text.find("(at 3 (not (q)))"), std::string::npos);
@@ -147,8 +147,8 @@ TEST(LokiSemanticTemporal, ReparsesTheTranslation)
     const auto task_text = fmt::format("{}", task_translation.get_translated_task());
     semantic::Parser reparsed(domain_text, semantic::ParserOptions { .strict = true, .add_action_costs = false });
     const auto reparsed_task = reparsed.parse_task(task_text);
-    EXPECT_EQ(reparsed.get_domain().get_durative_actions().size(), 2);
-    EXPECT_EQ(reparsed_task.get_timed_initial_literals().size(), 2);
+    EXPECT_EQ(reparsed.get_domain().durative_actions().size(), 2);
+    EXPECT_EQ(reparsed_task.timed_initial_literals().size(), 2);
 }
 
 }  // namespace loki::tests

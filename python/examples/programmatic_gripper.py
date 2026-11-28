@@ -196,13 +196,13 @@ def build_gripper() -> tuple[pypddl.Repository, pypddl.Domain, pypddl.Task, pypd
 if __name__ == "__main__":
     _, domain, one_ball, two_ball = build_gripper()
     print(
-        f"domain: {domain.get_name()}, actions={len(domain.get_actions())}, predicates={len(domain.get_predicates())}"
+        f"domain: {domain.name()}, actions={len(domain.actions())}, predicates={len(domain.predicates())}"
     )
     print(
-        f"task: {one_ball.get_name()}, objects={len(one_ball.get_objects())},",
-        f"init={len(one_ball.get_initial_literals())}",
+        f"task: {one_ball.name()}, objects={len(one_ball.objects())},",
+        f"init={len(one_ball.initial_literals())}",
     )
     print(
-        f"task: {two_ball.get_name()}, objects={len(two_ball.get_objects())},",
-        f"init={len(two_ball.get_initial_literals())}",
+        f"task: {two_ball.name()}, objects={len(two_ball.objects())},",
+        f"init={len(two_ball.initial_literals())}",
     )

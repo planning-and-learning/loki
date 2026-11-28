@@ -41,16 +41,16 @@ inline bool contains_preference(ConditionView condition)
                 return true;
             else if constexpr (std::same_as<Node, EntityView<Condition<AndTag>>> || std::same_as<Node, EntityView<Condition<OrTag>>>)
             {
-                for (auto child : node.get_conditions())
+                for (auto child : node.conditions())
                     if (contains_preference(child))
                         return true;
                 return false;
             }
             else if constexpr (std::same_as<Node, EntityView<Condition<ImplyTag>>>)
-                return contains_preference(node.get_left()) || contains_preference(node.get_right());
+                return contains_preference(node.left()) || contains_preference(node.right());
             else if constexpr (std::same_as<Node, EntityView<Condition<NotTag>>> || std::same_as<Node, EntityView<Condition<ExistsTag>>>
                                || std::same_as<Node, EntityView<Condition<ForallTag>>> || std::same_as<Node, EntityView<Condition<TimedTag>>>)
-                return contains_preference(node.get_condition());
+                return contains_preference(node.condition());
             else
                 return false;
         },

@@ -231,29 +231,29 @@ def test_parser_count_fixture_suite_replays() -> None:
             task = parser.parse_task(benchmark_root / cast("str", case["task_file"]))
 
             assert {
-                "requirements": len(domain.get_requirements()),
-                "types": len(domain.get_types()),
-                "constants": len(domain.get_constants()),
-                "predicates": len(domain.get_predicates()),
-                "functions": len(domain.get_functions()),
-                "actions": len(domain.get_actions()),
-                "axioms": len(domain.get_axioms()),
-                "durative_actions": len(domain.get_durative_actions()),
-                "has_constraints": domain.get_constraints() is not None,
+                "requirements": len(domain.requirements()),
+                "types": len(domain.types()),
+                "constants": len(domain.constants()),
+                "predicates": len(domain.predicates()),
+                "functions": len(domain.functions()),
+                "actions": len(domain.actions()),
+                "axioms": len(domain.axioms()),
+                "durative_actions": len(domain.durative_actions()),
+                "has_constraints": domain.constraints() is not None,
             } == configuration["domain"], case["name"]
             assert {
-                "requirements": len(task.get_requirements()),
-                "objects": len(task.get_objects()),
-                "initial_literals": len(task.get_initial_literals()),
-                "initial_function_values": len(task.get_initial_function_values()),
-                "predicates": len(task.get_predicates()),
-                "axioms": len(task.get_axioms()),
-                "has_goal": task.get_goal() is not None,
-                "has_metric": task.get_metric() is not None,
-                "timed_initial_literals": len(task.get_timed_initial_literals()),
-                "initial_effects": len(task.get_initial_effects()),
-                "has_goal_reward": task.get_goal_reward() is not None,
-                "has_constraints": task.get_constraints() is not None,
+                "requirements": len(task.requirements()),
+                "objects": len(task.objects()),
+                "initial_literals": len(task.initial_literals()),
+                "initial_function_values": len(task.initial_function_values()),
+                "predicates": len(task.predicates()),
+                "axioms": len(task.axioms()),
+                "has_goal": task.goal() is not None,
+                "has_metric": task.metric() is not None,
+                "timed_initial_literals": len(task.timed_initial_literals()),
+                "initial_effects": len(task.initial_effects()),
+                "has_goal_reward": task.goal_reward() is not None,
+                "has_constraints": task.constraints() is not None,
             } == configuration["task"], case["name"]
 
 
@@ -283,19 +283,19 @@ def test_translation_count_fixture_suite_replays() -> None:
             translated_task = pypddl.translate_task(task, domain_translation, translator_options).translated_task
 
             assert {
-                "types": len(domain.get_types()),
-                "predicates": len(domain.get_predicates()),
-                "functions": len(domain.get_functions()),
-                "actions": len(domain.get_actions()),
-                "axioms": len(domain.get_axioms()),
+                "types": len(domain.types()),
+                "predicates": len(domain.predicates()),
+                "functions": len(domain.functions()),
+                "actions": len(domain.actions()),
+                "axioms": len(domain.axioms()),
             } == configuration["translated_domain"], expected["name"]
             assert {
-                "objects": len(translated_task.get_objects()),
-                "predicates": len(translated_task.get_predicates()),
-                "initial_literals": len(translated_task.get_initial_literals()),
-                "initial_function_values": len(translated_task.get_initial_function_values()),
-                "actions": len(translated_task.get_domain().get_actions()),
-                "axioms": len(translated_task.get_axioms()),
+                "objects": len(translated_task.objects()),
+                "predicates": len(translated_task.predicates()),
+                "initial_literals": len(translated_task.initial_literals()),
+                "initial_function_values": len(translated_task.initial_function_values()),
+                "actions": len(translated_task.domain().actions()),
+                "axioms": len(translated_task.axioms()),
             } == configuration["translated_task"], expected["name"]
 
 
@@ -313,26 +313,26 @@ def test_parser_views_keep_temporary_parser_alive() -> None:
     domain = pypddl.Parser(fixture_text("facade"), pypddl.ParserOptions()).domain()
     task = pypddl.Parser(fixture_text("facade"), pypddl.ParserOptions()).parse_task(fixture_text("facade", "task.pddl"))
 
-    assert domain.get_name() == "facade"
-    assert task.get_name() == "facade-task"
-    assert task.get_domain().get_name() == "facade"
+    assert domain.name() == "facade"
+    assert task.name() == "facade-task"
+    assert task.domain().name() == "facade"
 
 
 def test_child_view_getters_keep_parent_views_alive() -> None:
     domain = (
         pypddl.Parser(fixture_text("facade"), pypddl.ParserOptions())
         .parse_task(fixture_text("facade", "task.pddl"))
-        .get_domain()
+        .domain()
     )
 
-    assert domain.get_name() == "facade"
+    assert domain.name() == "facade"
 
 
 def test_optional_child_view_getters_keep_parent_views_alive() -> None:
     domain = pypddl.Parser(fixture_text("facade_format"), pypddl.ParserOptions()).domain()
-    action = domain.get_actions()[0]
-    action_precondition = action.get_precondition()
-    action_effect = action.get_effect()
+    action = domain.actions()[0]
+    action_precondition = action.precondition()
+    action_effect = action.effect()
     del action
     assert action_precondition is not None
     assert action_effect is not None
@@ -343,15 +343,15 @@ def test_optional_child_view_getters_keep_parent_views_alive() -> None:
     task = pypddl.Parser(fixture_text("facade_format_numeric"), pypddl.ParserOptions()).parse_task(
         fixture_text("facade_format_numeric", "task.pddl")
     )
-    task_goal = task.get_goal()
-    task_metric = task.get_metric()
+    task_goal = task.goal()
+    task_metric = task.metric()
     del task
     assert task_goal is not None
     assert task_metric is not None
 
     assert isinstance(task_goal, pypddl.ConditionLiteral)
-    assert task_metric.get_optimization_direction() == pypddl.OptimizationDirection.Minimize
-    assert isinstance(task_metric.get_expression(), pypddl.FunctionTerm)
+    assert task_metric.optimization_direction() == pypddl.OptimizationDirection.Minimize
+    assert isinstance(task_metric.expression(), pypddl.FunctionTerm)
 
 
 def test_translation_views_keep_temporary_inputs_alive() -> None:
@@ -360,7 +360,7 @@ def test_translation_views_keep_temporary_inputs_alive() -> None:
         pypddl.TranslatorOptions(),
     ).original_domain
 
-    assert original_domain.get_name() == "facade"
+    assert original_domain.name() == "facade"
 
     parser = pypddl.Parser(fixture_text("facade"), pypddl.ParserOptions())
     translator_options = pypddl.TranslatorOptions()
@@ -373,8 +373,8 @@ def test_translation_views_keep_temporary_inputs_alive() -> None:
     del parser
     del domain_translation
 
-    assert original_task.get_name() == "facade-task"
-    assert original_task.get_domain().get_name() == "facade"
+    assert original_task.name() == "facade-task"
+    assert original_task.domain().name() == "facade"
 
 
 def test_translation_bindings_return_translated_views() -> None:
@@ -392,13 +392,13 @@ def test_translation_bindings_return_translated_views() -> None:
     problem_translation = pypddl.translate_task(task, domain_translation, options)
     temporary_translated_task = pypddl.translate_task(task, domain_translation, options).translated_task
 
-    assert domain_translation.original_domain.get_name() == "facade"
-    assert domain_translation.translated_domain.get_actions()
-    assert problem_translation.original_task.get_name() == "facade-task"
+    assert domain_translation.original_domain.name() == "facade"
+    assert domain_translation.translated_domain.actions()
+    assert problem_translation.original_task.name() == "facade-task"
     assert (
-        problem_translation.translated_task.get_domain().get_name() == domain_translation.translated_domain.get_name()
+        problem_translation.translated_task.domain().name() == domain_translation.translated_domain.name()
     )
-    assert temporary_translated_task.get_domain().get_name() == domain_translation.translated_domain.get_name()
+    assert temporary_translated_task.domain().name() == domain_translation.translated_domain.name()
 
 
 def test_arithmetic_normalization_binding_flattens_sorts_and_removes_units() -> None:
@@ -430,12 +430,11 @@ def test_repository_view_keeps_temporary_repository_alive() -> None:
     gc.collect()
 
     assert inserted is True
-    assert view.get_name() == "temporary-type"
+    assert view.name() == "temporary-type"
 
 
 def test_insert_returns_flag_and_retains_repository_on_extracted_view() -> None:
     repository = pypddl.Repository()
-    assert not hasattr(repository, "get_or_create")
     before = sys.getrefcount(repository)
     result = repository.insert(pypddl.TypeData("retained-type", []))
     assert isinstance(result, tuple)
@@ -448,7 +447,7 @@ def test_insert_returns_flag_and_retains_repository_on_extracted_view() -> None:
     assert sys.getrefcount(repository) > before
     del repository
     gc.collect()
-    assert view.get_name() == "retained-type"
+    assert view.name() == "retained-type"
 
 
 def test_semantic_exceptions_have_expected_hierarchy() -> None:
@@ -605,19 +604,19 @@ def test_builders_expose_defaulted_mutable_fields() -> None:
     task_builder.goal = condition.index()
     task, _ = repository.insert(task_builder)
 
-    assert action.get_name() == "mutated-action"
-    assert len(action.get_parameters()) == 1
-    assert action.get_arity() == 1
-    assert action.get_original_arity() == 1
-    assert action.get_precondition() is not None
-    assert action.get_effect() is not None
-    assert domain.get_name() == "mutated-domain"
-    assert len(domain.get_types()) == 1
-    assert len(domain.get_predicates()) == 1
-    assert len(domain.get_actions()) == 1
-    assert task.get_name() == "mutated-task"
-    assert task.get_domain() == domain
-    assert task.get_goal() is not None
+    assert action.name() == "mutated-action"
+    assert len(action.parameters()) == 1
+    assert action.arity() == 1
+    assert action.original_arity() == 1
+    assert action.precondition() is not None
+    assert action.effect() is not None
+    assert domain.name() == "mutated-domain"
+    assert len(domain.types()) == 1
+    assert len(domain.predicates()) == 1
+    assert len(domain.actions()) == 1
+    assert task.name() == "mutated-task"
+    assert task.domain() == domain
+    assert task.goal() is not None
 
 
 def test_repository_constructs_numeric_function_task_bits() -> None:
@@ -680,34 +679,34 @@ def test_repository_constructs_numeric_function_task_bits() -> None:
         ),
     )
 
-    assert domain.get_functions()[0].get_name() == "fuel"
-    assert domain.get_functions()[0].get_arity() == 1
-    assert len(domain.get_functions()[0].get_parameters()) == 1
-    assert domain.get_functions()[0].get_type().get_name() == "number"
-    assert task.get_initial_function_values()[0].get_function().get_function().get_name() == "fuel"
-    assert len(task.get_initial_function_values()[0].get_function().get_terms()) == 1
+    assert domain.functions()[0].name() == "fuel"
+    assert domain.functions()[0].arity() == 1
+    assert len(domain.functions()[0].parameters()) == 1
+    assert domain.functions()[0].type().name() == "number"
+    assert task.initial_function_values()[0].function().function().name() == "fuel"
+    assert len(task.initial_function_values()[0].function().terms()) == 1
     numeric_constraint = condition
     assert isinstance(numeric_constraint, pypddl.ConditionNumericConstraint)
-    assert numeric_constraint.get_comparator() == pypddl.BinaryComparator.Ge
-    left = numeric_constraint.get_left()
+    assert numeric_constraint.comparator() == pypddl.BinaryComparator.Ge
+    left = numeric_constraint.left()
     assert isinstance(left, pypddl.FunctionExpressionNumber)
-    assert left.get_value() == 0.0
-    right = numeric_constraint.get_right()
+    assert left.value() == 0.0
+    right = numeric_constraint.right()
     assert isinstance(right, pypddl.FunctionExpressionNumber)
-    assert right.get_value() == 0.0
+    assert right.value() == 0.0
     numeric_effect = effect
     assert isinstance(numeric_effect, pypddl.EffectNumeric)
-    assert numeric_effect.get_operation() == pypddl.NumericEffectOperator.Assign
-    numeric_effect_value = numeric_effect.get_expression()
+    assert numeric_effect.operation() == pypddl.NumericEffectOperator.Assign
+    numeric_effect_value = numeric_effect.expression()
     assert isinstance(numeric_effect_value, pypddl.FunctionExpressionNumber)
-    assert numeric_effect_value.get_value() == 1.0
-    assert task.get_goal() is not None
-    metric = task.get_metric()
+    assert numeric_effect_value.value() == 1.0
+    assert task.goal() is not None
+    metric = task.metric()
     assert metric is not None
-    assert metric.get_optimization_direction() == pypddl.OptimizationDirection.Minimize
-    metric_value = metric.get_expression()
+    assert metric.optimization_direction() == pypddl.OptimizationDirection.Minimize
+    metric_value = metric.expression()
     assert isinstance(metric_value, pypddl.FunctionExpressionNumber)
-    assert metric_value.get_value() == 1.0
+    assert metric_value.value() == 1.0
 
 
 def test_views_expose_typed_indices() -> None:
@@ -729,7 +728,7 @@ def test_views_expose_typed_indices() -> None:
     assert next_domain_index > domain_index
     assert next_domain_index >= domain_index
 
-    predicate_index = domain.get_predicates()[0].index()
+    predicate_index = domain.predicates()[0].index()
     assert isinstance(predicate_index, pypddl.PredicateIndex)
     assert int(predicate_index) == 0
     assert str(predicate_index) == repr(predicate_index) == "PredicateIndex(0)"
@@ -767,9 +766,9 @@ def test_views_are_hashable_and_compare_by_identity() -> None:
     assert str(domain) == repr(domain)
     assert "facade-format" in str(domain)
 
-    first_predicate = domain.get_predicates()[0]
-    same_predicate = same_domain.get_predicates()[0]
-    second_predicate = domain.get_predicates()[1]
+    first_predicate = domain.predicates()[0]
+    same_predicate = same_domain.predicates()[0]
+    second_predicate = domain.predicates()[1]
 
     assert first_predicate == same_predicate
     assert hash(first_predicate) == hash(same_predicate)
@@ -813,16 +812,16 @@ def test_recursive_variant_views_are_inspectable() -> None:
     options = pypddl.ParserOptions()
     options.add_action_costs = False
     parser = pypddl.Parser(fixture_text("when_or_effect"), options)
-    action = parser.domain().get_actions()[0]
+    action = parser.domain().actions()[0]
 
-    action_effect = action.get_effect()
+    action_effect = action.effect()
     assert action_effect is not None
     effect = action_effect
     assert isinstance(effect, pypddl.EffectWhen)
-    or_condition = effect.get_condition()
+    or_condition = effect.condition()
     assert isinstance(or_condition, pypddl.ConditionOr)
-    assert len(or_condition.get_conditions()) == 2
-    assert isinstance(effect.get_effect(), pypddl.EffectAnd)
+    assert len(or_condition.conditions()) == 2
+    assert isinstance(effect.effect(), pypddl.EffectAnd)
 
 
 def test_numeric_expression_variant_views_are_inspectable() -> None:
@@ -831,7 +830,7 @@ def test_numeric_expression_variant_views_are_inspectable() -> None:
 
     variant = number
     assert isinstance(variant, pypddl.FunctionExpressionNumber)
-    assert variant.get_value() == 2.0
+    assert variant.value() == 2.0
 
 
 def test_multi_args_keep_repository_alive() -> None:
@@ -852,14 +851,14 @@ def test_multi_args_keep_repository_alive() -> None:
                 [each.index() for each in operands],
             )
         )
-        return multi.get_args()
+        return multi.args()
 
     args = make_args()
     gc.collect()
 
     number = args[2]
     assert isinstance(number, pypddl.FunctionExpressionNumber)
-    assert number.get_value() == 3.0
+    assert number.value() == 3.0
 
 
 def test_repository_exposes_recursive_constructors_and_accessors() -> None:
@@ -960,52 +959,52 @@ def test_repository_exposes_recursive_constructors_and_accessors() -> None:
 
     condition_forall_variant = condition_forall
     assert isinstance(condition_forall_variant, pypddl.ConditionForall)
-    assert len(condition_forall_variant.get_parameters()) == 1
+    assert len(condition_forall_variant.parameters()) == 1
     condition_imply_variant = condition_imply
     assert isinstance(condition_imply_variant, pypddl.ConditionImply)
-    imply_left = condition_imply_variant.get_left()
+    imply_left = condition_imply_variant.left()
     assert isinstance(imply_left, pypddl.ConditionLiteral)
     assert imply_left == base_condition
-    imply_right = condition_imply_variant.get_right()
+    imply_right = condition_imply_variant.right()
     assert isinstance(imply_right, pypddl.ConditionOr)
     assert imply_right == condition_or
     condition_exists_variant = condition_exists
     assert isinstance(condition_exists_variant, pypddl.ConditionExists)
-    assert len(condition_exists_variant.get_parameters()) == 1
+    assert len(condition_exists_variant.parameters()) == 1
     assert isinstance(condition_or, pypddl.ConditionOr)
     assert isinstance(condition_and, pypddl.ConditionAnd)
     effect_forall_variant = effect_forall
     assert isinstance(effect_forall_variant, pypddl.EffectForall)
-    assert len(effect_forall_variant.get_parameters()) == 1
+    assert len(effect_forall_variant.parameters()) == 1
     effect_one_of_variant = effect_one_of
     assert isinstance(effect_one_of_variant, pypddl.EffectOneOf)
-    assert len(effect_one_of_variant.get_effects()) == 2
+    assert len(effect_one_of_variant.effects()) == 2
     effect_probabilistic_variant = effect_probabilistic
     assert isinstance(effect_probabilistic_variant, pypddl.EffectProbabilistic)
-    assert len(effect_probabilistic_variant.get_alternatives()) == 2
+    assert len(effect_probabilistic_variant.alternatives()) == 2
     numeric_effect_variant = numeric_effect
     assert isinstance(numeric_effect_variant, pypddl.EffectNumeric)
-    assert numeric_effect_variant.get_operation() == pypddl.NumericEffectOperator.Assign
-    assert len(numeric_effect_variant.get_function().get_terms()) == 1
+    assert numeric_effect_variant.operation() == pypddl.NumericEffectOperator.Assign
+    assert len(numeric_effect_variant.function().terms()) == 1
     unary_variant = unary
     assert isinstance(unary_variant, pypddl.FunctionExpressionUnary)
-    assert unary_variant.get_operation() == pypddl.UnaryArithmeticOperator.Sub
+    assert unary_variant.operation() == pypddl.UnaryArithmeticOperator.Sub
     binary_variant = binary
     assert isinstance(binary_variant, pypddl.FunctionExpressionBinary)
-    assert binary_variant.get_operation() == pypddl.BinaryArithmeticOperator.Add
+    assert binary_variant.operation() == pypddl.BinaryArithmeticOperator.Add
     multi_variant = multi
     assert isinstance(multi_variant, pypddl.FunctionExpressionMulti)
-    assert multi_variant.get_operation() == pypddl.MultiArithmeticOperator.Add
-    multi_operands = multi_variant.get_args()
+    assert multi_variant.operation() == pypddl.MultiArithmeticOperator.Add
+    multi_operands = multi_variant.args()
     assert len(multi_operands) == 2
     assert number in multi_operands
     assert binary in multi_operands
-    assert effect_probabilistic_variant.get_alternatives()[0].get_probability() == 0.4
-    assert domain.get_axioms()[0].get_arity() == 1
-    assert domain.get_axioms()[0].get_original_arity() == 1
-    assert len(domain.get_axioms()[0].get_parameters()) == 1
-    assert isinstance(domain.get_axioms()[0].get_condition(), pypddl.ConditionForall)
-    task_goal = task.get_goal()
+    assert effect_probabilistic_variant.alternatives()[0].probability() == 0.4
+    assert domain.axioms()[0].arity() == 1
+    assert domain.axioms()[0].original_arity() == 1
+    assert len(domain.axioms()[0].parameters()) == 1
+    assert isinstance(domain.axioms()[0].condition(), pypddl.ConditionForall)
+    task_goal = task.goal()
     assert task_goal is not None
     assert isinstance(task_goal, pypddl.ConditionForall)
 
@@ -1019,8 +1018,8 @@ if __name__ == "__main__":
 def test_task_declares_types_and_predicates_and_translation_reparses_strictly() -> None:
     parser = pypddl.Parser(fixture_path("either_typing"), pypddl.ParserOptions())
     task = parser.parse_task(fixture_path("either_typing", "task-extension.pddl"))
-    assert sorted(str(t.get_name()) for t in task.get_types()) == ["either_special_vip", "special", "vip"]
-    assert [str(p.get_name()) for p in task.get_predicates()] == ["marked"]
+    assert sorted(str(t.name()) for t in task.types()) == ["either_special_vip", "special", "vip"]
+    assert [str(p.name()) for p in task.predicates()] == ["marked"]
 
     for compile_typing in (False, True):
         translator_options = pypddl.TranslatorOptions()

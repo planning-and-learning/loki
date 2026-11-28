@@ -82,13 +82,13 @@ struct RequirementCollector
     bool rewards = false;
     bool durative = false;
 
-    static bool is_total_cost(FunctionSkeletonView function) { return std::string_view(function.get_name()) == "total-cost"; }
+    static bool is_total_cost(FunctionSkeletonView function) { return std::string_view(function.name()) == "total-cost"; }
 
-    [[nodiscard]] bool is_reward(FunctionSkeletonView function) const { return rewards && std::string_view(function.get_name()) == "reward"; }
+    [[nodiscard]] bool is_reward(FunctionSkeletonView function) const { return rewards && std::string_view(function.name()) == "reward"; }
 
     /// What a function requires: :action-costs for (total-cost), :rewards for PPDDL's (reward), else :numeric-fluents.
     [[nodiscard]] bool is_total_time(FunctionSkeletonView function) const
-    { return durative && std::string_view(function.get_name()) == "total-time" && function.get_parameters().empty(); }
+    { return durative && std::string_view(function.name()) == "total-time" && function.parameters().empty(); }
 
     [[nodiscard]] RequirementKind function_requirement(FunctionSkeletonView function) const
     { return is_total_cost(function) ? ActionCosts : is_reward(function) ? Rewards : is_total_time(function) ? DurativeActions : NumericFluents; }
@@ -116,7 +116,7 @@ struct RequirementCollector
         {
             if (!operand)
                 requirements.insert(TrajectoryFormulas);
-            visit(node.get_condition());
+            visit(node.condition());
         }
         else
         {
@@ -133,9 +133,9 @@ struct RequirementCollector
             }
             if constexpr (std::same_as<Tag, ModalTag>)
             {
-                const auto trajectory = is_trajectory_operator(node.get_operation());
+                const auto trajectory = is_trajectory_operator(node.operation());
                 requirements.insert(trajectory ? TrajectoryFormulas : Constraints);
-                for (const auto child : node.get_constraints())
+                for (const auto child : node.constraints())
                 {
                     pddl3_operand = !trajectory;
                     visit(child);
@@ -160,19 +160,19 @@ struct RequirementCollector
 
     void visit(ParameterView parameter)
     {
-        if (!parameter.get_types().empty())
+        if (!parameter.types().empty())
             requirements.insert(Typing);
     }
 
     void visit(ObjectView object)
     {
-        if (!object.get_types().empty())
+        if (!object.types().empty())
             requirements.insert(Typing);
     }
 
     void visit(TypeView type)
     {
-        const auto name = std::string_view(type.get_name());
+        const auto name = std::string_view(type.name());
         if (name != "object" && name != "number")
             requirements.insert(Typing);
     }
@@ -180,48 +180,48 @@ struct RequirementCollector
     /// An atom's predicate and terms require nothing beyond the atom: their declarations are visited on their own.
     void visit(AtomView atom)
     {
-        if (std::string_view(atom.get_predicate().get_name()) == "=")
+        if (std::string_view(atom.predicate().name()) == "=")
             requirements.insert(Equality);
     }
 
     void visit(FunctionSkeletonView function)
     {
         requirements.insert(function_requirement(function));
-        for (const auto parameter : function.get_parameters())
+        for (const auto parameter : function.parameters())
             visit(parameter);
     }
 
-    void visit(FunctionTermView term) { requirements.insert(function_requirement(term.get_function())); }
+    void visit(FunctionTermView term) { requirements.insert(function_requirement(term.function())); }
 
     void visit(EntityView<Condition<LiteralTag>> node)
     {
-        if (!node.get_literal().get_polarity())
+        if (!node.literal().polarity())
             requirements.insert(NegativePreconditions);
-        visit(node.get_literal());
+        visit(node.literal());
     }
 
     void visit(EntityView<Effect<NumericTag>> node)
     {
         // Bare :action-costs permits only writes of the form (increase (total-cost) ...).
-        const auto increases_total_cost = node.get_operation() == NumericEffectOperator::Increase && is_total_cost(node.get_function().get_function());
-        requirements.insert(increases_total_cost ? ActionCosts : is_reward(node.get_function().get_function()) ? Rewards : NumericFluents);
-        visit(node.get_function());
-        visit(node.get_expression());
+        const auto increases_total_cost = node.operation() == NumericEffectOperator::Increase && is_total_cost(node.function().function());
+        requirements.insert(increases_total_cost ? ActionCosts : is_reward(node.function().function()) ? Rewards : NumericFluents);
+        visit(node.function());
+        visit(node.expression());
     }
 
     void visit(AxiomView axiom)
     {
         requirements.insert(DerivedPredicates);
-        for (const auto parameter : axiom.get_parameters())
+        for (const auto parameter : axiom.parameters())
             visit(parameter);
-        visit(axiom.get_condition());
+        visit(axiom.condition());
         // The printer writes the parameters that are not in the head as an exists around the condition.
         auto head_variables = urd::Store<urd::set<VariableView>> {};
-        for (const auto term : axiom.get_head().get_atom().get_terms())
+        for (const auto term : axiom.head().atom().terms())
             if (const auto* variable = std::get_if<VariableView>(&term))
                 head_variables.insert(*variable);
-        for (const auto parameter : axiom.get_parameters())
-            if (!head_variables.contains(parameter.get_variable()))
+        for (const auto parameter : axiom.parameters())
+            if (!head_variables.contains(parameter.variable()))
                 requirements.insert(ExistentialPreconditions);
     }
 
@@ -232,14 +232,14 @@ struct RequirementCollector
             [&]<typename Node>(const Node& part) -> bool
             {
                 if constexpr (std::same_as<Node, FunctionTermView>)
-                    return is_total_time(part.get_function());
+                    return is_total_time(part.function());
                 else if constexpr (std::same_as<Node, EntityView<FunctionExpression<UnaryTag>>>)
-                    return has_total_time(part.get_expression());
+                    return has_total_time(part.expression());
                 else if constexpr (std::same_as<Node, EntityView<FunctionExpression<BinaryTag>>>)
-                    return has_total_time(part.get_left()) || has_total_time(part.get_right());
+                    return has_total_time(part.left()) || has_total_time(part.right());
                 else if constexpr (std::same_as<Node, EntityView<FunctionExpression<MultiTag>>>)
                 {
-                    for (const auto argument : part.get_args())
+                    for (const auto argument : part.args())
                         if (has_total_time(argument))
                             return true;
                     return false;
@@ -254,9 +254,9 @@ struct RequirementCollector
     /// makespan and violated preferences alone only :durative-actions and :preferences.
     void visit(MetricView metric)
     {
-        const auto expression = metric.get_expression();
+        const auto expression = metric.expression();
         const auto* term = std::get_if<FunctionTermView>(&expression);
-        const auto reward = term && is_reward(term->get_function());
+        const auto reward = term && is_reward(term->function());
         // Over violated preferences alone (PDDL 3), the metric needs :preferences only, which is-violated adds.
         auto violations = false;
         auto functions = false;
@@ -268,19 +268,19 @@ struct RequirementCollector
                     if constexpr (std::same_as<Node, EntityView<FunctionExpression<IsViolatedTag>>>)
                         violations = true;
                     else if constexpr (std::same_as<Node, FunctionTermView>)
-                        functions = functions || !is_total_time(part.get_function());
+                        functions = functions || !is_total_time(part.function());
                     else if constexpr (std::same_as<Node, EntityView<FunctionExpression<DurationTag>>>)
                         functions = true;
                     else if constexpr (std::same_as<Node, EntityView<FunctionExpression<UnaryTag>>>)
-                        self(self, part.get_expression());
+                        self(self, part.expression());
                     else if constexpr (std::same_as<Node, EntityView<FunctionExpression<BinaryTag>>>)
                     {
-                        self(self, part.get_left());
-                        self(self, part.get_right());
+                        self(self, part.left());
+                        self(self, part.right());
                     }
                     else if constexpr (std::same_as<Node, EntityView<FunctionExpression<MultiTag>>>)
                     {
-                        for (const auto argument : part.get_args())
+                        for (const auto argument : part.args())
                             self(self, argument);
                     }
                 },
@@ -291,19 +291,19 @@ struct RequirementCollector
             requirements.insert(NumericFluents);
         if (!reward && !functions && !violations && !has_total_time(expression))
             requirements.insert(NumericFluents);
-        visit(metric.get_expression());
+        visit(metric.expression());
     }
 
     void visit(DurativeActionView action)
     {
         requirements.insert(DurativeActions);
-        for (const auto parameter : action.get_parameters())
+        for (const auto parameter : action.parameters())
             visit(parameter);
-        if (const auto duration = action.get_duration())
+        if (const auto duration = action.duration())
             visit_duration(duration.value());
-        if (const auto condition = action.get_condition())
+        if (const auto condition = action.condition())
             visit(condition.value());
-        if (const auto effect = action.get_effect())
+        if (const auto effect = action.effect())
             visit(effect.value());
     }
 
@@ -316,19 +316,19 @@ struct RequirementCollector
             {
                 if constexpr (std::same_as<Node, EntityView<Condition<AndTag>>>)
                 {
-                    for (const auto child : node.get_conditions())
+                    for (const auto child : node.conditions())
                         visit_duration(child);
                 }
                 else if constexpr (std::same_as<Node, EntityView<Condition<TimedTag>>>)
                 {
-                    visit_duration(node.get_condition());
+                    visit_duration(node.condition());
                 }
                 else if constexpr (std::same_as<Node, EntityView<Condition<NumericConstraintTag>>>)
                 {
-                    if (node.get_comparator() != BinaryComparator::Eq)
+                    if (node.comparator() != BinaryComparator::Eq)
                         requirements.insert(DurationInequalities);
-                    visit(node.get_left());
-                    visit(node.get_right());
+                    visit(node.left());
+                    visit(node.right());
                 }
                 else
                 {
@@ -341,14 +341,14 @@ struct RequirementCollector
     void visit(TimedInitialLiteralView literal)
     {
         requirements.insert(TimedInitialLiterals);
-        visit(literal.get_literal());
+        visit(literal.literal());
     }
 
     /// Declared predicates: what their parameters require.
     void predicates(EntityListView<Predicate> predicates)
     {
         for (const auto predicate : predicates)
-            for (const auto parameter : predicate.get_parameters())
+            for (const auto parameter : predicate.parameters())
                 visit(parameter);
     }
 
@@ -364,7 +364,7 @@ struct RequirementCollector
 bool declares(EntityListView<Requirement> requirements, RequirementKind capability)
 {
     for (const auto requirement : requirements)
-        for (const auto provided : requirement_capabilities(requirement.get_kind()))
+        for (const auto provided : requirement_capabilities(requirement.kind()))
             if (provided == capability)
                 return true;
     return false;
@@ -378,18 +378,18 @@ bool declares_rewards(EntityListView<Requirement> requirements) { return declare
 urd::Store<urd::sequence<RequirementKind>> infer_requirements(DomainView domain)
 {
     auto collector = RequirementCollector {};
-    collector.rewards = declares_rewards(domain.get_requirements());
-    collector.durative = declares(domain.get_requirements(), DurativeActions);
+    collector.rewards = declares_rewards(domain.requirements());
+    collector.durative = declares(domain.requirements(), DurativeActions);
     // The strict parser demands :strips of every domain.
     collector.requirements.insert(Strips);
-    collector.visit_all(domain.get_types());
-    collector.visit_all(domain.get_constants());
-    collector.predicates(domain.get_predicates());
-    collector.visit_all(domain.get_functions());
-    collector.visit_all(domain.get_actions());
-    collector.visit_all(domain.get_durative_actions());
-    collector.visit_all(domain.get_axioms());
-    if (const auto constraints = domain.get_constraints())
+    collector.visit_all(domain.types());
+    collector.visit_all(domain.constants());
+    collector.predicates(domain.predicates());
+    collector.visit_all(domain.functions());
+    collector.visit_all(domain.actions());
+    collector.visit_all(domain.durative_actions());
+    collector.visit_all(domain.axioms());
+    if (const auto constraints = domain.constraints())
         collector.visit(constraints.value());
     return { collector.requirements.begin(), collector.requirements.end() };
 }
@@ -397,29 +397,29 @@ urd::Store<urd::sequence<RequirementKind>> infer_requirements(DomainView domain)
 urd::Store<urd::sequence<RequirementKind>> infer_requirements(TaskView task, DomainView domain)
 {
     auto collector = RequirementCollector {};
-    collector.rewards = declares_rewards(domain.get_requirements()) || declares_rewards(task.get_requirements());
-    collector.durative = declares(domain.get_requirements(), DurativeActions);
-    if (task.get_goal_reward())
+    collector.rewards = declares_rewards(domain.requirements()) || declares_rewards(task.requirements());
+    collector.durative = declares(domain.requirements(), DurativeActions);
+    if (task.goal_reward())
         collector.requirements.insert(Rewards);
-    collector.visit_all(task.get_types());
-    collector.predicates(task.get_predicates());
-    collector.visit_all(task.get_objects());
-    collector.visit_all(task.get_initial_literals());
-    collector.visit_all(task.get_initial_function_values());
-    collector.visit_all(task.get_timed_initial_literals());
-    collector.visit_all(task.get_initial_effects());
-    if (const auto goal = task.get_goal())
+    collector.visit_all(task.types());
+    collector.predicates(task.predicates());
+    collector.visit_all(task.objects());
+    collector.visit_all(task.initial_literals());
+    collector.visit_all(task.initial_function_values());
+    collector.visit_all(task.timed_initial_literals());
+    collector.visit_all(task.initial_effects());
+    if (const auto goal = task.goal())
         collector.visit(goal.value());
-    if (const auto metric = task.get_metric())
+    if (const auto metric = task.metric())
         collector.visit(metric.value());
-    collector.visit_all(task.get_axioms());
-    if (const auto constraints = task.get_constraints())
+    collector.visit_all(task.axioms());
+    if (const auto constraints = task.constraints())
         collector.visit(constraints.value());
 
     // What a domain requirement provides needs no declaration in the task, and declaring it again is redundant.
     collector.requirements.erase(Strips);
-    for (const auto requirement : domain.get_requirements())
-        for (const auto capability : requirement_capabilities(requirement.get_kind()))
+    for (const auto requirement : domain.requirements())
+        for (const auto capability : requirement_capabilities(requirement.kind()))
             collector.requirements.erase(capability);
     return { collector.requirements.begin(), collector.requirements.end() };
 }

@@ -44,8 +44,8 @@ urd::Store<urd::map<std::string, std::string>> translated_effects(std::string_vi
     semantic::Parser parser(fixture_path(std::string(fixture)), parser_options);
     const auto translation = semantic::translate(parser.get_domain(), options);
     auto result = urd::Store<urd::map<std::string, std::string>> {};
-    for (auto action : translation.get_translated_domain().get_actions())
-        result[std::string(action.get_name())] = action.get_effect() ? fmt::format("{}", action.get_effect().value()) : "";
+    for (auto action : translation.get_translated_domain().actions())
+        result[std::string(action.name())] = action.effect() ? fmt::format("{}", action.effect().value()) : "";
     return result;
 }
 
@@ -71,16 +71,16 @@ TEST(LokiSemanticChoices, GuardsNonConjunctiveConditionsOfChoicesWithDerivedPred
     const auto domain = translation.get_translated_domain();
 
     auto effects = urd::Store<urd::map<std::string, std::string>> {};
-    for (auto action : domain.get_actions())
-        effects[std::string(action.get_name())] = fmt::format("{}", action.get_effect().value());
+    for (auto action : domain.actions())
+        effects[std::string(action.name())] = fmt::format("{}", action.effect().value());
     EXPECT_EQ(effects.at("disjunctive"), "(when (loki-choice-0 ?x) (oneof (p ?x) (q ?x)))");
     EXPECT_EQ(effects.at("existential"), "(when (loki-choice-1) (oneof (not (r)) (r)))");
     // A deterministic effect is split per disjunct as before.
     EXPECT_EQ(effects.at("deterministic"), "(and (when (a ?x) (p ?x)) (when (b ?x) (p ?x)))");
 
     auto axioms = urd::Store<urd::map<std::string, std::size_t>> {};
-    for (auto axiom : domain.get_axioms())
-        ++axioms[std::string(axiom.get_head().get_atom().get_predicate().get_name())];
+    for (auto axiom : domain.axioms())
+        ++axioms[std::string(axiom.head().atom().predicate().name())];
     EXPECT_EQ(axioms.at("loki-choice-0"), std::size_t { 2 });
     EXPECT_EQ(axioms.at("loki-choice-1"), std::size_t { 1 });
 }
@@ -121,8 +121,8 @@ TEST(LokiSemanticChoices, CompilesConditionalEffectsInsideOutcomes)
 TEST(LokiSemanticChoices, DetectsChoices)
 {
     semantic::Parser parser(fixture_path("choice_nested"), parser_options);
-    for (auto action : parser.get_domain().get_actions())
-        EXPECT_TRUE(formalism::contains_choice(action.get_effect().value()));
+    for (auto action : parser.get_domain().actions())
+        EXPECT_TRUE(formalism::contains_choice(action.effect().value()));
 }
 
 }  // namespace loki::tests

@@ -16,5 +16,5 @@ def describe_pypddl_imports(domain_source: str) -> dict[str, str]:
     parser = _formalism.Parser(domain_source, _formalism.ParserOptions())
     return {
         "parser": type(parser).__name__,
-        "domain_name": parser.domain().get_name(),
+        "domain_name": parser.domain().name(),
     }

@@ -41,15 +41,15 @@ template<typename Derived>
 formalism::EntityView<formalism::Effect<formalism::ForallTag>>
 EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalism::ForallTag>> source)
 {
-    this->self().increment_quantifications(source.get_parameters());
-    auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+    this->self().increment_quantifications(source.parameters());
+    auto parameter_views = this->self().copy_parameter_views(source.parameters());
     this->self().enter_scope(parameter_views);
     // Held as a member (urd::as_member): the typing below replaces it by the index of the effect that wraps it.
-    auto effect = urd::as_member<formalism::EffectVariant>(this->self().copy(source.get_effect()));
+    auto effect = urd::as_member<formalism::EffectVariant>(this->self().copy(source.effect()));
     if (this->copy_context().phase == TranslationPhase::CompileTyping)
     {
         auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
-        this->self().type_conditions_for_parameters(source.get_parameters(), *condition_data);
+        this->self().type_conditions_for_parameters(source.parameters(), *condition_data);
         const auto condition = this->self().make_conjunction(*condition_data);
         auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
         urd::store(data->condition, condition);
@@ -58,7 +58,7 @@ EffectTranslator<Derived>::copy(formalism::EntityView<formalism::Effect<formalis
     }
     auto data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
     if (this->self().compiles_typing_now())
-        this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
+        this->self().copy_parameters_without_types(source.parameters(), data->parameters);
     else
         for (auto parameter : parameter_views)
             data->parameters.push_back(parameter.index());
@@ -72,10 +72,10 @@ template<typename Derived>
 formalism::EffectView EffectTranslator<Derived>::copy(formalism::EffectView source)
 {
     const auto* when = std::get_if<formalism::EntityView<formalism::Effect<formalism::WhenTag>>>(&source);
-    if (this->copy_context().phase == TranslationPhase::RemoveUniversalQuantifiers && when && formalism::contains_choice(when->get_effect()))
+    if (this->copy_context().phase == TranslationPhase::RemoveUniversalQuantifiers && when && formalism::contains_choice(when->effect()))
     {
-        const auto condition = this->self().make_choice_condition(this->self().copy(when->get_condition()));
-        const auto effect = this->self().copy(when->get_effect());
+        const auto condition = this->self().make_choice_condition(this->self().copy(when->condition()));
+        const auto effect = this->self().copy(when->effect());
         auto data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
         urd::store(data->condition, condition);
         urd::store(data->effect, effect);
@@ -83,12 +83,12 @@ formalism::EffectView EffectTranslator<Derived>::copy(formalism::EffectView sour
     }
     if (this->copy_context().phase == TranslationPhase::SplitDisjunctiveConditions && when)
     {
-        const auto condition = this->self().copy(when->get_condition());
-        const auto effect = this->self().copy(when->get_effect());
+        const auto condition = this->self().copy(when->condition());
+        const auto effect = this->self().copy(when->effect());
         if (const auto condition_or = this->self().as_or(condition))
         {
             auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
-            for (auto part : condition_or->get_conditions())
+            for (auto part : condition_or->conditions())
             {
                 auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
                 urd::store(when_data->condition, part);

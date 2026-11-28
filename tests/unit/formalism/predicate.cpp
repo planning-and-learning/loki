@@ -21,9 +21,9 @@ static_assert(requires(Data& data) {
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_name();
-    view.get_parameters();
-    view.get_arity();
+    view.name();
+    view.parameters();
+    view.arity();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
 });

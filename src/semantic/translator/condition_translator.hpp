@@ -53,15 +53,15 @@ formalism::ConditionView ConditionTranslator<Derived>::guard_preferences(formali
     if (const auto* conjunction = std::get_if<formalism::EntityView<formalism::Condition<formalism::AndTag>>>(&condition))
     {
         auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(context.builder);
-        for (auto child : conjunction->get_conditions())
+        for (auto child : conjunction->conditions())
             this->self().append_conjunct(*data, this->self().guard_preferences(child, parameters));
         return this->self().make_conjunction(*data);
     }
     if (const auto* preference = std::get_if<formalism::EntityView<formalism::Condition<formalism::PreferenceTag>>>(&condition))
     {
         auto data = formalism::checkout<formalism::Condition<formalism::PreferenceTag>>(context.builder);
-        data->name = preference->get_name();
-        urd::store(data->condition, this->self().guard_with_types(preference->get_condition(), parameters));
+        data->name = preference->name();
+        urd::store(data->condition, this->self().guard_with_types(preference->condition(), parameters));
         return formalism::ConditionView(context.storage->repository.insert(*data, context.storage->builder).first);
     }
     return condition;
@@ -72,10 +72,10 @@ template<typename Tag>
     requires std::same_as<Tag, formalism::ExistsTag> || std::same_as<Tag, formalism::ForallTag>
 formalism::EntityView<formalism::Condition<Tag>> ConditionTranslator<Derived>::copy(formalism::EntityView<formalism::Condition<Tag>> source)
 {
-    this->self().increment_quantifications(source.get_parameters());
-    auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+    this->self().increment_quantifications(source.parameters());
+    auto parameter_views = this->self().copy_parameter_views(source.parameters());
     this->self().enter_scope(parameter_views);
-    const auto condition = this->self().copy(source.get_condition());
+    const auto condition = this->self().copy(source.condition());
     auto typed_condition = condition;
     if (this->copy_context().phase == TranslationPhase::CompileTyping)
     {
@@ -86,24 +86,24 @@ formalism::EntityView<formalism::Condition<Tag>> ConditionTranslator<Derived>::c
             if (formalism::contains_preference(condition))
             {
                 if (this->self().compiles_typing_now()
-                    && std::ranges::any_of(source.get_parameters(),
+                    && std::ranges::any_of(source.parameters(),
                                            [](auto parameter)
-                                           { return std::ranges::any_of(parameter.get_types(), [](auto type) { return !type.get_bases().empty(); }); }))
-                    typed_condition = this->self().guard_preferences(condition, source.get_parameters());
+                                           { return std::ranges::any_of(parameter.types(), [](auto type) { return !type.bases().empty(); }); }))
+                    typed_condition = this->self().guard_preferences(condition, source.parameters());
             }
             else
-                this->self().prepend_type_conditions(typed_condition, source.get_parameters());
+                this->self().prepend_type_conditions(typed_condition, source.parameters());
         }
         else
         {
-            this->self().prepend_type_conditions(typed_condition, source.get_parameters());
+            this->self().prepend_type_conditions(typed_condition, source.parameters());
         }
     }
     // After typing: a guard's derived predicate takes the parameters in scope.
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<Tag>>(this->copy_context().builder);
     if (this->self().compiles_typing_now())
-        this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
+        this->self().copy_parameters_without_types(source.parameters(), data->parameters);
     else
         for (auto parameter : parameter_views)
             data->parameters.push_back(parameter.index());

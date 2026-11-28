@@ -20,7 +20,7 @@ static_assert(requires(Data& data) {
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_kind();
+    view.kind();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
 });

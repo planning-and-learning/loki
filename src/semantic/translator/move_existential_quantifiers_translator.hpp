@@ -61,7 +61,7 @@ private:
 
     /// Below a condition or an effect, the parameters are those of its binders.
     void collect_binder_names(formalism::ParameterView parameter, urd::Store<urd::set<std::string>>& names) const
-    { names.insert(std::string(parameter.get_variable().get_name())); }
+    { names.insert(std::string(parameter.variable().name())); }
 
     /// A declaration's parameters bind nothing in the subtree.
     void collect_binder_names(formalism::PredicateView, urd::Store<urd::set<std::string>>&) const {}
@@ -103,11 +103,11 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::hoist_ex
                                                                                      urd::Store<urd::set<std::string>>& claimed,
                                                                                      urd::Store<urd::sequence<formalism::ParameterView>>& parameters)
 {
-    auto condition = exists.get_condition();
-    for (auto parameter : exists.get_parameters())
+    auto condition = exists.condition();
+    for (auto parameter : exists.parameters())
     {
-        const auto variable = parameter.get_variable();
-        if (claimed.insert(std::string(variable.get_name())).second)
+        const auto variable = parameter.variable();
+        if (claimed.insert(std::string(variable.name())).second)
         {
             parameters.push_back(parameter);
             continue;
@@ -118,12 +118,12 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::hoist_ex
         auto free = urd::Store<urd::set<formalism::VariableView>> {};
         this->self().collect_free_variables(condition, bound, free);
         for (auto free_variable : free)
-            avoid.insert(std::string(free_variable.get_name()));
+            avoid.insert(std::string(free_variable.name()));
 
         auto name = std::string {};
         for (auto k = std::size_t { 0 };; ++k)
         {
-            name = std::string(variable.get_name()) + "_" + std::to_string(k);
+            name = std::string(variable.name()) + "_" + std::to_string(k);
             if (!avoid.contains(name))
                 break;
         }
@@ -137,7 +137,7 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::hoist_ex
         claimed.insert(name);
         auto parameter_data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
         parameter_data->variable = fresh.index();
-        for (auto type : parameter.get_types())
+        for (auto type : parameter.types())
             parameter_data->types.push_back(type.index());
         parameters.push_back(this->copy_context().storage->repository.insert(*parameter_data, this->copy_context().storage->builder).first);
     }
@@ -152,7 +152,7 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
     auto parameters = urd::Store<urd::sequence<formalism::ParameterView>> {};
     auto claimed = urd::Store<urd::set<std::string>> {};
     auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
-    for (auto child : node.get_conditions())
+    for (auto child : node.conditions())
     {
         const auto moved = this->self().move_existentials(child);
         if (const auto exists = this->self().as_exists(moved))
@@ -195,7 +195,7 @@ MoveExistentialQuantifiersTranslator<Derived>::move_existentials_node(formalism:
                                                                       formalism::EntityView<formalism::Condition<formalism::OrTag>> node)
 {
     auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
-    for (auto child : node.get_conditions())
+    for (auto child : node.conditions())
         this->self().append_disjunct(*data, this->self().move_existentials(child));
     return this->self().make_disjunction(*data);
 }
@@ -215,9 +215,9 @@ formalism::ConditionView MoveExistentialQuantifiersTranslator<Derived>::lift_top
     {
         auto claimed = urd::Store<urd::set<std::string>> {};
         for (auto parameter : parameters)
-            claimed.insert(std::string(parameter.get_variable().get_name()));
+            claimed.insert(std::string(parameter.variable().name()));
         // Lifted parameters must not shadow-clash with binders that stay behind.
-        collect_binder_names(exists->get_condition(), claimed);
+        collect_binder_names(exists->condition(), claimed);
         if (effect)
             collect_binder_names(*effect, claimed);
 

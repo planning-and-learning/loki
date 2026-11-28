@@ -34,8 +34,8 @@ static_assert(requires(Data& data) {
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_name();
-    view.get_bases();
+    view.name();
+    view.bases();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
 });
@@ -57,9 +57,9 @@ TEST(LokiTests, SharedInterningCanonicalizesTypeBasesUsingTheRepository)
     data->bases.emplace_back(zebra.index());
     const auto [view, inserted] = repository.insert(*data, builder);
     EXPECT_TRUE(inserted);
-    ASSERT_EQ(view.get_bases().size(), 2);
-    EXPECT_EQ(view.get_bases()[0], alpha);
-    EXPECT_EQ(view.get_bases()[1], zebra);
+    ASSERT_EQ(view.bases().size(), 2);
+    EXPECT_EQ(view.bases()[0], alpha);
+    EXPECT_EQ(view.bases()[1], zebra);
 
     data->bases.clear();
     data->bases.emplace_back(zebra.index());
@@ -76,8 +76,8 @@ TEST(LokiTests, SymbolViewsUseTheRepositoryOfTheirContext)
     auto data = Data(urd::flat_string("type"));
     const auto original = repository.insert(data).first;
     const auto again = repository.view(original.index());
-    EXPECT_EQ(&again.get_name(), &original.get_name());
-    EXPECT_EQ(again.get_name(), original.get_name());
+    EXPECT_EQ(&again.name(), &original.name());
+    EXPECT_EQ(again.name(), original.name());
     EXPECT_EQ(urd::detail::identity(again), urd::detail::identity(original));
 
     auto child = loki::formalism::Repository(&repository);

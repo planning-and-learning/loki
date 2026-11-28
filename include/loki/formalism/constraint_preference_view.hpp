@@ -35,9 +35,9 @@ private:
     [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
 public:
-    const auto& get_name() const noexcept { return self().template member<&urd::record_of<V>::name>(); }
+    const auto& name() const noexcept { return self().template member<&urd::record_of<V>::name>(); }
 
-    auto get_constraint() const noexcept { return self().template member<&urd::record_of<V>::constraint>(); }
+    auto constraint() const noexcept { return self().template member<&urd::record_of<V>::constraint>(); }
 };
 }  // namespace urd
 

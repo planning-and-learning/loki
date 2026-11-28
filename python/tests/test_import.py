@@ -70,7 +70,6 @@ def test_formalism_package_reexports_native_public_symbols() -> None:
     ]
 
     assert missing == []
-    assert not hasattr(pypddl.formalism, "__all__")
 
 
 def test_programmatic_gripper_example_uses_public_api() -> None:
@@ -88,16 +87,16 @@ def test_programmatic_gripper_example_uses_public_api() -> None:
     reparsed = pypddl.formalism.Parser(domain_text, pypddl.formalism.ParserOptions())
     reparsed_one_ball = reparsed.parse_task(one_ball_text)
 
-    assert reparsed.domain().get_name() == domain.get_name()
-    assert reparsed_one_ball.get_name() == one_ball.get_name()
+    assert reparsed.domain().name() == domain.name()
+    assert reparsed_one_ball.name() == one_ball.name()
 
-    assert domain.get_name() == "gripper"
-    assert len(domain.get_actions()) == 3
-    assert len(domain.get_predicates()) == 4
-    assert len(one_ball.get_objects()) == 5
-    assert len(one_ball.get_initial_literals()) == 4
-    assert len(two_ball.get_objects()) == 6
-    assert len(two_ball.get_initial_literals()) == 5
+    assert domain.name() == "gripper"
+    assert len(domain.actions()) == 3
+    assert len(domain.predicates()) == 4
+    assert len(one_ball.objects()) == 5
+    assert len(one_ball.initial_literals()) == 4
+    assert len(two_ball.objects()) == 6
+    assert len(two_ball.initial_literals()) == 5
 
 
 if __name__ == "__main__":

@@ -61,36 +61,36 @@ formalism::ActionView TopLevelTranslator<Derived>::copy(formalism::ActionView so
                     [&]
                     {
                         this->copy_context().num_quantifications.clear();
-                        this->self().increment_quantifications(source.get_parameters());
-                        auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+                        this->self().increment_quantifications(source.parameters());
+                        auto parameter_views = this->self().copy_parameter_views(source.parameters());
                         this->self().enter_scope(parameter_views);
                         auto precondition = std::optional<formalism::ConditionView> {};
-                        if (const auto condition = source.get_precondition())
+                        if (const auto condition = source.precondition())
                         {
                             auto copied_condition = this->self().copy(condition.value());
                             if (this->copy_context().phase == TranslationPhase::MoveExistentialQuantifiers)
                             {
                                 auto effect = std::optional<formalism::EffectView> {};
-                                if (const auto effect_view = source.get_effect())
+                                if (const auto effect_view = source.effect())
                                     effect = effect_view.value();
                                 copied_condition = this->self().lift_top_level_exists(parameter_views, copied_condition, effect);
                             }
                             precondition = copied_condition;
                         }
                         if (this->copy_context().phase == TranslationPhase::CompileTyping)
-                            this->self().prepend_type_conditions(precondition, source.get_parameters());
+                            this->self().prepend_type_conditions(precondition, source.parameters());
                         auto effect = urd::flat_optional<formalism::EffectVariant> {};
-                        if (const auto effect_view = source.get_effect())
+                        if (const auto effect_view = source.effect())
                             urd::store(effect, this->self().copy(effect_view.value()));
                         auto result = formalism::checkout<formalism::Action>(this->copy_context().builder);
-                        result->name = source.get_name();
-                        result->original_name = source.get_original_name();
+                        result->name = source.name();
+                        result->original_name = source.original_name();
                         if (this->self().compiles_typing_now())
-                            this->self().copy_parameters_without_types(source.get_parameters(), result->parameters);
+                            this->self().copy_parameters_without_types(source.parameters(), result->parameters);
                         else
                             for (auto parameter : parameter_views)
                                 result->parameters.push_back(parameter.index());
-                        result->original_arity = source.get_original_arity();
+                        result->original_arity = source.original_arity();
                         if (precondition)
                             urd::store(result->precondition, *precondition);
                         urd::store(result->effect, effect);
@@ -119,29 +119,29 @@ formalism::DurativeActionView TopLevelTranslator<Derived>::copy(formalism::Durat
                     [&]
                     {
                         this->copy_context().num_quantifications.clear();
-                        this->self().increment_quantifications(source.get_parameters());
-                        auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+                        this->self().increment_quantifications(source.parameters());
+                        auto parameter_views = this->self().copy_parameter_views(source.parameters());
                         this->self().enter_scope(parameter_views);
                         auto duration = std::optional<formalism::ConditionView> {};
-                        if (const auto source_duration = source.get_duration())
+                        if (const auto source_duration = source.duration())
                             duration = this->self().copy(source_duration.value());
                         auto condition = std::optional<formalism::ConditionView> {};
-                        if (const auto source_condition = source.get_condition())
+                        if (const auto source_condition = source.condition())
                             condition = this->self().copy(source_condition.value());
                         if (this->copy_context().phase == TranslationPhase::CompileTyping)
-                            condition = this->self().prepend_start_type_conditions(condition, source.get_parameters());
+                            condition = this->self().prepend_start_type_conditions(condition, source.parameters());
                         auto effect = std::optional<formalism::EffectView> {};
-                        if (const auto source_effect = source.get_effect())
+                        if (const auto source_effect = source.effect())
                             effect = this->self().copy(source_effect.value());
                         auto result = formalism::checkout<formalism::DurativeAction>(this->copy_context().builder);
-                        result->name = source.get_name();
-                        result->original_name = source.get_original_name();
+                        result->name = source.name();
+                        result->original_name = source.original_name();
                         if (this->self().compiles_typing_now())
-                            this->self().copy_parameters_without_types(source.get_parameters(), result->parameters);
+                            this->self().copy_parameters_without_types(source.parameters(), result->parameters);
                         else
                             for (auto parameter : parameter_views)
                                 result->parameters.push_back(parameter.index());
-                        result->original_arity = source.get_original_arity();
+                        result->original_arity = source.original_arity();
                         if (duration)
                             urd::store(result->duration, *duration);
                         if (condition)
@@ -171,22 +171,22 @@ formalism::AxiomView TopLevelTranslator<Derived>::copy(formalism::AxiomView sour
                     [&]
                     {
                         this->copy_context().num_quantifications.clear();
-                        this->self().increment_quantifications(source.get_parameters());
-                        auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+                        this->self().increment_quantifications(source.parameters());
+                        auto parameter_views = this->self().copy_parameter_views(source.parameters());
                         this->self().enter_scope(parameter_views);
-                        auto copied_condition = this->self().copy(source.get_condition());
+                        auto copied_condition = this->self().copy(source.condition());
                         if (this->copy_context().phase == TranslationPhase::MoveExistentialQuantifiers)
                             copied_condition = this->self().lift_top_level_exists(parameter_views, copied_condition, std::nullopt);
                         if (this->copy_context().phase == TranslationPhase::CompileTyping)
-                            this->self().prepend_type_conditions(copied_condition, source.get_parameters());
-                        const auto head = this->self().copy(source.get_head());
+                            this->self().prepend_type_conditions(copied_condition, source.parameters());
+                        const auto head = this->self().copy(source.head());
                         auto result = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
                         if (this->self().compiles_typing_now())
-                            this->self().copy_parameters_without_types(source.get_parameters(), result->parameters);
+                            this->self().copy_parameters_without_types(source.parameters(), result->parameters);
                         else
                             for (auto parameter : parameter_views)
                                 result->parameters.push_back(parameter.index());
-                        result->original_arity = source.get_original_arity();
+                        result->original_arity = source.original_arity();
                         urd::store(result->head, head);
                         urd::store(result->condition, copied_condition);
                         auto out = this->copy_context().storage->repository.insert(*result, this->copy_context().storage->builder).first;
@@ -202,9 +202,9 @@ formalism::MetricView TopLevelTranslator<Derived>::copy(formalism::MetricView so
                     source,
                     [&]
                     {
-                        const auto expression = this->self().copy(source.get_expression());
+                        const auto expression = this->self().copy(source.expression());
                         auto data = formalism::checkout<formalism::Metric>(this->copy_context().builder);
-                        data->optimization_direction = source.get_optimization_direction();
+                        data->optimization_direction = source.optimization_direction();
                         urd::store(data->expression, expression);
                         return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
                     });
@@ -217,8 +217,8 @@ formalism::InitialFunctionValueView TopLevelTranslator<Derived>::copy(formalism:
                     source,
                     [&]
                     {
-                        const auto function = this->self().copy(source.get_function());
-                        const auto value = this->self().copy(source.get_value());
+                        const auto function = this->self().copy(source.function());
+                        const auto value = this->self().copy(source.value());
                         auto data = formalism::checkout<formalism::InitialFunctionValue>(this->copy_context().builder);
                         urd::store(data->function, function);
                         urd::store(data->value, value);

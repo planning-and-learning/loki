@@ -34,8 +34,8 @@ TEST(LokiSemanticActionCosts, AddsActionCostsDefaultsInPermissiveMode)
     auto parser = semantic::Parser(fixture_path("action_costs"));
     const auto parsed_task = parser.parse_task(fixture_path("action_costs", "task.pddl"));
 
-    ASSERT_TRUE(parsed_task.get_metric().has_value());
-    EXPECT_EQ(parsed_task.get_metric().value().get_optimization_direction(), formalism::OptimizationDirection::Minimize);
+    ASSERT_TRUE(parsed_task.metric().has_value());
+    EXPECT_EQ(parsed_task.metric().value().optimization_direction(), formalism::OptimizationDirection::Minimize);
     std::visit(
         [](const auto expression)
         {
@@ -43,16 +43,16 @@ TEST(LokiSemanticActionCosts, AddsActionCostsDefaultsInPermissiveMode)
             EXPECT_TRUE((std::is_same_v<Expression, formalism::FunctionTermView>) );
             if constexpr (std::is_same_v<Expression, formalism::FunctionTermView>)
             {
-                EXPECT_EQ(expression.get_function().get_name(), "total-cost");
-                EXPECT_EQ(expression.get_terms().size(), 0);
+                EXPECT_EQ(expression.function().name(), "total-cost");
+                EXPECT_EQ(expression.terms().size(), 0);
             }
         },
-        parsed_task.get_metric().value().get_expression());
+        parsed_task.metric().value().expression());
 
-    ASSERT_EQ(parsed_task.get_initial_function_values().size(), 1);
-    const auto initial_value = parsed_task.get_initial_function_values()[0];
-    EXPECT_EQ(initial_value.get_function().get_function().get_name(), "total-cost");
-    EXPECT_EQ(initial_value.get_function().get_terms().size(), 0);
+    ASSERT_EQ(parsed_task.initial_function_values().size(), 1);
+    const auto initial_value = parsed_task.initial_function_values()[0];
+    EXPECT_EQ(initial_value.function().function().name(), "total-cost");
+    EXPECT_EQ(initial_value.function().terms().size(), 0);
     std::visit(
         [](const auto expression)
         {
@@ -60,10 +60,10 @@ TEST(LokiSemanticActionCosts, AddsActionCostsDefaultsInPermissiveMode)
             EXPECT_TRUE((std::is_same_v<Expression, formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>>) );
             if constexpr (std::is_same_v<Expression, formalism::EntityView<formalism::FunctionExpression<formalism::NumberTag>>>)
             {
-                EXPECT_EQ(expression.get_value(), 0.0);
+                EXPECT_EQ(expression.value(), 0.0);
             }
         },
-        initial_value.get_value());
+        initial_value.value());
 }
 
 TEST(LokiSemanticActionCosts, AddActionCostsOptionInjectsUnitCosts)
@@ -78,10 +78,10 @@ TEST(LokiSemanticActionCosts, AddActionCostsOptionInjectsUnitCosts)
     EXPECT_NE(domain_text.find("(increase (total-cost) 1)"), std::string::npos);
 
     const auto parsed_task = parser.parse_task(fixture_path("unit_cost_injection", "task.pddl"));
-    ASSERT_TRUE(parsed_task.get_metric().has_value());
-    EXPECT_EQ(parsed_task.get_metric().value().get_optimization_direction(), formalism::OptimizationDirection::Minimize);
-    ASSERT_EQ(parsed_task.get_initial_function_values().size(), 1);
-    EXPECT_EQ(parsed_task.get_initial_function_values()[0].get_function().get_function().get_name(), "total-cost");
+    ASSERT_TRUE(parsed_task.metric().has_value());
+    EXPECT_EQ(parsed_task.metric().value().optimization_direction(), formalism::OptimizationDirection::Minimize);
+    ASSERT_EQ(parsed_task.initial_function_values().size(), 1);
+    EXPECT_EQ(parsed_task.initial_function_values()[0].function().function().name(), "total-cost");
 }
 
 TEST(LokiSemanticActionCosts, AddActionCostsOptionSkipsActionsAlreadyWritingTotalCost)
@@ -111,8 +111,8 @@ TEST(LokiSemanticActionCosts, AddActionCostsOptionCompletesInsteadOfStrictErrors
     auto parser = semantic::Parser(fixture_path("action_costs"), options);
     const auto parsed_task = parser.parse_task(fixture_path("action_costs", "task.pddl"));
 
-    ASSERT_TRUE(parsed_task.get_metric().has_value());
-    ASSERT_EQ(parsed_task.get_initial_function_values().size(), 1);
+    ASSERT_TRUE(parsed_task.metric().has_value());
+    ASSERT_EQ(parsed_task.initial_function_values().size(), 1);
 }
 
 TEST(LokiSemanticActionCosts, NumericFluentsTaskWithoutMetricKeepsMetricAbsent)
@@ -129,9 +129,9 @@ TEST(LokiSemanticActionCosts, NumericFluentsTaskWithoutMetricKeepsMetricAbsent)
             EXPECT_FALSE(has_function_named(parser.get_domain(), "total-cost"));
             EXPECT_FALSE(has_requirement_kind(parser.get_domain(), formalism::RequirementKind::ActionCosts));
             const auto parsed_task = parser.parse_task(fixture_path("numeric_fluents", "task.pddl"));
-            EXPECT_FALSE(parsed_task.get_metric().has_value());
-            ASSERT_EQ(parsed_task.get_initial_function_values().size(), 1);
-            EXPECT_EQ(parsed_task.get_initial_function_values()[0].get_function().get_function().get_name(), "fuel");
+            EXPECT_FALSE(parsed_task.metric().has_value());
+            ASSERT_EQ(parsed_task.initial_function_values().size(), 1);
+            EXPECT_EQ(parsed_task.initial_function_values()[0].function().function().name(), "fuel");
         }
     }
 }

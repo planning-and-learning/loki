@@ -80,7 +80,7 @@ private:
         return this->self().compiles_typing_now()
                && std::ranges::any_of(parameters,
                                       [](auto parameter)
-                                      { return std::ranges::any_of(parameter.get_types(), [](auto type) { return !type.get_bases().empty(); }); });
+                                      { return std::ranges::any_of(parameter.types(), [](auto type) { return !type.bases().empty(); }); });
     }
 
     template<typename Tag>
@@ -100,7 +100,7 @@ formalism::ConstraintView ConstraintTranslator<Derived>::copy(formalism::Constra
 template<typename Derived>
 formalism::ConstraintView ConstraintTranslator<Derived>::copy(formalism::EntityView<formalism::Constraint<formalism::StateTag>> source)
 {
-    auto condition = this->self().copy(source.get_condition());
+    auto condition = this->self().copy(source.condition());
     if (this->copy_context().phase == TranslationPhase::RemoveUniversalQuantifiers)
         condition = this->self().make_conjunctive_condition(condition, "loki-constraint-", this->copy_context().generated_constraint_conditions);
     return state(condition);
@@ -109,7 +109,7 @@ formalism::ConstraintView ConstraintTranslator<Derived>::copy(formalism::EntityV
 template<typename Derived>
 formalism::ConstraintView ConstraintTranslator<Derived>::copy(formalism::EntityView<formalism::Constraint<formalism::NotTag>> source)
 {
-    const auto operand = this->self().copy(source.get_constraint());
+    const auto operand = this->self().copy(source.constraint());
     if (this->copy_context().phase == TranslationPhase::ToNegationNormalForm)
         return this->self().negate_constraint(operand);
     auto data = formalism::checkout<formalism::Constraint<formalism::NotTag>>(this->copy_context().builder);
@@ -129,17 +129,17 @@ template<typename Derived>
 template<typename Tag>
 formalism::ConstraintView ConstraintTranslator<Derived>::copy_quantified(formalism::EntityView<formalism::Constraint<Tag>> source)
 {
-    this->self().increment_quantifications(source.get_parameters());
-    auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+    this->self().increment_quantifications(source.parameters());
+    auto parameter_views = this->self().copy_parameter_views(source.parameters());
     this->self().enter_scope(parameter_views);
-    auto constraint = this->self().copy(source.get_constraint());
-    if (guards(source.get_parameters()))
+    auto constraint = this->self().copy(source.constraint());
+    if (guards(source.parameters()))
     {
         if constexpr (std::same_as<Tag, formalism::ExistsTag>)
         {
             // For some binding within the types: (and types φ).
             auto types = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
-            this->self().type_conditions_for_parameters(source.get_parameters(), *types);
+            this->self().type_conditions_for_parameters(source.parameters(), *types);
             auto data = formalism::checkout<formalism::Constraint<formalism::AndTag>>(this->copy_context().builder);
             urd::append(data->constraints, state(this->self().make_conjunction(*types)));
             urd::append(data->constraints, constraint);
@@ -147,20 +147,20 @@ formalism::ConstraintView ConstraintTranslator<Derived>::copy_quantified(formali
         }
         else if (is_pddl3_formula(constraint))
         {
-            constraint = this->self().guard_constraint(constraint, source.get_parameters());
+            constraint = this->self().guard_constraint(constraint, source.parameters());
         }
         else
         {
             // For every binding outside the types vacuously: (or outside φ), outside a derived predicate loki-typed-*.
             auto data = formalism::checkout<formalism::Constraint<formalism::OrTag>>(this->copy_context().builder);
-            urd::append(data->constraints, state(this->self().guard_with_types(std::nullopt, source.get_parameters())));
+            urd::append(data->constraints, state(this->self().guard_with_types(std::nullopt, source.parameters())));
             urd::append(data->constraints, constraint);
             constraint = insert(*data);
         }
     }
     auto data = formalism::checkout<formalism::Constraint<Tag>>(this->copy_context().builder);
     if (this->self().compiles_typing_now())
-        this->self().copy_parameters_without_types(source.get_parameters(), data->parameters);
+        this->self().copy_parameters_without_types(source.parameters(), data->parameters);
     else
         for (auto parameter : parameter_views)
             data->parameters.push_back(parameter.index());
@@ -179,15 +179,15 @@ formalism::ConstraintView ConstraintTranslator<Derived>::negate_constraint(forma
         {
             using formalism::Constraint;
             if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::StateTag>>>)
-                return state(this->self().negate_condition(node.get_condition()));
+                return state(this->self().negate_condition(node.condition()));
             else if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::NotTag>>>)
-                return node.get_constraint();
+                return node.constraint();
             else if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::AndTag>>>
                                || std::same_as<Node, formalism::EntityView<Constraint<formalism::OrTag>>>)
             {
                 using Dual = std::conditional_t<std::same_as<Node, formalism::EntityView<Constraint<formalism::AndTag>>>, formalism::OrTag, formalism::AndTag>;
                 auto data = formalism::checkout<Constraint<Dual>>(context.builder);
-                for (auto child : node.get_constraints())
+                for (auto child : node.constraints())
                     urd::append(data->constraints, this->self().negate_constraint(child));
                 return insert(*data);
             }
@@ -197,9 +197,9 @@ formalism::ConstraintView ConstraintTranslator<Derived>::negate_constraint(forma
                 using Dual =
                     std::conditional_t<std::same_as<Node, formalism::EntityView<Constraint<formalism::ForallTag>>>, formalism::ExistsTag, formalism::ForallTag>;
                 auto data = formalism::checkout<Constraint<Dual>>(context.builder);
-                for (auto parameter : node.get_parameters())
+                for (auto parameter : node.parameters())
                     data->parameters.push_back(parameter.index());
-                urd::store(data->constraint, this->self().negate_constraint(node.get_constraint()));
+                urd::store(data->constraint, this->self().negate_constraint(node.constraint()));
                 return insert(*data);
             }
             else if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::PreferenceTag>>>)
@@ -209,7 +209,7 @@ formalism::ConstraintView ConstraintTranslator<Derived>::negate_constraint(forma
             else
             {
                 using enum formalism::ConstraintOperator;
-                const auto operation = node.get_operation();
+                const auto operation = node.operation();
                 auto dual = std::optional<formalism::ConstraintOperator> {};
                 switch (operation)
                 {
@@ -263,9 +263,9 @@ formalism::ConstraintView ConstraintTranslator<Derived>::negate_constraint(forma
                 }
                 auto data = formalism::checkout<Constraint<formalism::ModalTag>>(context.builder);
                 data->operation = *dual;
-                for (const auto number : node.get_numbers())
+                for (const auto number : node.numbers())
                     data->numbers.push_back(number);
-                for (auto operand : node.get_constraints())
+                for (auto operand : node.constraints())
                     urd::append(data->constraints, this->self().negate_constraint(operand));
                 return insert(*data);
             }
@@ -281,13 +281,13 @@ bool ConstraintTranslator<Derived>::is_pddl3_formula(formalism::ConstraintView c
         {
             using formalism::Constraint;
             if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::AndTag>>>)
-                return std::ranges::all_of(node.get_constraints(), [&](auto child) { return is_pddl3_formula(child); });
+                return std::ranges::all_of(node.constraints(), [&](auto child) { return is_pddl3_formula(child); });
             else if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::ForallTag>>>
                                || std::same_as<Node, formalism::EntityView<Constraint<formalism::PreferenceTag>>>)
-                return is_pddl3_formula(node.get_constraint());
+                return is_pddl3_formula(node.constraint());
             else if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::ModalTag>>>)
-                return !formalism::is_trajectory_operator(node.get_operation())
-                       && std::ranges::all_of(node.get_constraints(),
+                return !formalism::is_trajectory_operator(node.operation())
+                       && std::ranges::all_of(node.constraints(),
                                               [](auto operand)
                                               { return std::holds_alternative<formalism::EntityView<Constraint<formalism::StateTag>>>(operand); });
             else
@@ -308,39 +308,39 @@ formalism::ConstraintView ConstraintTranslator<Derived>::guard_constraint(formal
             if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::AndTag>>>)
             {
                 auto data = formalism::checkout<Constraint<formalism::AndTag>>(context.builder);
-                for (auto child : node.get_constraints())
+                for (auto child : node.constraints())
                     urd::append(data->constraints, this->self().guard_constraint(child, parameters));
                 return insert(*data);
             }
             else if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::ForallTag>>>)
             {
                 auto data = formalism::checkout<Constraint<formalism::ForallTag>>(context.builder);
-                for (auto parameter : node.get_parameters())
+                for (auto parameter : node.parameters())
                     data->parameters.push_back(parameter.index());
-                urd::store(data->constraint, this->self().guard_constraint(node.get_constraint(), parameters));
+                urd::store(data->constraint, this->self().guard_constraint(node.constraint(), parameters));
                 return insert(*data);
             }
             else if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::PreferenceTag>>>)
             {
                 auto data = formalism::checkout<Constraint<formalism::PreferenceTag>>(context.builder);
-                data->name = node.get_name();
-                urd::store(data->constraint, this->self().guard_constraint(node.get_constraint(), parameters));
+                data->name = node.name();
+                urd::store(data->constraint, this->self().guard_constraint(node.constraint(), parameters));
                 return insert(*data);
             }
             else if constexpr (std::same_as<Node, formalism::EntityView<Constraint<formalism::ModalTag>>>)
             {
                 using enum formalism::ConstraintOperator;
-                const auto operation = node.get_operation();
+                const auto operation = node.operation();
                 const auto triggered = operation == AtMostOnce || operation == SometimeAfter || operation == SometimeBefore || operation == AlwaysWithin;
                 auto data = formalism::checkout<Constraint<formalism::ModalTag>>(context.builder);
                 data->operation = operation;
-                for (const auto number : node.get_numbers())
+                for (const auto number : node.numbers())
                     data->numbers.push_back(number);
                 auto first = true;
-                for (auto operand : node.get_constraints())
+                for (auto operand : node.constraints())
                 {
                     // is_pddl3_formula: each operand is a goal description.
-                    auto condition = std::get<formalism::EntityView<Constraint<formalism::StateTag>>>(operand).get_condition();
+                    auto condition = std::get<formalism::EntityView<Constraint<formalism::StateTag>>>(operand).condition();
                     if (first && triggered)
                         this->self().prepend_type_conditions(condition, parameters);
                     else if (first)

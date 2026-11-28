@@ -26,13 +26,13 @@ static_assert(requires(Data& data) {
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_name();
-    view.get_original_name();
-    view.get_parameters();
-    view.get_original_arity();
-    view.get_duration();
-    view.get_condition();
-    view.get_effect();
+    view.name();
+    view.original_name();
+    view.parameters();
+    view.original_arity();
+    view.duration();
+    view.condition();
+    view.effect();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
 });

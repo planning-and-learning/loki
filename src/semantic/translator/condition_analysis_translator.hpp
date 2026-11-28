@@ -89,11 +89,11 @@ void ConditionAnalysisTranslator<Derived>::collect_free_variables(formalism::Ent
                                                                   VariableSet& bound,
                                                                   VariableSet& free) const
 {
-    for (auto parameter : node.get_parameters())
-        bound.insert(parameter.get_variable());
-    this->self().collect_free_variables(node.get_condition(), bound, free);
-    for (auto parameter : node.get_parameters())
-        bound.erase(parameter.get_variable());
+    for (auto parameter : node.parameters())
+        bound.insert(parameter.variable());
+    this->self().collect_free_variables(node.condition(), bound, free);
+    for (auto parameter : node.parameters())
+        bound.erase(parameter.variable());
 }
 
 template<typename Derived>

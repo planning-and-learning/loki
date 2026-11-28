@@ -35,11 +35,11 @@ private:
     [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
 public:
-    auto get_operation() const noexcept { return self().template member<&urd::record_of<V>::operation>(); }
+    auto operation() const noexcept { return self().template member<&urd::record_of<V>::operation>(); }
 
-    auto get_function() const noexcept { return self().template member<&urd::record_of<V>::function>(); }
+    auto function() const noexcept { return self().template member<&urd::record_of<V>::function>(); }
 
-    auto get_expression() const noexcept { return self().template member<&urd::record_of<V>::expression>(); }
+    auto expression() const noexcept { return self().template member<&urd::record_of<V>::expression>(); }
 };
 }  // namespace urd
 

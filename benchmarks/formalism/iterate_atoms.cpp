@@ -41,9 +41,9 @@ struct AtomAccessResult
 static AtomAccessResult access_atom_data(loki::formalism::AtomView atom)
 {
     const auto atom_identifier = atom.index().value;
-    const auto atom_predicate = atom.get_predicate();
+    const auto atom_predicate = atom.predicate();
     auto atom_terms = urd::Store<urd::sequence<loki::formalism::TermView>>();
-    for (const auto& term : atom.get_terms())
+    for (const auto& term : atom.terms())
     {
         atom_terms.push_back(term);
     }

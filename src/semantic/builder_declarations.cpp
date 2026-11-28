@@ -186,7 +186,7 @@ urd::Store<urd::sequence<formalism::TypeView>> AstBuilder::parse_type_hierarchy(
             resolve(name, nullptr);
 
     for (const auto type : result)
-        m_domain_context.declared_types.insert(std::string(type.get_name()));
+        m_domain_context.declared_types.insert(std::string(type.name()));
     return result;
 }
 
@@ -196,7 +196,7 @@ formalism::PredicateView AstBuilder::predicate(const ast::Identifier& identifier
     if (auto it = m_domain_context.predicates.find(name); it != m_domain_context.predicates.end())
     {
         if (m_domain_context.declared_predicates.contains(name))
-            checks().ensure_arity(name, it->second.get_parameters().size(), arity, identifier);
+            checks().ensure_arity(name, it->second.parameters().size(), arity, identifier);
         return it->second;
     }
     if (m_options.strict)
@@ -218,7 +218,7 @@ formalism::PredicateView AstBuilder::equality_predicate(const ast::Identifier& i
     if (auto it = m_domain_context.predicates.find(name); it != m_domain_context.predicates.end())
     {
         if (m_domain_context.declared_predicates.contains(name))
-            checks().ensure_arity(name, it->second.get_parameters().size(), arity, identifier);
+            checks().ensure_arity(name, it->second.parameters().size(), arity, identifier);
         return it->second;
     }
 
@@ -251,7 +251,7 @@ formalism::FunctionSkeletonView AstBuilder::function(const ast::Identifier& iden
     if (auto it = m_domain_context.functions.find(name); it != m_domain_context.functions.end())
     {
         if (m_domain_context.declared_functions.contains(name))
-            checks().ensure_arity(name, it->second.get_parameters().size(), arity, identifier);
+            checks().ensure_arity(name, it->second.parameters().size(), arity, identifier);
         return it->second;
     }
     // The fluents a requirement provides undeclared: PPDDL's (reward) by :rewards, PDDL 2.1's (total-time), the plan's
@@ -400,7 +400,7 @@ urd::Store<urd::sequence<formalism::PredicateView>> AstBuilder::parse_predicates
         // A type is a unary predicate: a predicate of a type's name declares it again, unary over the root of a hierarchy
         // (untyped, object or number), as a translation that keeps typing does; any other is a second definition.
         if (m_domain_context.declared_types.contains(name)
-            && !(parameters.size() == 1 && std::ranges::all_of(parameters.front().get_types(), [](auto type) { return type.get_bases().empty(); })))
+            && !(parameters.size() == 1 && std::ranges::all_of(parameters.front().types(), [](auto type) { return type.bases().empty(); })))
             m_diagnostics.throw_at(node.name, DuplicatePredicateError(name));
         auto data = formalism::checkout<formalism::Predicate>(m_builder);
         data->name = urd::flat_string(name);

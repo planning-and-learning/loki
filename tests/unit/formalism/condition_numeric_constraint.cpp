@@ -22,9 +22,9 @@ static_assert(requires(Data& data) {
 });
 static_assert(requires(const View& view) {
     view.index();
-    view.get_comparator();
-    view.get_left();
-    view.get_right();
+    view.comparator();
+    view.left();
+    view.right();
     { view == view } -> std::same_as<bool>;
     { view < view } -> std::same_as<bool>;
 });

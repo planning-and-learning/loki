@@ -151,9 +151,9 @@ DomainTranslationResult translate(formalism::DomainView domain, const Translator
 ProblemTranslationResult translate(formalism::TaskView task, const DomainTranslationResult& result, const TranslatorOptions& options)
 {
     const auto expected_domain = result.get_original_domain();
-    const auto task_domain = task.get_domain();
+    const auto task_domain = task.domain();
     if (task_domain != expected_domain)
-        throw MismatchedDomainError(std::string(expected_domain.get_name()), std::string(task_domain.get_name()));
+        throw MismatchedDomainError(std::string(expected_domain.name()), std::string(task_domain.name()));
 
     auto current_task = task;
     auto current_storage = std::shared_ptr<detail::TranslationStorage> {};

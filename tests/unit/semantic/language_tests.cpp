@@ -45,18 +45,18 @@ TEST(LokiSemanticLanguage, ParsesPpddlRewardsAndFractions)
 {
     semantic::Parser parser(fixture_path("ppddl_rewards"), strict);
     const auto domain = parser.get_domain();
-    ASSERT_EQ(domain.get_actions().size(), 1);
+    ASSERT_EQ(domain.actions().size(), 1);
     // :parameters is optional; 1/3 is a probability; (reward) is declared by :rewards.
-    EXPECT_EQ(fmt::format("{}", domain.get_actions()[0].get_effect().value()),
+    EXPECT_EQ(fmt::format("{}", domain.actions()[0].effect().value()),
               "(and (decrease (reward) 1) (probabilistic 0.3333333333333333 (p) 0.6666666666666666 (q)))");
     const auto task = parser.parse_task(fixture_path("ppddl_rewards", "problem.pddl"));
-    ASSERT_TRUE(task.get_goal_reward().has_value());
-    EXPECT_EQ(task.get_goal_reward().value(), 500.0);
+    ASSERT_TRUE(task.goal_reward().has_value());
+    EXPECT_EQ(task.goal_reward().value(), 500.0);
     const auto translation = semantic::translate(parser.get_domain());
     const auto task_translation = semantic::translate(task, translation);
     // The strict parser reads the translation back.
     semantic::Parser reparsed(fmt::format("{}", translation.get_translated_domain()), strict);
-    EXPECT_EQ(reparsed.parse_task(fmt::format("{}", task_translation.get_translated_task())).get_goal_reward().value(), 500.0);
+    EXPECT_EQ(reparsed.parse_task(fmt::format("{}", task_translation.get_translated_task())).goal_reward().value(), 500.0);
 }
 
 TEST(LokiSemanticLanguage, RejectsAZeroDenominator)
@@ -68,7 +68,7 @@ TEST(LokiSemanticLanguage, RejectsAZeroDenominator)
 TEST(LokiSemanticLanguage, WritesABareZeroAryFunction)
 {
     semantic::Parser parser(domain_with(":numeric-fluents", "(:functions (fuel)) (:action a :parameters () :effect (increase fuel 2))"), strict);
-    EXPECT_EQ(fmt::format("{}", parser.get_domain().get_actions()[0].get_effect().value()), "(increase (fuel) 2)");
+    EXPECT_EQ(fmt::format("{}", parser.get_domain().actions()[0].effect().value()), "(increase (fuel) 2)");
 }
 
 TEST(LokiSemanticLanguage, ReadsSectionsInAnyOrder)
@@ -77,31 +77,31 @@ TEST(LokiSemanticLanguage, ReadsSectionsInAnyOrder)
   (:functions (f ?x - t)) (:types t) (:predicates (p ?x - t)) (:constants c - t)
   (:action a :parameters () :precondition (p c) :effect (increase (f c) 1))))"),
                             strict);
-    EXPECT_EQ(parser.get_domain().get_constants().size(), 1);
-    EXPECT_EQ(parser.get_domain().get_functions().size(), 1);
+    EXPECT_EQ(parser.get_domain().constants().size(), 1);
+    EXPECT_EQ(parser.get_domain().functions().size(), 1);
 }
 
 TEST(LokiSemanticLanguage, ParsesAndTranslatesConstraintsAndPreferences)
 {
     semantic::Parser parser(fixture_path("pddl3_basic"), strict);
     const auto domain = parser.get_domain();
-    ASSERT_TRUE(domain.get_constraints().has_value());
+    ASSERT_TRUE(domain.constraints().has_value());
     const auto task = parser.parse_task(fixture_path("pddl3_basic", "problem.pddl"));
-    ASSERT_TRUE(task.get_constraints().has_value());
-    EXPECT_EQ(fmt::format("{}", task.get_constraints().value()),
+    ASSERT_TRUE(task.constraints().has_value());
+    EXPECT_EQ(fmt::format("{}", task.constraints().value()),
               "(and (always-within 2 (held a) (clear table)) (hold-during 1 3 (clear b)) (within 5 (held a)))");
 
     const auto translation = semantic::translate(domain, semantic::TranslatorOptions { .compile_typing = false });
     const auto translated = translation.get_translated_domain();
     // The disjunction of the preference is a derived predicate, not a split: one preference, one count.
-    ASSERT_EQ(translated.get_actions().size(), 1);
-    EXPECT_NE(fmt::format("{}", translated.get_actions()[0].get_precondition().value()).find("(preference careful (loki-preference-"),
+    ASSERT_EQ(translated.actions().size(), 1);
+    EXPECT_NE(fmt::format("{}", translated.actions()[0].precondition().value()).find("(preference careful (loki-preference-"),
               std::string::npos);
     // Keeping typing, the universal constraint's typed parameter restricts it: no guard (CompileTyping guards it).
-    EXPECT_NE(fmt::format("{}", translated.get_constraints().value()).find("(forall (?x - block) (always (loki-constraint-"), std::string::npos);
+    EXPECT_NE(fmt::format("{}", translated.constraints().value()).find("(forall (?x - block) (always (loki-constraint-"), std::string::npos);
 
     const auto task_translation = semantic::translate(task, translation, semantic::TranslatorOptions { .compile_typing = false });
-    const auto goal = fmt::format("{}", task_translation.get_translated_task().get_goal().value());
+    const auto goal = fmt::format("{}", task_translation.get_translated_task().goal().value());
     EXPECT_NE(goal.find("(forall (?x - block) (preference all-held "), std::string::npos);
     EXPECT_EQ(goal.find("loki-typed-"), std::string::npos);
     EXPECT_NE(goal.find("(preference hold-b (held b))"), std::string::npos);
@@ -109,7 +109,7 @@ TEST(LokiSemanticLanguage, ParsesAndTranslatesConstraintsAndPreferences)
     // The strict parser reads the translation back.
     semantic::Parser reparsed(fmt::format("{}", translated), strict);
     const auto reparsed_task = reparsed.parse_task(fmt::format("{}", task_translation.get_translated_task()));
-    EXPECT_TRUE(reparsed_task.get_constraints().has_value());
+    EXPECT_TRUE(reparsed_task.constraints().has_value());
 }
 
 TEST(LokiSemanticLanguage, RejectsMalformedConstraintsAndPreferences)
@@ -135,8 +135,8 @@ TEST(LokiSemanticLanguage, ParsesAndTranslatesTrajectoryFormulas)
 {
     semantic::Parser parser(fixture_path("trajectory_formulas"), strict);
     const auto domain = parser.get_domain();
-    ASSERT_TRUE(domain.get_constraints().has_value());
-    const auto constraints = fmt::format("{}", domain.get_constraints().value());
+    ASSERT_TRUE(domain.constraints().has_value());
+    const auto constraints = fmt::format("{}", domain.constraints().value());
     // Nesting, metric intervals (an upper bound inf), past operators; imply as (or (not a) b); a goal description's not
     // stays a goal description.
     EXPECT_NE(constraints.find("(always (sometime (door-open)))"), std::string::npos);
@@ -147,9 +147,9 @@ TEST(LokiSemanticLanguage, ParsesAndTranslatesTrajectoryFormulas)
 
     // A goal over the trajectory is a hard constraint of the task, conjoined with its own; (next r1 r2) is an atom.
     const auto task = parser.parse_task(fixture_path("trajectory_formulas", "problem.pddl"));
-    EXPECT_FALSE(task.get_goal().has_value());
-    ASSERT_TRUE(task.get_constraints().has_value());
-    EXPECT_EQ(fmt::format("{}", task.get_constraints().value()),
+    EXPECT_FALSE(task.goal().has_value());
+    ASSERT_TRUE(task.constraints().has_value());
+    EXPECT_EQ(fmt::format("{}", task.constraints().value()),
               "(and (at end (at r3)) (next r1 r2) (once (interval 1 3) (door-open)) (preference fast (within 5 (visited r3))) (sometime (visited r2)))");
 
     for (const auto compile_typing : { false, true })
@@ -157,7 +157,7 @@ TEST(LokiSemanticLanguage, ParsesAndTranslatesTrajectoryFormulas)
         SCOPED_TRACE(compile_typing);
         const auto options = semantic::TranslatorOptions { .compile_typing = compile_typing };
         const auto translation = semantic::translate(domain, options);
-        const auto translated = fmt::format("{}", translation.get_translated_domain().get_constraints().value());
+        const auto translated = fmt::format("{}", translation.get_translated_domain().constraints().value());
         // Negation normal form: through the duals, into the goal descriptions.
         EXPECT_NE(translated.find("(always (or (not (door-open)) (weak-next (door-open))))"), std::string::npos);
         // Compiling typing guards the universal formula by a derived predicate, the existential one by the type conditions.
@@ -182,7 +182,7 @@ TEST(LokiSemanticLanguage, NegatesTrajectoryFormulasThroughTheirDuals)
     {
         semantic::Parser parser(domain_with(":negative-preconditions :trajectory-formulas", "(:constraints (not " + formula + "))"), permissive);
         const auto translation = semantic::translate(parser.get_domain());
-        return fmt::format("{}", translation.get_translated_domain().get_constraints().value());
+        return fmt::format("{}", translation.get_translated_domain().constraints().value());
     };
     EXPECT_EQ(negated("(next (p))"), "(weak-next (not (p)))");
     EXPECT_EQ(negated("(weak-yesterday (p))"), "(yesterday (not (p)))");

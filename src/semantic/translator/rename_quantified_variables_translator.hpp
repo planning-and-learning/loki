@@ -91,7 +91,7 @@ void RenameQuantifiedVariablesTranslator<Derived>::bind_variable(formalism::Vari
     if (bindings.bound_in_scope(source))
         return;
     if (const auto outer = bindings.find(source); outer != bindings.end())
-        this->copy_context().shadowed_variable_names.insert_or_assign(std::string(outer->second.get_name()), outer->second);
+        this->copy_context().shadowed_variable_names.insert_or_assign(std::string(outer->second.name()), outer->second);
     bindings.insert_or_assign(source, target);
 }
 
@@ -118,12 +118,12 @@ formalism::VariableView RenameQuantifiedVariablesTranslator<Derived>::fresh_vari
     // one would shadow it on the next translation and break idempotence.
     auto taken = this->copy_context().renamed_variable_names;
     for (const auto& [_, target] : this->copy_context().variable_bindings)
-        taken.insert(std::string(target.get_name()));
+        taken.insert(std::string(target.name()));
     for (const auto& [name, _] : this->copy_context().shadowed_variable_names)
         taken.insert(name);
     for (auto k = std::size_t { 0 };; ++k)
     {
-        auto name = std::string(source.get_name()) + "_" + std::to_string(k);
+        auto name = std::string(source.name()) + "_" + std::to_string(k);
         if (!taken.contains(name))
         {
             this->copy_context().renamed_variable_names.insert(name);
@@ -137,11 +137,11 @@ formalism::VariableView RenameQuantifiedVariablesTranslator<Derived>::fresh_vari
 template<typename Derived>
 formalism::ParameterView RenameQuantifiedVariablesTranslator<Derived>::rename_variables(formalism::ParameterView source)
 {
-    const auto variable = this->self().fresh_variable(source.get_variable());
-    this->self().bind_variable(source.get_variable(), variable);
+    const auto variable = this->self().fresh_variable(source.variable());
+    this->self().bind_variable(source.variable(), variable);
     auto data = formalism::checkout<formalism::Parameter>(this->copy_context().builder);
     data->variable = variable.index();
-    this->self().template copy_list<formalism::Type>(source.get_types(), data->types);
+    this->self().template copy_list<formalism::Type>(source.types(), data->types);
     return this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
 }
 

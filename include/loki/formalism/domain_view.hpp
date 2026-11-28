@@ -35,25 +35,25 @@ private:
     [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
 public:
-    const auto& get_name() const noexcept { return self().template member<&urd::record_of<V>::name>(); }
+    const auto& name() const noexcept { return self().template member<&urd::record_of<V>::name>(); }
 
-    auto get_requirements() const noexcept { return self().template member<&urd::record_of<V>::requirements>(); }
+    auto requirements() const noexcept { return self().template member<&urd::record_of<V>::requirements>(); }
 
-    auto get_types() const noexcept { return self().template member<&urd::record_of<V>::types>(); }
+    auto types() const noexcept { return self().template member<&urd::record_of<V>::types>(); }
 
-    auto get_constants() const noexcept { return self().template member<&urd::record_of<V>::constants>(); }
+    auto constants() const noexcept { return self().template member<&urd::record_of<V>::constants>(); }
 
-    auto get_predicates() const noexcept { return self().template member<&urd::record_of<V>::predicates>(); }
+    auto predicates() const noexcept { return self().template member<&urd::record_of<V>::predicates>(); }
 
-    auto get_functions() const noexcept { return self().template member<&urd::record_of<V>::functions>(); }
+    auto functions() const noexcept { return self().template member<&urd::record_of<V>::functions>(); }
 
-    auto get_actions() const noexcept { return self().template member<&urd::record_of<V>::actions>(); }
+    auto actions() const noexcept { return self().template member<&urd::record_of<V>::actions>(); }
 
-    auto get_durative_actions() const noexcept { return self().template member<&urd::record_of<V>::durative_actions>(); }
+    auto durative_actions() const noexcept { return self().template member<&urd::record_of<V>::durative_actions>(); }
 
-    auto get_axioms() const noexcept { return self().template member<&urd::record_of<V>::axioms>(); }
+    auto axioms() const noexcept { return self().template member<&urd::record_of<V>::axioms>(); }
 
-    auto get_constraints() const noexcept { return self().template member<&urd::record_of<V>::constraints>(); }
+    auto constraints() const noexcept { return self().template member<&urd::record_of<V>::constraints>(); }
 };
 }  // namespace urd
 

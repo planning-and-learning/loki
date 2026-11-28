@@ -69,7 +69,7 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::factor_shared_condi
     {
         auto result = urd::Store<urd::sequence<formalism::EffectView>> {};
         if (const auto* conjunction = std::get_if<AndView>(&outcome))
-            for (auto part : conjunction->get_effects())
+            for (auto part : conjunction->effects())
                 result.push_back(part);
         else
             result.push_back(outcome);
@@ -80,45 +80,45 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::factor_shared_condi
         for (auto part : parts(outcome))
         {
             const auto* when = std::get_if<WhenView>(&part);
-            if (!when || (condition && !(*condition == when->get_condition())))
+            if (!when || (condition && !(*condition == when->condition())))
                 shared = false;
             else
-                condition = when->get_condition();
+                condition = when->condition();
         }
     };
     const auto body = [&](formalism::EffectView outcome) -> formalism::EffectView
     {
         auto data = formalism::checkout<formalism::Effect<formalism::AndTag>>(context.builder);
         for (auto part : parts(outcome))
-            urd::append(data->effects, std::get<WhenView>(part).get_effect());
+            urd::append(data->effects, std::get<WhenView>(part).effect());
         const auto result = context.storage->repository.insert(*data, context.storage->builder).first;
-        return result.get_effects().size() == 1 ? result.get_effects()[0] : formalism::EffectView(result);
+        return result.effects().size() == 1 ? result.effects()[0] : formalism::EffectView(result);
     };
     auto factored = std::optional<formalism::EffectView> {};
     if (const auto* oneof = std::get_if<formalism::EntityView<formalism::Effect<formalism::OneOfTag>>>(&choice))
     {
-        for (auto outcome : oneof->get_effects())
+        for (auto outcome : oneof->effects())
             check(outcome);
         if (!shared || !condition)
             return choice;
         auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(context.builder);
-        for (auto outcome : oneof->get_effects())
+        for (auto outcome : oneof->effects())
             urd::append(data->effects, body(outcome));
         factored = formalism::EffectView(context.storage->repository.insert(*data, context.storage->builder).first);
     }
     else if (const auto* probabilistic = std::get_if<formalism::EntityView<formalism::Effect<formalism::ProbabilisticTag>>>(&choice))
     {
-        for (auto alternative : probabilistic->get_alternatives())
-            check(alternative.get_effect());
+        for (auto alternative : probabilistic->alternatives())
+            check(alternative.effect());
         if (!shared || !condition)
             return choice;
         auto data = formalism::checkout<formalism::Effect<formalism::ProbabilisticTag>>(context.builder);
         auto alternative_data = formalism::checkout<formalism::EffectProbabilisticAlternative>(context.builder);
-        for (auto alternative : probabilistic->get_alternatives())
+        for (auto alternative : probabilistic->alternatives())
         {
             urd::clear_fields(*alternative_data);
-            alternative_data->probability = alternative.get_probability();
-            urd::store(alternative_data->effect, body(alternative.get_effect()));
+            alternative_data->probability = alternative.probability();
+            urd::store(alternative_data->effect, body(alternative.effect()));
             data->alternatives.emplace_back(context.storage->repository.insert(*alternative_data, context.storage->builder).first.index());
         }
         factored = formalism::EffectView(context.storage->repository.insert(*data, context.storage->builder).first);
@@ -167,18 +167,18 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
     {
         if (const auto numeric = this->self().template as_effect<formalism::Effect<formalism::NumericTag>>(effect))
         {
-            urd::append(numeric_groups[NumericGroupKey(numeric->get_operation(), numeric->get_function().index())], numeric->get_expression());
+            urd::append(numeric_groups[NumericGroupKey(numeric->operation(), numeric->function().index())], numeric->expression());
             return;
         }
         urd::append(result->effects, effect);
     };
 
-    for (auto child : node.get_effects())
+    for (auto child : node.effects())
     {
         const auto normalized = this->self().normalize_effect(child);
         if (const auto nested = this->self().template as_effect<formalism::Effect<formalism::AndTag>>(normalized))
         {
-            for (auto part : nested->get_effects())
+            for (auto part : nested->effects())
                 push_effect(part);
         }
         else
@@ -214,14 +214,14 @@ template<typename Derived>
 formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView,
                                                                                    formalism::EntityView<formalism::Effect<formalism::ForallTag>> node)
 {
-    const auto nested = this->self().normalize_effect(node.get_effect());
+    const auto nested = this->self().normalize_effect(node.effect());
     if (const auto nested_and = this->self().template as_effect<formalism::Effect<formalism::AndTag>>(nested))
     {
         auto conjunction_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
-        for (auto part : nested_and->get_effects())
+        for (auto part : nested_and->effects())
         {
             auto forall_data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
-            for (auto parameter : node.get_parameters())
+            for (auto parameter : node.parameters())
                 forall_data->parameters.push_back(parameter.index());
             urd::store(forall_data->effect, part);
             const auto wrapped =
@@ -235,16 +235,16 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
     if (const auto nested_forall = this->self().template as_effect<formalism::Effect<formalism::ForallTag>>(nested))
     {
         auto forall_data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
-        for (auto parameter : node.get_parameters())
+        for (auto parameter : node.parameters())
             forall_data->parameters.push_back(parameter.index());
-        for (auto parameter : nested_forall->get_parameters())
+        for (auto parameter : nested_forall->parameters())
             forall_data->parameters.push_back(parameter.index());
-        urd::store(forall_data->effect, nested_forall->get_effect());
+        urd::store(forall_data->effect, nested_forall->effect());
         const auto wrapped = formalism::EffectView(this->copy_context().storage->repository.insert(*forall_data, this->copy_context().storage->builder).first);
         return this->self().normalize_effect(wrapped);
     }
     auto forall_data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
-    for (auto parameter : node.get_parameters())
+    for (auto parameter : node.parameters())
         forall_data->parameters.push_back(parameter.index());
     urd::store(forall_data->effect, nested);
     return formalism::EffectView(this->copy_context().storage->repository.insert(*forall_data, this->copy_context().storage->builder).first);
@@ -254,14 +254,14 @@ template<typename Derived>
 formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_node(formalism::EffectView,
                                                                                    formalism::EntityView<formalism::Effect<formalism::WhenTag>> node)
 {
-    const auto moved_condition = this->self().move_existentials(node.get_condition());
+    const auto moved_condition = this->self().move_existentials(node.condition());
     auto condition = this->self().flatten_condition(this->self().to_dnf(moved_condition));
-    const auto nested = this->self().normalize_effect(node.get_effect());
+    const auto nested = this->self().normalize_effect(node.effect());
 
     if (const auto condition_or = this->self().as_or(condition))
     {
         auto conjunction_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
-        for (auto part : condition_or->get_conditions())
+        for (auto part : condition_or->conditions())
         {
             auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
             urd::store(when_data->condition, part);
@@ -279,18 +279,18 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
     {
         auto condition_data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
         this->self().append_conjunct(*condition_data, condition);
-        this->self().append_conjunct(*condition_data, nested_when->get_condition());
+        this->self().append_conjunct(*condition_data, nested_when->condition());
         const auto combined_condition = this->self().make_conjunction(*condition_data);
         auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
         urd::store(when_data->condition, combined_condition);
-        urd::store(when_data->effect, nested_when->get_effect());
+        urd::store(when_data->effect, nested_when->effect());
         const auto wrapped = formalism::EffectView(this->copy_context().storage->repository.insert(*when_data, this->copy_context().storage->builder).first);
         return this->self().normalize_effect(wrapped);
     }
     if (const auto nested_and = this->self().template as_effect<formalism::Effect<formalism::AndTag>>(nested))
     {
         auto conjunction_data = formalism::checkout<formalism::Effect<formalism::AndTag>>(this->copy_context().builder);
-        for (auto part : nested_and->get_effects())
+        for (auto part : nested_and->effects())
         {
             auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
             urd::store(when_data->condition, condition);
@@ -306,11 +306,11 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
     if (const auto nested_forall = this->self().template as_effect<formalism::Effect<formalism::ForallTag>>(nested))
     {
         auto forall_data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
-        for (auto parameter : nested_forall->get_parameters())
+        for (auto parameter : nested_forall->parameters())
             forall_data->parameters.push_back(parameter.index());
         auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
         urd::store(when_data->condition, condition);
-        urd::store(when_data->effect, nested_forall->get_effect());
+        urd::store(when_data->effect, nested_forall->effect());
         forall_data->effect = this->copy_context().storage->repository.insert(*when_data, this->copy_context().storage->builder).first.index();
         const auto wrapped = formalism::EffectView(this->copy_context().storage->repository.insert(*forall_data, this->copy_context().storage->builder).first);
         return this->self().normalize_effect(wrapped);
@@ -318,10 +318,10 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
     if (const auto exists = this->self().as_exists(condition))
     {
         auto forall_data = formalism::checkout<formalism::Effect<formalism::ForallTag>>(this->copy_context().builder);
-        for (auto parameter : exists->get_parameters())
+        for (auto parameter : exists->parameters())
             forall_data->parameters.push_back(parameter.index());
         auto when_data = formalism::checkout<formalism::Effect<formalism::WhenTag>>(this->copy_context().builder);
-        urd::store(when_data->condition, exists->get_condition());
+        urd::store(when_data->condition, exists->condition());
         urd::store(when_data->effect, nested);
         forall_data->effect = this->copy_context().storage->repository.insert(*when_data, this->copy_context().storage->builder).first.index();
         const auto wrapped = formalism::EffectView(this->copy_context().storage->repository.insert(*forall_data, this->copy_context().storage->builder).first);
@@ -339,12 +339,12 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
                                                                                    formalism::EntityView<formalism::Effect<formalism::OneOfTag>> node)
 {
     auto data = formalism::checkout<formalism::Effect<formalism::OneOfTag>>(this->copy_context().builder);
-    for (auto child : node.get_effects())
+    for (auto child : node.effects())
     {
         const auto normalized = this->self().normalize_effect(child);
         if (const auto nested = this->self().template as_effect<formalism::Effect<formalism::OneOfTag>>(normalized))
         {
-            for (auto outcome : nested->get_effects())
+            for (auto outcome : nested->effects())
                 urd::append(data->effects, outcome);
         }
         else
@@ -354,8 +354,8 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
     }
     // Inserting drops equal outcomes: a oneof is a set of outcomes.
     const auto result = this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first;
-    if (result.get_effects().size() == 1)
-        return result.get_effects()[0];
+    if (result.effects().size() == 1)
+        return result.effects()[0];
     return this->self().factor_shared_condition(formalism::EffectView(result));
 }
 
@@ -382,17 +382,17 @@ formalism::EffectView ToEffectNormalFormTranslator<Derived>::normalize_effect_no
         outcomes.emplace_back(effect, probability);
     };
 
-    for (auto alternative : node.get_alternatives())
+    for (auto alternative : node.alternatives())
     {
-        const auto normalized = this->self().normalize_effect(alternative.get_effect());
+        const auto normalized = this->self().normalize_effect(alternative.effect());
         if (const auto nested = this->self().template as_effect<formalism::Effect<formalism::ProbabilisticTag>>(normalized))
         {
-            for (auto nested_alternative : nested->get_alternatives())
-                add_outcome(nested_alternative.get_effect(), alternative.get_probability() * nested_alternative.get_probability());
+            for (auto nested_alternative : nested->alternatives())
+                add_outcome(nested_alternative.effect(), alternative.probability() * nested_alternative.probability());
         }
         else
         {
-            add_outcome(normalized, alternative.get_probability());
+            add_outcome(normalized, alternative.probability());
         }
     }
 

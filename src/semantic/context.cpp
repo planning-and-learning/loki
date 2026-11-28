@@ -96,36 +96,36 @@ void rebuild_domain_symbols(DomainContext& domain_context, formalism::Repository
 
     auto remember_type = [&](auto&& self, formalism::TypeView type) -> void
     {
-        domain_context.types.insert_or_assign(std::string(type.get_name()), type);
-        domain_context.declared_types.insert(std::string(type.get_name()));
-        for (auto base : type.get_bases())
+        domain_context.types.insert_or_assign(std::string(type.name()), type);
+        domain_context.declared_types.insert(std::string(type.name()));
+        for (auto base : type.bases())
             self(self, base);
     };
 
     auto parse_context = ParseContext {};
-    for (auto requirement : domain_context.get_domain().get_requirements())
-        remember_requirement(parse_context, requirement.get_kind());
+    for (auto requirement : domain_context.get_domain().requirements())
+        remember_requirement(parse_context, requirement.kind());
     domain_context.requirement_kinds = parse_context.active_requirements;
-    for (auto type : domain_context.get_domain().get_types())
+    for (auto type : domain_context.get_domain().types())
         remember_type(remember_type, type);
-    for (auto object : domain_context.get_domain().get_constants())
+    for (auto object : domain_context.get_domain().constants())
     {
-        domain_context.objects.emplace(std::string(object.get_name()), object);
-        domain_context.declared_objects.insert(std::string(object.get_name()));
-        for (auto type : object.get_types())
+        domain_context.objects.emplace(std::string(object.name()), object);
+        domain_context.declared_objects.insert(std::string(object.name()));
+        for (auto type : object.types())
             remember_type(remember_type, type);
     }
-    for (auto predicate : domain_context.get_domain().get_predicates())
+    for (auto predicate : domain_context.get_domain().predicates())
     {
-        const auto name = std::string(predicate.get_name());
+        const auto name = std::string(predicate.name());
         domain_context.predicates.emplace(name, predicate);
         domain_context.declared_predicates.insert(name);
     }
-    for (auto function : domain_context.get_domain().get_functions())
+    for (auto function : domain_context.get_domain().functions())
     {
-        domain_context.functions.emplace(std::string(function.get_name()), function);
-        domain_context.declared_functions.insert(std::string(function.get_name()));
-        remember_type(remember_type, function.get_type());
+        domain_context.functions.emplace(std::string(function.name()), function);
+        domain_context.declared_functions.insert(std::string(function.name()));
+        remember_type(remember_type, function.type());
     }
     if (auto it = domain_context.types.find("object"); it != domain_context.types.end())
         domain_context.object_type = it->second;

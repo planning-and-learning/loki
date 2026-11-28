@@ -124,7 +124,7 @@ struct SemanticChecks
         for (auto i = std::size_t { 0 }; i < terms.size(); ++i)
         {
             const auto actual = term_types(terms[i]);
-            if (!types_compatible(actual, parameters[static_cast<std::ptrdiff_t>(i)].get_types()))
+            if (!types_compatible(actual, parameters[static_cast<std::ptrdiff_t>(i)].types()))
                 diagnostics->throw_at(node, TypeMismatchError(name));
         }
     }
@@ -148,7 +148,7 @@ struct SemanticChecks
         if (!term.variable)
         {
             auto result = urd::Store<urd::sequence<formalism::TypeView>> {};
-            for (auto type : lookup_object(*domain_context, *parse_context, *diagnostics, term.name).get_types())
+            for (auto type : lookup_object(*domain_context, *parse_context, *diagnostics, term.name).types())
                 result.push_back(type);
             return result;
         }
@@ -184,7 +184,7 @@ struct SemanticChecks
             return true;
         if (!seen.insert(actual).second)
             return false;
-        for (auto base : actual.get_bases())
+        for (auto base : actual.bases())
             if (is_subtype(base, expected, seen))
                 return true;
         return false;

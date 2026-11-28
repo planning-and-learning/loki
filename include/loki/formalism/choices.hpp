@@ -42,14 +42,14 @@ inline bool contains_choice(EffectView effect)
                 return true;
             else if constexpr (std::same_as<Node, EntityView<Effect<AndTag>>>)
             {
-                for (auto child : node.get_effects())
+                for (auto child : node.effects())
                     if (contains_choice(child))
                         return true;
                 return false;
             }
             else if constexpr (std::same_as<Node, EntityView<Effect<ForallTag>>> || std::same_as<Node, EntityView<Effect<WhenTag>>>
                                || std::same_as<Node, EntityView<Effect<TimedTag>>>)
-                return contains_choice(node.get_effect());
+                return contains_choice(node.effect());
             else
                 return false;
         },

@@ -35,35 +35,35 @@ private:
     [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
 public:
-    const auto& get_name() const noexcept { return self().template member<&urd::record_of<V>::name>(); }
+    const auto& name() const noexcept { return self().template member<&urd::record_of<V>::name>(); }
 
-    auto get_domain() const noexcept { return self().template member<&urd::record_of<V>::domain>(); }
+    auto domain() const noexcept { return self().template member<&urd::record_of<V>::domain>(); }
 
-    auto get_requirements() const noexcept { return self().template member<&urd::record_of<V>::requirements>(); }
+    auto requirements() const noexcept { return self().template member<&urd::record_of<V>::requirements>(); }
 
-    auto get_types() const noexcept { return self().template member<&urd::record_of<V>::types>(); }
+    auto types() const noexcept { return self().template member<&urd::record_of<V>::types>(); }
 
-    auto get_predicates() const noexcept { return self().template member<&urd::record_of<V>::predicates>(); }
+    auto predicates() const noexcept { return self().template member<&urd::record_of<V>::predicates>(); }
 
-    auto get_objects() const noexcept { return self().template member<&urd::record_of<V>::objects>(); }
+    auto objects() const noexcept { return self().template member<&urd::record_of<V>::objects>(); }
 
-    auto get_initial_literals() const noexcept { return self().template member<&urd::record_of<V>::initial_literals>(); }
+    auto initial_literals() const noexcept { return self().template member<&urd::record_of<V>::initial_literals>(); }
 
-    auto get_initial_function_values() const noexcept { return self().template member<&urd::record_of<V>::initial_function_values>(); }
+    auto initial_function_values() const noexcept { return self().template member<&urd::record_of<V>::initial_function_values>(); }
 
-    auto get_timed_initial_literals() const noexcept { return self().template member<&urd::record_of<V>::timed_initial_literals>(); }
+    auto timed_initial_literals() const noexcept { return self().template member<&urd::record_of<V>::timed_initial_literals>(); }
 
-    auto get_initial_effects() const noexcept { return self().template member<&urd::record_of<V>::initial_effects>(); }
+    auto initial_effects() const noexcept { return self().template member<&urd::record_of<V>::initial_effects>(); }
 
-    auto get_goal() const noexcept { return self().template member<&urd::record_of<V>::goal>(); }
+    auto goal() const noexcept { return self().template member<&urd::record_of<V>::goal>(); }
 
-    auto get_goal_reward() const noexcept { return self().template member<&urd::record_of<V>::goal_reward>(); }
+    auto goal_reward() const noexcept { return self().template member<&urd::record_of<V>::goal_reward>(); }
 
-    auto get_metric() const noexcept { return self().template member<&urd::record_of<V>::metric>(); }
+    auto metric() const noexcept { return self().template member<&urd::record_of<V>::metric>(); }
 
-    auto get_axioms() const noexcept { return self().template member<&urd::record_of<V>::axioms>(); }
+    auto axioms() const noexcept { return self().template member<&urd::record_of<V>::axioms>(); }
 
-    auto get_constraints() const noexcept { return self().template member<&urd::record_of<V>::constraints>(); }
+    auto constraints() const noexcept { return self().template member<&urd::record_of<V>::constraints>(); }
 };
 }  // namespace urd
 

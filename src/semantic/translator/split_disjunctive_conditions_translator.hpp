@@ -53,21 +53,21 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_actions(
     auto seen = urd::Store<urd::set<formalism::ActionView>> {};
     for (auto action : actions)
     {
-        if (const auto precondition_view = action.get_precondition())
+        if (const auto precondition_view = action.precondition())
         {
             const auto precondition = this->self().flatten_condition(precondition_view.value());
             if (const auto condition_or = this->self().as_or(precondition))
             {
-                for (auto part : condition_or->get_conditions())
+                for (auto part : condition_or->conditions())
                 {
                     auto action_data = formalism::checkout<formalism::Action>(this->copy_context().builder);
-                    action_data->name = action.get_name();
-                    action_data->original_name = action.get_original_name();
-                    for (auto parameter : action.get_parameters())
+                    action_data->name = action.name();
+                    action_data->original_name = action.original_name();
+                    for (auto parameter : action.parameters())
                         action_data->parameters.push_back(parameter.index());
-                    action_data->original_arity = action.get_original_arity();
+                    action_data->original_arity = action.original_arity();
                     urd::store(action_data->precondition, part);
-                    urd::store(action_data->effect, action.get_effect());
+                    urd::store(action_data->effect, action.effect());
                     this->self().push_unique(result,
                                              seen,
                                              this->copy_context().storage->repository.insert(*action_data, this->copy_context().storage->builder).first);
@@ -88,16 +88,16 @@ void SplitDisjunctiveConditionsTranslator<Derived>::split_disjunctive_axioms(
     auto seen = urd::Store<urd::set<formalism::AxiomView>> {};
     for (auto axiom : axioms)
     {
-        const auto condition = this->self().flatten_condition(axiom.get_condition());
+        const auto condition = this->self().flatten_condition(axiom.condition());
         if (const auto condition_or = this->self().as_or(condition))
         {
-            for (auto part : condition_or->get_conditions())
+            for (auto part : condition_or->conditions())
             {
                 auto axiom_data = formalism::checkout<formalism::Axiom>(this->copy_context().builder);
-                for (auto parameter : axiom.get_parameters())
+                for (auto parameter : axiom.parameters())
                     axiom_data->parameters.push_back(parameter.index());
-                axiom_data->original_arity = axiom.get_original_arity();
-                axiom_data->head = axiom.get_head().index();
+                axiom_data->original_arity = axiom.original_arity();
+                axiom_data->head = axiom.head().index();
                 urd::store(axiom_data->condition, part);
                 this->self().push_unique(result,
                                          seen,

@@ -87,11 +87,11 @@ template<typename Derived>
 formalism::ConditionView
 ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::LiteralTag>> source)
 {
-    const auto literal = source.get_literal();
-    const auto atom = this->self().copy(literal.get_atom());
+    const auto literal = source.literal();
+    const auto atom = this->self().copy(literal.atom());
     auto literal_data = formalism::checkout<formalism::Literal>(this->copy_context().builder);
     urd::store(literal_data->atom, atom);
-    literal_data->polarity = !literal.get_polarity();
+    literal_data->polarity = !literal.polarity();
     const auto negated_literal = this->copy_context().storage->repository.insert(*literal_data, this->copy_context().storage->builder).first;
     auto condition_data = formalism::checkout<formalism::Condition<formalism::LiteralTag>>(this->copy_context().builder);
     condition_data->literal = negated_literal.index();
@@ -102,7 +102,7 @@ template<typename Derived>
 formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::AndTag>> source)
 {
     auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
-    for (auto condition : source.get_conditions())
+    for (auto condition : source.conditions())
         this->self().append_disjunct(*data, this->self().negate_condition(condition));
     return this->self().make_disjunction(*data);
 }
@@ -111,21 +111,21 @@ template<typename Derived>
 formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::OrTag>> source)
 {
     auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
-    for (auto condition : source.get_conditions())
+    for (auto condition : source.conditions())
         this->self().append_conjunct(*data, this->self().negate_condition(condition));
     return this->self().make_conjunction(*data);
 }
 
 template<typename Derived>
 formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
-{ return this->self().copy(source.get_condition()); }
+{ return this->self().copy(source.condition()); }
 
 template<typename Derived>
 formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
 {
     auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
-    this->self().append_conjunct(*data, this->self().copy(source.get_left()));
-    this->self().append_conjunct(*data, this->self().negate_condition(source.get_right()));
+    this->self().append_conjunct(*data, this->self().copy(source.left()));
+    this->self().append_conjunct(*data, this->self().negate_condition(source.right()));
     return this->self().make_conjunction(*data);
 }
 
@@ -136,10 +136,10 @@ formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_conditi
 {
     using Dual = std::conditional_t<std::same_as<Tag, formalism::ExistsTag>, formalism::ForallTag, formalism::ExistsTag>;
 
-    this->self().increment_quantifications(source.get_parameters());
-    auto parameter_views = this->self().copy_parameter_views(source.get_parameters());
+    this->self().increment_quantifications(source.parameters());
+    auto parameter_views = this->self().copy_parameter_views(source.parameters());
     this->self().enter_scope(parameter_views);
-    auto condition = this->self().negate_condition(source.get_condition());
+    auto condition = this->self().negate_condition(source.condition());
     this->self().leave_scope();
     auto data = formalism::checkout<formalism::Condition<Dual>>(this->copy_context().builder);
     for (auto parameter : parameter_views)
@@ -153,9 +153,9 @@ template<typename Derived>
 formalism::ConditionView
 ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::NumericConstraintTag>> source)
 {
-    const auto comparator = this->self().negate_comparator(source.get_comparator());
-    const auto left = this->self().copy(source.get_left());
-    const auto right = this->self().copy(source.get_right());
+    const auto comparator = this->self().negate_comparator(source.comparator());
+    const auto left = this->self().copy(source.left());
+    const auto right = this->self().copy(source.right());
     auto result = formalism::checkout<formalism::Condition<formalism::NumericConstraintTag>>(this->copy_context().builder);
     result->comparator = comparator;
     urd::store(result->left, left);
@@ -165,14 +165,14 @@ ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::Entity
 
 template<typename Derived>
 formalism::ConditionView ToNegationNormalFormTranslator<Derived>::copy_condition_node(formalism::EntityView<formalism::Condition<formalism::NotTag>> source)
-{ return this->self().negate_condition(source.get_condition()); }
+{ return this->self().negate_condition(source.condition()); }
 
 template<typename Derived>
 formalism::ConditionView ToNegationNormalFormTranslator<Derived>::copy_condition_node(formalism::EntityView<formalism::Condition<formalism::ImplyTag>> source)
 {
     auto data = formalism::checkout<formalism::Condition<formalism::OrTag>>(this->copy_context().builder);
-    this->self().append_disjunct(*data, this->self().negate_condition(source.get_left()));
-    this->self().append_disjunct(*data, this->self().copy(source.get_right()));
+    this->self().append_disjunct(*data, this->self().negate_condition(source.left()));
+    this->self().append_disjunct(*data, this->self().copy(source.right()));
     return this->self().make_disjunction(*data);
 }
 
@@ -188,11 +188,11 @@ formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_conditi
 template<typename Derived>
 formalism::ConditionView ToNegationNormalFormTranslator<Derived>::negate_condition_node(formalism::EntityView<formalism::Condition<formalism::TimedTag>> source)
 {
-    if (source.get_time() == formalism::TimeSpecifier::OverAll)
+    if (source.time() == formalism::TimeSpecifier::OverAll)
         throw ygg::diagnostics::SemanticError("an over all condition cannot be negated");
     auto data = formalism::checkout<formalism::Condition<formalism::TimedTag>>(this->copy_context().builder);
-    data->time = source.get_time();
-    urd::store(data->condition, this->self().negate_condition(source.get_condition()));
+    data->time = source.time();
+    urd::store(data->condition, this->self().negate_condition(source.condition()));
     return formalism::ConditionView(this->copy_context().storage->repository.insert(*data, this->copy_context().storage->builder).first);
 }
 

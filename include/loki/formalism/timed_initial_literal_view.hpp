@@ -35,9 +35,9 @@ private:
     [[nodiscard]] const V& self() const noexcept { return static_cast<const V&>(*this); }
 
 public:
-    auto get_time() const noexcept { return self().template member<&urd::record_of<V>::time>(); }
+    auto time() const noexcept { return self().template member<&urd::record_of<V>::time>(); }
 
-    auto get_literal() const noexcept { return self().template member<&urd::record_of<V>::literal>(); }
+    auto literal() const noexcept { return self().template member<&urd::record_of<V>::literal>(); }
 };
 }  // namespace urd
 

@@ -97,7 +97,7 @@ formalism::ConditionView SimplifyGoalTranslator<Derived>::simplify_goal_conditio
                                                                                        formalism::EntityView<formalism::Condition<formalism::AndTag>> node)
 {
     auto data = formalism::checkout<formalism::Condition<formalism::AndTag>>(this->copy_context().builder);
-    for (auto child : node.get_conditions())
+    for (auto child : node.conditions())
         this->self().append_conjunct(*data, this->self().simplify_goal_condition(child));
     return this->self().make_conjunction(*data);
 }
